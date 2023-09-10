@@ -1,15 +1,15 @@
+from aqt import gui_hooks, mw, QMenu, QAction
 from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
-from aqt import gui_hooks
+from aqt.browser import Browser
+
+import anki.stats
+from anki import hooks
 
 # TODO: importlib is seemingly used to patch over and disguise veeeeery bad bugs... remove its usages and fix the bugs
 import importlib
 
-import anki.stats
-from anki import hooks
-from anki.lang import _  # TODO: deprecated?
-
-from .morph.util import *  # TODO: replace this star
+from .morph.mecab_wrapper import getMorphemesMecab
 from .morph import morph_stats
 from .morph import reviewing_utils
 from .morph import main as main_module  # TODO: change the file name 'main' to something more fitting like 'recalc'
@@ -17,67 +17,97 @@ from .morph import manager
 from .morph import readability
 from .morph import preferencesDialog
 from .morph import graphs
-from .morph import preferences
+from .morph import browser_utils
+from .morph.preferences import init_preferences, get_preference
+from .morph.morphemes import MorphDb
 
-morphman_sub_menu = None
-morphman_sub_menu_creation_action = None
+TOOL_MENU = "morphman_tool_menu"
+BROWSE_MENU = "morphman_browse_menu"
+CONTEXT_MENU = "morphman_context_menu"
 
 
 def main():
     # Support anki version 2.1.50 and above
-    # Hooks should be in the order they are executed!
+    # Hooks should be placed in the order they are executed!
 
-    gui_hooks.profile_did_open.append(preferences.init_preferences)
+    gui_hooks.profile_did_open.append(init_preferences)
 
-    # Adds morphman to menu multiples times when profiles are changed
-    gui_hooks.profile_did_open.append(init_actions_and_submenu)
-
-    # TODO: Extract all hooks from the imports below and remove the pylint disable
-    # pylint: disable=W0611
-    from .morph.browser import viewMorphemes
-    from .morph.browser import extractMorphemes
-    from .morph.browser import batchPlay
-    from .morph.browser import massTagger
-    from .morph.browser import learnNow
-    from .morph.browser import boldUnknowns
-    from .morph.browser import browseMorph
-    from .morph.browser import alreadyKnownTagger
+    gui_hooks.profile_did_open.append(init_tool_menu_and_actions)
 
     gui_hooks.profile_did_open.append(replace_reviewer_functions)
 
-    # See more detailed morph stats by holding 'Shift'-key while pressing 'Stats' in toolbar
-    # TODO: maybe move it somewhere less hidden if possible? E.g.a separate toolbar button
+    gui_hooks.profile_did_open.append(init_browser_menus_and_actions)
+
+    # See morph stats by holding 'Shift'-key while pressing 'Stats' in toolbar
     gui_hooks.profile_did_open.append(add_morph_stats_to_ease_graph)
 
     # This stores the focus morphs seen today, necessary for the respective skipping option to work
-    gui_hooks.reviewer_did_answer_card.append(mark_morph_seen)
+    gui_hooks.reviewer_did_answer_card.append(mark_morph_seen_wrapper)
 
-    # Adds the 'K: V:' to the toolbar
+    # Adds the 'U: A:' to the toolbar
     gui_hooks.top_toolbar_did_init_links.append(add_morph_stats_to_toolbar)
 
-    gui_hooks.profile_will_close.append(tear_down_actions_and_submenu)
 
-
-def init_actions_and_submenu():
-    global morphman_sub_menu
+def init_tool_menu_and_actions():
+    for action in mw.form.menuTools.actions():
+        if action.objectName() == TOOL_MENU:
+            return  # prevents duplicate menus on profile-switch
 
     recalc_action = create_recalc_action()
     preferences_action = create_preferences_action()
     database_manager_action = create_database_manager_action()
     readability_analyzer_action = create_readability_analyzer_action()
 
-    morphman_sub_menu = create_morphman_submenu()
-    morphman_sub_menu.addAction(recalc_action)
-    morphman_sub_menu.addAction(preferences_action)
-    morphman_sub_menu.addAction(database_manager_action)
-    morphman_sub_menu.addAction(readability_analyzer_action)
+    morphman_tool_menu = create_morphman_tool_menu()
+    morphman_tool_menu.addAction(recalc_action)
+    morphman_tool_menu.addAction(preferences_action)
+    morphman_tool_menu.addAction(database_manager_action)
+    morphman_tool_menu.addAction(readability_analyzer_action)
 
     # test_action = create_test_action()
-    # morphman_sub_menu.addAction(test_action)
+    # morphman_tool_menu.addAction(test_action)
 
 
-def mark_morph_seen(reviewer: Reviewer, card, ease):
-    # Hook gives extra input parameters, hence this seemingly redundant function
+def init_browser_menus_and_actions() -> None:
+    view_action = create_view_morphs_action()
+    learn_now_action = create_learn_now_action()
+    browse_morph_action = create_browse_morph_action()
+    already_known_tagger_action = create_already_known_tagger_action()
+
+    def setup_browser_menu(_browser: Browser):
+        browser_utils.browser = _browser
+
+        for action in browser_utils.browser.form.menubar.actions():
+            if action.objectName() == BROWSE_MENU:
+                return  # prevents duplicate menus on profile-switch
+
+        morphman_browse_menu = QMenu("MorphMan", mw)
+        morphman_browse_menu_creation_action = browser_utils.browser.form.menubar.addMenu(morphman_browse_menu)
+        morphman_browse_menu_creation_action.setObjectName(BROWSE_MENU)
+
+        morphman_browse_menu.addAction(view_action)
+        morphman_browse_menu.addAction(learn_now_action)
+        morphman_browse_menu.addAction(browse_morph_action)
+        morphman_browse_menu.addAction(already_known_tagger_action)
+
+    def setup_context_menu(_browser: Browser, context_menu: QMenu):
+        for action in context_menu.actions():
+            if action.objectName() == CONTEXT_MENU:
+                return  # prevents duplicate menus on profile-switch
+
+        context_menu_creation_action = context_menu.insertSeparator(view_action)
+        context_menu.addAction(view_action)
+        context_menu.addAction(learn_now_action)
+        context_menu.addAction(browse_morph_action)
+        context_menu.addAction(already_known_tagger_action)
+        context_menu_creation_action.setObjectName(CONTEXT_MENU)
+
+    gui_hooks.browser_menus_did_init.append(setup_browser_menu)
+
+    gui_hooks.browser_will_show_context_menu.append(setup_context_menu)
+
+
+def mark_morph_seen_wrapper(reviewer: Reviewer, card, ease):
     reviewing_utils.mark_morph_seen(card.note())
 
 
@@ -88,68 +118,106 @@ def replace_reviewer_functions() -> None:
     # Automatically highlights morphs on cards if the respective note stylings are present
     hooks.field_filter.append(reviewing_utils.highlight)
 
+    Reviewer._shortcutKeys = hooks.wrap(Reviewer._shortcutKeys, reviewing_utils.my_reviewer_shortcut_keys, "around")
 
-def add_morph_stats_to_toolbar(links, toolbar):
-    name, details = morph_stats.get_stats()
+
+def add_morph_stats_to_toolbar(links, toolbar) -> None:
+    unique_name, unique_details = morph_stats.get_unique_morph_toolbar_stats()
+    all_name, all_details = morph_stats.get_all_morph_toolbar_stats()
     links.append(
         toolbar.create_link(
-            "morph", name, morph_stats.on_morph_stats_clicked, tip=details, id="morph"
+            "morph", unique_name, morph_stats.on_morph_stats_clicked, tip=unique_details, id="morph"
+        )
+    )
+    links.append(
+        toolbar.create_link(
+            "morph2", all_name, morph_stats.on_morph_stats_clicked, tip=all_details, id="morph2"
         )
     )
 
 
-def add_morph_stats_to_ease_graph():
+def add_morph_stats_to_ease_graph() -> None:
     anki.stats.CollectionStats.easeGraph = hooks.wrap(anki.stats.CollectionStats.easeGraph, morph_graphs_wrapper,
                                                       "around")
 
 
-def create_morphman_submenu() -> QMenu:
-    global morphman_sub_menu_creation_action
-
-    morphman_sub_menu = QMenu("MorphMan", mw)
-    morphman_sub_menu_creation_action = mw.form.menuTools.addMenu(morphman_sub_menu)
-
-    return morphman_sub_menu
-
-
-def create_test_action() -> QAction:
-    action = QAction('&Test', mw)
-    action.setStatusTip(_("Recalculate all.db, note fields, and new card ordering"))
-    action.setShortcut(_("Ctrl+T"))
-    action.triggered.connect(test_function)
-    return action
+def create_morphman_tool_menu() -> QMenu:
+    assert mw is not None
+    morphman_tool_menu = QMenu("MorphMan", mw)
+    morphman_tool_menu_creation_action = mw.form.menuTools.addMenu(morphman_tool_menu)
+    morphman_tool_menu_creation_action.setObjectName(TOOL_MENU)
+    return morphman_tool_menu
 
 
 def create_recalc_action() -> QAction:
     action = QAction('&Recalc', mw)
-    action.setStatusTip(_("Recalculate all.db, note fields, and new card ordering"))
-    action.setShortcut(_("Ctrl+M"))
+    action.setStatusTip("Recalculate all.db, note fields, and new card ordering")
+    action.setShortcut("Ctrl+M")
     action.triggered.connect(main_module.main)
     return action
 
 
 def create_preferences_action() -> QAction:
     action = QAction('&Preferences', mw)
-    action.setStatusTip(_("Change inspected cards, fields and tags"))
-    action.setShortcut(_("Ctrl+O"))
+    action.setStatusTip("Change inspected cards, fields and tags")
+    action.setShortcut("Ctrl+O")
     action.triggered.connect(preferencesDialog.main)
     return action
 
 
 def create_database_manager_action() -> QAction:
     action = QAction('&Database Manager', mw)
-    action.setStatusTip(
-        _("Open gui manager to inspect, compare, and analyze MorphMan DBs"))
-    action.setShortcut(_("Ctrl+D"))
+    action.setStatusTip("Open gui manager to inspect, compare, and analyze MorphMan DBs")
+    action.setShortcut("Ctrl+D")
     action.triggered.connect(manager.main)
     return action
 
 
 def create_readability_analyzer_action() -> QAction:
     action = QAction('Readability &Analyzer', mw)
-    action.setStatusTip(_("Check readability and build frequency lists"))
-    action.setShortcut(_("Ctrl+A"))
+    action.setStatusTip("Check readability and build frequency lists")
+    action.setShortcut("Ctrl+A")
     action.triggered.connect(readability.main)
+    return action
+
+
+def create_learn_now_action():
+    action = QAction('&Learn Card Now', mw)
+    action.setStatusTip("Immediately review the selected new cards")
+    action.setShortcut(get_preference('set learn now key'))
+    action.triggered.connect(browser_utils.run_learn_card_now)
+    return action
+
+
+def create_browse_morph_action():
+    action = QAction('&Browse Same Morphs', mw)
+    action.setStatusTip("Browse all notes containing the morphs from selected notes")
+    action.setShortcut(get_preference('browse same focus key'))
+    action.triggered.connect(browser_utils.run_browse_morph)
+    return action
+
+
+def create_view_morphs_action() -> QAction:
+    action = QAction('&View Morphemes', mw)
+    action.setStatusTip("View Morphemes for selected note")
+    action.setShortcut(get_preference('set view morphemes key'))
+    action.triggered.connect(browser_utils.run_view_morphs)
+    return action
+
+
+def create_already_known_tagger_action():
+    action = QAction('&Tag As Known', mw)
+    action.setStatusTip("Tag all selected cards as already known")
+    action.setShortcut(get_preference('set known and skip key'))
+    action.triggered.connect(browser_utils.run_already_known_tagger)
+    return action
+
+
+def create_test_action() -> QAction:
+    action = QAction('&Test', mw)
+    action.setStatusTip("Recalculate all.db, note fields, and new card ordering")
+    action.setShortcut("Ctrl+T")
+    action.triggered.connect(test_function)
     return action
 
 
@@ -158,20 +226,13 @@ def morph_graphs_wrapper(*args, **kwargs):
     return graphs.morphGraphs(args, kwargs)
 
 
-def tear_down_actions_and_submenu():
-    if morphman_sub_menu is not None:
-        morphman_sub_menu.clear()
-        mw.form.menuTools.removeAction(morphman_sub_menu_creation_action)
+def test_function() -> None:
+    known_db = MorphDb(get_preference('path_known'), ignoreErrors=True)
 
-
-def test_function():
-    skipped_cards = reviewing_utils.SkippedCards()
-
-    skipped_cards.skipped_cards['comprehension'] += 10
-    skipped_cards.skipped_cards['fresh'] += 1
-    skipped_cards.skipped_cards['today'] += 1
-
-    skipped_cards.show_tooltip_of_skipped_cards()
+    for group in known_db.groups.keys():
+        for _morph in known_db.groups[group]:
+            print("morph: ", _morph.inflected)
+        print("group break\n\n")
 
 
 main()

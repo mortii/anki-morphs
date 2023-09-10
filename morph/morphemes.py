@@ -136,6 +136,8 @@ def getMorphemes(morphemizer, expression, note_tags=None):
     # go through all replacement rules and search if a rule (which dictates a string to morpheme conversion) can be
     # applied
     replace_rules = cfg('ReplaceRules')
+    # NB: replace_rules is by default just an empty list...
+
     if note_tags is not None and replace_rules is not None:
         note_tags_set = set(note_tags)
         for (filter_tags, regex, morphemes) in replace_rules:
@@ -154,13 +156,9 @@ def getMorphemes(morphemizer, expression, note_tags=None):
             if len(split_expression[0]) >= len(expression) or len(split_expression[1]) >= len(expression):
                 continue
 
-            a_morphs = getMorphemes(
-                morphemizer, split_expression[0], note_tags)
-            b_morphs = [Morpheme(mstr, mstr, mstr, mstr,
-                                 'UNKNOWN', 'UNKNOWN') for mstr in morphemes]
-            c_morphs = getMorphemes(
-                morphemizer, split_expression[1], note_tags)
-
+            a_morphs = getMorphemes(morphemizer, split_expression[0], note_tags)
+            b_morphs = [Morpheme(mstr, mstr, mstr, mstr,'UNKNOWN', 'UNKNOWN') for mstr in morphemes]
+            c_morphs = getMorphemes(morphemizer, split_expression[1], note_tags)
             return a_morphs + b_morphs + c_morphs
 
     ms = morphemizer.getMorphemesFromExpr(expression)

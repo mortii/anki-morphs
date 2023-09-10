@@ -2,13 +2,15 @@
 import csv
 import importlib
 import io
+import pprint
 import time
 import itertools
 
 from functools import partial
-from typing import Dict, Set
+from typing import Dict, Set, Union, Optional
 
 import aqt.main
+from anki.models import NotetypeDict, FieldDict
 from aqt.utils import tooltip
 from aqt.operations import QueryOp
 
@@ -22,6 +24,7 @@ from .morphemizer import getMorphemizerByName
 from .util import printf, mw, errorMsg, getFilterByMidAndTags, getReadEnabledModels, getModifyEnabledModels
 from .preferences import get_preference as cfg, get_preferences
 from .util_external import memoize
+from .exceptions import NoteFilterFieldsException
 
 from . import morph_stats as stats
 from . import util
@@ -31,15 +34,20 @@ assert isinstance(mw, aqt.main.AnkiQt)
 
 
 @memoize
-def getFieldIndex(fieldName, mid):
+def get_field_index(field_name, mid) -> Optional[int]:
     """
     Returns the index of a field in a model by its name.
     For example: we have the modelId of the card "Basic".
     The return value might be "1" for fieldName="Front" and
     "2" for fieldName="Back".
     """
-    m = mw.col.models.get(mid)
-    return next((f['ord'] for f in m['flds'] if f['name'] == fieldName), None)
+    note_type: NotetypeDict = mw.col.models.get(mid)
+    fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
+
+    try:
+        return fields[field_name][1]["ord"]
+    except KeyError:
+        return None
 
 
 def extractFieldData(field_name, fields, mid):
@@ -49,7 +57,7 @@ def extractFieldData(field_name, fields, mid):
     :type fields: A string containing all field data for the model (created by anki.utils.join_fields())
     :type mid: the modelId depicting the model for the "fields" data
     """
-    idx = getFieldIndex(field_name, mid)
+    idx = get_field_index(field_name, mid)
     return strip_html(split_fields(fields)[idx])
 
 
@@ -58,17 +66,11 @@ def getSortFieldIndex(mid):
     return mw.col.models.get(mid)['sortf']
 
 
-def setField(mid, fs, k, v):  # nop if field DNE
-    # type: (int, [str], str, str) -> None
-    """
-    :type mid: modelId
-    :type fs: a list of all field data
-    :type k: name of field to modify (for example u'Expression')
-    :type v: new value for field
-    """
-    idx = getFieldIndex(k, mid)
-    if idx:
-        fs[idx] = v
+def set_field(model_id: int, all_fields_data: list[str], field_name: str, new_value: str) -> None:
+    if field_name != "":
+        index = get_field_index(field_name, model_id)
+        if index is not None:
+            all_fields_data[index] = new_value
 
 
 def notesToUpdate(last_updated, included_mids):
@@ -167,37 +169,34 @@ def make_all_db(all_db=None):
         if alreadyKnownTag in ts:
             maxmat = max(maxmat, C('threshold_mature') + 1)
 
-        for fieldName in mid_cfg['Fields']:
+        for field_name in mid_cfg['Fields']:
             try:  # if doesn't have field, continue
-                fieldValue = extractFieldData(fieldName, flds, mid)
+                field_value = extractFieldData(field_name, flds, mid)
             except KeyError:
                 continue
-            except TypeError:
-                # We need to finish the progress bar before presenting an error window or the UI will hang waiting on progress updates.
-                # The proper solution here is probably to not block the main thread at all by doing the recalc in the background.
-                mw.progress.finish()
-                mname = mw.col.models.get(mid)['name']
-                errorMsg('Failed to get field "{field}" from a note of model "{model}". Please fix your Note Filters '
-                         'under MorphMan > Preferences to match your collection appropriately.'.format(
-                    model=mname, field=fieldName))
-                return
-            assert maxmat != None, "Maxmat should not be None"
+            except TypeError as error:
+                mw.taskman.run_on_main(mw.progress.finish)
+                note_type = mw.col.models.get(mid)['name']
+                # This gets handled in the on_failure function
+                raise NoteFilterFieldsException(field_name, note_type) from error
 
-            loc = fidDb.get((nid, guid, fieldName), None)
+            assert maxmat is not None, "Maxmat should not be None"
+
+            loc = fidDb.get((nid, guid, field_name), None)
             if not loc:
-                loc = AnkiDeck(nid, fieldName, fieldValue, guid, maxmat)
-                ms = getMorphemes(morphemizer, fieldValue, ts)
+                loc = AnkiDeck(nid, field_name, field_value, guid, maxmat)
+                ms = getMorphemes(morphemizer, field_value, ts)
                 if ms:  # TODO: this needed? should we change below too then?
                     locDb[loc] = ms
             else:
                 # mats changed -> new loc (new mats), move morphs
-                if loc.fieldValue == fieldValue and loc.maturity != maxmat:
-                    newLoc = AnkiDeck(nid, fieldName, fieldValue, guid, maxmat)
+                if loc.fieldValue == field_value and loc.maturity != maxmat:
+                    newLoc = AnkiDeck(nid, field_name, field_value, guid, maxmat)
                     locDb[newLoc] = locDb.pop(loc)
                 # field changed -> new loc, new morphs
-                elif loc.fieldValue != fieldValue:
-                    newLoc = AnkiDeck(nid, fieldName, fieldValue, guid, maxmat)
-                    ms = getMorphemes(morphemizer, fieldValue, ts)
+                elif loc.fieldValue != field_value:
+                    newLoc = AnkiDeck(nid, field_name, field_value, guid, maxmat)
+                    ms = getMorphemes(morphemizer, field_value, ts)
                     locDb.pop(loc)
                     locDb[newLoc] = ms
 
@@ -338,9 +337,9 @@ def updateNotes(allDb):
 
         if i % 1000 == 0:
             mw.taskman.run_on_main(partial(mw.progress.update,
-                label=f"Recalculated {i} of {N_notes} cards ",
-                value=i,
-                max=N_notes))
+                                           label=f"Recalculated {i} of {N_notes} cards ",
+                                           value=i,
+                                           max=N_notes))
 
         notecfg = getFilterByMidAndTags(mid, ts)
         if notecfg is None or not notecfg['Modify']:
@@ -466,20 +465,20 @@ def updateNotes(allDb):
         elif unknows_amount == 1:  # new vocab card, k+1
             ts.append(vocabTag)
             if maxtype == 0:  # Only update focus fields on 'new' card types.
-                setField(mid, fs, field_focus_morph, unknown_morph.base)
-                setField(mid, fs, field_focus_morph_pos, unknown_morph.pos)
+                set_field(mid, fs, field_focus_morph, unknown_morph.base)
+                set_field(mid, fs, field_focus_morph_pos, unknown_morph.pos)
         elif unknows_amount > 1:  # M+1+ and K+2+
             ts.append(notReadyTag)
             if maxtype == 0:  # Only update focus fields on 'new' card types.
-                setField(mid, fs, field_focus_morph, ', '.join([u.base for u in unknowns]))
-                setField(mid, fs, field_focus_morph_pos, ', '.join([u.pos for u in unknowns]))
+                set_field(mid, fs, field_focus_morph, ', '.join([u.base for u in unknowns]))
+                set_field(mid, fs, field_focus_morph_pos, ', '.join([u.pos for u in unknowns]))
         else:  # only case left: we have k+0, but m+1 or higher, so this card does not introduce a new vocabulary -> card for newly learned morpheme
             ts.append(freshTag)
             if skip_fresh_cards:
                 usefulness += 1000000  # Add a penalty to put these cards at the end of the queue
             if maxtype == 0:  # Only update focus fields on 'new' card types.
-                setField(mid, fs, field_focus_morph, ', '.join([u.base for u in unmatures]))
-                setField(mid, fs, field_focus_morph_pos, ', '.join([u.pos for u in unmatures]))
+                set_field(mid, fs, field_focus_morph, ', '.join([u.base for u in unmatures]))
+                set_field(mid, fs, field_focus_morph_pos, ', '.join([u.pos for u in unmatures]))
 
         # calculate mmi
         morphman_index = 100000 * unknows_amount + 1000 * lenDiff + int(round(usefulness))
@@ -487,13 +486,13 @@ def updateNotes(allDb):
             note_id_morphman_index[nid] = morphman_index
 
         # set type agnostic fields
-        setField(mid, fs, field_unknown_count, '%d' % unknows_amount)
-        setField(mid, fs, field_unmature_count, '%d' % unmatures_amount)
-        setField(mid, fs, field_morph_man_index, '%d' % morphman_index)
-        setField(mid, fs, field_unknowns, ', '.join(u.base for u in unknowns))
-        setField(mid, fs, field_unmatures,
-                 ', '.join(u.base for u in unmatures))
-        setField(mid, fs, field_unknown_freq, '%d' % F_k_avg)
+        set_field(mid, fs, field_unknown_count, '%d' % unknows_amount)
+        set_field(mid, fs, field_unmature_count, '%d' % unmatures_amount)
+        set_field(mid, fs, field_morph_man_index, '%d' % morphman_index)
+        set_field(mid, fs, field_unknowns, ', '.join(u.base for u in unknowns))
+        set_field(mid, fs, field_unmatures,
+                  ', '.join(u.base for u in unmatures))
+        set_field(mid, fs, field_unknown_freq, '%d' % F_k_avg)
 
         # remove deprecated tag
         if badLengthTag is not None and badLengthTag in ts:
@@ -585,6 +584,7 @@ def main():
     # if with_progress() is not called, no progress window will be shown.
     # note: QueryOp.with_progress() was broken until Anki 2.1.50
     op.with_progress().run_in_background()
+    op.failure(on_failure)
 
 
 def main_background_op(collection: Collection):
@@ -597,18 +597,14 @@ def main_background_op(collection: Collection):
     # update all.db
     allDb = make_all_db(current_all_db)
 
-    # there was an (non-critical-/non-"exception"-)error but error message was already displayed  # TODO WTF?
-    if not allDb:
-        mw.taskman.run_on_main(mw.progress.finish)
-        return
-
     # merge in external.db
     mw.taskman.run_on_main(partial(mw.progress.start, label='Merging ext.db', immediate=True))
     ext = MorphDb(cfg('path_ext'), ignoreErrors=True)
     allDb.merge(ext)
     mw.taskman.run_on_main(mw.progress.finish)
 
-    # update notes
+    # TODO: 'Known' is a horrendously bad name for this db... it actually contains every morph that has ever been
+    #  seen, so it is super misleading... rename it to something better like 'learned' or 'unmature'
     knownDb = updateNotes(allDb)
 
     # update stats and refresh display
@@ -618,3 +614,15 @@ def main_background_op(collection: Collection):
 
     # set global allDb
     util._allDb = allDb
+
+
+def on_failure(_exception: Union[Exception, NoteFilterFieldsException]):
+    if type(_exception) is NoteFilterFieldsException:
+        errorMsg(
+            f'Did not find a field called "{_exception.field_name}" in the Note Type "{_exception.note_type}"\n\n'
+            f'Field names are case-sensitive!\n\n'
+            f'Read the guide for more info:\n'
+            f'https://mortii.github.io/MorphMan/user_guide/setup/preferences/note-filter.html '
+        )
+    else:
+        raise _exception

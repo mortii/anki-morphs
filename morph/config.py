@@ -36,6 +36,7 @@ default = {
 
     # reviewer mode keybindings
     'browse same focus key': 'l',
+    'browse same focus key non vocab': 'Shift+l',
     'set known and skip key': 'k',
     'set batch play key': 'Ctrl+Alt+P',
     'set extract morphemes key': 'Ctrl+Alt+E',

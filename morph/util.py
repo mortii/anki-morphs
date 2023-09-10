@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
 import codecs
 import datetime
-from functools import partial
 from os import path
-from typing import Any, Dict, List, Optional, Callable, TypeVar
+from typing import Any, Dict, List, Optional
 
 from aqt import mw
-from aqt.browser import Browser
 from aqt.qt import *
 from aqt.utils import showCritical, showInfo
 
-from anki.hooks import addHook
 from anki.notes import Note
 
 from .preferences import get_preference
@@ -44,7 +41,7 @@ def get_all_db() -> MorphDb:
 
 # Filters are the 'note filter' option in morphman gui preferences on which note types they want morphman to handle
 # If a note is matched multiple times only the first filter in the list will be used
-def get_filter(note: Note) -> Optional[dict]:  # TODO: redundant function?
+def get_filter(note: Note) -> Optional[dict]:
     note_type = note.note_type()['name']
     return get_filter_by_type_and_tags(note_type, note.tags)
 
@@ -91,71 +88,6 @@ def getModifyEnabledModels():
 
 
 ###############################################################################
-# Fact browser utils
-###############################################################################
-def doOnNoteSelection(b, preF, perF, postF, progLabel):
-    # type: (Browser, Callable[[Browser], T], Callable[[T, Note], T], Callable[[T], T], str) -> None
-    st = preF(b)
-    if not st:
-        return
-
-    nids = b.selectedNotes()
-    nids_length = len(nids)
-    for i, nid in enumerate(nids):
-        mw.taskman.run_on_main(partial(mw.progress.update, label=progLabel, max=nids_length, value=i))
-        n = mw.col.getNote(nid)
-        st = perF(st, n)
-
-    st = postF(st)
-    mw.col.updateFieldCache(nids)
-    if not st or st.get('__reset', True):
-        mw.reset()
-
-
-def doOnCardSelection(b, preF, perF, postF):
-    st = preF(b)
-    if not st:
-        return
-
-    cids = b.selectedCards()
-    for i, cid in enumerate(cids):
-        card = mw.col.getCard(cid)
-        st = perF(st, card)
-
-    st = postF(st)
-    if not st or st.get('__reset', True):
-        mw.reset()
-
-
-def addBrowserItem(menuLabel, func_triggered, tooltip=None, shortcut=None):
-    def setupMenu(b):
-        a = QAction(menuLabel, b)
-        if tooltip:
-            a.setStatusTip(tooltip)
-        if shortcut:
-            a.setShortcut(QKeySequence(*shortcut))
-        a.triggered.connect(lambda l: func_triggered(b))
-        b.form.menuEdit.addAction(a)
-
-    addHook('browser.setupMenus', setupMenu)
-
-
-def addBrowserNoteSelectionCmd(menuLabel, preF, perF, postF, tooltip=None, shortcut=None, progLabel='Working...'):
-    # type: (str, Callable[[Browser], T], Callable[[T, Note], T], Callable[[T], T], Optional[str], Optional[Any], str) -> None
-    """ This function sets up a menu item in the Anki browser. On being clicked, it will call one time `preF`, for
-    every selected note `perF` and after everything `postF`. """
-    addBrowserItem(menuLabel, lambda b: doOnNoteSelection(
-        b, preF, perF, postF, progLabel), tooltip, shortcut)
-
-
-def addBrowserCardSelectionCmd(menuLabel, preF, perF, postF, tooltip=None, shortcut=None):
-    """ This function sets up a menu item in the Anki browser. On being clicked, it will call one time `preF`, for
-    every selected card `perF` and after everything `postF`. """
-    addBrowserItem(menuLabel, lambda b: doOnCardSelection(
-        b, preF, perF, postF), tooltip, shortcut)
-
-
-###############################################################################
 # Logging and MsgBoxes
 ###############################################################################
 def errorMsg(msg):
@@ -189,19 +121,3 @@ def mkBtn(txt, f, parent):
     b.clicked.connect(f)
     parent.addWidget(b)
     return b
-
-
-###############################################################################
-# Mplayer settings
-###############################################################################
-# sound.mplayerCmd += [ '-fs' ]
-
-# Decorator to ensure a function only runs one time.
-def runOnce(f):
-    def wrapper(*args, **kwargs):
-        if not wrapper.has_run:
-            wrapper.has_run = True
-            return f(*args, **kwargs)
-
-    wrapper.has_run = False
-    return wrapper

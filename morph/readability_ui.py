@@ -219,7 +219,7 @@ class Ui_ReadabilityDialog(object):
         self.verticalLayout_31 = QtWidgets.QVBoxLayout(self.tabReadabilityReport)
         self.verticalLayout_31.setObjectName("verticalLayout_31")
         self.readabilityTable = CustomTableWidget(self.tabReadabilityReport)
-        self.readabilityTable.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.readabilityTable.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)  # pylint: disable=E1101
         self.readabilityTable.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
         self.readabilityTable.setRowCount(0)
         self.readabilityTable.setColumnCount(0)
@@ -231,7 +231,7 @@ class Ui_ReadabilityDialog(object):
         self.verticalLayout_41 = QtWidgets.QVBoxLayout(self.tabStudyPlan)
         self.verticalLayout_41.setObjectName("verticalLayout_41")
         self.studyPlanTable = CustomTableWidget(self.tabStudyPlan)
-        self.studyPlanTable.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.studyPlanTable.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)  # pylint: disable=E1101
         self.studyPlanTable.setObjectName("studyPlanTable")
         self.studyPlanTable.setColumnCount(0)
         self.studyPlanTable.setRowCount(0)

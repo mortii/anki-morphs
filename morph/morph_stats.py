@@ -8,8 +8,7 @@ from aqt.utils import tooltip
 from .util import mw
 from .preferences import get_preference as cfg
 from .morphemes import MorphDb
-
-from .errors.profileNotYetLoadedException import ProfileNotYetLoadedException
+from .exceptions import ProfileNotYetLoadedException
 
 
 def get_stat_path(): return cfg('path_stats')
@@ -47,18 +46,30 @@ def update_stats(known_db=None):
     return d
 
 
-def get_stats():
+def get_unique_morph_toolbar_stats():
     d = load_stats()
     if not d:
-        return 'K ???', '????'
+        return 'U ???', '???'
 
-    total_known = d.get('totalKnown', 0)
-    total_variations = d.get('totalVariations', total_known)
+    unique_morphs = d.get('totalKnown', 0)
 
-    name = 'K %d V %d' % (total_known, total_variations)
-    details = 'Total known morphs'
+    name = f'U: {unique_morphs}'
+    details = 'U = Known Unique Morphs'
+    return name, details
+
+
+def get_all_morph_toolbar_stats():
+    d = load_stats()
+    if not d:
+        return 'A ????', '???'
+
+    unique_morphs = d.get('totalKnown', 0)
+    all_morphs = d.get('totalVariations', unique_morphs)
+
+    name = f'A: {all_morphs}'
+    details = 'A = All Known Morphs'
     return name, details
 
 
 def on_morph_stats_clicked():
-    tooltip("Total known morphs")
+    tooltip("U = Known Unique Morphs<br>A = All Known Morphs")

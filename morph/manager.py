@@ -28,7 +28,8 @@ def getProgressWidget():
         bar.setFixedSize(390, 50)
     bar.move(10, 10)
     per = QLabel(bar)
-    per.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    per.setAlignment(Qt.AlignmentFlag.AlignCenter)  # pylint: disable=E1101
+
     progressWidget.show()
     return progressWidget, bar
 

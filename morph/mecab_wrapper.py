@@ -8,7 +8,6 @@ import sys
 from .morphemes import Morpheme
 from .util_external import memoize
 
-
 ####################################################################################################
 # Mecab Morphemizer
 ####################################################################################################
@@ -41,6 +40,7 @@ wide_alpha_num_rx = re.compile(r'[０-９Ａ-Ｚａ-ｚ]')
 
 mecab_source = ""
 
+
 def extract_unicode_block(unicode_block, string):
     """ extracts and returns all texts from a unicode block from string argument.
         Note that you must use the unicode blocks defined above, or patterns of similar form """
@@ -53,6 +53,7 @@ def getMecabIdentity():
 
     # identify the mecab being used
     return mecab_source
+
 
 def getMorpheme(parts):
     if is_unidic:
@@ -96,6 +97,7 @@ def getMorpheme(parts):
 
 
 control_chars_re = re.compile('[\x00-\x1f\x7f-\x9f]')
+
 
 def getMorphemesMecab(e):
     # Remove Unicode control codes before sending to MeCab.
@@ -162,7 +164,7 @@ def mecab():  # IO MecabProc
     instance is needed.  That's why this function is memoized.
     """
 
-    global mecab_source # make it global so we can query it later
+    global mecab_source  # make it global so we can query it later
 
     if sys.platform.startswith('win'):
         si = subprocess.STARTUPINFO()
@@ -184,7 +186,7 @@ def mecab():  # IO MecabProc
             mecab_source = 'MecabUnidic from addon MecabUnidic'
         except ModuleNotFoundError:
             pass
-    
+
     if importlib.util.find_spec('13462835'):
         try:
             reading = importlib.import_module('13462835.reading')
@@ -246,12 +248,26 @@ def mecab():  # IO MecabProc
 def interact(expr):  # Str -> IO Str
     """ "interacts" with 'mecab' command: writes expression to stdin of 'mecab' process and gets all the morpheme
     info from its stdout. """
-    p, _ = mecab()
+    mecab_process, _ = mecab()
     expr = expr.encode(MECAB_ENCODING, 'ignore')
-    p.stdin.write(expr + b'\n')
-    p.stdin.flush()
 
-    return '\r'.join([str(p.stdout.readline().rstrip(b'\r\n'), MECAB_ENCODING) for l in expr.split(b'\n')])
+    # HACK: mecab sometimes does not produce the right morphs if there are no extra characters in the expression,
+    # so we just add a whitespace at the end to prevent the problem.
+    expr += b'&nbsp;'
+
+    # The line terminator is always b'\n' for binary files: https://docs.python.org/3/library/io.html#io.IOBase
+    mecab_process.stdin.write(expr + b'\n')
+    # The buffer will be written out to the underlying RawIOBase object when flush() is called
+    mecab_process.stdin.flush()
+    mecab_process.stdout.flush()
+
+    entire_output = ''
+    lines_to_read = len(expr.split(b'\n'))
+
+    for line in mecab_process.stdout.readlines(lines_to_read):
+        entire_output += str(line.rstrip(b'\r\n'), MECAB_ENCODING)
+
+    return entire_output
 
 
 def fixReading(m):  # Morpheme -> IO Morpheme
@@ -264,4 +280,3 @@ def fixReading(m):  # Morpheme -> IO Morpheme
         if len(n) == MECAB_NODE_LENGTH_IPADIC:
             m.read = n[MECAB_NODE_READING_INDEX].strip()
     return m
-

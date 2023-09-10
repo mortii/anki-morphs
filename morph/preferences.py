@@ -2,12 +2,13 @@
 import importlib
 from aqt import mw
 
-from .errors.profileNotYetLoadedException import ProfileNotYetLoadedException
+from .exceptions import ProfileNotYetLoadedException
 
 # retrieving the configuration using get_config is very expensive operation instead, save it
 #  TODO: These aren't actually used properly? edit get_preferences?
 config_data = None
 config_py = None
+
 
 def init_preferences():
     '''Called when new profiles are loaded'''
@@ -46,7 +47,7 @@ def update_preferences(jcfg):
     old_config = curr_config.copy()
 
     curr_config.update(jcfg)
-    
+
     if not curr_config == old_config:
         addons_config = mw.col.get_config('addons')
         if addons_config is None:
@@ -156,15 +157,15 @@ def jcfg_default():
         'Option_IgnoreSlimRoundBracketContents': False,
         'Option_IgnoreSuspendedLeeches': False,
         'Option_ProperNounsAlreadyKnown': False,
-        
+
         # Readability Analyzer options
         'Option_AnalysisInputPath': '',
         'Option_MasterFrequencyListPath': '',
         'Option_DefaultMinimumMasterFrequency': 0,
         'Option_DefaultStudyTarget': 98.0,
         'Option_OptimalMasterTarget': 0.0,
-        'Option_SourceScorePower': 2.0,            # Morpheme score formula parameter.
-        'Option_SourceScoreMultiplier': 60.0,      # Morpheme score formula parameter.
+        'Option_SourceScorePower': 2.0,  # Morpheme score formula parameter.
+        'Option_SourceScoreMultiplier': 60.0,  # Morpheme score formula parameter.
         'Option_SaveWordReport': False,
         'Option_SaveMissingWordReport': False,
         'Option_SaveReadabilityDB': False,
@@ -180,14 +181,16 @@ def jcfg_default():
         'Option_SaveSeparateWordReports': False,
 
         'Option_OutputReadabilityDb': False,
-        'Option_EnableWebService': False,          # Experimental web service
+        'Option_EnableWebService': False,  # Experimental web service
     }
 
+
 def _jsonConfig():
-    global config_data 
+    global config_data
     if config_data is None:
         config_data = get_preferences()
     return config_data
+
 
 def _get_anki_json_config(key):
     return _jsonConfig().get(key)
