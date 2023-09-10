@@ -1,0 +1,46 @@
+img
+{
+    /* `block` to prevent surrounding text from wrapping around the image. */
+    display:block;
+    /* Set both the left and right margins to `auto` to cause the image to be centered. */
+    margin-left:auto;
+    margin-right:auto;
+}
+
+video
+{
+    /* `block` to prevent surrounding text from wrapping around the image. */
+    display:block;
+    /* Set both the left and right margins to `auto` to cause the image to be centered. */
+    margin-left:auto;
+    margin-right:auto;
+}
+
+/* Styling the Disclosure Widgets */
+
+details > summary {
+  cursor: pointer;
+  padding: .5rem 1rem;
+  font-weight: bold;
+}
+
+
+/* Alternate background colors for rows */
+.morph-variation table tbody td {
+    border: 1px solid;
+}
+
+/* Alternate background colors for rows */
+.morph-variation table tbody tr:nth-child(2n) {
+    background: transparent;
+}
+
+.morph-variation col:nth-child(odd) {
+  background: var(--table-alternate-bg);
+}
+
+.morph-variation-selected_cell {
+  background-color: red;
+  color: white;
+}
+
