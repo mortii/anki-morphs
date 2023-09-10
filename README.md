@@ -1,6 +1,7 @@
 # MorphMan
 
 <a title="Rate on AnkiWeb" href="https://ankiweb.net/shared/info/900801631"><img src="https://glutanimate.com/logos/ankiweb-rate.svg"></a>
+![Github Pages](https://github.com/mortii/MorphMan/actions/workflows/deploy.yml/badge.svg)
 <br>
 MorphMan is an Anki addon that tracks what words you know, and utilizes that information to optimally reorder language cards. This
 **greatly** optimizes your learning queue, as you will only see sentences with exactly one unknown word (see
@@ -35,31 +36,4 @@ MorphMan supports the following languages:
 See Matt VS Japan's [video tutorial](https://www.youtube.com/watch?v=dVReg8_XnyA)
 and accompanying [blog post](https://massimmersionapproach.com/table-of-contents/anki/morphman).
 See the [MorphMan wiki](https://github.com/kaegi/MorphMan/wiki) for more information.
-
-# Development
-## Linux
-- Set up local environment:
-    ```
-    python -m virtualenv venv
-    source venv/bin/activate
-    python -m pip install aqt[qt6] anki pylint mypy types-setuptools
-    ```
-- Install git commit hook to run tests and pylint
-  ` scripts/setup_dev.sh`
-- Run tests: `python test.py`
-- If ui files have been changed:
-    - Build Qt Developer UI with `python scripts/build_ui.py`
-
-## Windows:
-- Set up local environment:
-    ```
-    python -m virtualenv venv
-    .\venv\Scripts\activate
-    python -m pip install aqt[qt6] anki pylint mypy types-setuptools
-    ```
-- Run type checking: mypy filename.py
-- Run lint checking: pylint filename.py
-- Run tests: `python test.py`
-- If ui files have been changed:
-    - Build Qt Developer UI with `python scripts/build_ui.py`
 

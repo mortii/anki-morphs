@@ -1,0 +1,28 @@
+[book]
+authors = ["mortii"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Morphman"
+
+[output.html]
+git-repository-url = "https://github.com/kaegi/MorphMan"
+edit-url-template = "https://github.com/mortii/MorphMan/edit/website/docs/{path}"
+additional-css = ["src/custom.css"]
+
+[output.html.fold]
+enable = true
+level = 0
+
+[output.html.search]
+limit-results = 20
+use-boolean-and = true
+boost-title = 2
+boost-hierarchy = 2
+boost-paragraph = 1
+expand = true
+heading-split-level = 2
+
+[preprocessor.katex]
+after = ["links"]
+macros = "src/latex_macros.txt"
