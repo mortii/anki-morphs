@@ -11,8 +11,6 @@ from .UI import MorphemizerComboBox
 # only for jedi-auto-completion
 import aqt.main
 
-assert isinstance(mw, aqt.main.AnkiQt)
-
 
 class PreferencesDialog(QDialog):
     def __init__(self, parent=None):

@@ -11,7 +11,7 @@ config_py = None
 
 
 def init_preferences():
-    '''Called when new profiles are loaded'''
+    """Called when new profiles are loaded"""
 
     # Reset the cached configs.
     global config_data, config_py
@@ -34,8 +34,9 @@ def get_preference(key, model_id=None, deck_id=None):
 def get_preferences():
     assert mw.col, 'Tried to use preferences with no collection loaded'
     addons_config = mw.col.get_config('addons')
-    if addons_config == None or 'morphman' not in addons_config:
-        # No config yet in the the collection.
+
+    if addons_config is None or 'morphman' not in addons_config:
+        # No config yet in the collection.
         prefs = {}
     else:
         prefs = addons_config['morphman']
@@ -67,11 +68,15 @@ def _init_config_py():
 
 
 def _get_config_py_preference(key, modelId=None, deckId=None):
-    if config_py == None:
+    if config_py is None:
+        # TODO: Removing this causes morph_stats to crash. morph_stats eats all exceptions...
         raise ProfileNotYetLoadedException("Tried to use cfgMods before profile loaded")
     profile = mw.pm.name
     model = mw.col.models.get(modelId)['name'] if modelId else None
     deck = mw.col.decks.get(deckId)['name'] if deckId else None
+
+    # print(f"\n config_py: {config_py} \n")
+
     if key in config_py.deck_overrides.get(deck, []):
         return config_py.deck_overrides[deck][key]
     elif key in config_py.model_overrides.get(model, []):
