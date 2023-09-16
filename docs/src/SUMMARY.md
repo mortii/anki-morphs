@@ -30,6 +30,7 @@
 # Developer Guide
 - [Setup](developer_guide/setup.md)
 - [Docs](developer_guide/docs.md)
+- [Tests](developer_guide/tests.md)
 - [Databases](developer_guide/databases.md)
 - [Morphemizer](developer_guide/morphemizer.md)
 - [Extra Fields](developer_guide/extra_fields.md)

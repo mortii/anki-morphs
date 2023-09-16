@@ -29,9 +29,6 @@ from .exceptions import NoteFilterFieldsException
 from . import morph_stats as stats
 from . import util
 
-# only for jedi-auto-completion
-assert isinstance(mw, aqt.main.AnkiQt)
-
 
 @memoize
 def get_field_index(field_name, mid) -> Optional[int]:
