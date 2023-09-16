@@ -1,18 +1,10 @@
-import pytest
-from aqt.qt import QApplication
-
 from morph.UI import MorphemizerComboBox
 from morph.morphemizer import getAllMorphemizers
 
 
-@pytest.fixture(scope="module")  # module-scope: created and destroyed once per module. Cached.
-def set_up_app():
-    app = QApplication([])  # having an 'app' variable is necessary for MorphemizerComboBox() to work
-    return app
-
-
-def test_set_and_get_current(set_up_app):
+def test_set_and_get_current(qtbot):
     combobox = MorphemizerComboBox()
+    qtbot.addWidget(combobox)
     combobox.setMorphemizers(getAllMorphemizers())
     combobox.setCurrentByName('MecabMorphemizer')
     assert combobox.currentText() == 'Japanese MorphMan'
@@ -21,8 +13,9 @@ def test_set_and_get_current(set_up_app):
     assert current.getDescription() == 'Japanese MorphMan'
 
 
-def test_empty_morphemizer_list(set_up_app):
+def test_empty_morphemizer_list(qtbot):
     combobox = MorphemizerComboBox()
+    qtbot.addWidget(combobox)
     combobox.setMorphemizers([])
     combobox.setCurrentByName('AnyBecauseNothingExists')
 

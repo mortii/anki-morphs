@@ -4,15 +4,15 @@ on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         python_version: ['3.9']
         os: [ubuntu-latest, macOS-latest, windows-latest]
-        anki: ['2.1.54']
+        anki: ['2.1.66']
     steps:
     - uses: actions/checkout@v3
+    - uses: tlambert03/setup-qt-libs@v1  # installs libraries necessary to run a Qt desktop environment on linux runners
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -26,14 +26,9 @@ jobs:
         if [ "${{ runner.os }}" = "Windows" ]; then
           source pyenv/Scripts/activate
         else
-          # Qt6 complains because Ubuntu is missing libEGL.so.1
-          if [ "${{ runner.os }}" = "Linux" ]; then
-            sudo apt-get update -y -qq
-            sudo apt-get install -y -qq libegl1
-          fi
           source pyenv/bin/activate
         fi
-        python -m pip install aqt[qt5]==${{ matrix.anki }} aqt[qt6]==${{ matrix.anki }} anki==${{ matrix.anki }} PyQt6-WebEngine pylint
+        python -m pip install aqt[qt5]==${{ matrix.anki }} aqt[qt6]==${{ matrix.anki }} anki==${{ matrix.anki }} pylint==2.17.5 pytest==7.4.2 pytest-randomly==3.15.0 pytest-qt==4.2.0 pytest-xvfb==3.0.0
     - name: Lint
       shell: bash
       run: |
@@ -43,7 +38,7 @@ jobs:
           source pyenv/bin/activate
         fi
         export PYTHONPATH=./
-        python -m pylint . morph test -d W0611
+        python -m pylint morph tests -d W0611
     - name: Test
       shell: bash
       run: |
@@ -52,7 +47,4 @@ jobs:
         else
           source pyenv/bin/activate
         fi
-        export QT_QPA_PLATFORM=minimal
-        export PYTHONPATH=./
-        python test.py
-
+        pytest
