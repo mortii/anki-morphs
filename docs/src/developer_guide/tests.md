@@ -32,6 +32,6 @@ pytest-qt is a pytest plugin that allows programmers to write tests for PyQt5, P
 With Xvfb and the plugin installed, your testsuite automatically runs with Xvfb. This allows tests to be run without
 windows popping up during GUI tests or on systems without a display (like a CI).
 
-This is necessary for tests to work on github actions.
+This is necessary for tests to work on GitHub actions.
 
 

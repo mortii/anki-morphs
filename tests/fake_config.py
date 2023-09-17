@@ -1,6 +1,15 @@
+import os
+
+
 class FakeConfig:
     def __init__(self):
         self.default = {
+            'path_all': os.path.join(os.getcwd(), 'tests', 'data', 'dbs', 'all.db'),
+            'path_seen': os.path.join(os.getcwd(), 'tests', 'data', 'dbs', 'seen.db'),
+            'path_known': os.path.join(os.getcwd(), 'tests', 'data', 'dbs', 'known.db'),
+            'path_mature': os.path.join(os.getcwd(), 'tests', 'data', 'dbs', 'mature.db'),
+            'path_frequency': os.path.join(os.getcwd(), 'tests', 'data', 'dbs', 'data/frequency.txt'),
+            'path_stats': os.path.join(os.getcwd(), 'tests', 'data', 'dbs', 'morphman.stats'),
             'threshold_mature': 21,  # 21 days is what Anki uses
             'threshold_known': 10 / 86400.,
             'threshold_seen': 1 / 86400.,

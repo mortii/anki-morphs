@@ -12,7 +12,7 @@ import importlib
 from morph.mecab_wrapper import getMorphemesMecab
 from morph import morph_stats
 from morph import reviewing_utils
-from morph import main as main_module  # TODO: change the file name 'main' to something more fitting like 'recalc'
+from morph import recalc
 from morph import manager
 from morph import readability
 from morph import preferencesDialog
@@ -153,7 +153,7 @@ def create_recalc_action() -> QAction:
     action = QAction('&Recalc', mw)
     action.setStatusTip("Recalculate all.db, note fields, and new card ordering")
     action.setShortcut("Ctrl+M")
-    action.triggered.connect(main_module.main)
+    action.triggered.connect(recalc.main)
     return action
 
 
