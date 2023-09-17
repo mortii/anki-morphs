@@ -22,7 +22,7 @@ from .morphemes import Location, Morpheme
 from .morphemes import MorphDb, AnkiDeck, getMorphemes
 from .morphemizer import getMorphemizerByName
 from .util import printf, mw, errorMsg, getFilterByMidAndTags, getReadEnabledModels, getModifyEnabledModels
-from .preferences import get_preference as cfg, get_preferences
+from .preferences import get_preference, get_preferences
 from .util_external import memoize
 from .exceptions import NoteFilterFieldsException
 
@@ -84,7 +84,7 @@ def notesToUpdate(last_updated, included_mids):
     #     are suspended and are not Leeches
     #
     # we build a predicate that we append to the where clause
-    if cfg('Option_IgnoreSuspendedLeeches'):
+    if get_preference('Option_IgnoreSuspendedLeeches'):
         filterSuspLeeches = "(c.queue <> -1 or (c.queue = -1 and not instr(tags, ' leech ')))"
     else:
         filterSuspLeeches = "TRUE"
@@ -109,8 +109,8 @@ def notesToUpdate(last_updated, included_mids):
 
 
 def make_all_db(all_db=None):
-    from . import config
-    importlib.reload(config)
+    # from . import config
+    # importlib.reload(config)
     t_0, db, TAG = time.time(), mw.col.db, mw.col.tags
 
     mw.taskman.run_on_main(partial(mw.progress.start, label='Prep work for all.db creation', immediate=True))
@@ -158,11 +158,11 @@ def make_all_db(all_db=None):
         mName = mid_cfg['Morphemizer']
         morphemizer = getMorphemizerByName(mName)
 
-        C = partial(cfg, model_id=mid)
+        C = partial(get_preference, model_id=mid)
 
         if C('ignore maturity'):
             maxmat = 0
-        ts, alreadyKnownTag = TAG.split(tags), cfg('Tag_AlreadyKnown')
+        ts, alreadyKnownTag = TAG.split(tags), get_preference('Tag_AlreadyKnown')
         if alreadyKnownTag in ts:
             maxmat = max(maxmat, C('threshold_mature') + 1)
 
@@ -197,7 +197,7 @@ def make_all_db(all_db=None):
                     locDb.pop(loc)
                     locDb[newLoc] = ms
 
-    printf('Processed %d notes in %f sec' % (N_notes, time.time() - t_0))
+    # printf('Processed %d notes in %f sec' % (N_notes, time.time() - t_0))
 
     mw.taskman.run_on_main(partial(mw.progress.update, label='Creating all.db objects'))
     old_meta = all_db.meta
@@ -229,25 +229,25 @@ def updateNotes(allDb):
     loc_db = allDb.locDb(recalc=False)  # type: Dict[Location, Set[Morpheme]]
 
     # read tag names
-    compTag, vocabTag, freshTag, notReadyTag, alreadyKnownTag, priorityTag, tooShortTag, tooLongTag, frequencyTag = tagNames = cfg(
-        'Tag_Comprehension'), cfg('Tag_Vocab'), cfg('Tag_Fresh'), cfg('Tag_NotReady'), cfg(
-        'Tag_AlreadyKnown'), cfg('Tag_Priority'), cfg('Tag_TooShort'), cfg('Tag_TooLong'), cfg('Tag_Frequency')
+    compTag, vocabTag, freshTag, notReadyTag, alreadyKnownTag, priorityTag, tooShortTag, tooLongTag, frequencyTag = tagNames = get_preference(
+        'Tag_Comprehension'), get_preference('Tag_Vocab'), get_preference('Tag_Fresh'), get_preference('Tag_NotReady'), get_preference(
+        'Tag_AlreadyKnown'), get_preference('Tag_Priority'), get_preference('Tag_TooShort'), get_preference('Tag_TooLong'), get_preference('Tag_Frequency')
     TAG.register(tagNames)
-    badLengthTag = cfg('Tag_BadLength')
+    badLengthTag = get_preference('Tag_BadLength')
 
     # handle secondary databases
     mw.taskman.run_on_main(partial(mw.progress.update, label='Creating seen/known/mature from all.db'))
 
-    seenDb = filterDbByMat(allDb, cfg('threshold_seen'))
-    knownDb = filterDbByMat(allDb, cfg('threshold_known'))
-    matureDb = filterDbByMat(allDb, cfg('threshold_mature'))
+    seenDb = filterDbByMat(allDb, get_preference('threshold_seen'))
+    knownDb = filterDbByMat(allDb, get_preference('threshold_known'))
+    matureDb = filterDbByMat(allDb, get_preference('threshold_mature'))
 
     mw.taskman.run_on_main(partial(mw.progress.update, label='Loading priority.db'))
-    priorityDb = MorphDb(cfg('path_priority'), ignoreErrors=True)
+    priorityDb = MorphDb(get_preference('path_priority'), ignoreErrors=True)
 
     mw.taskman.run_on_main(partial(mw.progress.update, label='Loading frequency.txt'))
 
-    frequencyListPath = cfg('path_frequency')
+    frequencyListPath = get_preference('path_frequency')
     frequency_map = {}
     frequency_list_exists = False
 
@@ -270,17 +270,17 @@ def updateNotes(allDb):
     frequencyListLength = len(frequency_map)
 
     # prefetch cfg for fields
-    field_focus_morph = cfg('Field_FocusMorph')
-    field_unknown_count = cfg('Field_UnknownMorphCount')
-    field_unmature_count = cfg('Field_UnmatureMorphCount')
-    field_morph_man_index = cfg('Field_MorphManIndex')
-    field_unknowns = cfg('Field_Unknowns')
-    field_unmatures = cfg('Field_Unmatures')
-    field_unknown_freq = cfg('Field_UnknownFreq')
-    field_focus_morph_pos = cfg("Field_FocusMorphPos")
+    field_focus_morph = get_preference('Field_FocusMorph')
+    field_unknown_count = get_preference('Field_UnknownMorphCount')
+    field_unmature_count = get_preference('Field_UnmatureMorphCount')
+    field_morph_man_index = get_preference('Field_MorphManIndex')
+    field_unknowns = get_preference('Field_Unknowns')
+    field_unmatures = get_preference('Field_Unmatures')
+    field_unknown_freq = get_preference('Field_UnknownFreq')
+    field_focus_morph_pos = get_preference("Field_FocusMorphPos")
 
-    skip_comprehension_cards = cfg('Option_SkipComprehensionCards')
-    skip_fresh_cards = cfg('Option_SkipFreshVocabCards')
+    skip_comprehension_cards = get_preference('Option_SkipComprehensionCards')
+    skip_fresh_cards = get_preference('Option_SkipFreshVocabCards')
 
     # Find all morphs that changed maturity and the notes that refer to them.
     last_maturities = allDb.meta.get('last_maturities', {})
@@ -343,7 +343,7 @@ def updateNotes(allDb):
             continue
 
         # add bonus for morphs in priority.db and frequency.txt
-        C = partial(cfg, model_id=mid)
+        C = partial(get_preference, model_id=mid)
 
         frequencyBonus = C('frequency.txt bonus')
         if C('Option_AlwaysPrioritizeFrequencyMorphs'):
@@ -352,7 +352,7 @@ def updateNotes(allDb):
             noPriorityPenalty = 0
         reinforceNewVocabWeight = C('reinforce new vocab weight')
         priorityDbWeight = C('priority.db weight')
-        proper_nouns_known = cfg('Option_ProperNounsAlreadyKnown')
+        proper_nouns_known = get_preference('Option_ProperNounsAlreadyKnown')
 
         # Get all morphemes for note
         morphemes = set()
@@ -517,7 +517,7 @@ def updateNotes(allDb):
             ts.append(tooLongTag)
 
         # remove unnecessary tags
-        if not cfg('Option_SetNotRequiredTags'):
+        if not get_preference('Option_SetNotRequiredTags'):
             unnecessary = [priorityTag, tooShortTag, tooLongTag]
             ts = [tag for tag in ts if tag not in unnecessary]
 
@@ -557,21 +557,23 @@ def updateNotes(allDb):
     allDb.meta['last_maturities'] = new_maturities
     allDb.meta['last_updated'] = int(time.time() + 0.5)
 
-    printf('Updated %d notes in %f sec' % (N_notes, time.time() - t_0))
+    # printf('Updated %d notes in %f sec' % (N_notes, time.time() - t_0))
 
-    if cfg('saveDbs'):
+    if get_preference('saveDbs'):
         mw.taskman.run_on_main(partial(mw.progress.update, label='Saving all/seen/known/mature dbs'))
-        allDb.save(cfg('path_all'))
-        seenDb.save(cfg('path_seen'))
-        knownDb.save(cfg('path_known'))
-        matureDb.save(cfg('path_mature'))
-        printf('Updated %d notes + saved dbs in %f sec' % (N_notes, time.time() - t_0))
+        allDb.save(get_preference('path_all'))
+        seenDb.save(get_preference('path_seen'))
+        knownDb.save(get_preference('path_known'))
+        matureDb.save(get_preference('path_mature'))
+        # printf('Updated %d notes + saved dbs in %f sec' % (N_notes, time.time() - t_0))
 
     mw.taskman.run_on_main(mw.progress.finish)
     return knownDb
 
 
 def main():
+
+
     op = QueryOp(
         parent=mw,
         op=main_background_op,
@@ -587,30 +589,51 @@ def main():
 def main_background_op(collection: Collection):
     assert mw is not None
 
+    print("running main")
+
+
     mw.taskman.run_on_main(partial(mw.progress.start, label='Loading existing all.db', immediate=True))
-    current_all_db = util.get_all_db() if cfg('loadAllDb') else None
+    current_all_db = util.get_all_db() if get_preference('loadAllDb') else None
     mw.taskman.run_on_main(mw.progress.finish)
+
+    print("running main2")
+
 
     # update all.db
     allDb = make_all_db(current_all_db)
 
+    print("running main3")
+
+
     # merge in external.db
     mw.taskman.run_on_main(partial(mw.progress.start, label='Merging ext.db', immediate=True))
-    ext = MorphDb(cfg('path_ext'), ignoreErrors=True)
+    ext = MorphDb(get_preference('path_ext'), ignoreErrors=True)
     allDb.merge(ext)
     mw.taskman.run_on_main(mw.progress.finish)
+
+    print("running main3.5")
+
 
     # TODO: 'Known' is a horrendously bad name for this db... it actually contains every morph that has ever been
     #  seen, so it is super misleading... rename it to something better like 'learned' or 'unmature'
     knownDb = updateNotes(allDb)
 
+    print("running main4")
+
+
     # update stats and refresh display
     stats.update_stats(knownDb)
+
+    print("running main5")
+
 
     mw.taskman.run_on_main(mw.toolbar.draw)
 
     # set global allDb
     util._allDb = allDb
+
+    print("running main6")
+
 
 
 def on_failure(_exception: Union[Exception, NoteFilterFieldsException]):
