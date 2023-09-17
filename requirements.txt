@@ -1,0 +1,8 @@
+aqt[qt5]==2.1.66             # For backwards compatibility with anki qt5
+aqt[qt6]==2.1.66
+anki==2.1.66
+pylint==2.17.5
+pytest==7.4.2
+pytest-randomly==3.15.0
+pytest-qt==4.2.0
+pytest-xvfb==3.0.0
