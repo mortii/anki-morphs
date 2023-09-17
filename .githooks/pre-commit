@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 pytest
+export PYTHONPATH=./  # necessary to run pylint on test-directory
 pylint tests morph -d W0611
