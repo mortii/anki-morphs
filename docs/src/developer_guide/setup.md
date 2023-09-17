@@ -18,16 +18,12 @@
    ```
 4. The bash shell script `.githooks/pre-commit` contains commands that check for errors in the project:
    ``` bash
-   pytest  # uses pytest.ini
-   export PYTHONPATH=./  # necessary to run pylint on tests-directory
+   export PYTHONPATH=./  # necessary to run pylint on test-directory
    pylint tests morph -d W0611
+   pytest
    ```
 
    You can run these commands in a terminal manually if you want, or you can set the script up to run automatically before commits by running `scripts/setup_dev.sh`. Alternatively, you
    can create a run configuration in your IDE to execute the script, that way you can easily run it at your convenience.
 
-
-
-
-
-
+   
