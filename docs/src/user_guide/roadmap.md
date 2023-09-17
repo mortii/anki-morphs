@@ -2,11 +2,22 @@
 
 MorphMan has significant technical-debt that needs to be paid off before adding any new functionality.
 
-1. Expand automatic tests
+1. Expand automatic tests before refactoring the code
     * Add a test collection and match it after recalc
-    * Add tests for readability analyzer functions?
-2. Create a [mypy.ini](https://mypy.readthedocs.io/en/stable/config_file.html) for the project and gradually increase
-   its strictness as code is refactored.
+    * Add tests for readability analyzer functions
+    * https://pypa-build.readthedocs.io/en/stable/test_suite.html
+    * https://pypa-build.readthedocs.io/en/stable/index.html
+2. suuper clean!! https://github.com/sourcery-ai/python-best-practices-cookiecutter
+   * others: https://github.com/topics/cookiecutter-template
+   * https://stackoverflow.com/questions/46330327/how-are-pipfile-and-pipfile-lock-used
+   * https://packaging.python.org/en/latest/tutorials/packaging-projects/
+2. Add packages that incraese code quality
+   * Add mypy and gradually increase its strictness.
+   * Add flake8 alongside pylint for better coverage
+   * Add [black](https://github.com/psf/black)
+   * Add [isort](https://pypi.org/project/isort/8)
+   * Add [vulture](https://github.com/jendrikseipp/vulture)
+3. Rename to ankimorphs, figure out how to version the addon...
 3. Fix configs
     * Migrate from config.py to [config.json and user_files](https://addon-docs.ankiweb.net/addon-config.html)
     * Refactor preferences.py and make configs more robust
@@ -24,7 +35,7 @@ MorphMan has significant technical-debt that needs to be paid off before adding 
         * known.db is a misleading name, it contains all morphs ever seen.
         * Refactor morphemes.py and move the different classes into separate files instead.
 5. Improve file management
-    * mm.py, cli.py, and glob.py need better names and I suspect they have a lot of obsolete code or inefficiencies.
+    * mm.py, cli.py, and glob.py
 6. Make the focus morph field optional
     * Adding a focus morph field to cards is a significant pain point in the setup process and it's not _strictly_
       necessary for MorphMan to work
