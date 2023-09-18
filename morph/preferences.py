@@ -35,6 +35,9 @@ def get_preferences():
     assert mw.col, 'Tried to use preferences with no collection loaded'
     addons_config = mw.col.get_config('addons')
 
+    print(f"mw.col.get_config: {mw.col}")
+    print(f"mw.col.sched.version11: {mw.col.sched.version}")
+
     if addons_config is None or 'morphman' not in addons_config:
         # No config yet in the collection.
         prefs = {}

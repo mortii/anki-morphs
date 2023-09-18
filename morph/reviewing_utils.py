@@ -49,10 +49,14 @@ def mark_morph_seen(note: Note) -> None:
 def my_next_card(self: Reviewer, _old) -> None:
     skipped_cards = SkippedCards()
 
+    print(f"startes Reviewer {Reviewer}")
+
     while True:
         self.previous_card = self.card
         self.card = None
         self._v3 = None
+
+        print(f"self.mw.col.sched.version99: {self.mw.col.sched.version}")
 
         if self.mw.col.sched.version < 3:
             self.mw.col.reset()  # rebuilds the queue
