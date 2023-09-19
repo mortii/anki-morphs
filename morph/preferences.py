@@ -33,10 +33,7 @@ def get_preference(key, model_id=None, deck_id=None):
 
 def get_preferences():
     assert mw.col, 'Tried to use preferences with no collection loaded'
-    addons_config = mw.col.get_config('addons')
-
-    print(f"mw.col.get_config: {mw.col}")
-    print(f"mw.col.sched.version11: {mw.col.sched.version}")
+    addons_config = mw.col.get_config('addons')  # TODO reactivate
 
     if addons_config is None or 'morphman' not in addons_config:
         # No config yet in the collection.
