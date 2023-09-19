@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import codecs
+import pprint
 import re
 from typing import List, Optional
 
@@ -49,16 +50,16 @@ def mark_morph_seen(note: Note) -> None:
 def my_next_card(self: Reviewer, _old) -> None:
     skipped_cards = SkippedCards()
 
-    print(f"startes Reviewer {Reviewer}")
+    print("entered my_next_card")
 
     while True:
+        print("while True")
+
         self.previous_card = self.card
         self.card = None
         self._v3 = None
 
-        print(f"self.mw.col.sched.version99: {self.mw.col.sched.version}")
-
-        if self.mw.col.sched.version < 3:
+        if self.mw.col.sched.version == 3:
             self.mw.col.reset()  # rebuilds the queue
             self._get_next_v1_v2_card()
         else:
@@ -70,6 +71,9 @@ def my_next_card(self: Reviewer, _old) -> None:
         if not self.card:
             self.mw.moveToState("overview")
             return
+
+        print(f"self.card.id: {self.card.id}, self.card.due: {self.card.due}")
+        # pprint.pprint(vars(self.card))
 
         if self.card.type != CARD_TYPE_NEW:
             break  # ignore non-new cards
@@ -112,6 +116,9 @@ def set_known_and_skip(self: Reviewer) -> None:
     """Set card as alreadyKnown and skip along with all other cards with same focusMorph.
     Useful if you see a focusMorph you already know from external knowledge
     """
+
+    print("entered set_known_and_skip")
+
     assert self.card is not None
 
     self.mw.checkpoint("Set already known focus morph")

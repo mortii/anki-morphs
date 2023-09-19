@@ -3,7 +3,7 @@ def get_fake_preferences():
     return {
         'morphman': {
             'DefaultMorphemizer': 'MecabMorphemizer',
-            'Field_FocusMorph': 'morphman_focus_morph',
+            'Field_FocusMorph': 'focus_morph',
             'Field_FocusMorphPos': '',
             'Field_MorphManIndex': 'morphman_index',
             'Field_UnknownFreq': 'morphman_unknown_freq',

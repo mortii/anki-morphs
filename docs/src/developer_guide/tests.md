@@ -2,6 +2,8 @@
 
 AnkiMorphs uses a combinations of unnittest and pytest.
 
+https://docs.python.org/3/library/unittest.mock.html
+
 ## Guides
 
 * [official pytest docs](https://docs.pytest.org/en/7.1.x/getting-started.html)
