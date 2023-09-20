@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 from PyQt6.QtWidgets import QApplication
 
-from morph import preferences
+from ankimorphs import preferences
 from tests.fake_preferences import get_fake_preferences
 
 

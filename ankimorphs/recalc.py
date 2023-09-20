@@ -18,16 +18,16 @@ from anki.tags import TagManager
 from anki.utils import split_fields, join_fields, strip_html, int_time, field_checksum
 from anki.collection import Collection
 
-from .morphemes import Location, Morpheme
-from .morphemes import MorphDb, AnkiDeck, getMorphemes
-from .morphemizer import getMorphemizerByName
-from .util import printf, mw, errorMsg, getFilterByMidAndTags, getReadEnabledModels, getModifyEnabledModels
-from .preferences import get_preference, get_preferences
-from .util_external import memoize
-from .exceptions import NoteFilterFieldsException
+from ankimorphs.morphemes import Location, Morpheme
+from ankimorphs.morphemes import MorphDb, AnkiDeck, getMorphemes
+from ankimorphs.morphemizer import getMorphemizerByName
+from ankimorphs.util import printf, mw, errorMsg, getFilterByMidAndTags, getReadEnabledModels, getModifyEnabledModels
+from ankimorphs.preferences import get_preference, get_preferences
+from ankimorphs.util_external import memoize
+from ankimorphs.exceptions import NoteFilterFieldsException
 
-from . import morph_stats as stats
-from . import util
+from ankimorphs import morph_stats as stats
+from ankimorphs import util
 
 
 @memoize
@@ -573,6 +573,7 @@ def updateNotes(allDb):
 
 def main():
 
+    print(f"recalc main pre, mw.inMainThread(): {mw.inMainThread()}")
 
     op = QueryOp(
         parent=mw,

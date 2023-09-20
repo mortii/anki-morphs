@@ -38,7 +38,7 @@ jobs:
           source pyenv/bin/activate
         fi
         export PYTHONPATH=./
-        python -m pylint morph tests -d W0611
+        python -m pylint ankimorphs tests -d W0611
     - name: Test
       shell: bash
       run: |
