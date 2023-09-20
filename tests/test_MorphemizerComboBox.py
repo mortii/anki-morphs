@@ -1,5 +1,5 @@
-from morph.UI import MorphemizerComboBox
-from morph.morphemizer import getAllMorphemizers
+from ankimorphs.UI import MorphemizerComboBox
+from ankimorphs.morphemizer import getAllMorphemizers
 
 
 def test_set_and_get_current(qtbot):

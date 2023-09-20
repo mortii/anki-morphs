@@ -3,7 +3,7 @@ import os
 import sys
 
 # find the directory where the classes files are
-morphDir = os.path.join(os.path.dirname(sys.path[0]), "morph")
+morphDir = os.path.join(os.path.dirname(sys.path[0]), "ankimorphs")
 # this path should not have the directory terminator at the end
 
 # add it to the path so we can find the morphemes class

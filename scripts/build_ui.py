@@ -17,5 +17,5 @@ except:
             else:
                 sources.write(line)
 
-build_ui("morph/readability.ui", "morph/readability_ui.py")
-build_ui("morph/readability_settings.ui", "morph/readability_settings_ui.py")
+build_ui("ankimorphs/readability.ui", "ankimorphs/readability_ui.py")
+build_ui("ankimorphs/readability_settings.ui", "ankimorphs/readability_settings_ui.py")

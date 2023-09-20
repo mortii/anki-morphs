@@ -22,7 +22,7 @@ except ImportError:
     pass
 
 
-# need some fallbacks if not running from anki and thus morph.util isn't available
+# need some fallbacks if not running from anki and thus ankimorphs.util isn't available
 try:
     from .util import errorMsg
 except ImportError:
@@ -126,7 +126,7 @@ class MorphDBUnpickler(pickle.Unpickler):
     def find_class(self, cmodule, cname):
         # Override default class lookup for this module to allow loading databases generated with older
         # versions of the MorphMan add-on.
-        if cmodule.endswith('.morph.morphemes'):
+        if cmodule.endswith('morphemes'):
             return globals()[cname]
         return pickle.Unpickler.find_class(self, cmodule, cname)
 
@@ -332,6 +332,7 @@ class MorphDb:
             for m, locs in db.items():
                 self.addMLs1(m, locs)
         except ModuleNotFoundError as e:
+            print(f"ModuleNotFoundError exception: {e}")
             aqt.utils.showInfo(
                 "ModuleNotFoundError was thrown. That probably means that you're using database files generated in "
                 "the older versions of MorphMan. To fix this issue, please refer to the written guide on database "

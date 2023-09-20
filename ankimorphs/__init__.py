@@ -9,17 +9,18 @@ from anki import hooks
 # TODO: importlib is seemingly used to patch over and disguise veeeeery bad bugs... remove its usages and fix the bugs
 import importlib
 
-from morph.mecab_wrapper import getMorphemesMecab
-from morph import morph_stats
-from morph import reviewing_utils
-from morph import recalc
-from morph import manager
-from morph import readability
-from morph import preferencesDialog
-from morph import graphs
-from morph import browser_utils
-from morph.preferences import init_preferences, get_preference
-from morph.morphemes import MorphDb
+from ankimorphs import morph_stats
+from ankimorphs import reviewing_utils
+from ankimorphs import recalc
+from ankimorphs import manager
+from ankimorphs import readability
+from ankimorphs import preferencesDialog
+from ankimorphs import graphs
+from ankimorphs import browser_utils
+from ankimorphs.preferences import init_preferences, get_preference
+from ankimorphs.morphemes import MorphDb
+from ankimorphs.mecab_wrapper import getMorphemesMecab
+
 
 TOOL_MENU = "morphman_tool_menu"
 BROWSE_MENU = "morphman_browse_menu"

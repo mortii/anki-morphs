@@ -1,4 +1,4 @@
-from morph.morphemizer import getMorphemizerByName
+from ankimorphs.morphemizer import getMorphemizerByName
 
 
 def test_morpheme_generation():

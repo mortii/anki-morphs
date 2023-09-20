@@ -218,9 +218,9 @@ def mecab():  # IO MecabProc
             pass
 
     # 5th priority - From Morphman
-    if (not reading) and importlib.util.find_spec('morph') and importlib.util.find_spec('morph.deps.mecab.reading'):
+    if (not reading) and importlib.util.find_spec('ankimorphs') and importlib.util.find_spec('ankimorphs.deps.mecab.reading'):
         try:
-            reading = importlib.import_module('morph.deps.mecab.reading')
+            reading = importlib.import_module('ankimorphs.deps.mecab.reading')
             mecab_source = 'MorphMan'
         except ModuleNotFoundError:
             pass
