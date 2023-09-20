@@ -1,25 +1,28 @@
-from aqt import gui_hooks, mw, QMenu, QAction
-from aqt.reviewer import Reviewer
-from aqt.utils import tooltip
-from aqt.browser import Browser
-
-import anki.stats
-from anki import hooks
-
 # TODO: importlib is seemingly used to patch over and disguise veeeeery bad bugs... remove its usages and fix the bugs
 import importlib
 
-from ankimorphs import morph_stats
-from ankimorphs import reviewing_utils
-from ankimorphs import recalc
-from ankimorphs import manager
-from ankimorphs import readability
-from ankimorphs import preferencesDialog
-from ankimorphs import graphs
-from ankimorphs import browser_utils
-from ankimorphs.preferences import init_preferences, get_preference
-from ankimorphs.morphemes import MorphDb
+from aqt import QAction, QMenu, gui_hooks, mw
+from aqt.browser import Browser
+from aqt.reviewer import Reviewer
+from aqt.utils import tooltip
+
+from ankimorphs import (
+    browser_utils,
+    graphs,
+    manager,
+    morph_stats,
+    preferencesDialog,
+    readability,
+    recalc,
+    reviewing_utils,
+)
 from ankimorphs.mecab_wrapper import getMorphemesMecab
+from ankimorphs.morphemes import MorphDb
+from ankimorphs.preferences import get_preference, init_preferences
+
+import anki.stats  # isort:skip
+from anki import hooks  # isort:skip
+
 
 
 TOOL_MENU = "morphman_tool_menu"
