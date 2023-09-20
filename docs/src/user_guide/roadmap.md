@@ -11,17 +11,20 @@ MorphMan has significant technical-debt that needs to be paid off before adding 
    * others: https://github.com/topics/cookiecutter-template
    * https://stackoverflow.com/questions/46330327/how-are-pipfile-and-pipfile-lock-used
    * https://packaging.python.org/en/latest/tutorials/packaging-projects/
-2. Add packages that incraese code quality
+3. Add packages that incraese code quality
    * Add mypy and gradually increase its strictness.
    * Add flake8 alongside pylint for better coverage
    * Add [black](https://github.com/psf/black)
    * Add [isort](https://pypi.org/project/isort/8)
    * Add [vulture](https://github.com/jendrikseipp/vulture)
-3. Rename to ankimorphs, figure out how to version the addon...
-3. Fix configs
+4. add isort to pre-commit: https://pycqa.github.io/isort/docs/configuration/pre-commit.html
+5. travis cli: https://docs.travis-ci.com/user/customizing-the-build/
+6. remove intrinsic macab 
+7. Rename to ankimorphs, figure out how to version the addon...
+8. Fix configs
     * Migrate from config.py to [config.json and user_files](https://addon-docs.ankiweb.net/addon-config.html)
     * Refactor preferences.py and make configs more robust
-4. Fix recalc & databases
+9. Fix recalc & databases
     * main.py needs a more fitting name, recalc.py would make more sense. It is also in desperate need of some deep
       cleaning to make it less obfuscated.
     * Improve MMI
@@ -34,9 +37,9 @@ MorphMan has significant technical-debt that needs to be paid off before adding 
         * The databases have unnecessarily overlapping data which make them less useful...
         * known.db is a misleading name, it contains all morphs ever seen.
         * Refactor morphemes.py and move the different classes into separate files instead.
-5. Improve file management
-    * mm.py, cli.py, and glob.py
-6. Make the focus morph field optional
-    * Adding a focus morph field to cards is a significant pain point in the setup process and it's not _strictly_
-      necessary for MorphMan to work
-7. Add support for Korean?
+10. Improve file management
+     * mm.py, cli.py, and glob.py
+11. Make the focus morph field optional
+     * Adding a focus morph field to cards is a significant pain point in the setup process and it's not _strictly_
+       necessary for MorphMan to work
+12. Add support for Korean?
