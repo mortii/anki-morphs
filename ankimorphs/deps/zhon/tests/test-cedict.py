@@ -4,6 +4,7 @@
 
 import re
 import unittest
+
 from zhon import cedict
 
 

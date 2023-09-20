@@ -24,7 +24,6 @@ import anki.stats  # isort:skip
 from anki import hooks  # isort:skip
 
 
-
 TOOL_MENU = "morphman_tool_menu"
 BROWSE_MENU = "morphman_browse_menu"
 CONTEXT_MENU = "morphman_context_menu"

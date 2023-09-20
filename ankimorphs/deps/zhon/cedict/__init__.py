@@ -1,9 +1,7 @@
 """Provides CC-CEDICT character constants."""
 
 
-from . import simplified
-from . import traditional
-from . import all
+from . import all, simplified, traditional
 
 #: A string containing all Simplified characters according to CC-CEDICT.
 simp = simplified = simplified.CHARACTERS

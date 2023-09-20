@@ -1,17 +1,16 @@
 from typing import Optional
 
 from anki.utils import strip_html
-
-from aqt.reviewer import RefreshNeeded
 from aqt import mw
-from aqt.utils import tooltip
 from aqt.browser import Browser
+from aqt.reviewer import RefreshNeeded
+from aqt.utils import tooltip
 
 from . import util
-from .preferences import get_preference
 from .morphemes import getMorphemes, ms2str
-from .reviewing_utils import try_to_get_focus_morphs, focus_query
 from .morphemizer import getMorphemizerByName
+from .preferences import get_preference
+from .reviewing_utils import focus_query, try_to_get_focus_morphs
 
 browser: Optional[Browser] = None
 

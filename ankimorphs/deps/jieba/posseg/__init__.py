@@ -1,9 +1,11 @@
 from __future__ import absolute_import, unicode_literals
+
 import os
+import pickle
 import re
 import sys
+
 from ... import jieba
-import pickle
 from .._compat import *
 from .viterbi import viterbi
 
@@ -36,9 +38,9 @@ if sys.platform.startswith("java"):
     char_state_tab_P, start_P, trans_P, emit_P = load_model()
 else:
     from .char_state_tab import P as char_state_tab_P
+    from .prob_emit import P as emit_P
     from .prob_start import P as start_P
     from .prob_trans import P as trans_P
-    from .prob_emit import P as emit_P
 
 
 class pair(object):

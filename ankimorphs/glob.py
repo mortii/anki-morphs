@@ -1,9 +1,9 @@
 """Filename globbing utility."""
 
-import sys
+import fnmatch
 import os
 import re
-import fnmatch
+import sys
 
 try:
     _unicode = str

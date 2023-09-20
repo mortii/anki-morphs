@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+
 from aqt import mw  # this script isn't imported until profile is loaded
 
 # 4th (lowest) priority

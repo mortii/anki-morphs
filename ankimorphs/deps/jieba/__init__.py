@@ -3,18 +3,19 @@ from __future__ import absolute_import, unicode_literals
 __version__ = "0.39"
 __license__ = "MIT"
 
-import re
-import os
-import sys
-import time
 import logging
 import marshal
+import os
+import re
+import sys
 import tempfile
 import threading
-from math import log
+import time
 from hashlib import md5
-from ._compat import *
+from math import log
+
 from . import finalseg
+from ._compat import *
 
 if os.name == "nt":
     from shutil import move as _replace_file

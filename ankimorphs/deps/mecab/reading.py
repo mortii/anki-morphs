@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import os
 import platform
 import re
 import subprocess
+import sys
 
 try:
     import aqt.utils
-    from anki.utils import strip_html, is_win, is_mac
     from anki.hooks import addHook
+    from anki.utils import is_mac, is_win, strip_html
     from aqt import mw
     from aqt.qt import *
     from aqt.utils import showInfo

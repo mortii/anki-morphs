@@ -8,19 +8,19 @@ from collections import Counter
 
 from .morphemes import MorphDb
 from .morphemizer import (
-    SpaceMorphemizer,
-    MecabMorphemizer,
     CjkCharMorphemizer,
     JiebaMorphemizer,
+    MecabMorphemizer,
+    SpaceMorphemizer,
 )
-
 
 # hack: typing is compile time anyway, so, nothing bad happens if it fails, the try is to support anki < 2.1.16
 try:
-    from aqt.pinnedmodules import (
+    from typing import Optional, Union
+
+    from aqt.pinnedmodules import (  # pylint: disable=W0611 # See above hack comment
         typing,
-    )  # pylint: disable=W0611 # See above hack comment
-    from typing import Union, Optional
+    )
 except ImportError:
     pass
 

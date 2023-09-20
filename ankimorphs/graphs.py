@@ -1,6 +1,6 @@
-from collections import namedtuple, defaultdict
 import inspect
 import math
+from collections import defaultdict, namedtuple
 
 from . import util
 from .morphemes import AnkiDeck

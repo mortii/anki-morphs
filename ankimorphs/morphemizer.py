@@ -2,10 +2,10 @@
 import re
 from functools import lru_cache
 
-from .morphemes import Morpheme
-from .deps.zhon.hanzi import characters
-from .mecab_wrapper import getMorphemesMecab, getMecabIdentity
 from .deps.jieba import posseg
+from .deps.zhon.hanzi import characters
+from .mecab_wrapper import getMecabIdentity, getMorphemesMecab
+from .morphemes import Morpheme
 
 ####################################################################################################
 # Base Class

@@ -1,11 +1,18 @@
 # encoding=utf-8
 from __future__ import unicode_literals
-from whoosh.analysis import RegexAnalyzer, LowercaseFilter, StopFilter, StemFilter
-from whoosh.analysis import Tokenizer, Token
-from whoosh.lang.porter import stem
+
+import re
 
 import jieba
-import re
+from whoosh.analysis import (
+    LowercaseFilter,
+    RegexAnalyzer,
+    StemFilter,
+    StopFilter,
+    Token,
+    Tokenizer,
+)
+from whoosh.lang.porter import stem
 
 STOP_WORDS = frozenset(
     (

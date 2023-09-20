@@ -1,7 +1,9 @@
 """Jieba command line interface."""
 import sys
-import jieba
 from argparse import ArgumentParser
+
+import jieba
+
 from ._compat import *
 
 parser = ArgumentParser(

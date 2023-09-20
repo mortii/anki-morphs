@@ -8,7 +8,6 @@ import unittest
 
 from zhon import pinyin
 
-
 NUM_WORDS = 50  # Number of random words to test
 WORD_LENGTH = 4  # Length of random words (number of syllables)
 NUM_SENT = 10  # Number of random sentences to test
