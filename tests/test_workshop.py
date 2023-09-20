@@ -52,5 +52,3 @@ from tests.fake_preferences import get_fake_preferences
 #
 # def test_start2():
 #     print(f"preferences.test2: {preferences.mw}")
-
-

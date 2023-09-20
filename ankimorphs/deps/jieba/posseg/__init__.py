@@ -20,7 +20,7 @@ re_skip_internal = re.compile("(\r\n|\s)")
 re_eng = re.compile("[a-zA-Z0-9]+")
 re_num = re.compile("[\.0-9]+")
 
-re_eng1 = re.compile('^[a-zA-Z0-9]$', re.U)
+re_eng1 = re.compile("^[a-zA-Z0-9]$", re.U)
 
 
 def load_model():
@@ -42,16 +42,15 @@ else:
 
 
 class pair(object):
-
     def __init__(self, word, flag):
         self.word = word
         self.flag = flag
 
     def __unicode__(self):
-        return '%s/%s' % (self.word, self.flag)
+        return "%s/%s" % (self.word, self.flag)
 
     def __repr__(self):
-        return 'pair(%r, %r)' % (self.word, self.flag)
+        return "pair(%r, %r)" % (self.word, self.flag)
 
     def __str__(self):
         if PY2:
@@ -66,7 +65,11 @@ class pair(object):
         return self.word < other.word
 
     def __eq__(self, other):
-        return isinstance(other, pair) and self.word == other.word and self.flag == other.flag
+        return (
+            isinstance(other, pair)
+            and self.word == other.word
+            and self.flag == other.flag
+        )
 
     def __hash__(self):
         return hash(self.word)
@@ -76,16 +79,15 @@ class pair(object):
 
 
 class POSTokenizer(object):
-
     def __init__(self, tokenizer=None):
         self.tokenizer = tokenizer or jieba.Tokenizer()
         self.load_word_tag(self.tokenizer.get_dict_file())
 
     def __repr__(self):
-        return '<POSTokenizer tokenizer=%r>' % self.tokenizer
+        return "<POSTokenizer tokenizer=%r>" % self.tokenizer
 
     def __getattr__(self, name):
-        if name in ('cut_for_search', 'lcut_for_search', 'tokenize'):
+        if name in ("cut_for_search", "lcut_for_search", "tokenize"):
             # may be possible?
             raise NotImplementedError
         return getattr(self.tokenizer, name)
@@ -106,7 +108,9 @@ class POSTokenizer(object):
                 self.word_tag_tab[word] = tag
             except Exception:
                 raise ValueError(
-                    'invalid POS dictionary entry in %s at Line %s: %s' % (f_name, lineno, line))
+                    "invalid POS dictionary entry in %s at Line %s: %s"
+                    % (f_name, lineno, line)
+                )
         f.close()
 
     def makesure_userdict_loaded(self):
@@ -115,18 +119,17 @@ class POSTokenizer(object):
             self.tokenizer.user_word_tag_tab = {}
 
     def __cut(self, sentence):
-        prob, pos_list = viterbi(
-            sentence, char_state_tab_P, start_P, trans_P, emit_P)
+        prob, pos_list = viterbi(sentence, char_state_tab_P, start_P, trans_P, emit_P)
         begin, nexti = 0, 0
 
         for i, char in enumerate(sentence):
             pos = pos_list[i][0]
-            if pos == 'B':
+            if pos == "B":
                 begin = i
-            elif pos == 'E':
-                yield pair(sentence[begin:i + 1], pos_list[i][1])
+            elif pos == "E":
+                yield pair(sentence[begin : i + 1], pos_list[i][1])
                 nexti = i + 1
-            elif pos == 'S':
+            elif pos == "S":
                 yield pair(char, pos_list[i][1])
                 nexti = i + 1
         if nexti < len(sentence):
@@ -143,11 +146,11 @@ class POSTokenizer(object):
                 for x in tmp:
                     if x:
                         if re_num.match(x):
-                            yield pair(x, 'm')
+                            yield pair(x, "m")
                         elif re_eng.match(x):
-                            yield pair(x, 'eng')
+                            yield pair(x, "eng")
                         else:
-                            yield pair(x, 'x')
+                            yield pair(x, "x")
 
     def __cut_DAG_NO_HMM(self, sentence):
         DAG = self.tokenizer.get_DAG(sentence)
@@ -155,7 +158,7 @@ class POSTokenizer(object):
         self.tokenizer.calc(sentence, DAG, route)
         x = 0
         N = len(sentence)
-        buf = ''
+        buf = ""
         while x < N:
             y = route[x][1] + 1
             l_word = sentence[x:y]
@@ -164,13 +167,13 @@ class POSTokenizer(object):
                 x = y
             else:
                 if buf:
-                    yield pair(buf, 'eng')
-                    buf = ''
-                yield pair(l_word, self.word_tag_tab.get(l_word, 'x'))
+                    yield pair(buf, "eng")
+                    buf = ""
+                yield pair(l_word, self.word_tag_tab.get(l_word, "x"))
                 x = y
         if buf:
-            yield pair(buf, 'eng')
-            buf = ''
+            yield pair(buf, "eng")
+            buf = ""
 
     def __cut_DAG(self, sentence):
         DAG = self.tokenizer.get_DAG(sentence)
@@ -179,7 +182,7 @@ class POSTokenizer(object):
         self.tokenizer.calc(sentence, DAG, route)
 
         x = 0
-        buf = ''
+        buf = ""
         N = len(sentence)
         while x < N:
             y = route[x][1] + 1
@@ -189,28 +192,28 @@ class POSTokenizer(object):
             else:
                 if buf:
                     if len(buf) == 1:
-                        yield pair(buf, self.word_tag_tab.get(buf, 'x'))
+                        yield pair(buf, self.word_tag_tab.get(buf, "x"))
                     elif not self.tokenizer.FREQ.get(buf):
                         recognized = self.__cut_detail(buf)
                         for t in recognized:
                             yield t
                     else:
                         for elem in buf:
-                            yield pair(elem, self.word_tag_tab.get(elem, 'x'))
-                    buf = ''
-                yield pair(l_word, self.word_tag_tab.get(l_word, 'x'))
+                            yield pair(elem, self.word_tag_tab.get(elem, "x"))
+                    buf = ""
+                yield pair(l_word, self.word_tag_tab.get(l_word, "x"))
             x = y
 
         if buf:
             if len(buf) == 1:
-                yield pair(buf, self.word_tag_tab.get(buf, 'x'))
+                yield pair(buf, self.word_tag_tab.get(buf, "x"))
             elif not self.tokenizer.FREQ.get(buf):
                 recognized = self.__cut_detail(buf)
                 for t in recognized:
                     yield t
             else:
                 for elem in buf:
-                    yield pair(elem, self.word_tag_tab.get(elem, 'x'))
+                    yield pair(elem, self.word_tag_tab.get(elem, "x"))
 
     def __cut_internal(self, sentence, HMM=True):
         self.makesure_userdict_loaded()
@@ -229,15 +232,15 @@ class POSTokenizer(object):
                 tmp = re_skip_internal.split(blk)
                 for x in tmp:
                     if re_skip_internal.match(x):
-                        yield pair(x, 'x')
+                        yield pair(x, "x")
                     else:
                         for xx in x:
                             if re_num.match(xx):
-                                yield pair(xx, 'm')
+                                yield pair(xx, "m")
                             elif re_eng.match(x):
-                                yield pair(xx, 'eng')
+                                yield pair(xx, "eng")
                             else:
-                                yield pair(xx, 'x')
+                                yield pair(xx, "x")
 
     def _lcut_internal(self, sentence):
         return list(self.__cut_internal(sentence))
@@ -251,6 +254,7 @@ class POSTokenizer(object):
 
     def lcut(self, *args, **kwargs):
         return list(self.cut(*args, **kwargs))
+
 
 # default Tokenizer instance
 

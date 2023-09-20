@@ -17,13 +17,17 @@ _num_graphs = 0
 
 # an individual review of a card with a bucket_index representing the time period the review
 # occurred in (e.g. which day, month, etc.)
-CardReview = namedtuple('CardReview', ['id', 'nid', 'did', 'bucket_index', 'cid', 'ease',
-                                       'ivl', 'lastIvl', 'type'])
+CardReview = namedtuple(
+    "CardReview",
+    ["id", "nid", "did", "bucket_index", "cid", "ease", "ivl", "lastIvl", "type"],
+)
 
 # all the reviews for a particular card and length of time (e.g. day, week, etc.)
-CardReviewsForBucket = namedtuple('CardReviewsForBucket', ['bucket_index', 'cid', 'reviews'])
+CardReviewsForBucket = namedtuple(
+    "CardReviewsForBucket", ["bucket_index", "cid", "reviews"]
+)
 
-CardIdNoteId = namedtuple('CardIdNoteId', ['cid', 'nid'])
+CardIdNoteId = namedtuple("CardIdNoteId", ["cid", "nid"])
 
 
 class MorphStats:
@@ -35,7 +39,8 @@ class MorphStats:
 class ProgressStats:
     """Tracks stats for a particular length of time (e.g. day, week, etc.).
 
-    learned_cards: The number of morphs that began in the learning phase and later exited this phase."""
+    learned_cards: The number of morphs that began in the learning phase and later exited this phase.
+    """
 
     def __init__(self):
         self.learned_cards = 0
@@ -44,7 +49,7 @@ class ProgressStats:
 
 
 # all the stats for a particular length of time (e.g. day, week, etc.)
-BucketStats = namedtuple('BucketStats', ['bucket_index', 'stats'])
+BucketStats = namedtuple("BucketStats", ["bucket_index", "stats"])
 
 
 def _fix_ivl(ivl):
@@ -127,19 +132,21 @@ def _get_reviews(db_table, bucket_size_days, day_cutoff_seconds, num_buckets=Non
     # when each card was first learned.
     id_cutoff = None
 
-    filters = ['(cards.ivl != 0 or cards.type=1)']
+    filters = ["(cards.ivl != 0 or cards.type=1)"]
 
     # Exclude cards that are currently in new state.
 
     if num_buckets:
-        id_cutoff = (day_cutoff_seconds - (bucket_size_days * num_buckets * 86400)) * 1000
+        id_cutoff = (
+            day_cutoff_seconds - (bucket_size_days * num_buckets * 86400)
+        ) * 1000
         # Get all recent reviews and any earlier reviews where the card was learned.  We need to query
         # earlier reviews because Anki's type does not appear to be reliable.  That is, you can't assume
         # that if the type is learning (type = 0) and the ivl becomes positive that this means the card
         # was learned for the first time.
 
         # filters.append("""(rl.id >= %d OR
-        #                    (rl.id < %d AND 
+        #                    (rl.id < %d AND
         #                      (rl.ivl > 0 AND rl.lastIvl <= 0)
         #                    )
         #                  )
@@ -173,7 +180,11 @@ def _get_reviews(db_table, bucket_size_days, day_cutoff_seconds, num_buckets=Non
       INNER JOIN cards ON rl.cid = cards.id
       %s
       ORDER BY rl.cid ASC, rl.id ASC;
-      """ % (day_cutoff_seconds, bucket_size_days, where_clause)
+      """ % (
+        day_cutoff_seconds,
+        bucket_size_days,
+        where_clause,
+    )
 
     result = db_table.all(query)
 
@@ -182,7 +193,19 @@ def _get_reviews(db_table, bucket_size_days, day_cutoff_seconds, num_buckets=Non
     all_reviews_for_bucket = {}
     last_review_for_card = {}
 
-    for i, (cid, nid, did, card_type, rl_id, bucket_index, ease, ivl, lastIvl, card_ivl, _type) in enumerate(result):
+    for i, (
+        cid,
+        nid,
+        did,
+        card_type,
+        rl_id,
+        bucket_index,
+        ease,
+        ivl,
+        lastIvl,
+        card_ivl,
+        _type,
+    ) in enumerate(result):
         # For the last review for a card, use the last card interval unless card is in the learning queue.
         if (i + 1 == len(result) or result[i + 1][0] != cid) and card_type != 1:
             ivl = card_ivl
@@ -194,12 +217,22 @@ def _get_reviews(db_table, bucket_size_days, day_cutoff_seconds, num_buckets=Non
             continue
 
         key = (bucket_index, cid, nid, did)
-        review = CardReview(id=rl_id, nid=nid, did=did,
-                            bucket_index=bucket_index, cid=cid, ease=ease, ivl=ivl,
-                            lastIvl=lastIvl, type=_type)
+        review = CardReview(
+            id=rl_id,
+            nid=nid,
+            did=did,
+            bucket_index=bucket_index,
+            cid=cid,
+            ease=ease,
+            ivl=ivl,
+            lastIvl=lastIvl,
+            type=_type,
+        )
         card_reviews = all_reviews_for_bucket.get(key)
         if not card_reviews:
-            card_reviews = CardReviewsForBucket(bucket_index=bucket_index, cid=cid, reviews=[])
+            card_reviews = CardReviewsForBucket(
+                bucket_index=bucket_index, cid=cid, reviews=[]
+            )
             all_reviews_for_bucket[key] = card_reviews
         card_reviews.reviews.append(review)
 
@@ -215,7 +248,8 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
     max_bucket_index = 0
 
     all_reviews_for_bucket, prior_learned_cards_ivl = _get_reviews(
-        db_table, bucket_size_days, day_cutoff_seconds, num_buckets)
+        db_table, bucket_size_days, day_cutoff_seconds, num_buckets
+    )
 
     # print('all_reviews_for_bucket', len(all_reviews_for_bucket))
     # print('prior_learned_cards_ivl', len(prior_learned_cards_ivl))
@@ -248,8 +282,8 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
     # mature_k_morph_times = known_k_morph_times.copy()
 
     threshold_learned = 1  # 1 day
-    threshold_known = cfg('threshold_known')
-    threshold_mature = cfg('threshold_mature')
+    threshold_known = cfg("threshold_known")
+    threshold_mature = cfg("threshold_mature")
 
     last_ivl_by_cid = defaultdict(int)
 
@@ -304,18 +338,28 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
             bucket_stats = _new_bucket_stats(bucket_index)
             stats_by_bucket[bucket_index] = bucket_stats
 
-        def update_morph_stats(nid, did, v_morph_times, k_morph_times, bucket_morph_stats, deck_morph_stats, delta):
+        def update_morph_stats(
+            nid,
+            did,
+            v_morph_times,
+            k_morph_times,
+            bucket_morph_stats,
+            deck_morph_stats,
+            delta,
+        ):
             for m in nid_to_morphs[nid]:
                 gk = m.getGroupKey()
 
                 if active_decks is None or (did in active_decks):
-                    if (delta == 1 and v_morph_times[m] == 0) or \
-                            (delta == -1 and v_morph_times[m] == 1):
+                    if (delta == 1 and v_morph_times[m] == 0) or (
+                        delta == -1 and v_morph_times[m] == 1
+                    ):
                         bucket_morph_stats.a_morphs += delta
                         deck_morph_stats.a_morphs += delta
 
-                    if (delta == 1 and k_morph_times[gk] == 0) or \
-                            (delta == -1 and k_morph_times[gk] == 1):
+                    if (delta == 1 and k_morph_times[gk] == 0) or (
+                        delta == -1 and k_morph_times[gk] == 1
+                    ):
                         bucket_morph_stats.u_morphs += delta
                         deck_morph_stats.u_morphs += delta
 
@@ -330,18 +374,46 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
                 deck_stats.learned_cards -= 1
 
         if _has_matured(card_reviews, last_ivl, threshold_known):
-            update_morph_stats(nid, did, known_v_morph_times, known_k_morph_times, bucket_stats.stats.learned,
-                               deck_stats.learned, 1)
+            update_morph_stats(
+                nid,
+                did,
+                known_v_morph_times,
+                known_k_morph_times,
+                bucket_stats.stats.learned,
+                deck_stats.learned,
+                1,
+            )
         if _has_lost_matured(card_reviews, last_ivl, threshold_known):
-            update_morph_stats(nid, did, known_v_morph_times, known_k_morph_times, bucket_stats.stats.learned,
-                               deck_stats.learned, -1)
+            update_morph_stats(
+                nid,
+                did,
+                known_v_morph_times,
+                known_k_morph_times,
+                bucket_stats.stats.learned,
+                deck_stats.learned,
+                -1,
+            )
 
         if _has_matured(card_reviews, last_ivl, threshold_mature):
-            update_morph_stats(nid, did, mature_v_morph_times, mature_k_morph_times, bucket_stats.stats.matured,
-                               deck_stats.matured, 1)
+            update_morph_stats(
+                nid,
+                did,
+                mature_v_morph_times,
+                mature_k_morph_times,
+                bucket_stats.stats.matured,
+                deck_stats.matured,
+                1,
+            )
         if _has_lost_matured(card_reviews, last_ivl, threshold_mature):
-            update_morph_stats(nid, did, mature_v_morph_times, mature_k_morph_times, bucket_stats.stats.matured,
-                               deck_stats.matured, -1)
+            update_morph_stats(
+                nid,
+                did,
+                mature_v_morph_times,
+                mature_k_morph_times,
+                bucket_stats.stats.matured,
+                deck_stats.matured,
+                -1,
+            )
 
         last_ivl_by_cid[cid] = card_reviews.reviews[-1].ivl
 
@@ -349,12 +421,16 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
     # print('v_morphs_marked_known', len(known_v_morph_times))
 
     # Return deck stats for decks with learned morphs
-    stats_by_name['all_deck_stats'] = {}
+    stats_by_name["all_deck_stats"] = {}
     for did, deck_stats in all_deck_stats.items():
-        if deck_stats.learned.a_morphs or deck_stats.learned.u_morphs or \
-                deck_stats.matured.a_morphs or deck_stats.matured.u_morphs:
+        if (
+            deck_stats.learned.a_morphs
+            or deck_stats.learned.u_morphs
+            or deck_stats.matured.a_morphs
+            or deck_stats.matured.u_morphs
+        ):
             dname = mw.col.decks.name_if_exists(did)
-            stats_by_name['all_deck_stats'][dname] = deck_stats
+            stats_by_name["all_deck_stats"][dname] = deck_stats
 
     added_a_bucket = False
     for bucket_index in range(min_bucket_index, max_bucket_index + 1):
@@ -364,11 +440,17 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
 
         stats = stats_by_bucket[bucket_index]
 
-        if added_a_bucket or \
-                stats.stats.learned.a_morphs != 0 or \
-                stats.stats.learned.u_morphs != 0:
-            stats_by_name["learned_v_morphs"].append((bucket_index, stats.stats.learned.a_morphs))
-            stats_by_name["learned_k_morphs"].append((bucket_index, stats.stats.learned.u_morphs))
+        if (
+            added_a_bucket
+            or stats.stats.learned.a_morphs != 0
+            or stats.stats.learned.u_morphs != 0
+        ):
+            stats_by_name["learned_v_morphs"].append(
+                (bucket_index, stats.stats.learned.a_morphs)
+            )
+            stats_by_name["learned_k_morphs"].append(
+                (bucket_index, stats.stats.learned.u_morphs)
+            )
             added_a_bucket = True
 
     # k_final_known_morphs = len(known_k_morph_times)
@@ -385,7 +467,7 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
 
 def morphGraphs(args, kwargs):
     self = args[0]
-    old = kwargs['_old']
+    old = kwargs["_old"]
 
     # Try to use get_start_end_chunk if it exists to get the bucketing parameters
     # so the plugin graphs are consistent with Anki's other graphs.  This function only
@@ -414,28 +496,37 @@ def morphGraphs(args, kwargs):
     stats = get_stats(
         self,
         db_table=self.col.db,
-        bucket_size_days=bucket_size_days, num_buckets=num_buckets,
-        day_cutoff_seconds=self.col.sched.day_cutoff)
+        bucket_size_days=bucket_size_days,
+        num_buckets=num_buckets,
+        day_cutoff_seconds=self.col.sched.day_cutoff,
+    )
 
-    morph_result = ''
+    morph_result = ""
 
-    morph_result += _plot(self,
-                          stats["learned_k_morphs"],
-                          "Unique Morphs",
-                          "Number of known unique morphemes learned from cards",
-                          bucket_size_days,
-                          include_cumulative=True,
-                          color=colK)
+    morph_result += _plot(
+        self,
+        stats["learned_k_morphs"],
+        "Unique Morphs",
+        "Number of known unique morphemes learned from cards",
+        bucket_size_days,
+        include_cumulative=True,
+        color=colK,
+    )
 
-    morph_result += _plot(self,
-                          stats["learned_v_morphs"],
-                          "All Morphs",
-                          "Number of known morphemes learned from cards",
-                          bucket_size_days,
-                          include_cumulative=True,
-                          color=colV)
+    morph_result += _plot(
+        self,
+        stats["learned_v_morphs"],
+        "All Morphs",
+        "Number of known morphemes learned from cards",
+        bucket_size_days,
+        include_cumulative=True,
+        color=colV,
+    )
 
-    morph_result += self._title("Net Learned Cards & Morphs", "Summary of net learned cards and morphemes by deck")
+    morph_result += self._title(
+        "Net Learned Cards & Morphs",
+        "Summary of net learned cards and morphemes by deck",
+    )
     morph_result += """
         <style>
             td.morph_trl { border: 1px solid; text-align: left; padding: 5px; }
@@ -459,33 +550,63 @@ def morphGraphs(args, kwargs):
                 <td class="morph_trc"><span class="morph_v"><b>Learned</b></span></td>
                 <td class="morph_trc"><span class="morph_v"><b>Matured</b></span></td>
             </tr>
-            """ % {'c_color': colCard, 'k_color': colK, 'v_color': colV}
+            """ % {
+        "c_color": colCard,
+        "k_color": colK,
+        "v_color": colV,
+    }
     total = ProgressStats()
-    for deck in sorted(stats['all_deck_stats'].keys()):
-        deck_stats = stats['all_deck_stats'][deck]
-        morph_result += """
+    for deck in sorted(stats["all_deck_stats"].keys()):
+        deck_stats = stats["all_deck_stats"][deck]
+        morph_result += (
+            """
             <tr>
-                 <td class="morph_trl">""" + deck + """</td>
-                 <td class="morph_trc"><span class="morph_c">""" + str(deck_stats.learned_cards) + """</span></td>
-                 <td class="morph_trc"><span class="morph_k">""" + str(deck_stats.learned.u_morphs) + """</span></td>
-                 <td class="morph_trc"><span class="morph_k">""" + str(deck_stats.matured.u_morphs) + """</span></td>
-                 <td class="morph_trc"><span class="morph_v">""" + str(deck_stats.learned.a_morphs) + """</span></td>
-                 <td class="morph_trc"><span class="morph_v">""" + str(deck_stats.matured.a_morphs) + """</span></td>
+                 <td class="morph_trl">"""
+            + deck
+            + """</td>
+                 <td class="morph_trc"><span class="morph_c">"""
+            + str(deck_stats.learned_cards)
+            + """</span></td>
+                 <td class="morph_trc"><span class="morph_k">"""
+            + str(deck_stats.learned.u_morphs)
+            + """</span></td>
+                 <td class="morph_trc"><span class="morph_k">"""
+            + str(deck_stats.matured.u_morphs)
+            + """</span></td>
+                 <td class="morph_trc"><span class="morph_v">"""
+            + str(deck_stats.learned.a_morphs)
+            + """</span></td>
+                 <td class="morph_trc"><span class="morph_v">"""
+            + str(deck_stats.matured.a_morphs)
+            + """</span></td>
             </tr>"""
+        )
         total.learned_cards += deck_stats.learned_cards
         total.learned.u_morphs += deck_stats.learned.u_morphs
         total.learned.a_morphs += deck_stats.learned.a_morphs
         total.matured.u_morphs += deck_stats.matured.u_morphs
         total.matured.a_morphs += deck_stats.matured.a_morphs
-    morph_result += """
+    morph_result += (
+        """
             <tr>
                  <td class="morph_trl"><b>Total</b></td>
-                 <td class="morph_trc"><b><span class="morph_c">""" + str(total.learned_cards) + """</span></b></td>
-                 <td class="morph_trc"><b><span class="morph_k">""" + str(total.learned.u_morphs) + """</span></b></td>
-                 <td class="morph_trc"><b><span class="morph_k">""" + str(total.matured.u_morphs) + """</span></b></td>
-                 <td class="morph_trc"><b><span class="morph_v">""" + str(total.learned.a_morphs) + """</span></b></td>
-                 <td class="morph_trc"><b><span class="morph_v">""" + str(total.matured.a_morphs) + """</span></b></td>
+                 <td class="morph_trc"><b><span class="morph_c">"""
+        + str(total.learned_cards)
+        + """</span></b></td>
+                 <td class="morph_trc"><b><span class="morph_k">"""
+        + str(total.learned.u_morphs)
+        + """</span></b></td>
+                 <td class="morph_trc"><b><span class="morph_k">"""
+        + str(total.matured.u_morphs)
+        + """</span></b></td>
+                 <td class="morph_trc"><b><span class="morph_v">"""
+        + str(total.learned.a_morphs)
+        + """</span></b></td>
+                 <td class="morph_trc"><b><span class="morph_v">"""
+        + str(total.matured.a_morphs)
+        + """</span></b></td>
             </tr>"""
+    )
     morph_result += "</table>"
 
     return morph_result + old(self)
@@ -500,7 +621,7 @@ def _round_up_max(max_val):
     e = int(math.log10(max_val))
     if e >= 2:
         e -= 1
-    m = 10 ** e
+    m = 10**e
     return math.ceil(float(max_val) / m) * m
 
 
@@ -516,15 +637,21 @@ def _round_down_min(min_val):
     return -1 * _round_up_max(-1 * min_val)
 
 
-def _plot(self, data, title, subtitle, bucket_size_days,
-          include_cumulative=False,
-          color=defaultColor):
+def _plot(
+    self,
+    data,
+    title,
+    subtitle,
+    bucket_size_days,
+    include_cumulative=False,
+    color=defaultColor,
+):
     global _num_graphs
     if not data:
         return ""
     cumulative_total = 0
     cumulative_data = []
-    for (x, y) in data:
+    for x, y in data:
         cumulative_total += y
         cumulative_data.append((x, cumulative_total))
 
@@ -534,28 +661,37 @@ def _plot(self, data, title, subtitle, bucket_size_days,
 
     if include_cumulative:
         graph_data.append(
-            dict(data=cumulative_data,
-                 color=color,
-                 label="Cumulative",
-                 yaxis=2,
-                 bars={'show': False},
-                 lines=dict(show=True),
-                 stack=False))
+            dict(
+                data=cumulative_data,
+                color=color,
+                label="Cumulative",
+                yaxis=2,
+                bars={"show": False},
+                lines=dict(show=True),
+                stack=False,
+            )
+        )
 
-    yaxes = [dict(min=_round_down_min(min(y for x, y in data)),
-                  max=_round_up_max(max(y for x, y in data)))]
+    yaxes = [
+        dict(
+            min=_round_down_min(min(y for x, y in data)),
+            max=_round_up_max(max(y for x, y in data)),
+        )
+    ]
 
     if include_cumulative:
-        yaxes.append(dict(min=_round_down_min(min(y for x, y in cumulative_data)),
-                          max=_round_up_max(max(y for x, y in cumulative_data)),
-                          position="right"))
+        yaxes.append(
+            dict(
+                min=_round_down_min(min(y for x, y in cumulative_data)),
+                max=_round_up_max(max(y for x, y in cumulative_data)),
+                position="right",
+            )
+        )
 
     graph_kwargs = {
         "id": "morphs-%s" % _num_graphs,
         "data": graph_data,
-        "conf": dict(
-            xaxis=dict(max=0.5, tickDecimals=0),
-            yaxes=yaxes)
+        "conf": dict(xaxis=dict(max=0.5, tickDecimals=0), yaxes=yaxes),
     }
 
     # In recent versions of Anki, an xunit arg was added to _graph to control the tick
@@ -565,9 +701,9 @@ def _plot(self, data, title, subtitle, bucket_size_days,
         if "xunit" in inspect.signature(self._graph).parameters:
             graph_kwargs["xunit"] = bucket_size_days
         if "ylabel" in inspect.signature(self._graph).parameters:
-            graph_kwargs["ylabel"] = 'Morphemes'
+            graph_kwargs["ylabel"] = "Morphemes"
         if "ylabel2" in inspect.signature(self._graph).parameters:
-            graph_kwargs["ylabel2"] = 'Cumulative Morphemes'
+            graph_kwargs["ylabel2"] = "Cumulative Morphemes"
     except Exception:  # TODO: Catch too broad!
         pass
 
@@ -580,13 +716,14 @@ def _plot(self, data, title, subtitle, bucket_size_days,
     self._line(
         text_lines,
         "Average",
-        "%(avg_cards)0.1f morphs/day" % dict(avg_cards=cumulative_total / float(len(data) * bucket_size_days)))
+        "%(avg_cards)0.1f morphs/day"
+        % dict(avg_cards=cumulative_total / float(len(data) * bucket_size_days)),
+    )
 
     if include_cumulative:
         self._line(
-            text_lines,
-            "Total",
-            "%(total)d morphs" % dict(total=cumulative_total))
+            text_lines, "Total", "%(total)d morphs" % dict(total=cumulative_total)
+        )
 
     txt += self._lineTbl(text_lines)
 

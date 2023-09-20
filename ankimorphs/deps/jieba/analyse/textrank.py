@@ -55,18 +55,27 @@ class UndirectWeightedGraph:
 
 
 class TextRank(KeywordExtractor):
-
     def __init__(self):
         self.tokenizer = self.postokenizer = jieba.posseg.dt
         self.stop_words = self.STOP_WORDS.copy()
-        self.pos_filt = frozenset(('ns', 'n', 'vn', 'v'))
+        self.pos_filt = frozenset(("ns", "n", "vn", "v"))
         self.span = 5
 
     def pairfilter(self, wp):
-        return (wp.flag in self.pos_filt and len(wp.word.strip()) >= 2
-                and wp.word.lower() not in self.stop_words)
+        return (
+            wp.flag in self.pos_filt
+            and len(wp.word.strip()) >= 2
+            and wp.word.lower() not in self.stop_words
+        )
 
-    def textrank(self, sentence, topK=20, withWeight=False, allowPOS=('ns', 'n', 'vn', 'v'), withFlag=False):
+    def textrank(
+        self,
+        sentence,
+        topK=20,
+        withWeight=False,
+        allowPOS=("ns", "n", "vn", "v"),
+        withFlag=False,
+    ):
         """
         Extract keywords from sentence using TextRank algorithm.
         Parameter:

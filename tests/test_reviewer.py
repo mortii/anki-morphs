@@ -17,30 +17,44 @@ import shutil
 
 @pytest.fixture
 def fake_environment():
-    collection_path_original = os.path.join(os.getcwd(), 'tests', 'data', 'collection.anki2')
-    collection_path_duplicate = os.path.join(os.getcwd(), 'tests', 'data', 'duplicate_collection.anki2')
+    collection_path_original = os.path.join(
+        os.getcwd(), "tests", "data", "collection.anki2"
+    )
+    collection_path_duplicate = os.path.join(
+        os.getcwd(), "tests", "data", "duplicate_collection.anki2"
+    )
 
     # If dst already exists, it will be replaced
     shutil.copyfile(collection_path_original, collection_path_duplicate)
 
     mock_mw = mock.Mock(spec=preferences.mw)  # can use any mw to spec
     mock_mw.col = Collection(collection_path_duplicate)
-    mock_mw.backend = setupLangAndBackend(pm=mock.Mock(name="fake_pm"), app=mock.Mock(name="fake_app"), force="en")
+    mock_mw.backend = setupLangAndBackend(
+        pm=mock.Mock(name="fake_pm"), app=mock.Mock(name="fake_app"), force="en"
+    )
     mock_mw.reviewer = Reviewer(mock_mw)
     mock_mw.reviewer._showQuestion = lambda: None
 
-    Reviewer.nextCard = hooks.wrap(Reviewer.nextCard, reviewing_utils.my_next_card, "around")
+    Reviewer.nextCard = hooks.wrap(
+        Reviewer.nextCard, reviewing_utils.my_next_card, "around"
+    )
     # hooks.field_filter.append(reviewing_utils.highlight)
-    Reviewer._shortcutKeys = hooks.wrap(Reviewer._shortcutKeys, reviewing_utils.my_reviewer_shortcut_keys, "around")
+    Reviewer._shortcutKeys = hooks.wrap(
+        Reviewer._shortcutKeys, reviewing_utils.my_reviewer_shortcut_keys, "around"
+    )
 
     mock_config_py = FakeConfig()
 
     mock_show_skipped_cards = mock.Mock(name="show_skipped_cards")
 
-    patch_preferences_mw = mock.patch.object(preferences, 'mw', mock_mw)
-    patch_preferences_config_py = mock.patch.object(preferences, 'config_py', mock_config_py)
-    patch_show_skipped_cards = mock.patch('ankimorphs.reviewing_utils.SkippedCards.show_tooltip_of_skipped_cards',
-                                          mock_show_skipped_cards)
+    patch_preferences_mw = mock.patch.object(preferences, "mw", mock_mw)
+    patch_preferences_config_py = mock.patch.object(
+        preferences, "config_py", mock_config_py
+    )
+    patch_show_skipped_cards = mock.patch(
+        "ankimorphs.reviewing_utils.SkippedCards.show_tooltip_of_skipped_cards",
+        mock_show_skipped_cards,
+    )
 
     patch_preferences_mw.start()
     patch_preferences_config_py.start()

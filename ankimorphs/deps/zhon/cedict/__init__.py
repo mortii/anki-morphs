@@ -1,7 +1,6 @@
 """Provides CC-CEDICT character constants."""
 
 
-
 from . import simplified
 from . import traditional
 from . import all

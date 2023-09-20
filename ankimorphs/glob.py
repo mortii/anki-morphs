@@ -13,6 +13,7 @@ except NameError:
     class _unicode(object):
         pass
 
+
 __all__ = ["glob", "iglob"]
 
 
@@ -71,23 +72,23 @@ def iglob(pathname):
 # They return a list of basenames. `glob1` accepts a pattern while `glob0`
 # takes a literal basename (so it only has to check for its existence).
 
+
 def glob1(dirname, pattern):
     if not dirname:
         dirname = os.curdir
     if isinstance(pattern, _unicode) and not isinstance(dirname, str):
-        dirname = str(dirname, sys.getfilesystemencoding() or
-                      sys.getdefaultencoding())
+        dirname = str(dirname, sys.getfilesystemencoding() or sys.getdefaultencoding())
     try:
         names = os.listdir(dirname)
     except os.error:
         return []
-    if pattern[0] != '.':
-        names = [x for x in names if x[0] != '.']
+    if pattern[0] != ".":
+        names = [x for x in names if x[0] != "."]
     return fnmatch.filter(names, pattern)
 
 
 def glob0(dirname, basename):
-    if basename == '':
+    if basename == "":
         # `os.path.split()` returns an empty basename for paths ending with a
         # directory separator.  'q*x/' should match only directories.
         if os.path.isdir(dirname):
@@ -98,7 +99,7 @@ def glob0(dirname, basename):
     return []
 
 
-magic_check = re.compile('[*?[]')
+magic_check = re.compile("[*?[]")
 
 
 def has_magic(s):
