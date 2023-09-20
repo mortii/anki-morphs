@@ -3,11 +3,9 @@ import codecs
 import gzip
 import os
 import pickle as pickle
-import sqlite3
-
-from abc import ABC, abstractmethod
-
 import re
+import sqlite3
+from abc import ABC, abstractmethod
 
 try:
     import aqt
@@ -16,10 +14,11 @@ except:
 
 # hack: typing is compile time anyway, so, nothing bad happens if it fails, the try is to support anki < 2.1.16
 try:
-    from aqt.pinnedmodules import (
-        typing,
-    )  # pylint: disable=W0611 # See above hack comment
     from typing import Dict, Set
+
+    from aqt.pinnedmodules import (  # pylint: disable=W0611 # See above hack comment
+        typing,
+    )
 except ImportError:
     pass
 

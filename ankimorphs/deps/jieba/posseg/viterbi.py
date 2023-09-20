@@ -1,5 +1,5 @@
-import sys
 import operator
+import sys
 
 MIN_FLOAT = -3.14e100
 MIN_INF = float("-inf")

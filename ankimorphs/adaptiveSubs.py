@@ -1,5 +1,6 @@
 ﻿import codecs
-from .morphemes import getMorphemes, MorphDb
+
+from .morphemes import MorphDb, getMorphemes
 from .preferences import get_preference as cfg
 
 

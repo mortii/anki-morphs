@@ -5,10 +5,10 @@ from functools import partial
 
 from aqt.utils import tooltip
 
-from .util import mw
-from .preferences import get_preference as cfg
-from .morphemes import MorphDb
 from .exceptions import ProfileNotYetLoadedException
+from .morphemes import MorphDb
+from .preferences import get_preference as cfg
+from .util import mw
 
 
 def get_stat_path():

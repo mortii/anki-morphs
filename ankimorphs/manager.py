@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import os
 
-from aqt.qt import *
 from anki.utils import is_mac
-from .UI import MorphemizerComboBox
+from aqt.qt import *
 
 from . import adaptiveSubs
 from .morphemes import MorphDb
 from .morphemizer import getAllMorphemizers
-from .util import errorMsg, infoMsg, mw, mkBtn
 from .preferences import get_preference as cfg
+from .UI import MorphemizerComboBox
+from .util import errorMsg, infoMsg, mkBtn, mw
 
 
 def getPath(le):  # LineEdit -> GUI ()

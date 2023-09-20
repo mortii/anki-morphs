@@ -1,4 +1,4 @@
-from aqt.qt import QApplication, QTableWidget, QKeySequence
+from aqt.qt import QApplication, QKeySequence, QTableWidget
 
 
 class CustomTableWidget(QTableWidget):

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import importlib
+
 from aqt import mw
 
 from .exceptions import ProfileNotYetLoadedException

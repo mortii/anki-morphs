@@ -4,19 +4,17 @@ import pprint
 import re
 from typing import List, Optional
 
+from anki.consts import CARD_TYPE_NEW
+from anki.notes import Note
 from aqt import dialogs
 from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
 
-from anki.notes import Note
-from anki.consts import CARD_TYPE_NEW
-
 from . import text_utils
-from .util import get_filter
-from .preferences import get_preference
-
-from .morphemizer import getMorphemizerByName
 from .morphemes import MorphDb, getMorphemes
+from .morphemizer import getMorphemizerByName
+from .preferences import get_preference
+from .util import get_filter
 
 seen_morphs = set()  # TODO: use the db instead
 

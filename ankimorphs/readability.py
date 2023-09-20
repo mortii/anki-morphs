@@ -3,32 +3,30 @@ import array
 import copy
 import csv
 import errno
+import gzip
 import importlib
 import io
 import json
-import gzip
 import operator
 import os
-from pathlib import Path
 import pickle as pickle
 import re
 import sqlite3
 from collections import namedtuple
-from contextlib import redirect_stdout, redirect_stderr
+from contextlib import redirect_stderr, redirect_stdout
 from functools import partial
+from pathlib import Path
 
-from PyQt6 import QtWebSockets, QtNetwork
-from aqt.qt import *
-
-from .morphemes import Morpheme, MorphDb, getMorphemes, altIncludesMorpheme
-from .morphemizer import getAllMorphemizers
-from .preferences import get_preference as cfg, update_preferences
-from .util import mw
 from anki.utils import strip_html
+from aqt.qt import *
+from PyQt6 import QtNetwork, QtWebSockets
 
-from . import customTableWidget
-from . import readability_ui
-from . import readability_settings_ui
+from . import customTableWidget, readability_settings_ui, readability_ui
+from .morphemes import MorphDb, Morpheme, altIncludesMorpheme, getMorphemes
+from .morphemizer import getAllMorphemizers
+from .preferences import get_preference as cfg
+from .preferences import update_preferences
+from .util import mw
 
 importlib.reload(customTableWidget)
 importlib.reload(readability_ui)

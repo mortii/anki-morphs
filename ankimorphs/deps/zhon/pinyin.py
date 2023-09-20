@@ -4,7 +4,6 @@
 
 from string import whitespace
 
-
 _a = "a\u0101\u00E0\u00E1\u01CE"
 _e = "e\u0113\u00E9\u011B\u00E8"
 _i = "i\u012B\u00ED\u01D0\u00EC"

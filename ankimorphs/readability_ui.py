@@ -450,5 +450,5 @@ class Ui_ReadabilityDialog(object):
         )
 
 
-from .UI import MorphemizerComboBox
 from .customTableWidget import CustomTableWidget
+from .UI import MorphemizerComboBox

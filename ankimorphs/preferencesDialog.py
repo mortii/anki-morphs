@@ -1,15 +1,13 @@
-from aqt.qt import *
-from anki.lang import _
-
-from aqt.utils import tooltip
-
-from .util import mw, mkBtn
-from .preferences import get_preference, update_preferences
-from .morphemizer import getAllMorphemizers
-from .UI import MorphemizerComboBox
-
 # only for jedi-auto-completion
 import aqt.main
+from anki.lang import _
+from aqt.qt import *
+from aqt.utils import tooltip
+
+from .morphemizer import getAllMorphemizers
+from .preferences import get_preference, update_preferences
+from .UI import MorphemizerComboBox
+from .util import mkBtn, mw
 
 
 class PreferencesDialog(QDialog):

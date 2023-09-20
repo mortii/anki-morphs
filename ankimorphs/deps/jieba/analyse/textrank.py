@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, unicode_literals
+
 import sys
-from operator import itemgetter
 from collections import defaultdict
+from operator import itemgetter
+
 import jieba.posseg
-from .tfidf import KeywordExtractor
+
 from .._compat import *
+from .tfidf import KeywordExtractor
 
 
 class UndirectWeightedGraph:

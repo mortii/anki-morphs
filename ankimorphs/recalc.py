@@ -2,39 +2,35 @@
 import csv
 import importlib
 import io
+import itertools
 import pprint
 import time
-import itertools
-
 from functools import partial
-from typing import Dict, Set, Union, Optional
+from typing import Dict, Optional, Set, Union
 
 import aqt.main
-from anki.models import NotetypeDict, FieldDict
-from aqt.utils import tooltip
-from aqt.operations import QueryOp
-
-from anki.tags import TagManager
-from anki.utils import split_fields, join_fields, strip_html, int_time, field_checksum
 from anki.collection import Collection
-
-from ankimorphs.morphemes import Location, Morpheme
-from ankimorphs.morphemes import MorphDb, AnkiDeck, getMorphemes
-from ankimorphs.morphemizer import getMorphemizerByName
-from ankimorphs.util import (
-    printf,
-    mw,
-    errorMsg,
-    getFilterByMidAndTags,
-    getReadEnabledModels,
-    getModifyEnabledModels,
-)
-from ankimorphs.preferences import get_preference, get_preferences
-from ankimorphs.util_external import memoize
-from ankimorphs.exceptions import NoteFilterFieldsException
+from anki.models import FieldDict, NotetypeDict
+from anki.tags import TagManager
+from anki.utils import field_checksum, int_time, join_fields, split_fields, strip_html
+from aqt.operations import QueryOp
+from aqt.utils import tooltip
 
 from ankimorphs import morph_stats as stats
 from ankimorphs import util
+from ankimorphs.exceptions import NoteFilterFieldsException
+from ankimorphs.morphemes import AnkiDeck, Location, MorphDb, Morpheme, getMorphemes
+from ankimorphs.morphemizer import getMorphemizerByName
+from ankimorphs.preferences import get_preference, get_preferences
+from ankimorphs.util import (
+    errorMsg,
+    getFilterByMidAndTags,
+    getModifyEnabledModels,
+    getReadEnabledModels,
+    mw,
+    printf,
+)
+from ankimorphs.util_external import memoize
 
 
 @memoize

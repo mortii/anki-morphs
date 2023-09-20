@@ -1,6 +1,7 @@
 from __future__ import absolute_import
-from .tfidf import TFIDF
+
 from .textrank import TextRank
+from .tfidf import TFIDF
 
 try:
     from .analyzer import ChineseAnalyzer

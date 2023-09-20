@@ -4,14 +4,13 @@ import datetime
 from os import path
 from typing import Any, Dict, List, Optional
 
+from anki.notes import Note
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import showCritical, showInfo
 
-from anki.notes import Note
-
-from .preferences import get_preference
 from .morphemes import MorphDb
+from .preferences import get_preference
 
 T = TypeVar("T")
 

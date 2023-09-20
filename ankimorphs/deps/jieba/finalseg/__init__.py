@@ -1,8 +1,10 @@
 from __future__ import absolute_import, unicode_literals
-import re
+
 import os
-import sys
 import pickle
+import re
+import sys
+
 from .._compat import *
 
 MIN_FLOAT = -3.14e100
@@ -27,9 +29,9 @@ def load_model():
 if sys.platform.startswith("java"):
     start_P, trans_P, emit_P = load_model()
 else:
+    from .prob_emit import P as emit_P
     from .prob_start import P as start_P
     from .prob_trans import P as trans_P
-    from .prob_emit import P as emit_P
 
 
 def viterbi(obs, states, start_p, trans_p, emit_p):
