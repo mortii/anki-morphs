@@ -6,7 +6,6 @@ from PyQt6.QtWidgets import QApplication
 from ankimorphs import preferences
 from tests.fake_preferences import get_fake_preferences
 
-
 # def test_mock_patch():
 #
 #     mock_mw = mock.MagicMock(spec=preferences.mw)

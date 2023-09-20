@@ -1,18 +1,16 @@
 import os
 import pprint
+import shutil
 from unittest import mock
 
 import pytest
-
+from anki import hooks
+from anki.collection import Collection
+from aqt import setupLangAndBackend
 from aqt.reviewer import Reviewer
 
 from ankimorphs import preferences, reviewing_utils
 from tests.fake_config import FakeConfig
-from aqt import setupLangAndBackend
-from anki.collection import Collection
-
-from anki import hooks
-import shutil
 
 
 @pytest.fixture
