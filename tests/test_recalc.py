@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from ankimorphs import recalc, preferences, morph_stats
+from ankimorphs import morph_stats, preferences, recalc
 from tests.fake_config import FakeConfig
 from tests.fake_preferences import get_fake_preferences
 

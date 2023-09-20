@@ -1,9 +1,8 @@
 from unittest import mock
+
 import pytest
 
-from ankimorphs import morphemes
-from ankimorphs import preferences
-
+from ankimorphs import morphemes, preferences
 from tests.fake_config import FakeConfig
 from tests.fake_preferences import get_fake_preferences
 
