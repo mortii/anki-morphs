@@ -83,7 +83,9 @@ def init_browser_menus_and_actions() -> None:
                 return  # prevents duplicate menus on profile-switch
 
         morphman_browse_menu = QMenu("MorphMan", mw)
-        morphman_browse_menu_creation_action = browser_utils.browser.form.menubar.addMenu(morphman_browse_menu)
+        morphman_browse_menu_creation_action = (
+            browser_utils.browser.form.menubar.addMenu(morphman_browse_menu)
+        )
         morphman_browse_menu_creation_action.setObjectName(BROWSE_MENU)
 
         morphman_browse_menu.addAction(view_action)
@@ -114,12 +116,16 @@ def mark_morph_seen_wrapper(reviewer: Reviewer, card, ease):
 
 def replace_reviewer_functions() -> None:
     # This skips the cards the user specified in preferences GUI
-    Reviewer.nextCard = hooks.wrap(Reviewer.nextCard, reviewing_utils.my_next_card, "around")
+    Reviewer.nextCard = hooks.wrap(
+        Reviewer.nextCard, reviewing_utils.my_next_card, "around"
+    )
 
     # Automatically highlights morphs on cards if the respective note stylings are present
     hooks.field_filter.append(reviewing_utils.highlight)
 
-    Reviewer._shortcutKeys = hooks.wrap(Reviewer._shortcutKeys, reviewing_utils.my_reviewer_shortcut_keys, "around")
+    Reviewer._shortcutKeys = hooks.wrap(
+        Reviewer._shortcutKeys, reviewing_utils.my_reviewer_shortcut_keys, "around"
+    )
 
 
 def add_morph_stats_to_toolbar(links, toolbar) -> None:
@@ -127,19 +133,28 @@ def add_morph_stats_to_toolbar(links, toolbar) -> None:
     all_name, all_details = morph_stats.get_all_morph_toolbar_stats()
     links.append(
         toolbar.create_link(
-            "morph", unique_name, morph_stats.on_morph_stats_clicked, tip=unique_details, id="morph"
+            "morph",
+            unique_name,
+            morph_stats.on_morph_stats_clicked,
+            tip=unique_details,
+            id="morph",
         )
     )
     links.append(
         toolbar.create_link(
-            "morph2", all_name, morph_stats.on_morph_stats_clicked, tip=all_details, id="morph2"
+            "morph2",
+            all_name,
+            morph_stats.on_morph_stats_clicked,
+            tip=all_details,
+            id="morph2",
         )
     )
 
 
 def add_morph_stats_to_ease_graph() -> None:
-    anki.stats.CollectionStats.easeGraph = hooks.wrap(anki.stats.CollectionStats.easeGraph, morph_graphs_wrapper,
-                                                      "around")
+    anki.stats.CollectionStats.easeGraph = hooks.wrap(
+        anki.stats.CollectionStats.easeGraph, morph_graphs_wrapper, "around"
+    )
 
 
 def create_morphman_tool_menu() -> QMenu:
@@ -151,7 +166,7 @@ def create_morphman_tool_menu() -> QMenu:
 
 
 def create_recalc_action() -> QAction:
-    action = QAction('&Recalc', mw)
+    action = QAction("&Recalc", mw)
     action.setStatusTip("Recalculate all.db, note fields, and new card ordering")
     action.setShortcut("Ctrl+M")
     action.triggered.connect(recalc.main)
@@ -159,7 +174,7 @@ def create_recalc_action() -> QAction:
 
 
 def create_preferences_action() -> QAction:
-    action = QAction('&Preferences', mw)
+    action = QAction("&Preferences", mw)
     action.setStatusTip("Change inspected cards, fields and tags")
     action.setShortcut("Ctrl+O")
     action.triggered.connect(preferencesDialog.main)
@@ -167,15 +182,17 @@ def create_preferences_action() -> QAction:
 
 
 def create_database_manager_action() -> QAction:
-    action = QAction('&Database Manager', mw)
-    action.setStatusTip("Open gui manager to inspect, compare, and analyze MorphMan DBs")
+    action = QAction("&Database Manager", mw)
+    action.setStatusTip(
+        "Open gui manager to inspect, compare, and analyze MorphMan DBs"
+    )
     action.setShortcut("Ctrl+D")
     action.triggered.connect(manager.main)
     return action
 
 
 def create_readability_analyzer_action() -> QAction:
-    action = QAction('Readability &Analyzer', mw)
+    action = QAction("Readability &Analyzer", mw)
     action.setStatusTip("Check readability and build frequency lists")
     action.setShortcut("Ctrl+A")
     action.triggered.connect(readability.main)
@@ -183,39 +200,39 @@ def create_readability_analyzer_action() -> QAction:
 
 
 def create_learn_now_action():
-    action = QAction('&Learn Card Now', mw)
+    action = QAction("&Learn Card Now", mw)
     action.setStatusTip("Immediately review the selected new cards")
-    action.setShortcut(get_preference('set learn now key'))
+    action.setShortcut(get_preference("set learn now key"))
     action.triggered.connect(browser_utils.run_learn_card_now)
     return action
 
 
 def create_browse_morph_action():
-    action = QAction('&Browse Same Morphs', mw)
+    action = QAction("&Browse Same Morphs", mw)
     action.setStatusTip("Browse all notes containing the morphs from selected notes")
-    action.setShortcut(get_preference('browse same focus key'))
+    action.setShortcut(get_preference("browse same focus key"))
     action.triggered.connect(browser_utils.run_browse_morph)
     return action
 
 
 def create_view_morphs_action() -> QAction:
-    action = QAction('&View Morphemes', mw)
+    action = QAction("&View Morphemes", mw)
     action.setStatusTip("View Morphemes for selected note")
-    action.setShortcut(get_preference('set view morphemes key'))
+    action.setShortcut(get_preference("set view morphemes key"))
     action.triggered.connect(browser_utils.run_view_morphs)
     return action
 
 
 def create_already_known_tagger_action():
-    action = QAction('&Tag As Known', mw)
+    action = QAction("&Tag As Known", mw)
     action.setStatusTip("Tag all selected cards as already known")
-    action.setShortcut(get_preference('set known and skip key'))
+    action.setShortcut(get_preference("set known and skip key"))
     action.triggered.connect(browser_utils.run_already_known_tagger)
     return action
 
 
 def create_test_action() -> QAction:
-    action = QAction('&Test', mw)
+    action = QAction("&Test", mw)
     action.setStatusTip("Recalculate all.db, note fields, and new card ordering")
     action.setShortcut("Ctrl+T")
     action.triggered.connect(test_function)
@@ -228,7 +245,7 @@ def morph_graphs_wrapper(*args, **kwargs):
 
 
 def test_function() -> None:
-    known_db = MorphDb(get_preference('path_known'), ignoreErrors=True)
+    known_db = MorphDb(get_preference("path_known"), ignoreErrors=True)
 
     for group in known_db.groups.keys():
         for _morph in known_db.groups[group]:

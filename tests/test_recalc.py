@@ -7,17 +7,21 @@ from tests.fake_config import FakeConfig
 from tests.fake_preferences import get_fake_preferences
 
 
-@pytest.fixture(scope="module")  # module-scope: created and destroyed once per module. Cached.
+@pytest.fixture(
+    scope="module"
+)  # module-scope: created and destroyed once per module. Cached.
 def fake_environment():
     mock_mw = mock.MagicMock(spec=recalc.mw)
     mock_mw.col.get_config.return_value = get_fake_preferences()
 
     mock_config_py = FakeConfig()
 
-    patch_recalc_mw = mock.patch.object(recalc, 'mw', mock_mw)
-    patch_preferences_mw = mock.patch.object(preferences, 'mw', mock_mw)
-    patch_morph_stats_mw = mock.patch.object(morph_stats, 'mw', mock_mw)
-    patch_preferences_config_py = mock.patch.object(preferences, 'config_py', mock_config_py)
+    patch_recalc_mw = mock.patch.object(recalc, "mw", mock_mw)
+    patch_preferences_mw = mock.patch.object(preferences, "mw", mock_mw)
+    patch_morph_stats_mw = mock.patch.object(morph_stats, "mw", mock_mw)
+    patch_preferences_config_py = mock.patch.object(
+        preferences, "config_py", mock_config_py
+    )
 
     patch_recalc_mw.start()
     patch_preferences_mw.start()

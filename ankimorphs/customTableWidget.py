@@ -1,17 +1,18 @@
 from aqt.qt import QApplication, QTableWidget, QKeySequence
 
-class CustomTableWidget(QTableWidget):
 
+class CustomTableWidget(QTableWidget):
     def keyPressEvent(self, event):
         if event.matches(QKeySequence.StandardKey.Copy):
-            text = ''
+            text = ""
             sel_range = self.selectionModel().selection().first()
 
-            for y in range(sel_range.top(), sel_range.bottom()+1):
-                for x in range(sel_range.left(), sel_range.right()+1):
-                    if x != sel_range.left(): text += '\t'
-                    text += str(self.item(y,x).text())
-                text += '\n'
+            for y in range(sel_range.top(), sel_range.bottom() + 1):
+                for x in range(sel_range.left(), sel_range.right() + 1):
+                    if x != sel_range.left():
+                        text += "\t"
+                    text += str(self.item(y, x).text())
+                text += "\n"
 
             clipboard = QApplication.clipboard()
             clipboard.setText(text)

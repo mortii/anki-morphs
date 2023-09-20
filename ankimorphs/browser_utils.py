@@ -17,29 +17,29 @@ browser: Optional[Browser] = None
 
 
 def run_browse_morph() -> None:
-    run_browse_morph_dict = dict({'focusMorphs': set()})
+    run_browse_morph_dict = dict({"focusMorphs": set()})
 
     for cid in browser.selectedCards():
         card = mw.col.get_card(cid)
         note = card.note()
 
         for focusMorph in try_to_get_focus_morphs(note):
-            run_browse_morph_dict['focusMorphs'].add(focusMorph)
+            run_browse_morph_dict["focusMorphs"].add(focusMorph)
 
-        focus_field = get_preference('Field_FocusMorph')
-        focus_morphs = run_browse_morph_dict['focusMorphs']
+        focus_field = get_preference("Field_FocusMorph")
+        focus_morphs = run_browse_morph_dict["focusMorphs"]
 
         query = focus_query(focus_field, focus_morphs)
-        if query != '':
+        if query != "":
             browser.form.searchEdit.lineEdit().setText(query)
             browser.onSearchActivated()
-            tooltip(f'Browsing {(len(focus_morphs))} morphs')
+            tooltip(f"Browsing {(len(focus_morphs))} morphs")
 
         return  # Only use one card since note-types can be different
 
 
 def run_already_known_tagger():
-    known_tag = get_preference('Tag_AlreadyKnown')
+    known_tag = get_preference("Tag_AlreadyKnown")
     selected_cards = browser.selectedCards()
 
     for cid in selected_cards:
@@ -48,7 +48,7 @@ def run_already_known_tagger():
         note.add_tag(known_tag)
         note.flush()
 
-    tooltip(f'{len(selected_cards)} notes given the {known_tag} tag')
+    tooltip(f"{len(selected_cards)} notes given the {known_tag} tag")
 
 
 def run_learn_card_now() -> None:
@@ -64,11 +64,11 @@ def run_learn_card_now() -> None:
     mw.reviewer._refresh_needed = RefreshNeeded.QUEUES
     mw.reviewer.refresh_if_needed()
 
-    tooltip(f'Next new card(s) will be {selected_cards}')
+    tooltip(f"Next new card(s) will be {selected_cards}")
 
 
 def run_view_morphs() -> None:
-    morph_dict = dict({'morphemes': []})
+    morph_dict = dict({"morphemes": []})
 
     for cid in browser.selectedCards():
         card = mw.col.get_card(cid)
@@ -78,14 +78,16 @@ def run_view_morphs() -> None:
         if notecfg is None:
             return None
 
-        morphemizer = getMorphemizerByName(notecfg['Morphemizer'])
+        morphemizer = getMorphemizerByName(notecfg["Morphemizer"])
 
-        for note_filter_field in notecfg['Fields']:
-            morphemes = getMorphemes(morphemizer, strip_html(note[note_filter_field]), note.tags)
-            morph_dict['morphemes'] += morphemes
+        for note_filter_field in notecfg["Fields"]:
+            morphemes = getMorphemes(
+                morphemizer, strip_html(note[note_filter_field]), note.tags
+            )
+            morph_dict["morphemes"] += morphemes
 
-        if len(morph_dict['morphemes']) == 0:
-            util.infoMsg('----- No morphemes, check your filters -----')
+        if len(morph_dict["morphemes"]) == 0:
+            util.infoMsg("----- No morphemes, check your filters -----")
         else:
-            morph_strings = ms2str([(m, []) for m in morph_dict['morphemes']])
-            util.infoMsg('----- All -----\n' + morph_strings)
+            morph_strings = ms2str([(m, []) for m in morph_dict["morphemes"]])
+            util.infoMsg("----- All -----\n" + morph_strings)

@@ -10,6 +10,7 @@ try:
     from PyQt6 import QtCore, QtGui, QtWidgets
 except:
     from PyQt5 import QtCore, QtGui, QtWidgets
+
     QtCore.Qt.AlignmentFlag.AlignLeading = QtCore.Qt.AlignLeading
     QtCore.Qt.AlignmentFlag.AlignTrailing = QtCore.Qt.AlignTrailing
 
@@ -18,7 +19,9 @@ class Ui_ReadabilityDialog(object):
     def setupUi(self, ReadabilityDialog):
         ReadabilityDialog.setObjectName("ReadabilityDialog")
         ReadabilityDialog.resize(901, 730)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(ReadabilityDialog.sizePolicy().hasHeightForWidth())
@@ -61,7 +64,12 @@ class Ui_ReadabilityDialog(object):
         self.morphemizerComboBox = MorphemizerComboBox(self.frame)
         self.morphemizerComboBox.setObjectName("morphemizerComboBox")
         self.horizontalLayout_4.addWidget(self.morphemizerComboBox)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
         self.horizontalLayout_4.addItem(spacerItem)
         self.minFrequencyLabel = QtWidgets.QLabel(self.frame)
         self.minFrequencyLabel.setObjectName("minFrequencyLabel")
@@ -71,17 +79,29 @@ class Ui_ReadabilityDialog(object):
         self.minFrequencySpinBox.setObjectName("minFrequencySpinBox")
         self.horizontalLayout_4.addWidget(self.minFrequencySpinBox)
         self.targetLabel = QtWidgets.QLabel(self.frame)
-        self.targetLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.targetLabel.setAlignment(
+            QtCore.Qt.AlignmentFlag.AlignRight
+            | QtCore.Qt.AlignmentFlag.AlignTrailing
+            | QtCore.Qt.AlignmentFlag.AlignVCenter
+        )
         self.targetLabel.setObjectName("targetLabel")
         self.horizontalLayout_4.addWidget(self.targetLabel)
         self.targetSpinBox = QtWidgets.QDoubleSpinBox(self.frame)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.targetSpinBox.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.targetSpinBox.sizePolicy().hasHeightForWidth()
+        )
         self.targetSpinBox.setSizePolicy(sizePolicy)
         self.targetSpinBox.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
-        self.targetSpinBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.targetSpinBox.setAlignment(
+            QtCore.Qt.AlignmentFlag.AlignRight
+            | QtCore.Qt.AlignmentFlag.AlignTrailing
+            | QtCore.Qt.AlignmentFlag.AlignVCenter
+        )
         self.targetSpinBox.setDecimals(1)
         self.targetSpinBox.setProperty("value", 98.0)
         self.targetSpinBox.setObjectName("targetSpinBox")
@@ -104,11 +124,18 @@ class Ui_ReadabilityDialog(object):
         self.closeButton.setObjectName("closeButton")
         self.verticalLayout_4.addWidget(self.closeButton)
         self.horizontalLayout_2.addWidget(self.frame_2)
-        spacerItem1 = QtWidgets.QSpacerItem(0, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            0,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
         self.horizontalLayout_2.addItem(spacerItem1)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint)
+        self.horizontalLayout.setSizeConstraint(
+            QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint
+        )
         self.horizontalLayout.setContentsMargins(6, 6, 6, 6)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.generalSettingsGroupBox = QtWidgets.QGroupBox(ReadabilityDialog)
@@ -117,11 +144,17 @@ class Ui_ReadabilityDialog(object):
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.generalSettingsGroupBox)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.masterFreqLabel = QtWidgets.QLabel(self.generalSettingsGroupBox)
-        self.masterFreqLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignBottom|QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft)
+        self.masterFreqLabel.setAlignment(
+            QtCore.Qt.AlignmentFlag.AlignBottom
+            | QtCore.Qt.AlignmentFlag.AlignLeading
+            | QtCore.Qt.AlignmentFlag.AlignLeft
+        )
         self.masterFreqLabel.setObjectName("masterFreqLabel")
         self.verticalLayout_3.addWidget(self.masterFreqLabel)
         self.horizontalLayout_MasterFrequency = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_MasterFrequency.setObjectName("horizontalLayout_MasterFrequency")
+        self.horizontalLayout_MasterFrequency.setObjectName(
+            "horizontalLayout_MasterFrequency"
+        )
         self.masterFreqButton = QtWidgets.QPushButton(self.generalSettingsGroupBox)
         self.masterFreqButton.setObjectName("masterFreqButton")
         self.horizontalLayout_MasterFrequency.addWidget(self.masterFreqButton)
@@ -130,7 +163,11 @@ class Ui_ReadabilityDialog(object):
         self.horizontalLayout_MasterFrequency.addWidget(self.masterFreqEdit)
         self.verticalLayout_3.addLayout(self.horizontalLayout_MasterFrequency)
         self.knownMorphsLabel = QtWidgets.QLabel(self.generalSettingsGroupBox)
-        self.knownMorphsLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignBottom|QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft)
+        self.knownMorphsLabel.setAlignment(
+            QtCore.Qt.AlignmentFlag.AlignBottom
+            | QtCore.Qt.AlignmentFlag.AlignLeading
+            | QtCore.Qt.AlignmentFlag.AlignLeft
+        )
         self.knownMorphsLabel.setObjectName("knownMorphsLabel")
         self.verticalLayout_3.addWidget(self.knownMorphsLabel)
         self.horizontalLayout_KnownMorphs = QtWidgets.QHBoxLayout()
@@ -156,10 +193,15 @@ class Ui_ReadabilityDialog(object):
         self.verticalLayout_3.addLayout(self.horizontalLayout_Output)
         self.horizontalLayout.addWidget(self.generalSettingsGroupBox)
         self.OutputsGroupBox = QtWidgets.QGroupBox(ReadabilityDialog)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.OutputsGroupBox.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.OutputsGroupBox.sizePolicy().hasHeightForWidth()
+        )
         self.OutputsGroupBox.setSizePolicy(sizePolicy)
         self.OutputsGroupBox.setMinimumSize(QtCore.QSize(150, 0))
         self.OutputsGroupBox.setObjectName("OutputsGroupBox")
@@ -186,14 +228,20 @@ class Ui_ReadabilityDialog(object):
         self.processLinesCheckBox.setObjectName("processLinesCheckBox")
         self.verticalLayout_5.addWidget(self.processLinesCheckBox)
         self.advancedSettingsButton = QtWidgets.QPushButton(self.OutputsGroupBox)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.advancedSettingsButton.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.advancedSettingsButton.sizePolicy().hasHeightForWidth()
+        )
         self.advancedSettingsButton.setSizePolicy(sizePolicy)
         self.advancedSettingsButton.setObjectName("advancedSettingsButton")
         self.verticalLayout_5.addWidget(self.advancedSettingsButton)
-        self.horizontalLayout.addWidget(self.OutputsGroupBox, 0, QtCore.Qt.AlignmentFlag.AlignTop)
+        self.horizontalLayout.addWidget(
+            self.OutputsGroupBox, 0, QtCore.Qt.AlignmentFlag.AlignTop
+        )
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setContentsMargins(6, -1, 6, -1)
@@ -205,7 +253,10 @@ class Ui_ReadabilityDialog(object):
         self.verticalLayout_21 = QtWidgets.QVBoxLayout(self.tabOutputLog)
         self.verticalLayout_21.setObjectName("verticalLayout_21")
         self.outputText = QtWidgets.QPlainTextEdit(self.tabOutputLog)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.outputText.sizePolicy().hasHeightForWidth())
@@ -219,8 +270,12 @@ class Ui_ReadabilityDialog(object):
         self.verticalLayout_31 = QtWidgets.QVBoxLayout(self.tabReadabilityReport)
         self.verticalLayout_31.setObjectName("verticalLayout_31")
         self.readabilityTable = CustomTableWidget(self.tabReadabilityReport)
-        self.readabilityTable.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)  # pylint: disable=E1101
-        self.readabilityTable.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
+        self.readabilityTable.setEditTriggers(
+            QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers
+        )  # pylint: disable=E1101
+        self.readabilityTable.setSelectionBehavior(
+            QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems
+        )
         self.readabilityTable.setRowCount(0)
         self.readabilityTable.setColumnCount(0)
         self.readabilityTable.setObjectName("readabilityTable")
@@ -231,7 +286,9 @@ class Ui_ReadabilityDialog(object):
         self.verticalLayout_41 = QtWidgets.QVBoxLayout(self.tabStudyPlan)
         self.verticalLayout_41.setObjectName("verticalLayout_41")
         self.studyPlanTable = CustomTableWidget(self.tabStudyPlan)
-        self.studyPlanTable.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)  # pylint: disable=E1101
+        self.studyPlanTable.setEditTriggers(
+            QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers
+        )  # pylint: disable=E1101
         self.studyPlanTable.setObjectName("studyPlanTable")
         self.studyPlanTable.setColumnCount(0)
         self.studyPlanTable.setRowCount(0)
@@ -246,59 +303,152 @@ class Ui_ReadabilityDialog(object):
 
     def retranslateUi(self, ReadabilityDialog):
         _translate = QtCore.QCoreApplication.translate
-        ReadabilityDialog.setWindowTitle(_translate("ReadabilityDialog", "Morph Man Readability Analyzer"))
-        self.inputDirectoryLabel.setText(_translate("ReadabilityDialog", "Input Directory"))
+        ReadabilityDialog.setWindowTitle(
+            _translate("ReadabilityDialog", "Morph Man Readability Analyzer")
+        )
+        self.inputDirectoryLabel.setText(
+            _translate("ReadabilityDialog", "Input Directory")
+        )
         self.inputPathButton.setText(_translate("ReadabilityDialog", "..."))
-        self.inputPathEdit.setToolTip(_translate("ReadabilityDialog", "Set the Input Directory path to be analyzed."))
+        self.inputPathEdit.setToolTip(
+            _translate(
+                "ReadabilityDialog", "Set the Input Directory path to be analyzed."
+            )
+        )
         self.dictionaryLabel.setText(_translate("ReadabilityDialog", "Morphemizer:"))
-        self.morphemizerComboBox.setToolTip(_translate("ReadabilityDialog", "Select the Morphemizer to use for parsing the inputs."))
-        self.minFrequencyLabel.setText(_translate("ReadabilityDialog", "Minimum Frequency"))
-        self.minFrequencySpinBox.setToolTip(_translate("ReadabilityDialog", "The \'Minimum Frequency\' words to include, corresponding to the \'Master Frequency List\' in the Study Plan.\n"
-"Morphemes meeting the \'Minimum Frequency\' will be added to the plan until the \'Target %\' is reached."))
+        self.morphemizerComboBox.setToolTip(
+            _translate(
+                "ReadabilityDialog",
+                "Select the Morphemizer to use for parsing the inputs.",
+            )
+        )
+        self.minFrequencyLabel.setText(
+            _translate("ReadabilityDialog", "Minimum Frequency")
+        )
+        self.minFrequencySpinBox.setToolTip(
+            _translate(
+                "ReadabilityDialog",
+                "The 'Minimum Frequency' words to include, corresponding to the 'Master Frequency List' in the Study Plan.\n"
+                "Morphemes meeting the 'Minimum Frequency' will be added to the plan until the 'Target %' is reached.",
+            )
+        )
         self.targetLabel.setText(_translate("ReadabilityDialog", "Target"))
-        self.targetSpinBox.setToolTip(_translate("ReadabilityDialog", "The target \'Readability %\' for the study plan.\n"
-"Morphemes meeting the \'Minimum Frequency\' will be added to the plan until the \'Target %\' is reached."))
+        self.targetSpinBox.setToolTip(
+            _translate(
+                "ReadabilityDialog",
+                "The target 'Readability %' for the study plan.\n"
+                "Morphemes meeting the 'Minimum Frequency' will be added to the plan until the 'Target %' is reached.",
+            )
+        )
         self.targetSpinBox.setSuffix(_translate("ReadabilityDialog", "%"))
         self.analyzeButton.setText(_translate("ReadabilityDialog", "Analyze!"))
         self.closeButton.setText(_translate("ReadabilityDialog", "Close"))
-        self.generalSettingsGroupBox.setTitle(_translate("ReadabilityDialog", "General Settings"))
-        self.masterFreqLabel.setText(_translate("ReadabilityDialog", "Master Frequency List"))
+        self.generalSettingsGroupBox.setTitle(
+            _translate("ReadabilityDialog", "General Settings")
+        )
+        self.masterFreqLabel.setText(
+            _translate("ReadabilityDialog", "Master Frequency List")
+        )
         self.masterFreqButton.setText(_translate("ReadabilityDialog", "..."))
-        self.masterFreqEdit.setToolTip(_translate("ReadabilityDialog", "Specity a Master Frequency List\n"
-"The expected format is that of a instance_freq_report.txt file."))
-        self.knownMorphsLabel.setText(_translate("ReadabilityDialog", "Known Morphs DB"))
+        self.masterFreqEdit.setToolTip(
+            _translate(
+                "ReadabilityDialog",
+                "Specity a Master Frequency List\n"
+                "The expected format is that of a instance_freq_report.txt file.",
+            )
+        )
+        self.knownMorphsLabel.setText(
+            _translate("ReadabilityDialog", "Known Morphs DB")
+        )
         self.knownMorphsButton.setText(_translate("ReadabilityDialog", "..."))
-        self.knownMorphsEdit.setToolTip(_translate("ReadabilityDialog", "Path to use as your \'Known\' morphs database."))
-        self.outputFreqLabel.setText(_translate("ReadabilityDialog", "Output Directory"))
+        self.knownMorphsEdit.setToolTip(
+            _translate(
+                "ReadabilityDialog", "Path to use as your 'Known' morphs database."
+            )
+        )
+        self.outputFreqLabel.setText(
+            _translate("ReadabilityDialog", "Output Directory")
+        )
         self.outputFrequencyButton.setText(_translate("ReadabilityDialog", "..."))
-        self.outputFrequencyEdit.setToolTip(_translate("ReadabilityDialog", "Path where all outputs are written."))
+        self.outputFrequencyEdit.setToolTip(
+            _translate("ReadabilityDialog", "Path where all outputs are written.")
+        )
         self.OutputsGroupBox.setTitle(_translate("ReadabilityDialog", "Outputs"))
-        self.studyPlanCheckBox.setToolTip(_translate("ReadabilityDialog", "Generates a Study Plan for the Input Directory based on your \'Minimum Frequency\' and \'Target %\' settings.\n"
-"\n"
-"Outputs:\n"
-" - study_plan.txt"))
-        self.studyPlanCheckBox.setText(_translate("ReadabilityDialog", "Build Study Plan"))
-        self.frequencyListCheckBox.setToolTip(_translate("ReadabilityDialog", "Set MorphMan\'s frequency list based on the study plan & Master Frequency List.\n"
-"\n"
-"Outputs:\n"
-" - frequency.txt\n"
-"\n"
-"The frequency list takes effect when you Recalc morphemes (Ctrl+M)"))
-        self.frequencyListCheckBox.setText(_translate("ReadabilityDialog", "Set Frequency List"))
-        self.wordReportCheckBox.setToolTip(_translate("ReadabilityDialog", "Generate frequency reports for the Input files.\n"
-"\n"
-"Outputs:\n"
-" - instance_freq_report.txt\n"
-" - morph_freq_report.txt"))
-        self.wordReportCheckBox.setText(_translate("ReadabilityDialog", "Write Word Report"))
-        self.groupByDirCheckBox.setToolTip(_translate("ReadabilityDialog", "Group the \'Readability Report\' and \'Study Plan\' by directory instead of by file."))
-        self.groupByDirCheckBox.setText(_translate("ReadabilityDialog", "Group By Directory"))
-        self.processLinesCheckBox.setToolTip(_translate("ReadabilityDialog", "Calculate line-by-line readability statistics."))
-        self.processLinesCheckBox.setText(_translate("ReadabilityDialog", "Line Stats (slower)"))
-        self.advancedSettingsButton.setToolTip(_translate("ReadabilityDialog", "Advanced Settings"))
-        self.advancedSettingsButton.setText(_translate("ReadabilityDialog", "Advanced Settings"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabOutputLog), _translate("ReadabilityDialog", "Output Log"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabReadabilityReport), _translate("ReadabilityDialog", "Readability Report"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabStudyPlan), _translate("ReadabilityDialog", "Study Plan"))
+        self.studyPlanCheckBox.setToolTip(
+            _translate(
+                "ReadabilityDialog",
+                "Generates a Study Plan for the Input Directory based on your 'Minimum Frequency' and 'Target %' settings.\n"
+                "\n"
+                "Outputs:\n"
+                " - study_plan.txt",
+            )
+        )
+        self.studyPlanCheckBox.setText(
+            _translate("ReadabilityDialog", "Build Study Plan")
+        )
+        self.frequencyListCheckBox.setToolTip(
+            _translate(
+                "ReadabilityDialog",
+                "Set MorphMan's frequency list based on the study plan & Master Frequency List.\n"
+                "\n"
+                "Outputs:\n"
+                " - frequency.txt\n"
+                "\n"
+                "The frequency list takes effect when you Recalc morphemes (Ctrl+M)",
+            )
+        )
+        self.frequencyListCheckBox.setText(
+            _translate("ReadabilityDialog", "Set Frequency List")
+        )
+        self.wordReportCheckBox.setToolTip(
+            _translate(
+                "ReadabilityDialog",
+                "Generate frequency reports for the Input files.\n"
+                "\n"
+                "Outputs:\n"
+                " - instance_freq_report.txt\n"
+                " - morph_freq_report.txt",
+            )
+        )
+        self.wordReportCheckBox.setText(
+            _translate("ReadabilityDialog", "Write Word Report")
+        )
+        self.groupByDirCheckBox.setToolTip(
+            _translate(
+                "ReadabilityDialog",
+                "Group the 'Readability Report' and 'Study Plan' by directory instead of by file.",
+            )
+        )
+        self.groupByDirCheckBox.setText(
+            _translate("ReadabilityDialog", "Group By Directory")
+        )
+        self.processLinesCheckBox.setToolTip(
+            _translate(
+                "ReadabilityDialog", "Calculate line-by-line readability statistics."
+            )
+        )
+        self.processLinesCheckBox.setText(
+            _translate("ReadabilityDialog", "Line Stats (slower)")
+        )
+        self.advancedSettingsButton.setToolTip(
+            _translate("ReadabilityDialog", "Advanced Settings")
+        )
+        self.advancedSettingsButton.setText(
+            _translate("ReadabilityDialog", "Advanced Settings")
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabOutputLog),
+            _translate("ReadabilityDialog", "Output Log"),
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabReadabilityReport),
+            _translate("ReadabilityDialog", "Readability Report"),
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabStudyPlan),
+            _translate("ReadabilityDialog", "Study Plan"),
+        )
+
+
 from .UI import MorphemizerComboBox
 from .customTableWidget import CustomTableWidget

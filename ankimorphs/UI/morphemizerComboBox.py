@@ -1,7 +1,7 @@
 from aqt.qt import QComboBox
 
-class MorphemizerComboBox(QComboBox):
 
+class MorphemizerComboBox(QComboBox):
     def setMorphemizers(self, morphemizers):
         if type(morphemizers) == list:
             self.morphemizers = morphemizers
@@ -26,4 +26,3 @@ class MorphemizerComboBox(QComboBox):
                 active = i
         if active:
             self.setCurrentIndex(active)
-
