@@ -136,8 +136,9 @@ def fix_sigpipe():
     """Set this process to exit quietly on SIGPIPE, like a good shell-pipeline citizen."""
     # For context, see e.g. https://stevereads.com/2015/09/25/python-sigpipe/.
     signal.signal(
-        signal.SIGPIPE, signal.SIG_DFL
-    )  # pylint: disable=E1101 # Windows doesn't have these signals
+        signal.SIGPIPE,  # pylint: disable=E1101 # Windows doesn't have these signals
+        signal.SIG_DFL,
+    )
 
 
 def main():

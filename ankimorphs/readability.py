@@ -17,6 +17,7 @@ from collections import namedtuple
 from contextlib import redirect_stdout, redirect_stderr
 from functools import partial
 
+from PyQt6 import QtWebSockets, QtNetwork
 from aqt.qt import *
 
 from .morphemes import Morpheme, MorphDb, getMorphemes, altIncludesMorpheme
@@ -149,12 +150,14 @@ class CountingMorphDB:
         count = 0
         ms = self.db[gk]
         for alt, c in ms.items():
-            if exclude_db != None and c[1]:  # Skip marked morphs
+            if exclude_db is not None and c[1]:  # Skip marked morphs
                 continue
-            if exclude_db != None and exclude_db.matches(alt):  # Skip excluded morphs
+            if exclude_db is not None and exclude_db.matches(
+                alt
+            ):  # Skip excluded morphs
                 continue
             if altIncludesMorpheme(
-                alt, m
+                m, alt
             ):  # pylint: disable=W1114 #ToDo: verify if pylint is right
                 count += c[0]
         return count
