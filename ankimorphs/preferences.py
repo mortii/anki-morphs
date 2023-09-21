@@ -14,13 +14,6 @@ config_py = None  # pylint:disable=invalid-name
 def init_preferences():
     """Called when new profiles are loaded"""
 
-    # Reset the cached configs.
-    global config_data, config_py
-
-    config_data = None
-    config_py = None
-
-    # Init
     _init_config_py()
     _init_anki_json_config()
 
@@ -59,8 +52,8 @@ def update_preferences(jcfg):
 
 
 def _init_config_py():
-    global config_py
-    from . import config
+    global config_py  # pylint:disable=global-statement
+    from . import config  # pylint:disable=import-outside-toplevel
 
     importlib.reload(config)
     config_py = config
@@ -200,7 +193,7 @@ def jcfg_default():
 
 
 def _json_config():
-    global config_data
+    global config_data  # pylint:disable=global-statement
     if config_data is None:
         config_data = get_preferences()
     return config_data

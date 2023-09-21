@@ -436,11 +436,11 @@ class MorphDb:  # pylint:disable=too-many-instance-attributes,too-many-public-me
 
     # FilePath -> Morphemizer -> Maturity? -> IO ()
     def import_file(self, path, morphemizer, maturity=0):
-        file = codecs.open(path, encoding="utf-8")
-        inp = file.readlines()
-        file.close()
+        _input = ""
+        with codecs.open(path, encoding="utf-8") as file:
+            _input = file.readlines()
 
-        for i, line in enumerate(inp):
+        for i, line in enumerate(_input):
             morphs = get_morphemes(morphemizer, line.strip())
             self._add_morph_locs(
                 (morph, TextFile(path, i + 1, maturity)) for morph in morphs

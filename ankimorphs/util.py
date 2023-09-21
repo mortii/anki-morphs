@@ -6,22 +6,17 @@ from typing import Any, Dict, List, Optional
 
 from anki.notes import Note
 from aqt import mw
-from aqt.qt import *
+from aqt.qt.qt6 import QPushButton  # pylint:disable=no-name-in-module
 from aqt.utils import showCritical, showInfo
 
 from .morphemes import MorphDb
 from .preferences import get_preference
 
-T = TypeVar("T")
-
-###############################################################################
-# Global data
-###############################################################################
-_all_db = None
+_all_db = None  # pylint:disable=invalid-name
 
 
 def get_all_db() -> MorphDb:
-    global _all_db
+    global _all_db  # pylint:disable=global-statement
 
     # Force reload if all.db got deleted
     all_db_path = get_preference("path_all")
@@ -101,15 +96,14 @@ def info_msg(msg):
 
 def printf(msg):
     txt = f"{datetime.datetime.now()}: {msg}"
-    file = codecs.open(get_preference("path_log"), "a", "utf-8")
-    file.write(txt + "\r\n")
-    file.close()
+    with codecs.open(get_preference("path_log"), "a", "utf-8") as file:
+        file.write(txt + "\r\n")
     print(txt.encode("utf-8"))
 
 
 def clear_log():
-    file = codecs.open(get_preference("path_log"), "w", "utf-8")
-    file.close()
+    with codecs.open(get_preference("path_log"), "w", "utf-8"):
+        pass
 
 
 ###############################################################################

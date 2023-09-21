@@ -182,7 +182,7 @@ class MorphMan(QDialog):  # pylint: disable=too-many-instance-attributes
             return
 
         mat = cfg("text file import maturity")
-        db = MorphDb.mk_from_file(
+        db = MorphDb.mk_from_file(  # pylint:disable=invalid-name
             str(src_path), self.morphemizer_combo_box.get_current(), mat
         )
         if db:
