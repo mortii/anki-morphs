@@ -7,13 +7,13 @@ from .morphemes import AnkiDeck
 from .preferences import get_preference as cfg
 from .util import mw
 
-colYoung = "#7c7"
-colCard = "#282"
-colK = "#4a4"
-colV = "#7c7"
-defaultColor = "#2F2"
+COL_YOUNG = "#7c7"
+COL_CARD = "#282"
+COL_K = "#4a4"
+COL_V = "#7c7"
+DEFAULT_COLOR = "#2F2"
 
-_num_graphs = 0
+_NUM_GRAPHS = 0
 
 # an individual review of a card with a bucket_index representing the time period the review
 # occurred in (e.g. which day, month, etc.)
@@ -191,7 +191,6 @@ def _get_reviews(db_table, bucket_size_days, day_cutoff_seconds, num_buckets=Non
     prior_learned_cards_ivl = {}
 
     all_reviews_for_bucket = {}
-    last_review_for_card = {}
 
     for i, (
         cid,
@@ -202,7 +201,7 @@ def _get_reviews(db_table, bucket_size_days, day_cutoff_seconds, num_buckets=Non
         bucket_index,
         ease,
         ivl,
-        lastIvl,
+        last_ivl,
         card_ivl,
         _type,
     ) in enumerate(result):
@@ -225,7 +224,7 @@ def _get_reviews(db_table, bucket_size_days, day_cutoff_seconds, num_buckets=Non
             cid=cid,
             ease=ease,
             ivl=ivl,
-            lastIvl=lastIvl,
+            lastIvl=last_ivl,
             type=_type,
         )
         card_reviews = all_reviews_for_bucket.get(key)
@@ -261,10 +260,10 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
     all_db = util.get_all_db()
     nid_to_morphs = defaultdict(set)
 
-    for m, ls in all_db.db.items():
-        for loc in ls:
+    for morph, locations in all_db.db.items():
+        for loc in locations:
             if type(loc) is AnkiDeck:
-                nid_to_morphs[loc.noteId].add(m)
+                nid_to_morphs[loc.noteId].add(morph)
 
     # print('nid_to_morphs', len(nid_to_morphs))
 
@@ -281,7 +280,6 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
     # mature_v_morph_times = known_v_morph_times.copy()
     # mature_k_morph_times = known_k_morph_times.copy()
 
-    threshold_learned = 1  # 1 day
     threshold_known = cfg("threshold_known")
     threshold_mature = cfg("threshold_mature")
 
@@ -289,15 +287,15 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
 
     # Get morphs from cards learned prior to the cutoff
     for card, ivl in prior_learned_cards_ivl.items():
-        for m in nid_to_morphs[card.nid]:
-            gk = m.getGroupKey()
+        for morph in nid_to_morphs[card.nid]:
+            group_key = morph.getGroupKey()
             if ivl >= threshold_known:
-                known_v_morph_times[m] += 1
-                known_k_morph_times[gk] += 1
+                known_v_morph_times[morph] += 1
+                known_k_morph_times[group_key] += 1
 
             if ivl >= threshold_mature:
-                mature_v_morph_times[m] += 1
-                mature_k_morph_times[gk] += 1
+                mature_v_morph_times[morph] += 1
+                mature_k_morph_times[group_key] += 1
 
         last_ivl_by_cid[card.cid] = ivl
 
@@ -347,24 +345,24 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
             deck_morph_stats,
             delta,
         ):
-            for m in nid_to_morphs[nid]:
-                gk = m.getGroupKey()
+            for _morph in nid_to_morphs[nid]:
+                _group_key = _morph.getGroupKey()
 
                 if active_decks is None or (did in active_decks):
-                    if (delta == 1 and v_morph_times[m] == 0) or (
-                        delta == -1 and v_morph_times[m] == 1
+                    if (delta == 1 and v_morph_times[_morph] == 0) or (
+                        delta == -1 and v_morph_times[_morph] == 1
                     ):
                         bucket_morph_stats.a_morphs += delta
                         deck_morph_stats.a_morphs += delta
 
-                    if (delta == 1 and k_morph_times[gk] == 0) or (
-                        delta == -1 and k_morph_times[gk] == 1
+                    if (delta == 1 and k_morph_times[_group_key] == 0) or (
+                        delta == -1 and k_morph_times[_group_key] == 1
                     ):
                         bucket_morph_stats.u_morphs += delta
                         deck_morph_stats.u_morphs += delta
 
-                v_morph_times[m] += delta
-                k_morph_times[gk] += delta
+                v_morph_times[_morph] += delta
+                k_morph_times[_group_key] += delta
 
         if _has_learned(card_reviews, last_ivl):
             if active_decks is None or (did in active_decks):
@@ -465,7 +463,7 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
     return stats_by_name
 
 
-def morphGraphs(args, kwargs):
+def morph_graphs(args, kwargs):
     self = args[0]
     old = kwargs["_old"]
 
@@ -510,7 +508,7 @@ def morphGraphs(args, kwargs):
         "Number of known unique morphemes learned from cards",
         bucket_size_days,
         include_cumulative=True,
-        color=colK,
+        color=COL_K,
     )
 
     morph_result += _plot(
@@ -520,7 +518,7 @@ def morphGraphs(args, kwargs):
         "Number of known morphemes learned from cards",
         bucket_size_days,
         include_cumulative=True,
-        color=colV,
+        color=COL_V,
     )
 
     morph_result += self._title(
@@ -551,9 +549,9 @@ def morphGraphs(args, kwargs):
                 <td class="morph_trc"><span class="morph_v"><b>Matured</b></span></td>
             </tr>
             """ % {
-        "c_color": colCard,
-        "k_color": colK,
-        "v_color": colV,
+        "c_color": COL_CARD,
+        "k_color": COL_K,
+        "v_color": COL_V,
     }
     total = ProgressStats()
     for deck in sorted(stats["all_deck_stats"].keys()):
@@ -618,11 +616,11 @@ def _round_up_max(max_val):
     # Prevent zero values raising an error.  Rounds up to 10 at a minimum.
     max_val = max(10, max_val)
 
-    e = int(math.log10(max_val))
-    if e >= 2:
-        e -= 1
-    m = 10**e
-    return math.ceil(float(max_val) / m) * m
+    exponent = int(math.log10(max_val))
+    if exponent >= 2:
+        exponent -= 1
+    _min = 10**exponent
+    return math.ceil(float(max_val) / _min) * _min
 
 
 def _round_down_min(min_val):
@@ -644,9 +642,9 @@ def _plot(
     subtitle,
     bucket_size_days,
     include_cumulative=False,
-    color=defaultColor,
+    color=DEFAULT_COLOR,
 ):
-    global _num_graphs
+    global _NUM_GRAPHS
     if not data:
         return ""
     cumulative_total = 0
@@ -689,7 +687,7 @@ def _plot(
         )
 
     graph_kwargs = {
-        "id": "morphs-%s" % _num_graphs,
+        "id": "morphs-%s" % _NUM_GRAPHS,
         "data": graph_data,
         "conf": dict(xaxis=dict(max=0.5, tickDecimals=0), yaxes=yaxes),
     }
@@ -709,7 +707,7 @@ def _plot(
 
     txt += self._graph(**graph_kwargs)
 
-    _num_graphs += 1
+    _NUM_GRAPHS += 1
 
     text_lines = []
 

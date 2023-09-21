@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import codecs
-import pprint
 import re
 from typing import List, Optional
 
@@ -11,8 +10,8 @@ from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
 
 from . import text_utils
-from .morphemes import MorphDb, getMorphemes
-from .morphemizer import getMorphemizerByName
+from .morphemes import MorphDb, get_morphemes
+from .morphemizer import get_morphemizer_by_name
 from .preferences import get_preference
 from .util import get_filter
 
@@ -37,7 +36,7 @@ def focus_query(field_name, focus_morphs, vocab_tag=False):
         ]
     )
     if len(focus_morphs) > 0:
-        query = "(%s)" % query
+        query = f"{query}"
     if vocab_tag:
         query += f"tag:{get_preference('Tag_Vocab')}"
     return query
@@ -189,8 +188,8 @@ def highlight(txt: str, field, note_filter: str, ctx) -> str:
 
     frequency_list_path = get_preference("path_frequency")
     try:
-        with codecs.open(frequency_list_path, encoding="utf-8") as f:
-            frequency_list = [line.strip().split("\t")[0] for line in f.readlines()]
+        with codecs.open(frequency_list_path, encoding="utf-8") as file:
+            frequency_list = [line.strip().split("\t")[0] for line in file.readlines()]
     except FileNotFoundError:
         frequency_list = []
 
@@ -201,7 +200,7 @@ def highlight(txt: str, field, note_filter: str, ctx) -> str:
     if note_filter is None:
         return txt
 
-    morphemizer = getMorphemizerByName(note_filter["Morphemizer"])
+    morphemizer = get_morphemizer_by_name(note_filter["Morphemizer"])
     if morphemizer is None:
         return txt
 
@@ -210,9 +209,9 @@ def highlight(txt: str, field, note_filter: str, ctx) -> str:
     # TODO: store these somewhere fitting to avoid instantiating them every function call
     known_db = MorphDb(path=get_preference("path_known"))
     mature_db = MorphDb(path=get_preference("path_mature"))
-    priority_db = MorphDb(get_preference("path_priority"), ignoreErrors=True).db
+    priority_db = MorphDb(get_preference("path_priority"), ignore_errors=True).db
 
-    morphemes = getMorphemes(morphemizer, txt, tags)
+    morphemes = get_morphemes(morphemizer, txt, tags)
 
     # Avoid formatting a smaller morph that is contained in a bigger morph, reverse sort fixes this
     sorted_morphs = sorted(morphemes, key=lambda x: len(x.inflected), reverse=True)

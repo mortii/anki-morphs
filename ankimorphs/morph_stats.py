@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import gzip
-import pickle as pickle
+import pickle
 from functools import partial
 
 from aqt.utils import tooltip
@@ -17,10 +17,10 @@ def get_stat_path():
 
 def load_stats():
     try:
-        f = gzip.open(get_stat_path())
-        d = pickle.load(f)
-        f.close()
-        return d
+        file = gzip.open(get_stat_path())
+        data = pickle.load(file)
+        file.close()
+        return data
     except IOError:  # file DNE => create it
         return update_stats()
     except (
@@ -29,10 +29,10 @@ def load_stats():
         return None
 
 
-def save_stats(d):
-    f = gzip.open(get_stat_path(), "wb")
-    pickle.dump(d, f, -1)
-    f.close()
+def save_stats(data):
+    file = gzip.open(get_stat_path(), "wb")
+    pickle.dump(data, file, -1)
+    file.close()
 
 
 def update_stats(known_db=None):
@@ -42,21 +42,21 @@ def update_stats(known_db=None):
 
     # Load known.db and get total morphemes known
     if known_db is None:
-        known_db = MorphDb(cfg("path_known"), ignoreErrors=True)
+        known_db = MorphDb(cfg("path_known"), ignore_errors=True)
 
-    d = {"totalVariations": len(known_db.db), "totalKnown": len(known_db.groups)}
+    data = {"totalVariations": len(known_db.db), "totalKnown": len(known_db.groups)}
 
-    save_stats(d)
+    save_stats(data)
     mw.taskman.run_on_main(mw.progress.finish)
-    return d
+    return data
 
 
 def get_unique_morph_toolbar_stats():
-    d = load_stats()
-    if not d:
+    data = load_stats()
+    if not data:
         return "U ???", "???"
 
-    unique_morphs = d.get("totalKnown", 0)
+    unique_morphs = data.get("totalKnown", 0)
 
     name = f"U: {unique_morphs}"
     details = "U = Known Unique Morphs"
@@ -64,12 +64,12 @@ def get_unique_morph_toolbar_stats():
 
 
 def get_all_morph_toolbar_stats():
-    d = load_stats()
-    if not d:
+    data = load_stats()
+    if not data:
         return "A ????", "???"
 
-    unique_morphs = d.get("totalKnown", 0)
-    all_morphs = d.get("totalVariations", unique_morphs)
+    unique_morphs = data.get("totalKnown", 0)
+    all_morphs = data.get("totalVariations", unique_morphs)
 
     name = f"A: {all_morphs}"
     details = "A = All Known Morphs"

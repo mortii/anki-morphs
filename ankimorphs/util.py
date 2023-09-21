@@ -17,21 +17,19 @@ T = TypeVar("T")
 ###############################################################################
 # Global data
 ###############################################################################
-_allDb = None
+_all_db = None
 
 
 def get_all_db() -> MorphDb:
-    global _allDb
+    global _all_db
 
     # Force reload if all.db got deleted
     all_db_path = get_preference("path_all")
     reload = not path.isfile(all_db_path)
 
-    if reload or (_allDb is None):
-        from .morphemes import MorphDb
-
-        _allDb = MorphDb(all_db_path, ignoreErrors=True)
-    return _allDb
+    if reload or (_all_db is None):
+        _all_db = MorphDb(all_db_path, ignore_errors=True)
+    return _all_db
 
 
 ###############################################################################
@@ -46,7 +44,7 @@ def get_filter(note: Note) -> Optional[dict]:
     return get_filter_by_type_and_tags(note_type, note.tags)
 
 
-def getFilterByMidAndTags(mid, tags):
+def get_filter_by_mid_and_tags(mid, tags):
     # type: (Any, List[str]) -> Optional[Dict[...]]
     return get_filter_by_type_and_tags(mw.col.models.get(mid)["name"], tags)
 
@@ -65,7 +63,7 @@ def get_filter_by_type_and_tags(note_type: str, note_tags: List[str]) -> Optiona
     return None  # card did not match (note type and tags) set in preferences GUI
 
 
-def getReadEnabledModels():
+def get_read_enabled_models():
     included_types = set()
     include_all = False
     for f in get_preference("Filter"):
@@ -78,50 +76,47 @@ def getReadEnabledModels():
     return included_types, include_all
 
 
-def getModifyEnabledModels():
+def get_modify_enabled_models():
     included_types = set()
     include_all = False
-    for f in get_preference("Filter"):
-        if f.get("Modify", True):
-            if f["Type"] is not None:
-                included_types.add(f["Type"])
+    for _filter in get_preference("Filter"):
+        if _filter.get("Modify", True):
+            if _filter["Type"] is not None:
+                included_types.add(_filter["Type"])
             else:
                 include_all = True
                 break
     return included_types, include_all
 
 
-###############################################################################
-# Logging and MsgBoxes
-###############################################################################
-def errorMsg(msg):
+def error_msg(msg):
     showCritical(msg)
     printf(msg)
 
 
-def infoMsg(msg):
+def info_msg(msg):
     showInfo(msg)
     printf(msg)
 
 
 def printf(msg):
     txt = "%s: %s" % (datetime.datetime.now(), msg)
-    f = codecs.open(get_preference("path_log"), "a", "utf-8")
-    f.write(txt + "\r\n")
-    f.close()
+    file = codecs.open(get_preference("path_log"), "a", "utf-8")
+    file.write(txt + "\r\n")
+    file.close()
     print(txt.encode("utf-8"))
 
 
-def clearLog():
-    f = codecs.open(get_preference("path_log"), "w", "utf-8")
-    f.close()
+def clear_log():
+    file = codecs.open(get_preference("path_log"), "w", "utf-8")
+    file.close()
 
 
 ###############################################################################
 # Qt helper functions
 ###############################################################################
-def mkBtn(txt, f, parent):
-    b = QPushButton(txt)
-    b.clicked.connect(f)
-    parent.addWidget(b)
-    return b
+def mk_btn(txt, _function, parent):
+    _btn = QPushButton(txt)
+    _btn.clicked.connect(_function)
+    parent.addWidget(_btn)
+    return _btn

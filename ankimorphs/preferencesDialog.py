@@ -4,10 +4,10 @@ from anki.lang import _
 from aqt.qt import *
 from aqt.utils import tooltip
 
-from .morphemizer import getAllMorphemizers
+from .morphemizer import get_all_morphemizers
 from .preferences import get_preference, update_preferences
 from .UI import MorphemizerComboBox
-from .util import mkBtn, mw
+from .util import mk_btn, mw
 
 
 class PreferencesDialog(QDialog):
@@ -75,10 +75,10 @@ class PreferencesDialog(QDialog):
         hbox = QHBoxLayout()
         vbox.addLayout(hbox)
 
-        self.clone = mkBtn("Clone", self.onClone, hbox)
-        self.delete = mkBtn("Delete", self.onDelete, hbox)
-        self.up = mkBtn("Up", self.onUp, hbox)
-        self.down = mkBtn("Down", self.onDown, hbox)
+        self.clone = mk_btn("Clone", self.onClone, hbox)
+        self.delete = mk_btn("Delete", self.onDelete, hbox)
+        self.up = mk_btn("Up", self.onUp, hbox)
+        self.down = mk_btn("Down", self.onDown, hbox)
 
     def createExtraFieldsTab(self):
         self.frame2 = QWidget()
@@ -358,8 +358,8 @@ class PreferencesDialog(QDialog):
         modelComboBox.setCurrentIndex(active)
 
         morphemizerComboBox = MorphemizerComboBox()
-        morphemizerComboBox.setMorphemizers(getAllMorphemizers())
-        morphemizerComboBox.setCurrentByName(data["Morphemizer"])
+        morphemizerComboBox.setMorphemizers(get_all_morphemizers())
+        morphemizerComboBox.set_current_by_name(data["Morphemizer"])
 
         readItem = QStandardItem()
         readItem.setCheckable(True)
@@ -412,7 +412,7 @@ class PreferencesDialog(QDialog):
         filter["Tags"] = [x for x in row_gui["tagsEntry"].text().split(", ") if x]
         filter["Fields"] = [x for x in row_gui["fieldsEntry"].text().split(", ") if x]
 
-        filter["Morphemizer"] = row_gui["morphemizerComboBox"].getCurrent().getName()
+        filter["Morphemizer"] = row_gui["morphemizerComboBox"].get_current().get_name()
         filter["Read"] = row_gui["readCheckBox"].checkState() != Qt.CheckState.Unchecked
         filter["Modify"] = (
             row_gui["modifyCheckBox"].checkState() != Qt.CheckState.Unchecked

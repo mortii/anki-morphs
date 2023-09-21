@@ -1,3 +1,26 @@
+[tool.pylint."MASTER"]
+ignore = [
+    "deps", # morphemizers
+    "readability_settings_ui.py",
+    "adaptiveSubs.py",
+    "readability.py",
+    "readability_ui.py",
+    "preferencesDialog.py"
+]
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = """
+    missing-module-docstring,
+    missing-function-docstring,
+    missing-class-docstring,
+    protected-access,
+    unused-argument,
+    redefined-outer-name,
+    line-too-long,
+    too-few-public-methods,
+    fixme
+"""
+
 [tool.isort]
 profile = "black"
 skip_gitignore = "True"
@@ -17,7 +40,6 @@ python_functions = "test_*"
 
 required_plugins = "pytest-qt pytest-xvfb"
 # required_plugins: plugins that must be present for pytest to run
-# pytest-randomly: forces your tests to run in a random order
 # pytest-qt: allows for writing tests for PyQt5, PyQt6, PySide2 and PySide6 applications.
 # pytest-xvfb: allows tests to be run without windows popping up during GUI tests or on systems without a display (like a CI).
 
@@ -29,7 +51,6 @@ addopts = "--strict-markers --durations=5 --maxfail=1"
 # --strict-markers: markers not registered in the `markers` section of the configuration file raise errors.
 # --durations=5: show N slowest setup/test durations (N=0 for all)
 # --maxfail=1: exit after first num failures or errors.
-# --random-order: enable randomisation.
 
 markers = [
     "slow",

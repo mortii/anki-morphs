@@ -5,6 +5,7 @@ import os.path
 import signal
 import sys
 from collections import Counter
+from typing import Optional, Union
 
 from .morphemes import MorphDb
 from .morphemizer import (
@@ -13,16 +14,6 @@ from .morphemizer import (
     MecabMorphemizer,
     SpaceMorphemizer,
 )
-
-# hack: typing is compile time anyway, so, nothing bad happens if it fails, the try is to support anki < 2.1.16
-try:
-    from typing import Optional, Union
-
-    from aqt.pinnedmodules import (  # pylint: disable=W0611 # See above hack comment
-        typing,
-    )
-except ImportError:
-    pass
 
 
 def die(msg):
@@ -34,7 +25,7 @@ def warn(msg):
     print(msg, file=sys.stderr)
 
 
-CLI_PROFILE_PATH = None  # type: Optional[Union[bytes, str]]
+CLI_PROFILE_PATH: Optional[Union[bytes, str]] = None
 
 
 def profile_base_path():
@@ -126,7 +117,7 @@ def cmd_count(args):
     for path in files:
         with codecs.open(path, encoding="utf-8") as f:
             for line in f.readlines():
-                freqs.update(mizer.getMorphemesFromExpr(line.strip()))
+                freqs.update(mizer.get_morphemes_from_expr(line.strip()))
 
     for m, c in freqs.most_common():
         print("%d\t%s" % (c, m.show().encode("utf-8")))

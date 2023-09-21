@@ -2,5 +2,5 @@
 isort ankimorphs tests  # sorts imports
 black ankimorphs tests  # formats the code
 export PYTHONPATH=./  # necessary to run pylint on test-directory
-pylint tests ankimorphs -d W0611
+pylint ankimorphs tests
 pytest

@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 from .morphemes import Morpheme
-from .util_external import memoize
+from .util_external import Memoize
 
 ####################################################################################################
 # Mecab Morphemizer
@@ -33,9 +33,9 @@ MECAB_SUBPOS_BLACKLIST = [
     "数詞",  # Numbers
 ]
 
-is_unidic = True
+IS_UNIDIC = True
 
-kanji = r"[㐀-䶵一-鿋豈-頻]"
+KANJI = r"[㐀-䶵一-鿋豈-頻]"
 wide_alpha_num_rx = re.compile(r"[０-９Ａ-Ｚａ-ｚ]")
 
 mecab_source = ""
@@ -48,24 +48,24 @@ def extract_unicode_block(unicode_block, string):
     return re.findall(unicode_block, string)
 
 
-def getMecabIdentity():
+def get_mecab_identity():
     # Initialize mecab before we get the identity
-    m = mecab()
+    _mecab = mecab()
 
     # identify the mecab being used
     return mecab_source
 
 
-def getMorpheme(parts):
-    if is_unidic:
+def get_morpheme(parts):
+    if IS_UNIDIC:
         if len(parts) != MECAB_NODE_LENGTH_UNIDIC:
             return None
 
         pos = parts[4] if parts[4] != "" else "*"
-        subPos = parts[5] if parts[5] != "" else "*"
+        sub_pos = parts[5] if parts[5] != "" else "*"
 
         # Drop blacklisted parts of speech
-        if (pos in MECAB_POS_BLACKLIST) or (subPos in MECAB_SUBPOS_BLACKLIST):
+        if (pos in MECAB_POS_BLACKLIST) or (sub_pos in MECAB_SUBPOS_BLACKLIST):
             return None
 
         # Drop wide alpha-numeric morphemes
@@ -77,15 +77,15 @@ def getMorpheme(parts):
         inflected = parts[2].strip()
         reading = parts[3].strip()
 
-        return Morpheme(norm, base, inflected, reading, pos, subPos)
+        return Morpheme(norm, base, inflected, reading, pos, sub_pos)
     else:
         if len(parts) != MECAB_NODE_LENGTH_IPADIC:
             return None
 
         pos = parts[3] if parts[3] != "" else "*"
-        subPos = parts[4] if parts[4] != "" else "*"
+        sub_pos = parts[4] if parts[4] != "" else "*"
 
-        if (pos in MECAB_POS_BLACKLIST) or (subPos in MECAB_SUBPOS_BLACKLIST):
+        if (pos in MECAB_POS_BLACKLIST) or (sub_pos in MECAB_SUBPOS_BLACKLIST):
             return None
 
         norm = parts[0].strip()
@@ -93,23 +93,23 @@ def getMorpheme(parts):
         inflected = parts[1].strip()
         reading = parts[2].strip()
 
-        m = fixReading(Morpheme(norm, base, inflected, reading, pos, subPos))
-        return m
+        _morph = fix_reading(Morpheme(norm, base, inflected, reading, pos, sub_pos))
+        return _morph
 
 
 control_chars_re = re.compile("[\x00-\x1f\x7f-\x9f]")
 
 
-def getMorphemesMecab(e):
+def get_morphemes_mecab(e):
     # Remove Unicode control codes before sending to MeCab.
     e = control_chars_re.sub("", e)
-    ms = [getMorpheme(m.split("\t")) for m in interact(e).split("\r")]
+    ms = [get_morpheme(m.split("\t")) for m in interact(e).split("\r")]
     ms = [m for m in ms if m is not None]
     return ms
 
 
 # [Str] -> subprocess.STARTUPINFO -> IO MecabProc
-def spawnMecab(base_cmd, startupinfo):
+def spawn_mecab(base_cmd, startupinfo):
     """Try to start a MeCab subprocess in the given way, or fail.
 
     Raises OSError if the given base_cmd and startupinfo don't work
@@ -117,19 +117,19 @@ def spawnMecab(base_cmd, startupinfo):
     incompatible with our assumptions.
     """
     global MECAB_ENCODING
-    global is_unidic
+    global IS_UNIDIC
 
     # [Str] -> subprocess.STARTUPINFO -> IO subprocess.Popen
-    def spawnCmd(cmd, startupinfo):
+    def spawn_cmd(cmd, _startupinfo):
         return subprocess.Popen(
             cmd,
-            startupinfo=startupinfo,
+            startupinfo=_startupinfo,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
 
-    config_dump = spawnCmd(base_cmd + ["-P"], startupinfo).stdout.read()
+    config_dump = spawn_cmd(base_cmd + ["-P"], startupinfo).stdout.read()
     bos_feature_match = re.search(
         "^bos-feature: (.*)$", str(config_dump, "utf-8"), flags=re.M
     )
@@ -139,19 +139,19 @@ def spawnMecab(base_cmd, startupinfo):
         and bos_feature_match.group(1).strip() == MECAB_NODE_UNIDIC_BOS
     ):
         node_parts = MECAB_NODE_UNIDIC_PARTS
-        is_unidic = True
+        IS_UNIDIC = True
     elif (
         bos_feature_match is not None
         and bos_feature_match.group(1).strip() == MECAB_NODE_UNIDIC_22_BOS
     ):
         node_parts = MECAB_NODE_UNIDIC_22_PARTS
-        is_unidic = True
+        IS_UNIDIC = True
     elif (
         bos_feature_match is not None
         and bos_feature_match.group(1).strip() == MECAB_NODE_IPADIC_BOS
     ):
         node_parts = MECAB_NODE_IPADIC_PARTS
-        is_unidic = False
+        IS_UNIDIC = False
     else:
         raise OSError(
             "Unexpected MeCab dictionary format; unidic or ipadic required.\n"
@@ -160,7 +160,7 @@ def spawnMecab(base_cmd, startupinfo):
             "like `mecab-ipadic`\n"
         )
 
-    dicinfo_dump = spawnCmd(base_cmd + ["-D"], startupinfo).stdout.read()
+    dicinfo_dump = spawn_cmd(base_cmd + ["-D"], startupinfo).stdout.read()
     charset_match = re.search(
         "^charset:\t(.*)$", str(dicinfo_dump, "utf-8"), flags=re.M
     )
@@ -176,10 +176,10 @@ def spawnMecab(base_cmd, startupinfo):
         "--eos-format=\n",
         "--unk-format=",
     ]
-    return spawnCmd(base_cmd + args, startupinfo)
+    return spawn_cmd(base_cmd + args, startupinfo)
 
 
-@memoize
+@Memoize
 def mecab():  # IO MecabProc
     """Start a MeCab subprocess and return it.
     `mecab` reads expressions from stdin at runtime, so only one
@@ -254,7 +254,7 @@ def mecab():  # IO MecabProc
     # 6th priority - system mecab
     if not reading:
         try:
-            return spawnMecab(["mecab"], si), "System"
+            return spawn_mecab(["mecab"], si), "System"
         except Exception as e:
             raise OSError(
                 """
@@ -268,9 +268,9 @@ def mecab():  # IO MecabProc
     m = reading.MecabController()
     m.setup()
     # m.mecabCmd[1:4] are assumed to be the format arguments.
-    print("Using morphman: [%s] with command line [%s]" % (mecab_source, m.mecabCmd))
+    print(f"Using morphman: {mecab_source} with command line {m.mecabCmd}")
 
-    return spawnMecab(m.mecabCmd[:1] + m.mecabCmd[4:], si), mecab_source
+    return spawn_mecab(m.mecabCmd[:1] + m.mecabCmd[4:], si), mecab_source
 
 
 def interact(expr):  # Str -> IO Str
@@ -298,7 +298,7 @@ def interact(expr):  # Str -> IO Str
     return entire_output
 
 
-def fixReading(m):  # Morpheme -> IO Morpheme
+def fix_reading(m):  # Morpheme -> IO Morpheme
     """
     'mecab' prints the reading of the kanji in inflected forms (and strangely in katakana). So 歩い[て] will have アルイ as
     reading. This function sets the reading to the reading of the base form (in the example it will be 'アルク').

@@ -2,30 +2,17 @@
 import codecs
 import gzip
 import os
-import pickle as pickle
+import pickle
 import re
 import sqlite3
 from abc import ABC, abstractmethod
+from typing import Dict, Set
 
-try:
-    import aqt
-except:
-    pass
-
-# hack: typing is compile time anyway, so, nothing bad happens if it fails, the try is to support anki < 2.1.16
-try:
-    from typing import Dict, Set
-
-    from aqt.pinnedmodules import (  # pylint: disable=W0611 # See above hack comment
-        typing,
-    )
-except ImportError:
-    pass
-
+import aqt
 
 # need some fallbacks if not running from anki and thus ankimorphs.util isn't available
 try:
-    from .util import errorMsg
+    from .util import error_msg
 except ImportError:
 
     def errorMsg(msg):
@@ -46,11 +33,6 @@ def char_set(start, end):
 
 
 kanji_chars = char_set("㐀", "䶵") | char_set("一", "鿋") | char_set("豈", "頻")
-
-
-################################################################################
-# Lexical analysis
-################################################################################
 
 
 class Morpheme:
@@ -149,8 +131,8 @@ class MorphDBUnpickler(pickle.Unpickler):
         return pickle.Unpickler.find_class(self, cmodule, cname)
 
 
-def getMorphemes(morphemizer, expression, note_tags=None):
-    expression = replaceBracketContents(expression)
+def get_morphemes(morphemizer, expression, note_tags=None):
+    expression = replace_bracket_contents(expression)
 
     # go through all replacement rules and search if a rule (which dictates a string to morpheme conversion) can be
     # applied
@@ -176,15 +158,15 @@ def getMorphemes(morphemizer, expression, note_tags=None):
             ) >= len(expression):
                 continue
 
-            a_morphs = getMorphemes(morphemizer, split_expression[0], note_tags)
+            a_morphs = get_morphemes(morphemizer, split_expression[0], note_tags)
             b_morphs = [
                 Morpheme(mstr, mstr, mstr, mstr, "UNKNOWN", "UNKNOWN")
                 for mstr in morphemes
             ]
-            c_morphs = getMorphemes(morphemizer, split_expression[1], note_tags)
+            c_morphs = get_morphemes(morphemizer, split_expression[1], note_tags)
             return a_morphs + b_morphs + c_morphs
 
-    ms = morphemizer.getMorphemesFromExpr(expression)
+    ms = morphemizer.get_morphemes_from_expr(expression)
 
     return ms
 
@@ -194,7 +176,7 @@ round_brackets_regex = re.compile(r"（[^）]*）")
 slim_round_brackets_regexp = re.compile(r"\([^\)]*\)")
 
 
-def replaceBracketContents(expression):
+def replace_bracket_contents(expression):
     if cfg("Option_IgnoreBracketContents"):
         if square_brackets_regex.search(expression):
             expression = square_brackets_regex.sub("", expression)
@@ -208,11 +190,6 @@ def replaceBracketContents(expression):
             expression = slim_round_brackets_regexp.sub("", expression)
 
     return expression
-
-
-################################################################################
-# Morpheme db manipulation
-################################################################################
 
 
 class Location(ABC):
@@ -246,10 +223,10 @@ class Corpus(Location):
 
 
 class TextFile(Location):
-    def __init__(self, filePath, lineNo, maturity, weight=1):
+    def __init__(self, file_path, line_no, maturity, weight=1):
         super(TextFile, self).__init__(weight)
-        self.filePath = filePath
-        self.lineNo = lineNo
+        self.filePath = file_path
+        self.lineNo = line_no
         self.maturity = maturity
 
     def show(self):
@@ -274,7 +251,7 @@ class AnkiDeck(Location):
         return "%d[%s]@%d" % (self.noteId, self.fieldName, self.maturity)
 
 
-def altIncludesMorpheme(m, alt):
+def alt_includes_morpheme(m, alt):
     # type: (Morpheme, Morpheme) -> bool
 
     return m.norm == alt.norm and (
@@ -298,15 +275,17 @@ class MorphDb:
         """Returns None and shows error dialog if failed"""
         d = MorphDb()
         try:
-            d.importFile(path, morphemizer, maturity=maturity)
+            d.import_file(path, morphemizer, maturity=maturity)
         except (UnicodeDecodeError, IOError) as e:
-            return errorMsg(
+            return error_msg(
                 "Unable to import file. Please verify it is a UTF-8 text file and you have "
                 "permissions.\nFull error:\n%s" % e
             )
         return d
 
-    def __init__(self, path=None, ignoreErrors=False):  # Maybe Filepath -> m ()
+    def __init__(self, path=None, ignore_errors=False):  # Maybe Filepath -> m ()
+        self._fidDb = None
+        self.posBreakdown = None
         self.db = {}  # type: Dict[Morpheme, Set[Location]]
         self.groups = {}  # Map NormMorpheme {Set(Morpheme)}
         self.meta = {}
@@ -314,7 +293,7 @@ class MorphDb:
             try:
                 self.load(path)
             except IOError:
-                if not ignoreErrors:
+                if not ignore_errors:
                     raise
         self.analyze()
 
@@ -327,15 +306,15 @@ class MorphDb:
                 s += "  %s\n" % l.show()
         return s
 
-    def showLocDb(self):  # m Str
+    def show_loc_db(self):  # m Str
         s = ""
-        for l, ms in self.locDb().items():
+        for l, ms in self.loc_db().items():
             s += "%s\n" % l.show()
             for m in ms:
                 s += "  %s\n" % m.show()
         return s
 
-    def showMs(self):  # Str
+    def show_ms(self):  # Str
         return ms2str(sorted(self.db.items(), key=lambda it: it[0].show()))
 
     def save(self, path):  # FilePath -> IO ()
@@ -381,10 +360,10 @@ class MorphDb:
             return False
 
         # Fuzzy match to variations
-        return any(altIncludesMorpheme(m, alt) for alt in ms)
+        return any(alt_includes_morpheme(m, alt) for alt in ms)
 
     # Returns set of morph locations that can match 'm'
-    def getMatchingLocs(self, m):  # Morpheme
+    def get_matching_locs(self, m):  # Morpheme
         # type: (Morpheme) -> Set[Location]
         locs = set()
         gk = m.getGroupKey()
@@ -394,7 +373,7 @@ class MorphDb:
 
         # Fuzzy match to variations
         for variation in ms:
-            if altIncludesMorpheme(m, variation):
+            if alt_includes_morpheme(m, variation):
                 locs.update(self.db[variation])
         return locs
 
@@ -430,11 +409,11 @@ class MorphDb:
     def addMsL(self, ms, loc):  # [Morpheme] -> Location -> m ()
         self.addMLs((m, loc) for m in ms)
 
-    def addFromLocDb(self, ldb):  # Map Location {Morpheme} -> m ()
+    def add_from_loc_db(self, ldb):  # Map Location {Morpheme} -> m ()
         for l, ms in ldb.items():
             self.addMLs([(m, l) for m in ms])
 
-    def removeMorphs(self, iter):
+    def remove_morphs(self, iter):
         for m in iter:
             if m in self.db:
                 self.db.pop(m)
@@ -456,21 +435,21 @@ class MorphDb:
         return new
 
     # FilePath -> Morphemizer -> Maturity? -> IO ()
-    def importFile(self, path, morphemizer, maturity=0):
-        f = codecs.open(path, encoding="utf-8")
-        inp = f.readlines()
-        f.close()
+    def import_file(self, path, morphemizer, maturity=0):
+        file = codecs.open(path, encoding="utf-8")
+        inp = file.readlines()
+        file.close()
 
         for i, line in enumerate(inp):
-            ms = getMorphemes(morphemizer, line.strip())
+            ms = get_morphemes(morphemizer, line.strip())
             self.addMLs((m, TextFile(path, i + 1, maturity)) for m in ms)
 
     # Analysis (local)
     def frequency(self, m):  # Morpheme -> Int
-        return sum(getattr(loc, "weight", 1) for loc in self.getMatchingLocs(m))
+        return sum(getattr(loc, "weight", 1) for loc in self.get_matching_locs(m))
 
     # Analysis (global)
-    def locDb(self, recalc=True):  # Maybe Bool -> m Map Location {Morpheme}
+    def loc_db(self, recalc=True):  # Maybe Bool -> m Map Location {Morpheme}
         # type: (bool) ->  Dict[Location, Set[Morpheme]]
         if hasattr(self, "_locDb") and not recalc:
             return self._locDb  # pylint: disable=E0203 # pylint is wrong
@@ -487,7 +466,7 @@ class MorphDb:
         if hasattr(self, "_fidDb") and not recalc:
             return self._fidDb  # pylint: disable=E0203 # pylint is wrong
         self._fidDb = d = {}
-        for loc in self.locDb():
+        for loc in self.loc_db():
             try:
                 d[(loc.noteId, loc.guid, loc.fieldName)] = loc
             except AttributeError:
@@ -537,7 +516,7 @@ def create_table(cur, name, fields, extra=""):
 
 # helper functions to convert morphman objectsi into sql tuples
 def transcode_item(item):
-    return (item.norm, item.base, item.inflected, item.read, item.pos, item.subPos)
+    return item.norm, item.base, item.inflected, item.read, item.pos, item.subPos
 
 
 def transcode_location(loc):
@@ -587,8 +566,8 @@ def read_db_all_morphs(cur):
 
     cur.execute("SELECT * FROM morphs;")
     rows = cur.fetchall()
-    forDict = map(lambda x: (x[1:], x[0]), rows)
-    return dict(forDict)
+    for_dict = map(lambda x: (x[1:], x[0]), rows)
+    return dict(for_dict)
 
 
 def save_db_locations(cur, db, tname="locations"):
@@ -623,7 +602,7 @@ def save_db_locations(cur, db, tname="locations"):
 
     # a morph might have multiple locations
     # map each morph in db into a list [morphidlist, location info]
-    locationsLists = map(
+    locations_lists = map(
         lambda x: list(  # this is a pair of morph and list of locations
             map(lambda y: (morphs[transcode_item(x[0])],) + transcode_location(y), x[1])
         ),
@@ -631,7 +610,7 @@ def save_db_locations(cur, db, tname="locations"):
     )
 
     # flatten the list... because we have a list of lists (one list per morph)
-    tuples = [val for sublist in locationsLists for val in sublist]
+    tuples = [val for sublist in locations_lists for val in sublist]
 
     cur.executemany(
         "INSERT INTO %s (%s) VALUES(?,?,?,?,?,?,?);" % (tname, fields), tuples
@@ -648,15 +627,15 @@ def save_db(db, path):
     # database with each "file" as a table
     # so let use the basefilename of the relation as
     tname = os.path.basename(path)
-    dirName = os.path.dirname(path)
+    dir_name = os.path.dirname(path)
     # it ends with .db so cut it
     assert len(tname) > 3 and tname[-3:] == ".db", "extension is no longer .db?"
 
     # name of the morphs to save (all, known, etc.)
     tname = tname[:-3]
-    dbName = dirName + "/morphman.sqlite"
+    db_name = dir_name + "/morphman.sqlite"
 
-    conn = connect_db(dbName)
+    conn = connect_db(db_name)
     with conn:
         cur = conn.cursor()
         # it looks like we only need to save the "all" data
@@ -670,4 +649,4 @@ def save_db(db, path):
             save_db_locations(cur, db)
         conn.commit()
 
-    print("Saved to sqlite Tname [%s] dbname [%s]" % (tname, dbName))
+    print("Saved to sqlite Tname [%s] dbname [%s]" % (tname, db_name))

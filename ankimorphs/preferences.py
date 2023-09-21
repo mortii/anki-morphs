@@ -45,7 +45,7 @@ def get_preferences():
 
 
 def update_preferences(jcfg):
-    curr_config = _jsonConfig()
+    curr_config = _json_config()
     old_config = curr_config.copy()
 
     curr_config.update(jcfg)
@@ -69,24 +69,23 @@ def _init_config_py():
     mw.toolbar.draw()
 
 
-def _get_config_py_preference(key, modelId=None, deckId=None):
+def _get_config_py_preference(key, model_id=None, deck_id=None):
     if config_py is None:
         # TODO: Removing this causes morph_stats to crash. morph_stats eats all exceptions...
         raise ProfileNotYetLoadedException("Tried to use cfgMods before profile loaded")
     profile = mw.pm.name
-    model = mw.col.models.get(modelId)["name"] if modelId else None
-    deck = mw.col.decks.get(deckId)["name"] if deckId else None
+    model = mw.col.models.get(model_id)["name"] if model_id else None
+    deck = mw.col.decks.get(deck_id)["name"] if deck_id else None
 
     # print(f"\n config_py: {config_py} \n")
 
     if key in config_py.deck_overrides.get(deck, []):
         return config_py.deck_overrides[deck][key]
-    elif key in config_py.model_overrides.get(model, []):
+    if key in config_py.model_overrides.get(model, []):
         return config_py.model_overrides[model][key]
-    elif key in config_py.profile_overrides.get(profile, []):
+    if key in config_py.profile_overrides.get(profile, []):
         return config_py.profile_overrides[profile][key]
-    else:
-        return config_py.default[key]
+    return config_py.default[key]
 
 
 def _init_anki_json_config():
@@ -200,7 +199,7 @@ def jcfg_default():
     }
 
 
-def _jsonConfig():
+def _json_config():
     global config_data
     if config_data is None:
         config_data = get_preferences()
@@ -208,13 +207,13 @@ def _jsonConfig():
 
 
 def _get_anki_json_config(key):
-    return _jsonConfig().get(key)
+    return _json_config().get(key)
 
 
 def _add_missing_json_config():
     # this ensures forward compatibility, because it adds new options in configuration (introduced by update) without
     # any notice with default value
-    current = _jsonConfig().copy()
+    current = _json_config().copy()
     default = jcfg_default()
     for key, value in default.items():
         if key not in current:

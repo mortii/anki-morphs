@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 import csv
-import importlib
 import io
 import itertools
-import pprint
 import time
 from functools import partial
 from typing import Dict, Optional, Set, Union
 
-import aqt.main
 from anki.collection import Collection
 from anki.models import FieldDict, NotetypeDict
 from anki.tags import TagManager
@@ -19,21 +16,20 @@ from aqt.utils import tooltip
 from ankimorphs import morph_stats as stats
 from ankimorphs import util
 from ankimorphs.exceptions import NoteFilterFieldsException
-from ankimorphs.morphemes import AnkiDeck, Location, MorphDb, Morpheme, getMorphemes
-from ankimorphs.morphemizer import getMorphemizerByName
+from ankimorphs.morphemes import AnkiDeck, Location, MorphDb, Morpheme, get_morphemes
+from ankimorphs.morphemizer import get_morphemizer_by_name
 from ankimorphs.preferences import get_preference, get_preferences
 from ankimorphs.util import (
-    errorMsg,
-    getFilterByMidAndTags,
-    getModifyEnabledModels,
-    getReadEnabledModels,
+    error_msg,
+    get_filter_by_mid_and_tags,
+    get_modify_enabled_models,
+    get_read_enabled_models,
     mw,
-    printf,
 )
-from ankimorphs.util_external import memoize
+from ankimorphs.util_external import Memoize
 
 
-@memoize
+@Memoize
 def get_field_index(field_name, mid) -> Optional[int]:
     """
     Returns the index of a field in a model by its name.
@@ -50,8 +46,7 @@ def get_field_index(field_name, mid) -> Optional[int]:
         return None
 
 
-def extractFieldData(field_name, fields, mid):
-    # type: (str, str, str) -> str
+def extract_field_data(field_name: str, fields: str, mid: str):
     """
     :type field_name: The field name (like u'Expression')
     :type fields: A string containing all field data for the model (created by anki.utils.join_fields())
@@ -61,8 +56,8 @@ def extractFieldData(field_name, fields, mid):
     return strip_html(split_fields(fields)[idx])
 
 
-@memoize
-def getSortFieldIndex(mid):
+@Memoize
+def get_sort_field_index(mid):
     return mw.col.models.get(mid)["sortf"]
 
 
@@ -75,7 +70,7 @@ def set_field(
             all_fields_data[index] = new_value
 
 
-def notesToUpdate(last_updated, included_mids):
+def notes_to_update(last_updated, included_mids):
     # returns list of (nid, mid, flds, guid, tags, maxmat) of
     # cards to analyze
     # ignoring cards that are leeches
@@ -90,11 +85,11 @@ def notesToUpdate(last_updated, included_mids):
     #
     # we build a predicate that we append to the where clause
     if get_preference("Option_IgnoreSuspendedLeeches"):
-        filterSuspLeeches = (
+        filter_susp_leeches = (
             "(c.queue <> -1 or (c.queue = -1 and not instr(tags, ' leech ')))"
         )
     else:
-        filterSuspLeeches = "TRUE"
+        filter_susp_leeches = "TRUE"
 
     #
     # First find the cards to analyze
@@ -111,7 +106,7 @@ def notesToUpdate(last_updated, included_mids):
         WHERE {2} -- ignoring suspended leeches
         GROUP by nid, mid, flds, guid, tags;
         """.format(
-        ",".join([str(m) for m in included_mids]), last_updated, filterSuspLeeches
+        ",".join([str(m) for m in included_mids]), last_updated, filter_susp_leeches
     )
 
     return mw.col.db.execute(query)
@@ -120,7 +115,7 @@ def notesToUpdate(last_updated, included_mids):
 def make_all_db(all_db=None):
     # from . import config
     # importlib.reload(config)
-    t_0, db, TAG = time.time(), mw.col.db, mw.col.tags
+    t_0, db, col_tags = time.time(), mw.col.db, mw.col.tags
 
     mw.taskman.run_on_main(
         partial(
@@ -142,56 +137,56 @@ def make_all_db(all_db=None):
     else:
         last_updated = all_db.meta.get("last_updated", 0)
 
-    fidDb = all_db.fidDb()
-    locDb = all_db.locDb(recalc=False)  # fidDb() already forces locDb recalc
+    fid_db = all_db.fidDb()
+    loc_db = all_db.loc_db(recalc=False)  # fidDb() already forces locDb recalc
 
-    included_types, include_all = getReadEnabledModels()
+    included_types, include_all = get_read_enabled_models()
     included_mids = [
         m["id"]
         for m in mw.col.models.all()
         if include_all or m["name"] in included_types
     ]
 
-    notes = notesToUpdate(last_updated, included_mids)
-    N_notes = len(notes)
+    notes = notes_to_update(last_updated, included_mids)
+    notes_amount = len(notes)
 
-    print("notes to update:", N_notes)
+    print("notes to update:", notes_amount)
 
     mw.taskman.run_on_main(mw.progress.finish)
     mw.taskman.run_on_main(
         partial(
             mw.progress.start,
             label="Generating all.db data",
-            max=N_notes,
+            max=notes_amount,
             immediate=True,
         )
     )
 
-    for i, (nid, mid, flds, guid, tags, maxmat) in enumerate(notes):
+    for i, (nid, mid, flds, guid, tags, max_mat) in enumerate(notes):
         # if i % 500 == 0:
         mw.taskman.run_on_main(partial(mw.progress.update, value=i))
 
-        ts = TAG.split(tags)
-        mid_cfg = getFilterByMidAndTags(mid, ts)
+        ts = col_tags.split(tags)
+        mid_cfg = get_filter_by_mid_and_tags(mid, ts)
         if mid_cfg is None:
             continue
 
         N_enabled_notes += 1
 
         mName = mid_cfg["Morphemizer"]
-        morphemizer = getMorphemizerByName(mName)
+        morphemizer = get_morphemizer_by_name(mName)
 
         C = partial(get_preference, model_id=mid)
 
         if C("ignore maturity"):
-            maxmat = 0
-        ts, alreadyKnownTag = TAG.split(tags), get_preference("Tag_AlreadyKnown")
-        if alreadyKnownTag in ts:
-            maxmat = max(maxmat, C("threshold_mature") + 1)
+            max_mat = 0
+        ts, already_known_tag = col_tags.split(tags), get_preference("Tag_AlreadyKnown")
+        if already_known_tag in ts:
+            max_mat = max(max_mat, C("threshold_mature") + 1)
 
         for field_name in mid_cfg["Fields"]:
             try:  # if doesn't have field, continue
-                field_value = extractFieldData(field_name, flds, mid)
+                field_value = extract_field_data(field_name, flds, mid)
             except KeyError:
                 continue
             except TypeError as error:
@@ -200,71 +195,71 @@ def make_all_db(all_db=None):
                 # This gets handled in the on_failure function
                 raise NoteFilterFieldsException(field_name, note_type) from error
 
-            assert maxmat is not None, "Maxmat should not be None"
+            assert max_mat is not None, "Maxmat should not be None"
 
-            loc = fidDb.get((nid, guid, field_name), None)
+            loc = fid_db.get((nid, guid, field_name), None)
             if not loc:
-                loc = AnkiDeck(nid, field_name, field_value, guid, maxmat)
-                ms = getMorphemes(morphemizer, field_value, ts)
+                loc = AnkiDeck(nid, field_name, field_value, guid, max_mat)
+                ms = get_morphemes(morphemizer, field_value, ts)
                 if ms:  # TODO: this needed? should we change below too then?
-                    locDb[loc] = ms
+                    loc_db[loc] = ms
             else:
                 # mats changed -> new loc (new mats), move morphs
-                if loc.fieldValue == field_value and loc.maturity != maxmat:
-                    newLoc = AnkiDeck(nid, field_name, field_value, guid, maxmat)
-                    locDb[newLoc] = locDb.pop(loc)
+                if loc.fieldValue == field_value and loc.maturity != max_mat:
+                    new_loc = AnkiDeck(nid, field_name, field_value, guid, max_mat)
+                    loc_db[new_loc] = loc_db.pop(loc)
                 # field changed -> new loc, new morphs
                 elif loc.fieldValue != field_value:
-                    newLoc = AnkiDeck(nid, field_name, field_value, guid, maxmat)
-                    ms = getMorphemes(morphemizer, field_value, ts)
-                    locDb.pop(loc)
-                    locDb[newLoc] = ms
+                    new_loc = AnkiDeck(nid, field_name, field_value, guid, max_mat)
+                    ms = get_morphemes(morphemizer, field_value, ts)
+                    loc_db.pop(loc)
+                    loc_db[new_loc] = ms
 
     # printf('Processed %d notes in %f sec' % (N_notes, time.time() - t_0))
 
     mw.taskman.run_on_main(partial(mw.progress.update, label="Creating all.db objects"))
     old_meta = all_db.meta
     all_db.clear()
-    all_db.addFromLocDb(locDb)
+    all_db.add_from_loc_db(loc_db)
     all_db.meta = old_meta
     mw.taskman.run_on_main(mw.progress.finish)
     return all_db
 
 
-def filterDbByMat(db, mat):
+def filter_db_by_mat(db, mat):
     """Assumes safe to use cached locDb"""
-    newDb = MorphDb()
-    for loc, ms in db.locDb(recalc=False).items():
+    new_db = MorphDb()
+    for loc, ms in db.loc_db(recalc=False).items():
         if loc.maturity > mat:
-            newDb.addMsL(ms, loc)
-    return newDb
+            new_db.addMsL(ms, loc)
+    return new_db
 
 
-def updateNotes(allDb):
+def update_notes(all_db):
     t_0, now, db = time.time(), int_time(), mw.col.db
 
-    TAG = mw.col.tags  # type: TagManager
+    col_tags = mw.col.tags  # type: TagManager
     ds, note_id_morphman_index = [], {}
 
     mw.taskman.run_on_main(
         partial(mw.progress.start, label="Updating data", immediate=True)
     )
 
-    fidDb = allDb.fidDb(recalc=True)
-    loc_db = allDb.locDb(recalc=False)  # type: Dict[Location, Set[Morpheme]]
+    fid_db = all_db.fidDb(recalc=True)
+    loc_db = all_db.loc_db(recalc=False)  # type: Dict[Location, Set[Morpheme]]
 
     # read tag names
     (
-        compTag,
-        vocabTag,
-        freshTag,
-        notReadyTag,
-        alreadyKnownTag,
-        priorityTag,
-        tooShortTag,
-        tooLongTag,
-        frequencyTag,
-    ) = tagNames = (
+        comp_tag,
+        vocab_tag,
+        fresh_tag,
+        not_ready_tag,
+        already_known_tag,
+        priority_tag,
+        too_short_tag,
+        too_long_tag,
+        frequency_tag,
+    ) = tag_names = (
         get_preference("Tag_Comprehension"),
         get_preference("Tag_Vocab"),
         get_preference("Tag_Fresh"),
@@ -275,31 +270,31 @@ def updateNotes(allDb):
         get_preference("Tag_TooLong"),
         get_preference("Tag_Frequency"),
     )
-    TAG.register(tagNames)
-    badLengthTag = get_preference("Tag_BadLength")
+    col_tags.register(tag_names)
+    bad_length_tag = get_preference("Tag_BadLength")
 
     # handle secondary databases
     mw.taskman.run_on_main(
         partial(mw.progress.update, label="Creating seen/known/mature from all.db")
     )
 
-    seenDb = filterDbByMat(allDb, get_preference("threshold_seen"))
-    knownDb = filterDbByMat(allDb, get_preference("threshold_known"))
-    matureDb = filterDbByMat(allDb, get_preference("threshold_mature"))
+    seen_db = filter_db_by_mat(all_db, get_preference("threshold_seen"))
+    known_db = filter_db_by_mat(all_db, get_preference("threshold_known"))
+    mature_db = filter_db_by_mat(all_db, get_preference("threshold_mature"))
 
     mw.taskman.run_on_main(partial(mw.progress.update, label="Loading priority.db"))
-    priorityDb = MorphDb(get_preference("path_priority"), ignoreErrors=True)
+    priority_db = MorphDb(get_preference("path_priority"), ignore_errors=True)
 
     mw.taskman.run_on_main(partial(mw.progress.update, label="Loading frequency.txt"))
 
-    frequencyListPath = get_preference("path_frequency")
+    frequency_list_path = get_preference("path_frequency")
     frequency_map = {}
     frequency_list_exists = False
 
     try:
-        with io.open(frequencyListPath, encoding="utf-8-sig") as csvfile:
+        with io.open(frequency_list_path, encoding="utf-8-sig") as csvfile:
             csvreader = csv.reader(csvfile, delimiter="\t")
-            rows = [row for row in csvreader]
+            rows = list(csvreader)
 
             if rows[0][0] == "#study_plan_frequency":
                 frequency_list_exists = True
@@ -315,10 +310,10 @@ def updateNotes(allDb):
             else:
                 frequency_map = dict(zip([row[0] for row in rows], itertools.count(0)))
 
-    except (FileNotFoundError, IndexError) as e:
+    except (FileNotFoundError, IndexError):
         pass
 
-    frequencyListLength = len(frequency_map)
+    frequency_list_length = len(frequency_map)
 
     # prefetch cfg for fields
     field_focus_morph = get_preference("Field_FocusMorph")
@@ -334,40 +329,40 @@ def updateNotes(allDb):
     skip_fresh_cards = get_preference("Option_SkipFreshVocabCards")
 
     # Find all morphs that changed maturity and the notes that refer to them.
-    last_maturities = allDb.meta.get("last_maturities", {})
+    last_maturities = all_db.meta.get("last_maturities", {})
     new_maturities = {}
     refresh_notes = set()
 
     # Recompute everything if preferences changed.
-    last_preferences = allDb.meta.get("last_preferences", {})
+    last_preferences = all_db.meta.get("last_preferences", {})
     if not last_preferences == get_preferences():
         print("Preferences changed.  Updating all notes...")
         last_updated = 0
     else:
-        last_updated = allDb.meta.get("last_updated", 0)
+        last_updated = all_db.meta.get("last_updated", 0)
 
     # Todo: Remove this forced 0 once we add checks for other changes like new frequency.txt files.
     last_updated = 0
 
     # If we're updating everything anyway, clear the notes set.
     if last_updated > 0:
-        for m, locs in allDb.db.items():
+        for _morph, locs in all_db.db.items():
             maturity_bits = 0
-            if seenDb.matches(m):
+            if seen_db.matches(_morph):
                 maturity_bits |= 1
-            if knownDb.matches(m):
+            if known_db.matches(_morph):
                 maturity_bits |= 2
-            if matureDb.matches(m):
+            if mature_db.matches(_morph):
                 maturity_bits |= 4
 
-            new_maturities[m] = maturity_bits
+            new_maturities[_morph] = maturity_bits
 
-            if last_maturities.get(m, -1) != maturity_bits:
+            if last_maturities.get(_morph, -1) != maturity_bits:
                 for loc in locs:
                     if isinstance(loc, AnkiDeck):
                         refresh_notes.add(loc.noteId)
 
-    included_types, include_all = getModifyEnabledModels()
+    included_types, include_all = get_modify_enabled_models()
     included_mids = [
         m["id"]
         for m in mw.col.models.all()
@@ -386,42 +381,44 @@ def updateNotes(allDb):
     )
     query_results = db.execute(query)
 
-    N_notes = len(query_results)
+    notes_amount = len(query_results)
 
-    for i, (nid, mid, flds, guid, tags, maxtype) in enumerate(query_results):
-        ts = TAG.split(tags)
+    for i, (note_id, model_id, fields, guid, tags, max_type) in enumerate(
+        query_results
+    ):
+        ts = col_tags.split(tags)
 
         if i % 1000 == 0:
             mw.taskman.run_on_main(
                 partial(
                     mw.progress.update,
-                    label=f"Recalculated {i} of {N_notes} cards ",
+                    label=f"Recalculated {i} of {notes_amount} cards ",
                     value=i,
-                    max=N_notes,
+                    max=notes_amount,
                 )
             )
 
-        notecfg = getFilterByMidAndTags(mid, ts)
-        if notecfg is None or not notecfg["Modify"]:
+        note_cfg = get_filter_by_mid_and_tags(model_id, ts)
+        if note_cfg is None or not note_cfg["Modify"]:
             continue
 
         # add bonus for morphs in priority.db and frequency.txt
-        C = partial(get_preference, model_id=mid)
+        C = partial(get_preference, model_id=model_id)
 
-        frequencyBonus = C("frequency.txt bonus")
+        frequency_bonus = C("frequency.txt bonus")
         if C("Option_AlwaysPrioritizeFrequencyMorphs"):
-            noPriorityPenalty = C("no priority penalty")
+            no_priority_penalty = C("no priority penalty")
         else:
-            noPriorityPenalty = 0
-        reinforceNewVocabWeight = C("reinforce new vocab weight")
-        priorityDbWeight = C("priority.db weight")
+            no_priority_penalty = 0
+        reinforce_new_vocab_weight = C("reinforce new vocab weight")
+        priority_db_weight = C("priority.db weight")
         proper_nouns_known = get_preference("Option_ProperNounsAlreadyKnown")
 
         # Get all morphemes for note
         morphemes = set()
-        for fieldName in notecfg["Fields"]:
+        for field_name in note_cfg["Fields"]:
             try:
-                loc = fidDb[(nid, guid, fieldName)]
+                loc = fid_db[(note_id, guid, field_name)]
                 morphemes.update(loc_db[loc])
             except KeyError:
                 continue
@@ -432,18 +429,17 @@ def updateNotes(allDb):
             if proper_nouns_known and morpheme.isProperNoun():
                 continue
             morpheme = morpheme.deinflected()
-            if not seenDb.matches(morpheme):
+            if not seen_db.matches(morpheme):
                 unseens.add(morpheme)
-            if not knownDb.matches(morpheme):
+            if not known_db.matches(morpheme):
                 unknowns.add(morpheme)
-            if not matureDb.matches(morpheme):
+            if not mature_db.matches(morpheme):
                 unmatures.add(morpheme)
-                if knownDb.matches(morpheme):
+                if known_db.matches(morpheme):
                     new_knowns.add(morpheme)
 
         # Determine MMI - Morph Man Index
         morphemes_amount = len(morphemes)
-        unseens_amount = len(unseens)
         unknows_amount = len(unknowns)
         unmatures_amount = len(unmatures)
 
@@ -451,13 +447,13 @@ def updateNotes(allDb):
         # if a card already has this mmi (due) it won't update, so this will not have a negative impact on syncing.
         # card.due is converted to a signed 32-bit integer on the backend, so max value is 2147483647 before overflow
         morphman_index = 2147483647
-        note_id_morphman_index[nid] = morphman_index
+        note_id_morphman_index[note_id] = morphman_index
 
         # Bail early if card has more than 3 unknown morphs for lite update
         # TODO: Add to preferences GUI to make it adjustable
         if unknows_amount > 3:
             continue
-        elif skip_comprehension_cards and unknows_amount == 0:
+        if skip_comprehension_cards and unknows_amount == 0:
             continue
 
         is_priority = False
@@ -467,11 +463,11 @@ def updateNotes(allDb):
         usefulness = 0
 
         for unknown_morph in unknowns:
-            morph_frequency += allDb.frequency(unknown_morph)
+            morph_frequency += all_db.frequency(unknown_morph)
 
-            if priorityDb.frequency(unknown_morph) > 0:
+            if priority_db.frequency(unknown_morph) > 0:
                 is_priority = True
-                usefulness += priorityDbWeight
+                usefulness += priority_db_weight
 
             if frequency_list_exists:
                 focus_morph_index = frequency_map.get(unknown_morph, -1)
@@ -484,23 +480,24 @@ def updateNotes(allDb):
                 # The bigger this number, the lower mmi becomes
                 usefulness += int(
                     round(
-                        frequencyBonus * (1 - focus_morph_index / frequencyListLength)
+                        frequency_bonus
+                        * (1 - focus_morph_index / frequency_list_length)
                     )
                 )
 
-        # average frequency of unknowns (ie. how common the word is within your collection)
-        F_k_avg = (
+        # average frequency of unknowns (i.e. how common the word is within your collection)
+        frequency_avg = (
             morph_frequency // unknows_amount if unknows_amount > 0 else morph_frequency
         )
-        usefulness += F_k_avg
+        usefulness += frequency_avg
 
         # add bonus for studying recent learned knowns (reinforce)
         for morpheme in new_knowns:
-            locs = knownDb.getMatchingLocs(morpheme)
+            locs = known_db.get_matching_locs(morpheme)
             if locs:
                 ivl = min(1, max(loc.maturity for loc in locs))
                 # TODO: maybe average this so it doesnt favor long sentences
-                usefulness += reinforceNewVocabWeight // ivl
+                usefulness += reinforce_new_vocab_weight // ivl
 
         if any(
             morpheme.pos == "動詞" for morpheme in unknowns
@@ -510,55 +507,64 @@ def updateNotes(allDb):
         usefulness = 99999 - min(99999, usefulness)
 
         # difference from optimal length range (too little context vs long sentence)
-        lenDiffRaw = min(
+        len_diff_raw = min(
             morphemes_amount - C("min good sentence length"),
             max(0, morphemes_amount - C("max good sentence length")),
         )
-        lenDiff = min(9, abs(lenDiffRaw))
+        len_diff = min(9, abs(len_diff_raw))
 
         # Fill in various fields/tags on the note based on cfg
-        fs = split_fields(flds)
+        fs = split_fields(fields)
 
         # clear any 'special' tags, the appropriate will be set in the next few lines
-        ts = [t for t in ts if t not in (notReadyTag, compTag, vocabTag, freshTag)]
+        ts = [t for t in ts if t not in (not_ready_tag, comp_tag, vocab_tag, fresh_tag)]
 
         # apply penalty for cards that aren't prioritized for learning
         if not (is_priority or is_frequency):
-            usefulness += noPriorityPenalty
+            usefulness += no_priority_penalty
 
         # determine card type
         if unmatures_amount == 0:  # sentence comprehension card, m+0
-            ts.append(compTag)
+            ts.append(comp_tag)
             if skip_comprehension_cards:
                 usefulness += (
                     1000000  # Add a penalty to put these cards at the end of the queue
                 )
         elif unknows_amount == 1:  # new vocab card, k+1
-            ts.append(vocabTag)
-            if maxtype == 0:  # Only update focus fields on 'new' card types.
-                set_field(mid, fs, field_focus_morph, unknown_morph.base)
-                set_field(mid, fs, field_focus_morph_pos, unknown_morph.pos)
+            ts.append(vocab_tag)
+            if max_type == 0:  # Only update focus fields on 'new' card types.
+                set_field(model_id, fs, field_focus_morph, unknown_morph.base)
+                set_field(model_id, fs, field_focus_morph_pos, unknown_morph.pos)
         elif unknows_amount > 1:  # M+1+ and K+2+
-            ts.append(notReadyTag)
-            if maxtype == 0:  # Only update focus fields on 'new' card types.
+            ts.append(not_ready_tag)
+            if max_type == 0:  # Only update focus fields on 'new' card types.
                 set_field(
-                    mid, fs, field_focus_morph, ", ".join([u.base for u in unknowns])
+                    model_id,
+                    fs,
+                    field_focus_morph,
+                    ", ".join([u.base for u in unknowns]),
                 )
                 set_field(
-                    mid, fs, field_focus_morph_pos, ", ".join([u.pos for u in unknowns])
+                    model_id,
+                    fs,
+                    field_focus_morph_pos,
+                    ", ".join([u.pos for u in unknowns]),
                 )
         else:  # only case left: we have k+0, but m+1 or higher, so this card does not introduce a new vocabulary -> card for newly learned morpheme
-            ts.append(freshTag)
+            ts.append(fresh_tag)
             if skip_fresh_cards:
                 usefulness += (
                     1000000  # Add a penalty to put these cards at the end of the queue
                 )
-            if maxtype == 0:  # Only update focus fields on 'new' card types.
+            if max_type == 0:  # Only update focus fields on 'new' card types.
                 set_field(
-                    mid, fs, field_focus_morph, ", ".join([u.base for u in unmatures])
+                    model_id,
+                    fs,
+                    field_focus_morph,
+                    ", ".join([u.base for u in unmatures]),
                 )
                 set_field(
-                    mid,
+                    model_id,
                     fs,
                     field_focus_morph_pos,
                     ", ".join([u.pos for u in unmatures]),
@@ -566,56 +572,56 @@ def updateNotes(allDb):
 
         # calculate mmi
         morphman_index = (
-            100000 * unknows_amount + 1000 * lenDiff + int(round(usefulness))
+            100000 * unknows_amount + 1000 * len_diff + int(round(usefulness))
         )
         if C("set due based on mmi"):
-            note_id_morphman_index[nid] = morphman_index
+            note_id_morphman_index[note_id] = morphman_index
 
         # set type agnostic fields
-        set_field(mid, fs, field_unknown_count, "%d" % unknows_amount)
-        set_field(mid, fs, field_unmature_count, "%d" % unmatures_amount)
-        set_field(mid, fs, field_morph_man_index, "%d" % morphman_index)
-        set_field(mid, fs, field_unknowns, ", ".join(u.base for u in unknowns))
-        set_field(mid, fs, field_unmatures, ", ".join(u.base for u in unmatures))
-        set_field(mid, fs, field_unknown_freq, "%d" % F_k_avg)
+        set_field(model_id, fs, field_unknown_count, "%d" % unknows_amount)
+        set_field(model_id, fs, field_unmature_count, "%d" % unmatures_amount)
+        set_field(model_id, fs, field_morph_man_index, "%d" % morphman_index)
+        set_field(model_id, fs, field_unknowns, ", ".join(u.base for u in unknowns))
+        set_field(model_id, fs, field_unmatures, ", ".join(u.base for u in unmatures))
+        set_field(model_id, fs, field_unknown_freq, "%d" % frequency_avg)
 
         # remove deprecated tag
-        if badLengthTag is not None and badLengthTag in ts:
-            ts.remove(badLengthTag)
+        if bad_length_tag is not None and bad_length_tag in ts:
+            ts.remove(bad_length_tag)
 
         # other tags
-        if priorityTag in ts:
-            ts.remove(priorityTag)
+        if priority_tag in ts:
+            ts.remove(priority_tag)
         if is_priority:
-            ts.append(priorityTag)
+            ts.append(priority_tag)
 
-        if frequencyTag in ts:
-            ts.remove(frequencyTag)
+        if frequency_tag in ts:
+            ts.remove(frequency_tag)
         if is_frequency:
-            ts.append(frequencyTag)
+            ts.append(frequency_tag)
 
-        if tooShortTag in ts:
-            ts.remove(tooShortTag)
-        if lenDiffRaw < 0:
-            ts.append(tooShortTag)
+        if too_short_tag in ts:
+            ts.remove(too_short_tag)
+        if len_diff_raw < 0:
+            ts.append(too_short_tag)
 
-        if tooLongTag in ts:
-            ts.remove(tooLongTag)
-        if lenDiffRaw > 0:
-            ts.append(tooLongTag)
+        if too_long_tag in ts:
+            ts.remove(too_long_tag)
+        if len_diff_raw > 0:
+            ts.append(too_long_tag)
 
         # remove unnecessary tags
         if not get_preference("Option_SetNotRequiredTags"):
-            unnecessary = [priorityTag, tooShortTag, tooLongTag]
+            unnecessary = [priority_tag, too_short_tag, too_long_tag]
             ts = [tag for tag in ts if tag not in unnecessary]
 
         # update sql db
-        tags_ = TAG.join(ts)
+        tags_ = col_tags.join(ts)
         flds_ = join_fields(fs)
-        if flds != flds_ or tags != tags_:  # only update notes that have changed
+        if fields != flds_ or tags != tags_:  # only update notes that have changed
             csum = field_checksum(fs[0])
-            sfld = strip_html(fs[getSortFieldIndex(mid)])
-            ds.append((tags_, flds_, sfld, csum, now, mw.col.usn(), nid))
+            sfld = strip_html(fs[get_sort_field_index(model_id)])
+            ds.append((tags_, flds_, sfld, csum, now, mw.col.usn(), note_id))
 
     mw.taskman.run_on_main(
         partial(mw.progress.update, label="Updating anki database...")
@@ -633,9 +639,11 @@ def updateNotes(allDb):
     # "type = 0": new cards
     # "type = 1": learning cards [is supposed to be learning: in my case no learning card had this type]
     # "type = 2": review cards
-    for cid, nid, due in db.execute("select id, nid, due from cards where type = 0"):
-        if nid in note_id_morphman_index:  # owise it was disabled
-            due_ = note_id_morphman_index[nid]
+    for cid, note_id, due in db.execute(
+        "select id, nid, due from cards where type = 0"
+    ):
+        if note_id in note_id_morphman_index:  # owise it was disabled
+            due_ = note_id_morphman_index[note_id]
             if due != due_:  # only update cards that have changed
                 ds.append((due_, now, mw.col.usn(), cid))
 
@@ -643,9 +651,9 @@ def updateNotes(allDb):
 
     mw.taskman.run_on_main(mw.reset)
 
-    allDb.meta["last_preferences"] = get_preferences()
-    allDb.meta["last_maturities"] = new_maturities
-    allDb.meta["last_updated"] = int(time.time() + 0.5)
+    all_db.meta["last_preferences"] = get_preferences()
+    all_db.meta["last_maturities"] = new_maturities
+    all_db.meta["last_updated"] = int(time.time() + 0.5)
 
     # printf('Updated %d notes in %f sec' % (N_notes, time.time() - t_0))
 
@@ -653,20 +661,20 @@ def updateNotes(allDb):
         mw.taskman.run_on_main(
             partial(mw.progress.update, label="Saving all/seen/known/mature dbs")
         )
-        allDb.save(get_preference("path_all"))
-        seenDb.save(get_preference("path_seen"))
-        knownDb.save(get_preference("path_known"))
-        matureDb.save(get_preference("path_mature"))
+        all_db.save(get_preference("path_all"))
+        seen_db.save(get_preference("path_seen"))
+        known_db.save(get_preference("path_known"))
+        mature_db.save(get_preference("path_mature"))
         # printf('Updated %d notes + saved dbs in %f sec' % (N_notes, time.time() - t_0))
 
     mw.taskman.run_on_main(mw.progress.finish)
-    return knownDb
+    return known_db
 
 
 def main():
     print(f"recalc main pre, mw.inMainThread(): {mw.inMainThread()}")
 
-    op = QueryOp(
+    operation = QueryOp(
         parent=mw,
         op=main_background_op,
         success=lambda t: tooltip("Finished Recalc"),  # t = return value of the op
@@ -674,8 +682,8 @@ def main():
 
     # if with_progress() is not called, no progress window will be shown.
     # note: QueryOp.with_progress() was broken until Anki 2.1.50
-    op.with_progress().run_in_background()
-    op.failure(on_failure)
+    operation.with_progress().run_in_background()
+    operation.failure(on_failure)
 
 
 def main_background_op(collection: Collection):
@@ -692,7 +700,7 @@ def main_background_op(collection: Collection):
     print("running main2")
 
     # update all.db
-    allDb = make_all_db(current_all_db)
+    all_db = make_all_db(current_all_db)
 
     print("running main3")
 
@@ -700,34 +708,34 @@ def main_background_op(collection: Collection):
     mw.taskman.run_on_main(
         partial(mw.progress.start, label="Merging ext.db", immediate=True)
     )
-    ext = MorphDb(get_preference("path_ext"), ignoreErrors=True)
-    allDb.merge(ext)
+    ext = MorphDb(get_preference("path_ext"), ignore_errors=True)
+    all_db.merge(ext)
     mw.taskman.run_on_main(mw.progress.finish)
 
     print("running main3.5")
 
     # TODO: 'Known' is a horrendously bad name for this db... it actually contains every morph that has ever been
     #  seen, so it is super misleading... rename it to something better like 'learned' or 'unmature'
-    knownDb = updateNotes(allDb)
+    known_db = update_notes(all_db)
 
     print("running main4")
 
     # update stats and refresh display
-    stats.update_stats(knownDb)
+    stats.update_stats(known_db)
 
     print("running main5")
 
     mw.taskman.run_on_main(mw.toolbar.draw)
 
     # set global allDb
-    util._allDb = allDb
+    util._all_db = all_db
 
     print("running main6")
 
 
 def on_failure(_exception: Union[Exception, NoteFilterFieldsException]):
     if type(_exception) is NoteFilterFieldsException:
-        errorMsg(
+        error_msg(
             f'Did not find a field called "{_exception.field_name}" in the Note Type "{_exception.note_type}"\n\n'
             f"Field names are case-sensitive!\n\n"
             f"Read the guide for more info:\n"
