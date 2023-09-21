@@ -42,24 +42,24 @@ class Morphemizer:
 # Morphemizer Helpers
 ####################################################################################################
 
-MORPHEMIZERS = None
+morphemizers = None  # pylint:disable=invalid-name
 morphemizers_by_name = {}
 
 
 def get_all_morphemizers() -> [Morphemizer]:
-    global MORPHEMIZERS
-    if MORPHEMIZERS is None:
-        MORPHEMIZERS = [
+    global morphemizers  # pylint:disable=global-statement
+    if morphemizers is None:
+        morphemizers = [
             SpaceMorphemizer(),
             MecabMorphemizer(),
             JiebaMorphemizer(),
             CjkCharMorphemizer(),
         ]
 
-        for morphemizer in MORPHEMIZERS:
+        for morphemizer in morphemizers:
             morphemizers_by_name[morphemizer.get_name()] = morphemizer
 
-    return MORPHEMIZERS
+    return morphemizers
 
 
 def get_morphemizer_by_name(name: str) -> Optional[Morphemizer]:
@@ -88,10 +88,10 @@ class MecabMorphemizer(Morphemizer):
         return get_morphemes_mecab(expression)
 
     def get_description(self):
-        try:
-            identity = get_mecab_identity()
-        except:
-            identity = "UNAVAILABLE"
+        # try:
+        identity = get_mecab_identity()
+        # except:
+        #     identity = "UNAVAILABLE"
         return "Japanese " + identity
 
 

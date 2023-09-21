@@ -66,10 +66,10 @@ def get_filter_by_type_and_tags(note_type: str, note_tags: List[str]) -> Optiona
 def get_read_enabled_models():
     included_types = set()
     include_all = False
-    for f in get_preference("Filter"):
-        if f.get("Read", True):
-            if f["Type"] is not None:
-                included_types.add(f["Type"])
+    for _filter in get_preference("Filter"):
+        if _filter.get("Read", True):
+            if _filter["Type"] is not None:
+                included_types.add(_filter["Type"])
             else:
                 include_all = True
                 break
@@ -100,7 +100,7 @@ def info_msg(msg):
 
 
 def printf(msg):
-    txt = "%s: %s" % (datetime.datetime.now(), msg)
+    txt = f"{datetime.datetime.now()}: {msg}"
     file = codecs.open(get_preference("path_log"), "a", "utf-8")
     file.write(txt + "\r\n")
     file.close()

@@ -25,7 +25,7 @@ default = {
     "text file import maturity": 22,
     # NOTICE: This option is now set in the Morphman Preferences, and can no longer be set here.
     #'ignore grammar position': False,
-    # NOTICE: The following five options are now set via the Readability UI, and can no longer be set here.
+    # NOTICE: The following five options are now set via the Readability ui, and can no longer be set here.
     #'default_minimum_master_frequency': 0,
     #'default_study_target': 98.0,
     #'path_master_frequency_list': '',
