@@ -43,9 +43,9 @@ def profile_base_path():
         os.path.expanduser("~/Anki"),
         os.path.expanduser("~/Documents/Anki"),
     ]
-    for d in candidates:
-        if os.path.exists(d):
-            return d
+    for data in candidates:
+        if os.path.exists(data):
+            return data
 
     die(
         """\
@@ -115,8 +115,8 @@ def cmd_count(args):
 
     freqs = Counter()
     for path in files:
-        with codecs.open(path, encoding="utf-8") as f:
-            for line in f.readlines():
+        with codecs.open(path, encoding="utf-8") as file:
+            for line in file.readlines():
                 freqs.update(mizer.get_morphemes_from_expr(line.strip()))
 
     for m, c in freqs.most_common():

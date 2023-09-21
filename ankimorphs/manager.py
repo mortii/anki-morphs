@@ -3,8 +3,8 @@ import os
 
 # from aqt.qt import QWidget, QFileDialog, QProgressBar, QLabel, QLineEdit
 from anki.utils import is_mac
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (
+from PyQt6.QtCore import Qt  # pylint:disable=no-name-in-module
+from PyQt6.QtWidgets import (  # pylint:disable=no-name-in-module
     QDialog,
     QFileDialog,
     QGridLayout,
@@ -20,13 +20,13 @@ from PyQt6.QtWidgets import (
 from .morphemes import MorphDb
 from .morphemizer import get_all_morphemizers
 from .preferences import get_preference as cfg
-from .UI import MorphemizerComboBox
+from .ui import MorphemizerComboBox
 from .util import error_msg, info_msg, mk_btn, mw
 
 
-def get_path(le):  # LineEdit -> GUI ()
+def get_path(line_edit):  # LineEdit -> GUI ()
     path = QFileDialog.getOpenFileName(caption="Open db", directory=cfg("path_dbs"))[0]
-    le.setText(path)
+    line_edit.setText(path)
 
 
 def get_progress_widget():
@@ -40,41 +40,41 @@ def get_progress_widget():
         progress_bar.setFixedSize(390, 50)
     progress_bar.move(10, 10)
     per = QLabel(progress_bar)
-    per.setAlignment(Qt.AlignmentFlag.AlignCenter)  # pylint: disable=E1101
+    per.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     progress_widget.show()
     return progress_widget, progress_bar
 
 
-class MorphMan(QDialog):
+class MorphMan(QDialog):  # pylint: disable=too-many-instance-attributes
     def __init__(self, parent=None):
-        super(MorphMan, self).__init__(parent)
-        self.aDb = None
-        self.bDb = None
-        self.bPath = None
-        self.aPath = None
-        self.mw = parent
+        super().__init__(parent)
+        self.db_a = None
+        self.db_b = None
+        self.path_a = None
+        self.path_b = None
+        self.mw = parent  # pylint: disable=invalid-name
         self.setWindowTitle("Morph Man 3 Manager")
         self.grid = grid = QGridLayout(self)
         self.vbox = vbox = QVBoxLayout()
 
         # DB Paths
-        self.aPathLEdit = QLineEdit()
-        vbox.addWidget(self.aPathLEdit)
-        self.aPathBtn = mk_btn(
-            "Browse for DB A", lambda le: get_path(self.aPathLEdit), vbox
+        self.a_path_line_edit = QLineEdit()
+        vbox.addWidget(self.a_path_line_edit)
+        self.a_path_btn = mk_btn(
+            "Browse for DB A", lambda le: get_path(self.a_path_line_edit), vbox
         )
 
-        self.bPathLEdit = QLineEdit()
-        vbox.addWidget(self.bPathLEdit)
-        self.bPathBtn = mk_btn(
-            "Browse for DB B", lambda le: get_path(self.bPathLEdit), vbox
+        self.b_path_line_edit = QLineEdit()
+        vbox.addWidget(self.b_path_line_edit)
+        self.b_path_btn = mk_btn(
+            "Browse for DB B", lambda le: get_path(self.b_path_line_edit), vbox
         )
 
         # Comparisons
         self.show_a_btn = mk_btn("A", self.on_show_a, vbox)
-        self.AmBBtn = mk_btn("A-B", lambda x: self.on_diff("A-B"), vbox)
-        self.BmABtn = mk_btn("B-A", lambda x: self.on_diff("B-A"), vbox)
+        self.a_minus_b_btn = mk_btn("A-B", lambda x: self.on_diff("A-B"), vbox)
+        self.b_minus_a_btn = mk_btn("B-A", lambda x: self.on_diff("B-A"), vbox)
         self.sym_btn = mk_btn(
             "Symmetric Difference", lambda x: self.on_diff("sym"), vbox
         )
@@ -83,9 +83,9 @@ class MorphMan(QDialog):
 
         # Creation
         # language class/morphemizer
-        self.db = None
+        self.db = None  # pylint: disable=invalid-name
         self.morphemizer_combo_box = MorphemizerComboBox()
-        self.morphemizer_combo_box.setMorphemizers(get_all_morphemizers())
+        self.morphemizer_combo_box.set_morphemizers(get_all_morphemizers())
 
         vbox.addSpacing(40)
         vbox.addWidget(self.morphemizer_combo_box)
@@ -112,14 +112,14 @@ class MorphMan(QDialog):
         grid.addWidget(self.analysis_display, 0, 2)
 
     def load_a(self):
-        self.aPath = self.aPathLEdit.text()
-        self.aDb = MorphDb(path=self.aPath)
+        self.path_b = self.a_path_line_edit.text()
+        self.db_a = MorphDb(path=self.path_b)
         if not self.db:
-            self.db = self.aDb
+            self.db = self.db_a
 
     def load_b(self):
-        self.bPath = self.bPathLEdit.text()
-        self.bDb = MorphDb(path=self.bPath)
+        self.path_a = self.b_path_line_edit.text()
+        self.db_b = MorphDb(path=self.path_a)
 
     def load_ab(self):
         self.load_a()
@@ -130,7 +130,7 @@ class MorphMan(QDialog):
             self.load_a()
         except Exception as error:
             return error_msg(f"Can't load db:\n{error}")
-        self.db = self.aDb
+        self.db = self.db_a
         self.update_display()
 
     def on_diff(self, kind):
@@ -139,8 +139,8 @@ class MorphMan(QDialog):
         except Exception as error:
             return error_msg(f"Can't load dbs:\n{error}")
 
-        a_set = set(self.aDb.db.keys())
-        b_set = set(self.bDb.db.keys())
+        a_set = set(self.db_a.db.keys())
+        b_set = set(self.db_b.db.keys())
         if kind == "sym":
             _morphs = a_set.symmetric_difference(b_set)
         elif kind == "A-B":
@@ -159,11 +159,11 @@ class MorphMan(QDialog):
         self.db.clear()
         for _morph in _morphs:
             locs = set()
-            if _morph in self.aDb.db:
-                locs.update(self.aDb.db[_morph])
-            if _morph in self.bDb.db:
-                locs.update(self.bDb.db[_morph])
-            self.db.addMLs1(_morph, locs)
+            if _morph in self.db_a.db:
+                locs.update(self.db_a.db[_morph])
+            if _morph in self.db_b.db:
+                locs.update(self.db_b.db[_morph])
+            self.db.update_morph_locs(_morph, locs)
 
         self.update_display()
 
@@ -182,7 +182,7 @@ class MorphMan(QDialog):
             return
 
         mat = cfg("text file import maturity")
-        db = MorphDb.mkFromFile(
+        db = MorphDb.mk_from_file(
             str(src_path), self.morphemizer_combo_box.get_current(), mat
         )
         if db:

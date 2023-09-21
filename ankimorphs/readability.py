@@ -21,14 +21,14 @@ from anki.utils import strip_html
 from aqt.qt import *
 from PyQt6 import QtNetwork, QtWebSockets
 
-from . import customTableWidget, readability_settings_ui, readability_ui
+from . import custom_table_widget, readability_settings_ui, readability_ui
 from .morphemes import MorphDb, Morpheme, alt_includes_morpheme, get_morphemes
 from .morphemizer import get_all_morphemizers
 from .preferences import get_preference as cfg
 from .preferences import update_preferences
 from .util import mw
 
-importlib.reload(customTableWidget)
+importlib.reload(custom_table_widget)
 importlib.reload(readability_ui)
 importlib.reload(readability_settings_ui)
 
@@ -127,7 +127,7 @@ class CountingMorphDB:
         self.db = {}
 
     def addMorph(self, m, count):
-        gk = m.getGroupKey()
+        gk = m.get_group_key()
         if gk not in self.db:
             self.db[gk] = {}
         ms = self.db[gk]
@@ -142,7 +142,7 @@ class CountingMorphDB:
         return sum([len(ms) for ms in self.db.values()])
 
     def getFuzzyCount(self, m, exclude_db):
-        gk = m.getGroupKey()
+        gk = m.get_group_key()
         if gk not in self.db:
             return 0
         count = 0
@@ -466,7 +466,7 @@ class AnalyzerDialog(QDialog):
         self.ui.setupUi(self)
 
         # Init morphemizer
-        self.ui.morphemizerComboBox.setMorphemizers(get_all_morphemizers())
+        self.ui.morphemizerComboBox.set_morphemizers(get_all_morphemizers())
         self.ui.morphemizerComboBox.set_current_by_name(cfg("DefaultMorphemizer"))
         self.ui.morphemizerComboBox.currentIndexChanged.connect(
             lambda idx: self.save_morphemizer()
@@ -697,7 +697,7 @@ class AnalyzerDialog(QDialog):
         all_db = CountingMorphDB()
         for m, c in morphs.items():
             all_db.addMorph(
-                Morpheme(m.norm, m.base, m.base, m.read, m.pos, m.subPos), c
+                Morpheme(m.norm, m.base, m.base, m.read, m.pos, m.sub_pos), c
             )
 
         master_morphs = {}
@@ -729,7 +729,7 @@ class AnalyzerDialog(QDialog):
                         m[0].base,
                         m[0].read,
                         m[0].pos,
-                        m[0].subPos,
+                        m[0].sub_pos,
                         group_idx,
                         morph_idx,
                         morph_delta,
@@ -745,7 +745,7 @@ class AnalyzerDialog(QDialog):
             has_unknowns = False
             for m in line_morphs:
                 if known_db.matches(m) or (
-                    self.proper_nouns_known and m.isProperNoun()
+                    self.proper_nouns_known and m.is_proper_noun()
                 ):
                     continue
                 has_unknowns = True
@@ -773,7 +773,7 @@ class AnalyzerDialog(QDialog):
                 source.seen_i += m[1]
                 morph = m[0]
                 if known_db.matches(morph) or (
-                    self.proper_nouns_known and morph.isProperNoun()
+                    self.proper_nouns_known and morph.is_proper_noun()
                 ):
                     source.known_i += m[1]
                 else:
@@ -783,7 +783,7 @@ class AnalyzerDialog(QDialog):
             for m in source.missing_morphs:
                 morph = m[0]
                 if known_db.matches(morph) or (
-                    self.proper_nouns_known and morph.isProperNoun()
+                    self.proper_nouns_known and morph.is_proper_noun()
                 ):
                     source.known_i += m[1]
                 else:
@@ -871,7 +871,7 @@ class AnalyzerDialog(QDialog):
                 readability = (
                     100.0 if source.seen_i == 0 else known_i * 100.0 / source.seen_i
                 )
-                known_db.addMLs1(m.morph, set())
+                known_db.update_morph_locs(m.morph, set())
 
         learned_m = len(learned_morphs)
         avg_freq = float(total_freq) / learned_m if learned_m > 0 else 0
@@ -1049,7 +1049,7 @@ class AnalyzerDialog(QDialog):
             for ms in self.master_db.db.values():
                 for m, c in ms.items():
                     if known_db.matches(m) or (
-                        self.proper_nouns_known and m.isProperNoun()
+                        self.proper_nouns_known and m.is_proper_noun()
                     ):
                         self.master_score += c[0]
                         c[1] = True  # mark matched
@@ -1094,7 +1094,7 @@ class AnalyzerDialog(QDialog):
                         morph_state = morph_state_cache.get(m, None)
                         if morph_state is None:
                             morph_state = 0
-                            if m.isProperNoun():
+                            if m.is_proper_noun():
                                 morph_state |= 1  # Proper noun bit
                                 is_proper_noun = True
                             else:
@@ -1436,7 +1436,7 @@ class AnalyzerDialog(QDialog):
             for ms in self.master_db.db.values():
                 for m, c in ms.items():
                     if known_db.matches(m) or (
-                        self.proper_nouns_known and m.isProperNoun()
+                        self.proper_nouns_known and m.is_proper_noun()
                     ):
                         continue
                     master_morphs[m] = c[0]
@@ -1466,7 +1466,7 @@ class AnalyzerDialog(QDialog):
                             m[0].base,
                             m[0].read,
                             m[0].pos,
-                            m[0].subPos,
+                            m[0].sub_pos,
                             group_idx,
                             morph_idx,
                             morph_delta,
@@ -1493,7 +1493,7 @@ class AnalyzerDialog(QDialog):
                 has_unknowns = False
                 for m in line_morphs:
                     if known_db.matches(m) or (
-                        self.proper_nouns_known and m.isProperNoun()
+                        self.proper_nouns_known and m.is_proper_noun()
                     ):
                         continue
                     has_unknowns = True
@@ -1700,7 +1700,7 @@ class AnalyzerDialog(QDialog):
                             source, known_db
                         )
                         for m in learned_this_source:
-                            known_db.addMLs1(m.morph, set())
+                            known_db.update_morph_locs(m.morph, set())
                         new_line_readability = self.get_line_readability(
                             source, known_db
                         )
@@ -1784,7 +1784,7 @@ class AnalyzerDialog(QDialog):
                     for ms in self.master_db.db.values():
                         for m, c in ms.items():
                             if known_db.matches(m) or (
-                                self.proper_nouns_known and m.isProperNoun()
+                                self.proper_nouns_known and m.is_proper_noun()
                             ):
                                 continue
                             master_freq = self.master_db.getFuzzyCount(
@@ -1804,14 +1804,14 @@ class AnalyzerDialog(QDialog):
                         )
                         self.freq_set.add((m[0].base, m[0].read))
                         self.freq_db.addMorph(m[0], 1)
-                        known_db.addMLs1(m[0], set())
+                        known_db.update_morph_locs(m[0], set())
 
         if self.master_total_instances > 0:
             master_score = 0
             for ms in self.master_db.db.values():
                 for m, c in ms.items():
                     if known_db.matches(m) or (
-                        self.proper_nouns_known and m.isProperNoun()
+                        self.proper_nouns_known and m.is_proper_noun()
                     ):
                         master_score += c[0]
                         c[1] = True  # mark matched
@@ -1891,7 +1891,7 @@ class AnalyzerDialog(QDialog):
                                         m.inflected,
                                         pron,
                                         m.pos,
-                                        m.subPos,
+                                        m.sub_pos,
                                     )
                                 ]
 

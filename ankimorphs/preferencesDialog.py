@@ -6,7 +6,7 @@ from aqt.utils import tooltip
 
 from .morphemizer import get_all_morphemizers
 from .preferences import get_preference, update_preferences
-from .UI import MorphemizerComboBox
+from .ui import MorphemizerComboBox
 from .util import mk_btn, mw
 
 
@@ -358,7 +358,7 @@ class PreferencesDialog(QDialog):
         modelComboBox.setCurrentIndex(active)
 
         morphemizerComboBox = MorphemizerComboBox()
-        morphemizerComboBox.setMorphemizers(get_all_morphemizers())
+        morphemizerComboBox.set_morphemizers(get_all_morphemizers())
         morphemizerComboBox.set_current_by_name(data["Morphemizer"])
 
         readItem = QStandardItem()

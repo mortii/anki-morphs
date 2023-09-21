@@ -217,7 +217,7 @@ def highlight(txt: str, field, note_filter: str, ctx) -> str:
     sorted_morphs = sorted(morphemes, key=lambda x: len(x.inflected), reverse=True)
 
     for morph in sorted_morphs:
-        if proper_nouns_known and morph.isProperNoun():
+        if proper_nouns_known and morph.is_proper_noun():
             maturity = "none"
         elif mature_db.matches(morph):
             maturity = "mature"
@@ -276,8 +276,8 @@ class SkippedCards:
         return False
 
     def skipped_at_least_one_card(self):
-        for key in self.skipped_cards.keys():
-            if self.skipped_cards[key] > 0:
+        for value in self.skipped_cards.values():
+            if value > 0:
                 return True
         return False
 

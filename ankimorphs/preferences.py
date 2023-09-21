@@ -7,8 +7,8 @@ from .exceptions import ProfileNotYetLoadedException
 
 # retrieving the configuration using get_config is very expensive operation instead, save it
 #  TODO: These aren't actually used properly? edit get_preferences?
-config_data = None
-config_py = None
+config_data = None  # pylint:disable=invalid-name
+config_py = None  # pylint:disable=invalid-name
 
 
 def init_preferences():

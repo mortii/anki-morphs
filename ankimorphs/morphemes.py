@@ -15,7 +15,7 @@ try:
     from .util import error_msg
 except ImportError:
 
-    def errorMsg(msg):
+    def error_msg(msg):
         pass
 
 
@@ -23,20 +23,21 @@ try:
     from .preferences import get_preference as cfg
 except:
 
-    def cfg(s):
+    def cfg(config_string):
         return None
 
 
-def char_set(start, end):
-    # type: (str, str) -> set
-    return set(chr(c) for c in range(ord(start), ord(end) + 1))
+def char_set(start: str, end: str) -> set:
+    return set(chr(_char) for _char in range(ord(start), ord(end) + 1))
 
 
 kanji_chars = char_set("㐀", "䶵") | char_set("一", "鿋") | char_set("豈", "頻")
 
 
 class Morpheme:
-    def __init__(self, norm, base, inflected, read, pos, subPos):
+    def __init__(  # pylint:disable=too-many-arguments
+        self, norm, base, inflected, read, pos, sub_pos
+    ):
         """Initialize morpheme class.
 
         POS means part-of-speech.
@@ -48,7 +49,7 @@ class Morpheme:
         :param str inflected: 歩い  [mecab cuts off all endings, so there is not て]
         :param str read: アルイ
         :param str pos: 動詞
-        :param str subPos: 自立
+        :param str sub_pos: 自立
 
         """
         # values are created by "mecab" in the order of the parameters and then directly passed into this constructor
@@ -59,67 +60,62 @@ class Morpheme:
         self.inflected = inflected
         self.read = read
         self.pos = pos  # type of morpheme determined by mecab tool. for example: u'動詞' or u'助動詞', u'形容詞'
-        self.subPos = subPos
+        self.sub_pos = sub_pos
 
-    def __setstate__(self, d):
+    def __setstate__(self, data):
         """Override default pickle __setstate__ to initialize missing defaults in old databases"""
-        self.norm = d["norm"] if "norm" in d else d["base"]
-        self.base = d["base"]
-        self.inflected = d["inflected"]
-        self.read = d["read"]
-        self.pos = d["pos"]
-        self.subPos = d["subPos"]
+        self.norm = data["norm"] if "norm" in data else data["base"]
+        self.base = data["base"]
+        self.inflected = data["inflected"]
+        self.read = data["read"]
+        self.pos = data["pos"]
+        self.sub_pos = data["subPos"]
 
-    def __eq__(self, o):
+    def __eq__(self, other):
         return all(
             [
-                isinstance(o, Morpheme),
-                self.norm == o.norm,
-                self.base == o.base,
-                self.inflected == o.inflected,
-                self.read == o.read,
-                self.pos == o.pos,
-                self.subPos == o.subPos,
+                isinstance(other, Morpheme),
+                self.norm == other.norm,
+                self.base == other.base,
+                self.inflected == other.inflected,
+                self.read == other.read,
+                self.pos == other.pos,
+                self.sub_pos == other.sub_pos,
             ]
         )
 
     def __hash__(self):
         return hash(
-            (self.norm, self.base, self.inflected, self.read, self.pos, self.subPos)
+            (self.norm, self.base, self.inflected, self.read, self.pos, self.sub_pos)
         )
 
-    def base_kanji(self):
-        # type: () -> set
+    def base_kanji(self) -> set:
         # todo: profile and maybe cache
         return set(self.base) & kanji_chars
 
-    def getGroupKey(self):
-        # type: () -> str
-
+    def get_group_key(self) -> str:
         if cfg("Option_IgnoreGrammarPosition"):
-            return "%s\t%s" % (self.norm, self.read)
-        else:
-            return "%s\t%s\t%s\t" % (self.norm, self.read, self.pos)
+            return f"{self.norm}\t{self.read}"
+        return f"{self.norm}\t{self.read}\t{self.pos}\t"
 
-    def isProperNoun(self):
-        return self.subPos == "固有名詞" or self.pos == "PROPN"
+    def is_proper_noun(self):
+        return self.sub_pos == "固有名詞" or self.pos == "PROPN"
 
     def show(self):  # str
         return "\t".join(
-            [self.norm, self.base, self.inflected, self.read, self.pos, self.subPos]
+            [self.norm, self.base, self.inflected, self.read, self.pos, self.sub_pos]
         )
 
     def deinflected(self):
         if self.inflected == self.base:
             return self
-        else:
-            return Morpheme(
-                self.norm, self.base, self.base, self.read, self.pos, self.subPos
-            )
+        return Morpheme(
+            self.norm, self.base, self.base, self.read, self.pos, self.sub_pos
+        )
 
 
-def ms2str(ms):  # [(Morpheme, locs)] -> Str
-    return "\n".join(["%d\t%s" % (len(m[1]), m[0].show()) for m in ms])
+def ms2str(morphs):  # [(Morpheme, locs)] -> Str
+    return "\n".join(["%d\t%s" % (len(m[1]), m[0].show()) for m in morphs])
 
 
 class MorphDBUnpickler(pickle.Unpickler):
@@ -166,9 +162,9 @@ def get_morphemes(morphemizer, expression, note_tags=None):
             c_morphs = get_morphemes(morphemizer, split_expression[1], note_tags)
             return a_morphs + b_morphs + c_morphs
 
-    ms = morphemizer.get_morphemes_from_expr(expression)
+    morphs = morphemizer.get_morphemes_from_expr(expression)
 
-    return ms
+    return morphs
 
 
 square_brackets_regex = re.compile(r"\[[^\]]*\]")
@@ -204,43 +200,45 @@ class Location(ABC):
 
 class Nowhere(Location):
     def __init__(self, tag, weight=0):
-        super(Nowhere, self).__init__(weight)
+        super().__init__(weight)
         self.tag = tag
 
     def show(self):
-        return "%s@%d" % (self.tag, self.maturity)
+        return f"{self.tag}@{self.maturity}"
 
 
 class Corpus(Location):
     """A corpus we want to use for priority, without storing more than morpheme frequencies."""
 
     def __init__(self, name, weight):
-        super(Corpus, self).__init__(weight)
+        super().__init__(weight)
         self.name = name
 
     def show(self):
-        return "%s*%s@%d" % (self.name, self.weight, self.maturity)
+        return f"{self.name}*{self.weight}@{self.maturity}"
 
 
 class TextFile(Location):
     def __init__(self, file_path, line_no, maturity, weight=1):
-        super(TextFile, self).__init__(weight)
-        self.filePath = file_path
-        self.lineNo = line_no
+        super().__init__(weight)
+        self.file_path = file_path
+        self.line_num = line_no
         self.maturity = maturity
 
     def show(self):
-        return "%s:%d@%d" % (self.filePath, self.lineNo, self.maturity)
+        return f"{self.file_path}:{self.line_num}@{self.maturity}"
 
 
 class AnkiDeck(Location):
     """This maps to/contains information for one note and one relevant field like u'Expression'."""
 
-    def __init__(self, noteId, fieldName, fieldValue, guid, maturity, weight=1):
-        super(AnkiDeck, self).__init__(weight)
-        self.noteId = noteId
-        self.fieldName = fieldName  # for example u'Expression'
-        self.fieldValue = fieldValue  # for example u'それだけじゃない'
+    def __init__(  # pylint:disable=too-many-arguments
+        self, note_id, field_name, field_value, guid, maturity, weight=1
+    ):
+        super().__init__(weight)
+        self.note_id = note_id
+        self.field_name = field_name  # for example u'Expression'
+        self.field_value = field_value  # for example u'それだけじゃない'
         self.guid = guid
         # list of intergers, one for every card -> containg the intervals of every card for this note
         self.maturities = None
@@ -248,45 +246,48 @@ class AnkiDeck(Location):
         self.weight = weight
 
     def show(self):
-        return "%d[%s]@%d" % (self.noteId, self.fieldName, self.maturity)
+        return f"{self.note_id}[{self.field_name}]@{self.maturity}"
 
 
-def alt_includes_morpheme(m, alt):
-    # type: (Morpheme, Morpheme) -> bool
-
-    return m.norm == alt.norm and (
-        m.base == alt.base or m.base_kanji() <= alt.base_kanji()
+def alt_includes_morpheme(morph: Morpheme, alt: Morpheme) -> bool:
+    return morph.norm == alt.norm and (
+        morph.base == alt.base or morph.base_kanji() <= alt.base_kanji()
     )
 
 
-class MorphDb:
+class MorphDb:  # pylint:disable=too-many-instance-attributes,too-many-public-methods
     @staticmethod
-    def mergeFiles(
-        aPath, bPath, destPath=None, ignoreErrors=False
+    def merge_files(
+        a_path, b_path, dest_path=None, ignore_errors=False
     ):  # FilePath -> FilePath -> Maybe FilePath -> Maybe Book -> IO MorphDb
-        a, b = MorphDb(aPath, ignoreErrors), MorphDb(bPath, ignoreErrors)
-        a.merge(b)
-        if destPath:
-            a.save(destPath)
-        return a
+        db_a, db_b = MorphDb(a_path, ignore_errors), MorphDb(b_path, ignore_errors)
+        db_a.merge(db_b)
+        if dest_path:
+            db_a.save(dest_path)
+        return db_a
 
     @staticmethod
-    def mkFromFile(path, morphemizer, maturity=0):  # FilePath -> Maturity? -> IO Db
+    def mk_from_file(path, morphemizer, maturity=0):  # FilePath -> Maturity? -> IO Db
         """Returns None and shows error dialog if failed"""
-        d = MorphDb()
+        data = MorphDb()
         try:
-            d.import_file(path, morphemizer, maturity=maturity)
-        except (UnicodeDecodeError, IOError) as e:
+            data.import_file(path, morphemizer, maturity=maturity)
+        except (UnicodeDecodeError, IOError) as error:
             return error_msg(
                 "Unable to import file. Please verify it is a UTF-8 text file and you have "
-                "permissions.\nFull error:\n%s" % e
+                + f"permissions.\nFull error:\n{error}"
             )
-        return d
+        return data
 
     def __init__(self, path=None, ignore_errors=False):  # Maybe Filepath -> m ()
-        self._fidDb = None
-        self.posBreakdown = None
-        self.db = {}  # type: Dict[Morpheme, Set[Location]]
+        self.v_count = None
+        self.k_count = None
+        self._loc_db = None
+        self._fid_db = None
+        self.pos_break_down = None
+        self.db = (  # pylint:disable=invalid-name
+            {}
+        )  # type: Dict[Morpheme, Set[Location]]
         self.groups = {}  # Map NormMorpheme {Set(Morpheme)}
         self.meta = {}
         if path:
@@ -299,20 +300,20 @@ class MorphDb:
 
     # Serialization
     def show(self):  # Str
-        s = ""
-        for m, ls in self.db.items():
-            s += "%s\n" % m.show()
-            for l in ls:
-                s += "  %s\n" % l.show()
-        return s
+        _string = ""
+        for morph, locs in self.db.items():
+            _string += f"{morph.show()}\n"
+            for loc in locs:
+                _string += f"  {loc.show()}\n"
+        return _string
 
     def show_loc_db(self):  # m Str
-        s = ""
-        for l, ms in self.loc_db().items():
-            s += "%s\n" % l.show()
-            for m in ms:
-                s += "  %s\n" % m.show()
-        return s
+        _string = ""
+        for loc, morphs in self.loc_db().items():
+            _string += f"{loc.show()}\n"
+            for morph in morphs:
+                _string += f"  {morph.show()}\n"
+        return _string
 
     def show_ms(self):  # Str
         return ms2str(sorted(self.db.items(), key=lambda it: it[0].show()))
@@ -321,59 +322,58 @@ class MorphDb:
         par = os.path.split(path)[0]
         if not os.path.exists(par):
             os.makedirs(par)
-        f = gzip.open(path, "wb")
+        file = gzip.open(path, "wb")
 
         data = {"db": self.db, "meta": self.meta}
-        pickle.dump(data, f, -1)
-        f.close()
+        pickle.dump(data, file, -1)
+        file.close()
         if cfg("saveSQLite"):
             save_db(self.db, path)
 
     def load(self, path):  # FilePath -> m ()
-        f = gzip.open(path)
+        file = gzip.open(path)
         try:
-            data = MorphDBUnpickler(f).load()
+            data = MorphDBUnpickler(file).load()
             if "meta" in data:
                 self.meta = data["meta"]
-                db = data["db"]
+                db = data["db"]  # pylint:disable=invalid-name
             else:
-                db = data
-            for m, locs in db.items():
-                self.addMLs1(m, locs)
-        except ModuleNotFoundError as e:
-            print(f"ModuleNotFoundError exception: {e}")
+                db = data  # pylint:disable=invalid-name
+            for morph, locs in db.items():
+                self.update_morph_locs(morph, locs)
+        except ModuleNotFoundError as error:
+            print(f"ModuleNotFoundError exception: {error}")
             aqt.utils.showInfo(
                 "ModuleNotFoundError was thrown. That probably means that you're using database files generated in "
                 "the older versions of MorphMan. To fix this issue, please refer to the written guide on database "
                 "migration (copy-pasteable link will appear in the next window): "
                 "https://gist.github.com/InfiniteRain/1d7ca9ad307c4203397a635b514f00c2"
             )
-            raise e
-        f.close()
+            raise error
+        file.close()
 
     # Returns True if DB has variations that can match 'm'.
-    def matches(self, m):  # Morpheme
-        # type: (Morpheme) -> bool
-        gk = m.getGroupKey()
-        ms = self.groups.get(gk, None)
-        if ms is None:
+    def matches(self, morph: Morpheme) -> bool:
+        group_key = morph.get_group_key()
+        morphs = self.groups.get(group_key, None)
+        if morphs is None:
             return False
 
         # Fuzzy match to variations
-        return any(alt_includes_morpheme(m, alt) for alt in ms)
+        return any(alt_includes_morpheme(morph, alt) for alt in morphs)
 
     # Returns set of morph locations that can match 'm'
-    def get_matching_locs(self, m):  # Morpheme
+    def get_matching_locs(self, morph):  # Morpheme
         # type: (Morpheme) -> Set[Location]
         locs = set()
-        gk = m.getGroupKey()
-        ms = self.groups.get(gk, None)
-        if ms is None:
+        group_key = morph.get_group_key()
+        morphs = self.groups.get(group_key, None)
+        if morphs is None:
             return locs
 
         # Fuzzy match to variations
-        for variation in ms:
-            if alt_includes_morpheme(m, variation):
+        for variation in morphs:
+            if alt_includes_morpheme(morph, variation):
                 locs.update(self.db[variation])
         return locs
 
@@ -383,54 +383,54 @@ class MorphDb:
         self.groups = {}
         self.meta = {}
 
-    def addMLs(self, mls):  # [ (Morpheme,Location) ] -> m ()
-        for m, loc in mls:
-            if m in self.db:
-                self.db[m].add(loc)
+    def _add_morph_locs(self, morph_locs):  # [ (Morpheme,Location) ] -> m ()
+        for morph, loc in morph_locs:
+            if morph in self.db:
+                self.db[morph].add(loc)
             else:
-                self.db[m] = {loc}
-                gk = m.getGroupKey()
-                if gk not in self.groups:
-                    self.groups[gk] = {m}
+                self.db[morph] = {loc}
+                group_key = morph.get_group_key()
+                if group_key not in self.groups:
+                    self.groups[group_key] = {morph}
                 else:
-                    self.groups[gk].add(m)
+                    self.groups[group_key].add(morph)
 
-    def addMLs1(self, m, locs):  # Morpheme -> {Location} -> m ()
-        if m in self.db:
-            self.db[m].update(locs)
+    def update_morph_locs(self, morph, locs):  # Morpheme -> {Location} -> m ()
+        if morph in self.db:
+            self.db[morph].update(locs)
         else:
-            self.db[m] = set(locs)
-            gk = m.getGroupKey()
-            if gk not in self.groups:
-                self.groups[gk] = {m}
+            self.db[morph] = set(locs)
+            group_key = morph.get_group_key()
+            if group_key not in self.groups:
+                self.groups[group_key] = {morph}
             else:
-                self.groups[gk].add(m)
+                self.groups[group_key].add(morph)
 
-    def addMsL(self, ms, loc):  # [Morpheme] -> Location -> m ()
-        self.addMLs((m, loc) for m in ms)
+    def add_morphs_to_loc(self, morphs, loc):  # [Morpheme] -> Location -> m ()
+        self._add_morph_locs((morph, loc) for morph in morphs)
 
     def add_from_loc_db(self, ldb):  # Map Location {Morpheme} -> m ()
-        for l, ms in ldb.items():
-            self.addMLs([(m, l) for m in ms])
+        for loc, morphs in ldb.items():
+            self._add_morph_locs([(m, loc) for m in morphs])
 
-    def remove_morphs(self, iter):
-        for m in iter:
-            if m in self.db:
-                self.db.pop(m)
-                gk = m.getGroupKey()
-                if gk in self.groups:
-                    self.groups[gk].remove(m)
+    def remove_morphs(self, _iter):
+        for morph in _iter:
+            if morph in self.db:
+                self.db.pop(morph)
+                group_key = morph.get_group_key()
+                if group_key in self.groups:
+                    self.groups[group_key].remove(morph)
 
     # returns number of added entries
-    def merge(self, md):  # Db -> m Int
+    def merge(self, morph_db):  # Db -> m Int
         new = 0
-        for m, locs in md.db.items():
-            if m in self.db:
-                new += len(locs - self.db[m])
-                self.db[m].update(locs)
+        for morph, locs in morph_db.db.items():
+            if morph in self.db:
+                new += len(locs - self.db[morph])
+                self.db[morph].update(locs)
             else:
                 new += len(locs)
-                self.addMLs1(m, locs)
+                self.update_morph_locs(morph, locs)
 
         return new
 
@@ -441,59 +441,57 @@ class MorphDb:
         file.close()
 
         for i, line in enumerate(inp):
-            ms = get_morphemes(morphemizer, line.strip())
-            self.addMLs((m, TextFile(path, i + 1, maturity)) for m in ms)
+            morphs = get_morphemes(morphemizer, line.strip())
+            self._add_morph_locs(
+                (morph, TextFile(path, i + 1, maturity)) for morph in morphs
+            )
 
     # Analysis (local)
-    def frequency(self, m):  # Morpheme -> Int
-        return sum(getattr(loc, "weight", 1) for loc in self.get_matching_locs(m))
+    def frequency(self, morph: Morpheme) -> int:
+        return sum(getattr(loc, "weight", 1) for loc in self.get_matching_locs(morph))
 
     # Analysis (global)
-    def loc_db(self, recalc=True):  # Maybe Bool -> m Map Location {Morpheme}
-        # type: (bool) ->  Dict[Location, Set[Morpheme]]
+    def loc_db(self, recalc: bool = True) -> Dict[Location, Set[Morpheme]]:
         if hasattr(self, "_locDb") and not recalc:
-            return self._locDb  # pylint: disable=E0203 # pylint is wrong
-        self._locDb = d = {}  # type: Dict[Location, Set[Morpheme]]
-        for m, ls in self.db.items():
-            for l in ls:
-                if l in d:
-                    d[l].add(m)
+            return self._loc_db  # pylint: disable=E0203 # pylint is wrong
+        self._loc_db = data = {}  # type: Dict[Location, Set[Morpheme]]
+        for morph, locs in self.db.items():
+            for loc in locs:
+                if loc in data:
+                    data[loc].add(morph)
                 else:
-                    d[l] = {m}
-        return d
+                    data[loc] = {morph}
+        return data
 
-    def fidDb(self, recalc=True):  # Maybe Bool -> m Map FactId Location
+    def fid_db(self, recalc=True):  # Maybe Bool -> m Map FactId Location
         if hasattr(self, "_fidDb") and not recalc:
-            return self._fidDb  # pylint: disable=E0203 # pylint is wrong
-        self._fidDb = d = {}
+            return self._fid_db  # pylint: disable=E0203 # pylint is wrong
+        self._fid_db = data = {}
         for loc in self.loc_db():
             try:
-                d[(loc.noteId, loc.guid, loc.fieldName)] = loc
+                data[(loc.noteId, loc.guid, loc.fieldName)] = loc
             except AttributeError:
                 pass  # location isn't an anki fact
-        return d
+        return data
 
-    def countByType(self):  # Map Pos Int
-        d = {}
-        for m in self.db.keys():
-            d[m.pos] = d.get(m.pos, 0) + 1
-        return d
+    def count_by_type(self):  # Map Pos Int
+        data = {}
+        for morph in self.db.keys():
+            data[morph.pos] = data.get(morph.pos, 0) + 1
+        return data
 
     def analyze(self):  # m ()
-        self.posBreakdown = self.countByType()
-        self.kCount = len(self.groups)
-        self.vCount = len(self.db)
+        self.pos_break_down = self.count_by_type()
+        self.k_count = len(self.groups)
+        self.v_count = len(self.db)
 
     def analyze2str(self):  # m Str
         self.analyze()
-        posStr = "\n".join(
-            "%d\t%d%%\t%s" % (v, 100.0 * v / self.vCount, k)
-            for k, v in self.posBreakdown.items()
+        pos_str = "\n".join(
+            "%d\t%d%%\t%s" % (v, 100.0 * v / self.v_count, k)
+            for k, v in self.pos_break_down.items()
         )
-        return (
-            "Total normalized morphemes: %d\nTotal variations: %d\nBy part of speech:\n%s"
-            % (self.kCount, self.vCount, posStr)
-        )
+        return f"Total normalized morphemes: {self.k_count}\nTotal variations: {self.v_count}\nBy part of speech:\n{pos_str}"
 
 
 # sqlite code
@@ -505,57 +503,57 @@ def connect_db(path):
 
 
 def drop_table(cur, name):
-    sql = "drop table if exists %s;" % (name)
+    sql = f"drop table if exists {name};"
     cur.execute(sql)
 
 
 def create_table(cur, name, fields, extra=""):
-    sql = "create table %s (%s%s);" % (name, fields, extra)
+    sql = f"create table {name} ({fields}{extra});"
     cur.execute(sql)
 
 
 # helper functions to convert morphman objectsi into sql tuples
 def transcode_item(item):
-    return item.norm, item.base, item.inflected, item.read, item.pos, item.subPos
+    return item.norm, item.base, item.inflected, item.read, item.pos, item.sub_pos
 
 
 def transcode_location(loc):
     return (
-        loc.noteId,
-        loc.fieldName,
-        loc.fieldValue,
+        loc.note_id,
+        loc.field_name,
+        loc.field_value,
         loc.maturity,
         loc.guid,
         loc.weight,
     )
 
 
-def save_db_all_morphs(cur, db, tname):
+def save_db_all_morphs(current, db, table_name):  # pylint:disable=invalid-name
     # we cannot use the name 'all' for a table
     # since it is a reserved word in sql
-    if tname == "all":
+    if table_name == "all":
         # used 'morphs' instead
-        tname = "morphs"
+        table_name = "morphs"
 
     # fields  of table to be created
     fields = "morphid, norm, base, inflected, read, pos, subpos"
 
-    drop_table(cur, tname)
+    drop_table(current, table_name)
 
-    create_table(cur, tname, fields, ", primary key (morphid)")
+    create_table(current, table_name, fields, ", primary key (morphid)")
 
-    def transcode_item_pair(el):
+    def transcode_item_pair(element):
         # el is a pair: <the morphid (an int), morph object>
         # this is a helper function for the map below
-        item = el[1]
-        return (el[0],) + transcode_item(item)
+        item = element[1]
+        return (element[0],) + transcode_item(item)
 
     # convert the info in the db into list of tuples
     tuples = map(transcode_item_pair, enumerate(db.keys()))
 
     # insert them all at once
-    cur.executemany(
-        "INSERT INTO %s (%s) VALUES(?,?,?,?,?,?,?);" % (tname, fields), tuples
+    current.executemany(
+        "INSERT INTO %s (%s) VALUES(?,?,?,?,?,?,?);" % (table_name, fields), tuples
     )
 
 
@@ -570,17 +568,17 @@ def read_db_all_morphs(cur):
     return dict(for_dict)
 
 
-def save_db_locations(cur, db, tname="locations"):
+def save_db_locations(cur, db, table_name="locations"):  # pylint:disable=invalid-name
     # save a morphman db as a table in database
     # it is usually faster to drop the table than delete/update the tuples
     # in it
-    drop_table(cur, tname)
+    drop_table(cur, table_name)
 
     # fields for the table
     fields = "morphid, noteid, field, fieldvalue, maturity, guid, weight"
     create_table(
         cur,
-        tname,
+        table_name,
         fields,
         ", primary key (morphid, noteid, field), foreign key (morphid) references morphs",
     )
@@ -613,11 +611,11 @@ def save_db_locations(cur, db, tname="locations"):
     tuples = [val for sublist in locations_lists for val in sublist]
 
     cur.executemany(
-        "INSERT INTO %s (%s) VALUES(?,?,?,?,?,?,?);" % (tname, fields), tuples
+        "INSERT INTO %s (%s) VALUES(?,?,?,?,?,?,?);" % (table_name, fields), tuples
     )
 
 
-def save_db(db, path):
+def save_db(db, path):  # pylint:disable=invalid-name
     # assume that the directory is already created...
     # exceptions will handle the errors
 
@@ -649,4 +647,4 @@ def save_db(db, path):
             save_db_locations(cur, db)
         conn.commit()
 
-    print("Saved to sqlite Tname [%s] dbname [%s]" % (tname, db_name))
+    print(f"Saved to sqlite Tname [{tname}] dbname [{db_name}]")

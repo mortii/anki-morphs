@@ -3,7 +3,7 @@ import importlib
 
 from aqt import gui_hooks, mw
 from aqt.browser import Browser
-from aqt.qt import QAction, QMenu
+from aqt.qt import QAction, QMenu  # pylint:disable=no-name-in-module
 from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
 
@@ -36,11 +36,8 @@ def main():
     # Hooks should be placed in the order they are executed!
 
     gui_hooks.profile_did_open.append(init_preferences)
-
     gui_hooks.profile_did_open.append(init_tool_menu_and_actions)
-
     gui_hooks.profile_did_open.append(replace_reviewer_functions)
-
     gui_hooks.profile_did_open.append(init_browser_menus_and_actions)
 
     # See morph stats by holding 'Shift'-key while pressing 'Stats' in toolbar
@@ -69,8 +66,8 @@ def init_tool_menu_and_actions():
     morphman_tool_menu.addAction(database_manager_action)
     morphman_tool_menu.addAction(readability_analyzer_action)
 
-    # test_action = create_test_action()
-    # morphman_tool_menu.addAction(test_action)
+    test_action = create_test_action()
+    morphman_tool_menu.addAction(test_action)
 
 
 def init_browser_menus_and_actions() -> None:
@@ -251,10 +248,10 @@ def morph_graphs_wrapper(*args, **kwargs):
 def test_function() -> None:
     known_db = MorphDb(get_preference("path_known"), ignore_errors=True)
 
-    for group in known_db.groups.items():
+    for group in known_db.groups.values():
         for _morph in group:
             print("morph: ", _morph.inflected)
-        print("group break\n\n")
+        print("group break\n")
 
 
 main()

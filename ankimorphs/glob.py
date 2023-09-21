@@ -5,13 +5,7 @@ import os
 import re
 import sys
 
-try:
-    _unicode = str
-except NameError:
-    # If Python is built without Unicode support, the unicode type
-    # will not exist. Fake one.
-    class _unicode(object):
-        pass
+_unicode = str
 
 
 __all__ = ["glob", "iglob"]

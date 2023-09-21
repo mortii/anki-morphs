@@ -64,7 +64,10 @@ def _has_lost_learned(card_reviews, last_ivl):
     last_review = card_reviews.reviews[-1]
     new_ivl = last_review.ivl
 
-    return last_ivl > 0 and new_ivl <= 0
+    # return last_ivl > 0 and new_ivl <= 0
+    if last_ivl > 0 >= new_ivl:
+        return True
+    return False
 
 
 def _has_learned(card_reviews, last_ivl):
@@ -73,7 +76,9 @@ def _has_learned(card_reviews, last_ivl):
     last_review = card_reviews.reviews[-1]
     new_ivl = last_review.ivl
 
-    return last_ivl <= 0 and new_ivl > 0
+    if last_ivl <= 0 < new_ivl:
+        return True
+    return False
 
 
 def _has_lost_matured(card_reviews, last_ivl, threshold):
@@ -85,7 +90,9 @@ def _has_lost_matured(card_reviews, last_ivl, threshold):
     last_ivl = _fix_ivl(last_ivl)
     new_ivl = _fix_ivl(new_ivl)
 
-    return last_ivl >= threshold and new_ivl < threshold
+    if last_ivl >= threshold > new_ivl:
+        return True
+    return False
 
 
 def _has_matured(card_reviews, last_ivl, threshold):
@@ -97,14 +104,18 @@ def _has_matured(card_reviews, last_ivl, threshold):
     last_ivl = _fix_ivl(last_ivl)
     new_ivl = _fix_ivl(new_ivl)
 
-    return last_ivl < threshold and new_ivl >= threshold
+    if last_ivl < threshold <= new_ivl:
+        return True
+    return False
 
 
 def _new_bucket_stats(bucket_index):
     return BucketStats(bucket_index=bucket_index, stats=ProgressStats())
 
 
-def _get_reviews(db_table, bucket_size_days, day_cutoff_seconds, num_buckets=None):
+def _get_reviews(  # pylint:disable=too-many-locals
+    db_table, bucket_size_days, day_cutoff_seconds, num_buckets=None
+):
     """Fetches all the reviews over a period of time and buckets them by (bucket_index, cid), where
     cid is the card ID and bucket_index where 0 is today, -1 is yesterday, etc.
 
@@ -238,7 +249,9 @@ def _get_reviews(db_table, bucket_size_days, day_cutoff_seconds, num_buckets=Non
     return all_reviews_for_bucket, prior_learned_cards_ivl
 
 
-def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=None):
+def get_stats(  # pylint:disable=too-many-branches,too-many-statements,too-many-locals
+    self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=None
+):
     stats_by_name = defaultdict(list)
 
     min_bucket_index = 0
@@ -262,8 +275,8 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
 
     for morph, locations in all_db.db.items():
         for loc in locations:
-            if type(loc) is AnkiDeck:
-                nid_to_morphs[loc.noteId].add(morph)
+            if isinstance(loc, AnkiDeck):
+                nid_to_morphs[loc.note_id].add(morph)
 
     # print('nid_to_morphs', len(nid_to_morphs))
 
@@ -288,7 +301,7 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
     # Get morphs from cards learned prior to the cutoff
     for card, ivl in prior_learned_cards_ivl.items():
         for morph in nid_to_morphs[card.nid]:
-            group_key = morph.getGroupKey()
+            group_key = morph.get_group_key()
             if ivl >= threshold_known:
                 known_v_morph_times[morph] += 1
                 known_k_morph_times[group_key] += 1
@@ -336,34 +349,6 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
             bucket_stats = _new_bucket_stats(bucket_index)
             stats_by_bucket[bucket_index] = bucket_stats
 
-        def update_morph_stats(
-            nid,
-            did,
-            v_morph_times,
-            k_morph_times,
-            bucket_morph_stats,
-            deck_morph_stats,
-            delta,
-        ):
-            for _morph in nid_to_morphs[nid]:
-                _group_key = _morph.getGroupKey()
-
-                if active_decks is None or (did in active_decks):
-                    if (delta == 1 and v_morph_times[_morph] == 0) or (
-                        delta == -1 and v_morph_times[_morph] == 1
-                    ):
-                        bucket_morph_stats.a_morphs += delta
-                        deck_morph_stats.a_morphs += delta
-
-                    if (delta == 1 and k_morph_times[_group_key] == 0) or (
-                        delta == -1 and k_morph_times[_group_key] == 1
-                    ):
-                        bucket_morph_stats.u_morphs += delta
-                        deck_morph_stats.u_morphs += delta
-
-                v_morph_times[_morph] += delta
-                k_morph_times[_group_key] += delta
-
         if _has_learned(card_reviews, last_ivl):
             if active_decks is None or (did in active_decks):
                 deck_stats.learned_cards += 1
@@ -380,6 +365,8 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
                 bucket_stats.stats.learned,
                 deck_stats.learned,
                 1,
+                nid_to_morphs,
+                active_decks,
             )
         if _has_lost_matured(card_reviews, last_ivl, threshold_known):
             update_morph_stats(
@@ -390,6 +377,8 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
                 bucket_stats.stats.learned,
                 deck_stats.learned,
                 -1,
+                nid_to_morphs,
+                active_decks,
             )
 
         if _has_matured(card_reviews, last_ivl, threshold_mature):
@@ -401,6 +390,8 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
                 bucket_stats.stats.matured,
                 deck_stats.matured,
                 1,
+                nid_to_morphs,
+                active_decks,
             )
         if _has_lost_matured(card_reviews, last_ivl, threshold_mature):
             update_morph_stats(
@@ -411,6 +402,8 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
                 bucket_stats.stats.matured,
                 deck_stats.matured,
                 -1,
+                nid_to_morphs,
+                active_decks,
             )
 
         last_ivl_by_cid[cid] = card_reviews.reviews[-1].ivl
@@ -463,6 +456,37 @@ def get_stats(self, db_table, bucket_size_days, day_cutoff_seconds, num_buckets=
     return stats_by_name
 
 
+def update_morph_stats(  # pylint:disable=too-many-arguments
+    nid,
+    did,
+    v_morph_times,
+    k_morph_times,
+    bucket_morph_stats,
+    deck_morph_stats,
+    delta,
+    nid_to_morphs=None,
+    active_decks=None,
+):
+    for _morph in nid_to_morphs[nid]:
+        _group_key = _morph.get_group_key()
+
+        if active_decks is None or (did in active_decks):
+            if (delta == 1 and v_morph_times[_morph] == 0) or (
+                delta == -1 and v_morph_times[_morph] == 1
+            ):
+                bucket_morph_stats.a_morphs += delta
+                deck_morph_stats.a_morphs += delta
+
+            if (delta == 1 and k_morph_times[_group_key] == 0) or (
+                delta == -1 and k_morph_times[_group_key] == 1
+            ):
+                bucket_morph_stats.u_morphs += delta
+                deck_morph_stats.u_morphs += delta
+
+        v_morph_times[_morph] += delta
+        k_morph_times[_group_key] += delta
+
+
 def morph_graphs(args, kwargs):
     self = args[0]
     old = kwargs["_old"]
@@ -471,7 +495,11 @@ def morph_graphs(args, kwargs):
     # so the plugin graphs are consistent with Anki's other graphs.  This function only
     # exists for recent versions of Anki.
     if hasattr(self, "get_start_end_chunk"):
-        start_not_used, num_buckets, bucket_size_days = self.get_start_end_chunk()
+        (
+            start_not_used,  # pylint:disable=unused-variable
+            num_buckets,
+            bucket_size_days,
+        ) = self.get_start_end_chunk()
 
     # Fallback for older versions of Anki without this method.  Backporting the newer logic is
     # a bit complicated.  Note that the fallback values for type 2 don't work well for decks where
@@ -635,7 +663,7 @@ def _round_down_min(min_val):
     return -1 * _round_up_max(-1 * min_val)
 
 
-def _plot(
+def _plot(  # pylint:disable=too-many-locals,too-many-arguments
     self,
     data,
     title,
@@ -644,52 +672,52 @@ def _plot(
     include_cumulative=False,
     color=DEFAULT_COLOR,
 ):
-    global _NUM_GRAPHS
+    global _NUM_GRAPHS  # pylint:disable=global-statement
     if not data:
         return ""
     cumulative_total = 0
     cumulative_data = []
-    for x, y in data:
-        cumulative_total += y
-        cumulative_data.append((x, cumulative_total))
+    for x_value, y_value in data:
+        cumulative_total += y_value
+        cumulative_data.append((x_value, cumulative_total))
 
     txt = self._title(title, subtitle)
 
-    graph_data = [dict(data=data, color=color)]
+    graph_data = [{"data": data, "color": color}]
 
     if include_cumulative:
         graph_data.append(
-            dict(
-                data=cumulative_data,
-                color=color,
-                label="Cumulative",
-                yaxis=2,
-                bars={"show": False},
-                lines=dict(show=True),
-                stack=False,
-            )
+            {
+                "data": cumulative_data,
+                "color": color,
+                "label": "Cumulative",
+                "yaxis": 2,
+                "bars": {"show": False},
+                "lines": {"show": True},
+                "stack": False,
+            }
         )
 
-    yaxes = [
-        dict(
-            min=_round_down_min(min(y for x, y in data)),
-            max=_round_up_max(max(y for x, y in data)),
-        )
+    y_axes = [
+        {
+            "min": _round_down_min(min((y for (x, y) in data))),
+            "max": _round_up_max(max((y for (x, y) in data))),
+        }
     ]
 
     if include_cumulative:
-        yaxes.append(
-            dict(
-                min=_round_down_min(min(y for x, y in cumulative_data)),
-                max=_round_up_max(max(y for x, y in cumulative_data)),
-                position="right",
-            )
+        y_axes.append(
+            {
+                "min": _round_down_min(min((y for (x, y) in cumulative_data))),
+                "max": _round_up_max(max((y for (x, y) in cumulative_data))),
+                "position": "right",
+            }
         )
 
     graph_kwargs = {
-        "id": "morphs-%s" % _NUM_GRAPHS,
+        "id": f"morphs-{_NUM_GRAPHS}",
         "data": graph_data,
-        "conf": dict(xaxis=dict(max=0.5, tickDecimals=0), yaxes=yaxes),
+        "conf": {"max": 0.5, "tickDecimals": 0},
     }
 
     # In recent versions of Anki, an xunit arg was added to _graph to control the tick
@@ -708,20 +736,17 @@ def _plot(
     txt += self._graph(**graph_kwargs)
 
     _NUM_GRAPHS += 1
-
     text_lines = []
+    average_cards = cumulative_total / float(len(data) * bucket_size_days)
 
     self._line(
         text_lines,
         "Average",
-        "%(avg_cards)0.1f morphs/day"
-        % dict(avg_cards=cumulative_total / float(len(data) * bucket_size_days)),
+        f"{average_cards:.1f} morphs/day",
     )
 
     if include_cumulative:
-        self._line(
-            text_lines, "Total", "%(total)d morphs" % dict(total=cumulative_total)
-        )
+        self._line(text_lines, "Total", f"{cumulative_total} morphs")
 
     txt += self._lineTbl(text_lines)
 
