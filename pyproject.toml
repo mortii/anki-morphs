@@ -5,7 +5,9 @@ ignore = [
     "adaptiveSubs.py",
     "readability.py",
     "readability_ui.py",
-    "preferencesDialog.py"
+    "preferencesDialog.py",
+    "fake_preferences.py",
+    "config.py"
 ]
 
 [tool.pylint."MESSAGES CONTROL"]
