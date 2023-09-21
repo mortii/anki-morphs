@@ -7,8 +7,8 @@ from aqt.reviewer import RefreshNeeded
 from aqt.utils import tooltip
 
 from . import util
-from .morphemes import getMorphemes, ms2str
-from .morphemizer import getMorphemizerByName
+from .morphemes import get_morphemes, ms2str
+from .morphemizer import get_morphemizer_by_name
 from .preferences import get_preference
 from .reviewing_utils import focus_query, try_to_get_focus_morphs
 
@@ -22,8 +22,8 @@ def run_browse_morph() -> None:
         card = mw.col.get_card(cid)
         note = card.note()
 
-        for focusMorph in try_to_get_focus_morphs(note):
-            run_browse_morph_dict["focusMorphs"].add(focusMorph)
+        for focus_morph in try_to_get_focus_morphs(note):
+            run_browse_morph_dict["focusMorphs"].add(focus_morph)
 
         focus_field = get_preference("Field_FocusMorph")
         focus_morphs = run_browse_morph_dict["focusMorphs"]
@@ -77,16 +77,17 @@ def run_view_morphs() -> None:
         if notecfg is None:
             return None
 
-        morphemizer = getMorphemizerByName(notecfg["Morphemizer"])
+        morphemizer = get_morphemizer_by_name(notecfg["Morphemizer"])
 
         for note_filter_field in notecfg["Fields"]:
-            morphemes = getMorphemes(
+            morphemes = get_morphemes(
                 morphemizer, strip_html(note[note_filter_field]), note.tags
             )
             morph_dict["morphemes"] += morphemes
 
         if len(morph_dict["morphemes"]) == 0:
-            util.infoMsg("----- No morphemes, check your filters -----")
+            util.info_msg("----- No morphemes, check your filters -----")
         else:
             morph_strings = ms2str([(m, []) for m in morph_dict["morphemes"]])
-            util.infoMsg("----- All -----\n" + morph_strings)
+            util.info_msg("----- All -----\n" + morph_strings)
+    return None

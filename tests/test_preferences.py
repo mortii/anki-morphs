@@ -44,10 +44,10 @@ def test_ignore_square_brackets(fake_environment):
     case_1 = "私の名前はです。"
 
     assert preferences.get_preference("Option_IgnoreBracketContents") is False
-    assert morphemes.replaceBracketContents(sentence_1) == sentence_1
+    assert morphemes.replace_bracket_contents(sentence_1) == sentence_1
 
     preferences.update_preferences({"Option_IgnoreBracketContents": True})
-    assert morphemes.replaceBracketContents(sentence_1) == case_1
+    assert morphemes.replace_bracket_contents(sentence_1) == case_1
 
 
 def test_ignore_round_brackets_slim(fake_environment):
@@ -55,10 +55,10 @@ def test_ignore_round_brackets_slim(fake_environment):
     case_1 = "私の名前はです。"
 
     assert preferences.get_preference("Option_IgnoreSlimRoundBracketContents") is False
-    assert morphemes.replaceBracketContents(sentence_1) == sentence_1
+    assert morphemes.replace_bracket_contents(sentence_1) == sentence_1
 
     preferences.update_preferences({"Option_IgnoreSlimRoundBracketContents": True})
-    assert morphemes.replaceBracketContents(sentence_1) == case_1
+    assert morphemes.replace_bracket_contents(sentence_1) == case_1
 
 
 def test_ignore_round_brackets_japanese(fake_environment):
@@ -66,7 +66,7 @@ def test_ignore_round_brackets_japanese(fake_environment):
     case_1 = "私の名前はです。"
 
     assert preferences.get_preference("Option_IgnoreRoundBracketContents") is False
-    assert morphemes.replaceBracketContents(sentence_1) == sentence_1
+    assert morphemes.replace_bracket_contents(sentence_1) == sentence_1
 
     preferences.update_preferences({"Option_IgnoreRoundBracketContents": True})
-    assert morphemes.replaceBracketContents(sentence_1) == case_1
+    assert morphemes.replace_bracket_contents(sentence_1) == case_1

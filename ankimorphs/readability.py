@@ -22,8 +22,8 @@ from aqt.qt import *
 from PyQt6 import QtNetwork, QtWebSockets
 
 from . import customTableWidget, readability_settings_ui, readability_ui
-from .morphemes import MorphDb, Morpheme, altIncludesMorpheme, getMorphemes
-from .morphemizer import getAllMorphemizers
+from .morphemes import MorphDb, Morpheme, alt_includes_morpheme, get_morphemes
+from .morphemizer import get_all_morphemizers
 from .preferences import get_preference as cfg
 from .preferences import update_preferences
 from .util import mw
@@ -154,7 +154,7 @@ class CountingMorphDB:
                 alt
             ):  # Skip excluded morphs
                 continue
-            if altIncludesMorpheme(
+            if alt_includes_morpheme(
                 m, alt
             ):  # pylint: disable=W1114 #ToDo: verify if pylint is right
                 count += c[0]
@@ -466,8 +466,8 @@ class AnalyzerDialog(QDialog):
         self.ui.setupUi(self)
 
         # Init morphemizer
-        self.ui.morphemizerComboBox.setMorphemizers(getAllMorphemizers())
-        self.ui.morphemizerComboBox.setCurrentByName(cfg("DefaultMorphemizer"))
+        self.ui.morphemizerComboBox.setMorphemizers(get_all_morphemizers())
+        self.ui.morphemizerComboBox.set_current_by_name(cfg("DefaultMorphemizer"))
         self.ui.morphemizerComboBox.currentIndexChanged.connect(
             lambda idx: self.save_morphemizer()
         )
@@ -587,7 +587,7 @@ class AnalyzerDialog(QDialog):
                 unknowns = 0
 
                 morphemizer = self.morphemizer()
-                morphs = getMorphemes(morphemizer, term)
+                morphs = get_morphemes(morphemizer, term)
 
                 # if len(morphs) == 1 and morphs[0].read != pron:
                 #    m = morphs[0]
@@ -623,7 +623,7 @@ class AnalyzerDialog(QDialog):
                 result["result"] = "success"
             elif msg["type"] == "is-target-sentence":
                 morphemizer = self.morphemizer()
-                morphs = getMorphemes(morphemizer, strip_html(msg["sentence"]))
+                morphs = get_morphemes(morphemizer, strip_html(msg["sentence"]))
                 is_target = False
 
                 for m in morphs:
@@ -670,10 +670,10 @@ class AnalyzerDialog(QDialog):
         self.buildTotalStudyCount()
 
     def morphemizer(self):
-        return self.ui.morphemizerComboBox.getCurrent()
+        return self.ui.morphemizerComboBox.get_current()
 
     def save_morphemizer(self):
-        morphemizer_name = self.morphemizer().getName()
+        morphemizer_name = self.morphemizer().get_name()
         update_preferences({"DefaultMorphemizer": morphemizer_name})
 
     def clearOutput(self):
@@ -890,7 +890,7 @@ class AnalyzerDialog(QDialog):
         self.clearOutput()
 
         morphemizer = self.morphemizer()
-        self.writeOutput("Using morphemizer: %s \n" % morphemizer.getDescription())
+        self.writeOutput("Using morphemizer: %s \n" % morphemizer.get_description())
         self.debug_output = False
 
         input_path = self.ui.inputPathEdit.text()
@@ -1021,7 +1021,7 @@ class AnalyzerDialog(QDialog):
             self.minimum_master_frequency = 0
 
         if os.path.isfile(known_words_path):
-            known_db = MorphDb(known_words_path, ignoreErrors=True)
+            known_db = MorphDb(known_words_path, ignore_errors=True)
 
             total_k = len(known_db.groups)
             total_v = len(known_db.db)
@@ -1033,7 +1033,7 @@ class AnalyzerDialog(QDialog):
         self.orig_known_db = copy.deepcopy(known_db)
 
         if os.path.isfile(mature_words_path):
-            mature_db = MorphDb(mature_words_path, ignoreErrors=True)
+            mature_db = MorphDb(mature_words_path, ignore_errors=True)
 
             m_total_k = len(mature_db.groups)
             m_total_v = len(mature_db.db)
@@ -1212,7 +1212,7 @@ class AnalyzerDialog(QDialog):
 
                 def parse_text(loc_corpus, text):
                     text = strip_html(text)
-                    parsed_morphs = getMorphemes(morphemizer, text)
+                    parsed_morphs = get_morphemes(morphemizer, text)
                     if len(parsed_morphs) == 0:
                         return
 
@@ -1399,7 +1399,7 @@ class AnalyzerDialog(QDialog):
             #        i + 1, total_locs, str(loc[0])))
             #    proc_file_result(loc, loc_corpus)
 
-            self.writeOutput("\nUsed morphemizer: %s\n" % morphemizer.getDescription())
+            self.writeOutput("\nUsed morphemizer: %s\n" % morphemizer.get_description())
             mw.taskman.run_on_main(mw.progress.finish)
 
             if PROFILE_PARSING:
@@ -1657,7 +1657,7 @@ class AnalyzerDialog(QDialog):
                             source_results.append(
                                 (source, learned_this_source, study_result)
                             )
-                            known_db.removeMorphs(
+                            known_db.remove_morphs(
                                 [m.morph for m in learned_this_source]
                             )
                             continue
@@ -1679,7 +1679,7 @@ class AnalyzerDialog(QDialog):
                             )
 
                             if self.reset_known_for_each_show:
-                                known_db.removeMorphs(
+                                known_db.remove_morphs(
                                     [m.morph for m in learned_this_source]
                                 )
                                 self.master_score -= study_result.total_freq
@@ -1715,7 +1715,7 @@ class AnalyzerDialog(QDialog):
                         )
 
                         if self.reset_known_for_each_show:
-                            known_db.removeMorphs(
+                            known_db.remove_morphs(
                                 [m.morph for m in learned_this_source]
                             )
                             self.master_score -= study_result.total_freq
@@ -1880,7 +1880,7 @@ class AnalyzerDialog(QDialog):
                             is_freq = False
                             unknowns = 0
 
-                            morphs = getMorphemes(morphemizer, term)
+                            morphs = get_morphemes(morphemizer, term)
 
                             if len(morphs) == 1 and morphs[0].read != pron:
                                 m = morphs[0]

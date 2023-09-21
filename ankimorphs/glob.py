@@ -102,5 +102,5 @@ def glob0(dirname, basename):
 magic_check = re.compile("[*?[]")
 
 
-def has_magic(s):
-    return magic_check.search(s) is not None
+def has_magic(path):
+    return magic_check.search(path) is not None

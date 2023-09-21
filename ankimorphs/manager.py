@@ -1,104 +1,58 @@
 # -*- coding: utf-8 -*-
 import os
 
+# from aqt.qt import QWidget, QFileDialog, QProgressBar, QLabel, QLineEdit
 from anki.utils import is_mac
-from aqt.qt import *
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import (
+    QDialog,
+    QFileDialog,
+    QGridLayout,
+    QLabel,
+    QLineEdit,
+    QProgressBar,
+    QRadioButton,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
-from . import adaptiveSubs
 from .morphemes import MorphDb
-from .morphemizer import getAllMorphemizers
+from .morphemizer import get_all_morphemizers
 from .preferences import get_preference as cfg
 from .UI import MorphemizerComboBox
-from .util import errorMsg, infoMsg, mkBtn, mw
+from .util import error_msg, info_msg, mk_btn, mw
 
 
-def getPath(le):  # LineEdit -> GUI ()
+def get_path(le):  # LineEdit -> GUI ()
     path = QFileDialog.getOpenFileName(caption="Open db", directory=cfg("path_dbs"))[0]
     le.setText(path)
 
 
-def getProgressWidget():
-    progressWidget = QWidget()
-    progressWidget.setFixedSize(400, 70)
-    progressWidget.setWindowModality(Qt.WindowModality.ApplicationModal)
-    bar = QProgressBar(progressWidget)
+def get_progress_widget():
+    progress_widget = QWidget()
+    progress_widget.setFixedSize(400, 70)
+    progress_widget.setWindowModality(Qt.WindowModality.ApplicationModal)
+    progress_bar = QProgressBar(progress_widget)
     if is_mac:
-        bar.setFixedSize(380, 50)
+        progress_bar.setFixedSize(380, 50)
     else:
-        bar.setFixedSize(390, 50)
-    bar.move(10, 10)
-    per = QLabel(bar)
+        progress_bar.setFixedSize(390, 50)
+    progress_bar.move(10, 10)
+    per = QLabel(progress_bar)
     per.setAlignment(Qt.AlignmentFlag.AlignCenter)  # pylint: disable=E1101
 
-    progressWidget.show()
-    return progressWidget, bar
-
-
-class AdaptiveSubWin(QDialog):
-    def __init__(self, parent=None):
-        super(AdaptiveSubWin, self).__init__(parent)
-        self.setWindowTitle("Adaptive Subs")
-        self.grid = grid = QGridLayout(self)
-        self.vbox = vbox = QVBoxLayout()
-
-        self.matureFmt = QLineEdit("%(target)s")
-        self.knownFmt = QLineEdit("%(target)s [%(native)s]")
-        self.unknownFmt = QLineEdit("%(native)s [%(N_k)s] [%(unknowns)s]")
-        self.morphemizerComboBox = MorphemizerComboBox()
-        self.morphemizerComboBox.setMorphemizers(morphemizers=getAllMorphemizers())
-
-        self.vbox.addWidget(QLabel("Mature Format"))
-        self.vbox.addWidget(self.matureFmt)
-        self.vbox.addWidget(QLabel("Known Format"))
-        self.vbox.addWidget(self.knownFmt)
-        self.vbox.addWidget(QLabel("Unknown Format"))
-        self.vbox.addWidget(self.unknownFmt)
-        self.vbox.addWidget(QLabel("Morpheme Engine (Morphemizer)"))
-        self.vbox.addWidget(self.morphemizerComboBox)
-
-        self.goBtn = mkBtn("Convert subs", self.onGo, vbox)
-
-        grid.addLayout(vbox, 0, 0)
-
-    def onGo(self):
-        mFmt = str(self.matureFmt.text())
-        kFmt = str(self.knownFmt.text())
-        uFmt = str(self.unknownFmt.text())
-        morphemizer = self.morphemizerComboBox.getCurrent()
-
-        inputPaths = QFileDialog.getOpenFileNames(
-            caption="Dueling subs to process", filter="Subs (*.ass)"
-        )[0]
-        if not inputPaths:
-            return
-        outputPath = QFileDialog.getExistingDirectory(caption="Save adaptive subs to")
-        if not outputPath:
-            return
-
-        progWid, bar = getProgressWidget()
-        bar.setMinimum(0)
-        bar.setMaximum(len(inputPaths))
-        val = 0
-        for fileNumber, subtitlePath in enumerate(inputPaths, start=1):
-            # MySubtitlesFolder/1 EpisodeSubtitles Episode 1.ass
-            outputSubsFileName = (
-                outputPath + "/" + str(fileNumber) + " " + subtitlePath.split("/")[-1]
-            )
-            adaptiveSubs.run(
-                subtitlePath, outputSubsFileName, morphemizer, mFmt, kFmt, uFmt
-            )
-
-            val += 1
-            bar.setValue(val)
-            mw.app.processEvents()
-        mw.taskman.run_on_main(mw.progress.finish)
-        mw.reset()
-        infoMsg("Completed successfully")
+    progress_widget.show()
+    return progress_widget, progress_bar
 
 
 class MorphMan(QDialog):
     def __init__(self, parent=None):
         super(MorphMan, self).__init__(parent)
+        self.aDb = None
+        self.bDb = None
+        self.bPath = None
+        self.aPath = None
         self.mw = parent
         self.setWindowTitle("Morph Man 3 Manager")
         self.grid = grid = QGridLayout(self)
@@ -107,169 +61,162 @@ class MorphMan(QDialog):
         # DB Paths
         self.aPathLEdit = QLineEdit()
         vbox.addWidget(self.aPathLEdit)
-        self.aPathBtn = mkBtn(
-            "Browse for DB A", lambda le: getPath(self.aPathLEdit), vbox
+        self.aPathBtn = mk_btn(
+            "Browse for DB A", lambda le: get_path(self.aPathLEdit), vbox
         )
 
         self.bPathLEdit = QLineEdit()
         vbox.addWidget(self.bPathLEdit)
-        self.bPathBtn = mkBtn(
-            "Browse for DB B", lambda le: getPath(self.bPathLEdit), vbox
+        self.bPathBtn = mk_btn(
+            "Browse for DB B", lambda le: get_path(self.bPathLEdit), vbox
         )
 
         # Comparisons
-        self.showABtn = mkBtn("A", self.onShowA, vbox)
-        self.AmBBtn = mkBtn("A-B", lambda x: self.onDiff("A-B"), vbox)
-        self.BmABtn = mkBtn("B-A", lambda x: self.onDiff("B-A"), vbox)
-        self.symBtn = mkBtn("Symmetric Difference", lambda x: self.onDiff("sym"), vbox)
-        self.interBtn = mkBtn("Intersection", lambda x: self.onDiff("inter"), vbox)
-        self.unionBtn = mkBtn("Union", lambda x: self.onDiff("union"), vbox)
+        self.show_a_btn = mk_btn("A", self.on_show_a, vbox)
+        self.AmBBtn = mk_btn("A-B", lambda x: self.on_diff("A-B"), vbox)
+        self.BmABtn = mk_btn("B-A", lambda x: self.on_diff("B-A"), vbox)
+        self.sym_btn = mk_btn(
+            "Symmetric Difference", lambda x: self.on_diff("sym"), vbox
+        )
+        self.inter_btn = mk_btn("Intersection", lambda x: self.on_diff("inter"), vbox)
+        self.union_btn = mk_btn("Union", lambda x: self.on_diff("union"), vbox)
 
         # Creation
         # language class/morphemizer
         self.db = None
-        self.morphemizerComboBox = MorphemizerComboBox()
-        self.morphemizerComboBox.setMorphemizers(getAllMorphemizers())
+        self.morphemizer_combo_box = MorphemizerComboBox()
+        self.morphemizer_combo_box.setMorphemizers(get_all_morphemizers())
 
         vbox.addSpacing(40)
-        vbox.addWidget(self.morphemizerComboBox)
-        self.extractTxtFileBtn = mkBtn(
-            "Extract morphemes from file", self.onExtractTxtFile, vbox
+        vbox.addWidget(self.morphemizer_combo_box)
+        self.extract_txt_file_btn = mk_btn(
+            "Extract morphemes from file", self.on_extract_txt_file, vbox
         )
-        self.saveResultsBtn = mkBtn("Save results to db", self.onSaveResults, vbox)
+        self.save_results_btn = mk_btn("Save results to db", self.on_save_results, vbox)
 
         # Display
         vbox.addSpacing(40)
-        self.col_all_Mode = QRadioButton("All result columns")
-        self.col_all_Mode.setChecked(True)
-        self.col_one_Mode = QRadioButton("One result column")
-        self.col_all_Mode.clicked.connect(self.colModeButtonListener)
-        self.col_one_Mode.clicked.connect(self.colModeButtonListener)
-        vbox.addWidget(self.col_all_Mode)
-        vbox.addWidget(self.col_one_Mode)
-        self.morphDisplay = QTextEdit()
-        self.analysisDisplay = QTextEdit()
-
-        # Exporting
-        self.adaptiveSubs = mkBtn("Adaptive Subs", self.adaptiveSubsMethod, vbox)
+        self.col_all_mode = QRadioButton("All result columns")
+        self.col_all_mode.setChecked(True)
+        self.col_one_mode = QRadioButton("One result column")
+        self.col_all_mode.clicked.connect(self.col_mode_button_listener)
+        self.col_one_mode.clicked.connect(self.col_mode_button_listener)
+        vbox.addWidget(self.col_all_mode)
+        vbox.addWidget(self.col_one_mode)
+        self.morph_display = QTextEdit()
+        self.analysis_display = QTextEdit()
 
         # layout
         grid.addLayout(vbox, 0, 0)
-        grid.addWidget(self.morphDisplay, 0, 1)
-        grid.addWidget(self.analysisDisplay, 0, 2)
+        grid.addWidget(self.morph_display, 0, 1)
+        grid.addWidget(self.analysis_display, 0, 2)
 
-    def adaptiveSubsMethod(self):
-        self.hide()
-        asw = AdaptiveSubWin(self.mw)
-        asw.show()
-
-    def loadA(self):
+    def load_a(self):
         self.aPath = self.aPathLEdit.text()
         self.aDb = MorphDb(path=self.aPath)
         if not self.db:
             self.db = self.aDb
 
-    def loadB(self):
+    def load_b(self):
         self.bPath = self.bPathLEdit.text()
         self.bDb = MorphDb(path=self.bPath)
 
-    def loadAB(self):
-        self.loadA()
-        self.loadB()
+    def load_ab(self):
+        self.load_a()
+        self.load_b()
 
-    def onShowA(self):
+    def on_show_a(self):
         try:
-            self.loadA()
-        except Exception as e:
-            return errorMsg("Can't load db:\n%s" % e)
+            self.load_a()
+        except Exception as error:
+            return error_msg(f"Can't load db:\n{error}")
         self.db = self.aDb
-        self.updateDisplay()
+        self.update_display()
 
-    def onDiff(self, kind):
+    def on_diff(self, kind):
         try:
-            self.loadAB()
-        except Exception as e:
-            return errorMsg("Can't load dbs:\n%s" % e)
+            self.load_ab()
+        except Exception as error:
+            return error_msg(f"Can't load dbs:\n{error}")
 
         a_set = set(self.aDb.db.keys())
         b_set = set(self.bDb.db.keys())
         if kind == "sym":
-            ms = a_set.symmetric_difference(b_set)
+            _morphs = a_set.symmetric_difference(b_set)
         elif kind == "A-B":
-            ms = a_set.difference(b_set)
+            _morphs = a_set.difference(b_set)
         elif kind == "B-A":
-            ms = b_set.difference(a_set)
+            _morphs = b_set.difference(a_set)
         elif kind == "inter":
-            ms = a_set.intersection(b_set)
+            _morphs = a_set.intersection(b_set)
         elif kind == "union":
-            ms = a_set.union(b_set)
+            _morphs = a_set.union(b_set)
         else:
             raise ValueError(
-                "'kind' must be one of [sym, A-B, B-A, inter, union], it was actually '%s'"
-                % kind
+                f"'kind' must be one of [sym, A-B, B-A, inter, union], it was actually '{kind}'"
             )
 
         self.db.clear()
-        for m in ms:
+        for _morph in _morphs:
             locs = set()
-            if m in self.aDb.db:
-                locs.update(self.aDb.db[m])
-            if m in self.bDb.db:
-                locs.update(self.bDb.db[m])
-            self.db.addMLs1(m, locs)
+            if _morph in self.aDb.db:
+                locs.update(self.aDb.db[_morph])
+            if _morph in self.bDb.db:
+                locs.update(self.bDb.db[_morph])
+            self.db.addMLs1(_morph, locs)
 
-        self.updateDisplay()
+        self.update_display()
 
-    def onExtractTxtFile(self):
-        srcPath = QFileDialog.getOpenFileName(
+    def on_extract_txt_file(self):
+        src_path = QFileDialog.getOpenFileName(
             caption="Text file to extract from?", directory=cfg("path_dbs")
         )[0]
-        if not srcPath:
+        if not src_path:
             return
 
-        destPath = QFileDialog.getSaveFileName(
+        dest_path = QFileDialog.getSaveFileName(
             caption="Save morpheme db to?",
             directory=cfg("path_dbs") + os.sep + "textFile.db",
         )[0]
-        if not destPath:
+        if not dest_path:
             return
 
         mat = cfg("text file import maturity")
         db = MorphDb.mkFromFile(
-            str(srcPath), self.morphemizerComboBox.getCurrent(), mat
+            str(src_path), self.morphemizer_combo_box.get_current(), mat
         )
         if db:
-            db.save(str(destPath))
-            infoMsg("Extracted successfully")
+            db.save(str(dest_path))
+            info_msg("Extracted successfully")
 
-    def onSaveResults(self):
+    def on_save_results(self):
         dir_path = cfg("path_dbs") + os.sep + "results.db"
-        destPath = QFileDialog.getSaveFileName(
+        dest_path = QFileDialog.getSaveFileName(
             caption="Save results to?", directory=dir_path
         )[0]
-        if not destPath:
+        if not dest_path:
             return
         if not hasattr(self, "db"):
-            return errorMsg("No results to save")
-        self.db.save(str(destPath))
-        infoMsg("Saved successfully")
+            return error_msg("No results to save")
+        self.db.save(str(dest_path))
+        info_msg("Saved successfully")
 
-    def colModeButtonListener(self):
-        colModeButton = self.sender()
-        if colModeButton.isChecked():
+    def col_mode_button_listener(self):
+        col_mode_button = self.sender()
+        if col_mode_button.isChecked():
             try:
-                self.updateDisplay()
+                self.update_display()
             except AttributeError:
                 return  # User has not selected a db view yet
 
-    def updateDisplay(self):
-        if self.col_all_Mode.isChecked():
-            self.morphDisplay.setText(self.db.showMs())
+    def update_display(self):
+        if self.col_all_mode.isChecked():
+            self.morph_display.setText(self.db.show_ms())
         else:
-            self.morphDisplay.setText(
+            self.morph_display.setText(
                 "\n".join(sorted(list(set([m.norm for m in self.db.db]))))
             )
-        self.analysisDisplay.setText(self.db.analyze2str())
+        self.analysis_display.setText(self.db.analyze2str())
 
 
 def main():

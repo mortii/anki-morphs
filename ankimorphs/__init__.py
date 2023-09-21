@@ -1,8 +1,9 @@
 # TODO: importlib is seemingly used to patch over and disguise veeeeery bad bugs... remove its usages and fix the bugs
 import importlib
 
-from aqt import QAction, QMenu, gui_hooks, mw
+from aqt import gui_hooks, mw
 from aqt.browser import Browser
+from aqt.qt import QAction, QMenu
 from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
 
@@ -16,12 +17,13 @@ from ankimorphs import (
     recalc,
     reviewing_utils,
 )
-from ankimorphs.mecab_wrapper import getMorphemesMecab
+from ankimorphs.mecab_wrapper import get_morphemes_mecab
 from ankimorphs.morphemes import MorphDb
 from ankimorphs.preferences import get_preference, init_preferences
 
-import anki.stats  # isort:skip
-from anki import hooks  # isort:skip
+# A bug in the anki module leads to cyclic imports if these are placed higher
+import anki.stats  # isort:skip pylint:disable=wrong-import-order
+from anki import hooks  # isort:skip pylint:disable=wrong-import-order
 
 
 TOOL_MENU = "morphman_tool_menu"
@@ -243,11 +245,11 @@ def create_test_action() -> QAction:
 
 def morph_graphs_wrapper(*args, **kwargs):
     importlib.reload(graphs)
-    return graphs.morphGraphs(args, kwargs)
+    return graphs.morph_graphs(args, kwargs)
 
 
 def test_function() -> None:
-    known_db = MorphDb(get_preference("path_known"), ignoreErrors=True)
+    known_db = MorphDb(get_preference("path_known"), ignore_errors=True)
 
     for group in known_db.groups.keys():
         for _morph in known_db.groups[group]:

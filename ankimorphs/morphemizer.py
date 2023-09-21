@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import re
 from functools import lru_cache
+from typing import Optional
 
 from .deps.jieba import posseg
 from .deps.zhon.hanzi import characters
-from .mecab_wrapper import getMecabIdentity, getMorphemesMecab
+from .mecab_wrapper import get_mecab_identity, get_morphemes_mecab
 from .morphemes import Morpheme
 
 ####################################################################################################
@@ -17,28 +18,23 @@ class Morphemizer:
         pass
 
     @lru_cache(maxsize=131072)
-    def getMorphemesFromExpr(self, expression):
-        # type: (str) -> [Morpheme]
-
-        morphs = self._getMorphemesFromExpr(expression)
+    def get_morphemes_from_expr(self, expression: str) -> [Morpheme]:
+        morphs = self._get_morphemes_from_expr(expression)
         return morphs
 
-    def _getMorphemesFromExpr(self, expression):
-        # type: (str) -> [Morpheme]
+    def _get_morphemes_from_expr(self, expression: str) -> [Morpheme]:
         """
         The heart of this plugin: convert an expression to a list of its morphemes.
         """
         return []
 
-    def getDescription(self):
-        # type: () -> str
+    def get_description(self) -> str:
         """
         Returns a single line, for which languages this Morphemizer is.
         """
         return "No information available"
 
-    def getName(self):
-        # type: () -> str
+    def get_name(self) -> str:
         return self.__class__.__name__
 
 
@@ -46,30 +42,28 @@ class Morphemizer:
 # Morphemizer Helpers
 ####################################################################################################
 
-morphemizers = None
+MORPHEMIZERS = None
 morphemizers_by_name = {}
 
 
-def getAllMorphemizers():
-    # type: () -> [Morphemizer]
-    global morphemizers
-    if morphemizers is None:
-        morphemizers = [
+def get_all_morphemizers() -> [Morphemizer]:
+    global MORPHEMIZERS
+    if MORPHEMIZERS is None:
+        MORPHEMIZERS = [
             SpaceMorphemizer(),
             MecabMorphemizer(),
             JiebaMorphemizer(),
             CjkCharMorphemizer(),
         ]
 
-        for m in morphemizers:
-            morphemizers_by_name[m.getName()] = m
+        for morphemizer in MORPHEMIZERS:
+            morphemizers_by_name[morphemizer.get_name()] = morphemizer
 
-    return morphemizers
+    return MORPHEMIZERS
 
 
-def getMorphemizerByName(name):
-    # type: (str) -> Optional(Morphemizer)
-    getAllMorphemizers()
+def get_morphemizer_by_name(name: str) -> Optional[Morphemizer]:
+    get_all_morphemizers()
     return morphemizers_by_name.get(name, None)
 
 
@@ -86,16 +80,16 @@ class MecabMorphemizer(Morphemizer):
     a extra tool called 'mecab' has to be used.
     """
 
-    def _getMorphemesFromExpr(self, expression):
+    def _get_morphemes_from_expr(self, expression):
         # Remove simple spaces that could be added by other add-ons and break the parsing.
         if space_char_regex.search(expression):
             expression = space_char_regex.sub("", expression)
 
-        return getMorphemesMecab(expression)
+        return get_morphemes_mecab(expression)
 
-    def getDescription(self):
+    def get_description(self):
         try:
-            identity = getMecabIdentity()
+            identity = get_mecab_identity()
         except:
             identity = "UNAVAILABLE"
         return "Japanese " + identity
@@ -112,7 +106,7 @@ class SpaceMorphemizer(Morphemizer):
     a general-use-morphemizer, it can't generate the base form from inflection.
     """
 
-    def _getMorphemesFromExpr(self, expression):
+    def _get_morphemes_from_expr(self, expression):
         word_list = [
             word.lower() for word in re.findall(r"\b[^\s\d]+\b", expression, re.UNICODE)
         ]
@@ -120,7 +114,7 @@ class SpaceMorphemizer(Morphemizer):
             Morpheme(word, word, word, word, "UNKNOWN", "UNKNOWN") for word in word_list
         ]
 
-    def getDescription(self):
+    def get_description(self):
         return "Language w/ Spaces"
 
 
@@ -135,13 +129,13 @@ class CjkCharMorphemizer(Morphemizer):
     characters.
     """
 
-    def _getMorphemesFromExpr(self, expression):
+    def _get_morphemes_from_expr(self, expression):
         return [
             Morpheme(character, character, character, character, "CJK_CHAR", "UNKNOWN")
             for character in re.findall("[%s]" % characters, expression)
         ]
 
-    def getDescription(self):
+    def get_description(self):
         return "CJK Characters"
 
 
@@ -156,7 +150,7 @@ class JiebaMorphemizer(Morphemizer):
     https://github.com/fxsjy/jieba
     """
 
-    def _getMorphemesFromExpr(self, expression):
+    def _get_morphemes_from_expr(self, expression):
         # remove all punctuation
         expression = "".join(re.findall("[%s]" % characters, expression))
         return [
@@ -164,5 +158,5 @@ class JiebaMorphemizer(Morphemizer):
             for m in posseg.cut(expression)
         ]  # find morphemes using jieba's POS segmenter
 
-    def getDescription(self):
+    def get_description(self):
         return "Chinese"

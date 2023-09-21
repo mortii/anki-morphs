@@ -1,5 +1,4 @@
 import os
-import pprint
 import shutil
 from unittest import mock
 

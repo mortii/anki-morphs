@@ -4,8 +4,6 @@
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://pypi.org/project/isort/)
 [![Test and Lintt](https://github.com/mortii/anki-morphs/actions/workflows/build.yml/badge.svg)](https://github.com/mortii/anki-morphs/actions/workflows/build.yml)
 [![Github Pages](https://github.com/mortii/anki-morphs/actions/workflows/deploy.yml/badge.svg)](https://github.com/mortii/anki-morphs/actions/workflows/deploy.yml)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 <br>
 <br>
 MorphMan is an Anki addon that tracks what words you know, and utilizes that information to optimally reorder language cards. This
