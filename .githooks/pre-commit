@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-isort ankimorphs tests  # sorts imports
-black ankimorphs tests  # formats the code
-export PYTHONPATH=./  # necessary to run pylint on test-directory
-pylint ankimorphs tests
-pytest
