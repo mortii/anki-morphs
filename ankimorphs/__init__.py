@@ -251,8 +251,8 @@ def morph_graphs_wrapper(*args, **kwargs):
 def test_function() -> None:
     known_db = MorphDb(get_preference("path_known"), ignore_errors=True)
 
-    for group in known_db.groups.keys():
-        for _morph in known_db.groups[group]:
+    for group in known_db.groups.items():
+        for _morph in group:
             print("morph: ", _morph.inflected)
         print("group break\n\n")
 
