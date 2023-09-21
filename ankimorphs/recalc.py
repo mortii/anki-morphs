@@ -112,7 +112,9 @@ def notes_to_update(last_updated, included_mids):
     return mw.col.db.execute(query)
 
 
-def make_all_db(all_db=None):  # pylint:disable=too-many-locals,too-many-statements
+def make_all_db(
+    all_db=None,
+):  # pylint:disable=too-many-locals,too-many-statements,too-many-branches
     # from . import config
     # importlib.reload(config)
 
@@ -240,7 +242,9 @@ def filter_db_by_mat(db, mat):  # pylint:disable=invalid-name
     return new_db
 
 
-def update_notes(all_db):  # pylint:disable=too-many-branches,too-many-statements
+def update_notes(
+    all_db,
+):  # pylint:disable=too-many-branches,too-many-statements,too-many-locals
     # t_0 = time.time()
     now = int_time()
     db = mw.col.db  # pylint:disable=invalid-name

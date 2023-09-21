@@ -31,7 +31,7 @@ def try_to_get_focus_morphs(note: Note) -> Optional[List[str]]:
 def focus_query(field_name, focus_morphs, vocab_tag=False):
     query = " or ".join(
         [
-            r'"%s:re:(^|,|\s)%s($|,|\s)"' % (field_name, re.escape(morph))
+            rf'"{field_name}:re:(^|,|\s){re.escape(morph)}($|,|\s)"'
             for morph in focus_morphs
         ]
     )
@@ -179,7 +179,9 @@ def my_reviewer_shortcut_keys(self: Reviewer, _old):
     return keys
 
 
-def highlight(txt: str, field, note_filter: str, ctx) -> str:
+def highlight(  # pylint:disable=too-many-locals
+    txt: str, field, note_filter: str, ctx
+) -> str:
     """When a field is marked with the 'focusMorph' command, we format it by
     wrapping all the morphemes in <span>s with attributes set to its maturity"""
 
@@ -232,7 +234,7 @@ def highlight(txt: str, field, note_filter: str, ctx) -> str:
         frequency = "true" if focus_morph_string in frequency_list else "false"
 
         replacement = f'<span class="morphHighlight" mtype="{maturity}" priority="{priority}" frequency="{frequency}"">\\1</span>'
-        txt = text_utils.non_span_sub("(%s)" % morph.inflected, replacement, txt)
+        txt = text_utils.non_span_sub(f"({morph.inflected})", replacement, txt)
 
     return txt
 
@@ -268,7 +270,7 @@ class SkippedCards:
             self.skipped_cards["known"] += 1
             return True
         elif self.skip_focus_morph_seen_today and any(
-            [focus in seen_morphs for focus in focus_morphs]
+            focus in seen_morphs for focus in focus_morphs
         ):
             self.skipped_cards["today"] += 1
             return True

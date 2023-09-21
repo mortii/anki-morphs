@@ -73,9 +73,9 @@ def profile_path():
     pattern = os.path.join(base, "*", "dbs", "")
     db_paths = glob.glob(pattern)
     if not db_paths:
-        die("No candidate MorphMan db paths in Anki folder: %s" % (pattern,))
+        die(f"No candidate MorphMan db paths in Anki folder: {(pattern,)}")
     if len(db_paths) > 1:
-        die("Multiple possible MorphMan db paths: %s" % (" ".join(db_paths),))
+        die(f"Multiple possible MorphMan db paths: {(' '.join(db_paths),)}")
 
     return os.path.dirname(os.path.dirname(db_paths[0]))
 
@@ -99,12 +99,12 @@ def cmd_dump(args):
     path = db_path(db_name)
     if not os.access(path, os.R_OK):
         die("can't read db file: %s" % (path,))
-    db = MorphDb(path)
+    db = MorphDb(path)  # pylint:disable=invalid-name
 
-    for m in list(db.db.keys()):
-        m_formatted = m.show().encode("utf-8")
+    for morph in list(db.db.keys()):
+        m_formatted = morph.show().encode("utf-8")
         if inc_freq:
-            print("%d\t%s" % (db.frequency(m), m_formatted))
+            print(f"{db.frequency(morph)}\t{m_formatted}")
         else:
             print(m_formatted)
 
@@ -119,8 +119,8 @@ def cmd_count(args):
             for line in file.readlines():
                 freqs.update(mizer.get_morphemes_from_expr(line.strip()))
 
-    for m, c in freqs.most_common():
-        print("%d\t%s" % (c, m.show().encode("utf-8")))
+    for morph, count in freqs.most_common():
+        print(f"{count}\t{morph.show().encode('utf-8')}")
 
 
 def fix_sigpipe():
