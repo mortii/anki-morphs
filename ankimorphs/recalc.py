@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 import csv
-import io
 import itertools
 import time
 from functools import partial
-from typing import Dict, Optional, Set, Union
+from typing import Optional, Union
 
 from anki.collection import Collection
 from anki.models import FieldDict, NotetypeDict
@@ -94,6 +92,7 @@ def notes_to_update(last_updated, included_mids):
     #
     # First find the cards to analyze
     #   then find the max maturity of those cards
+    # pylint:disable=consider-using-f-string
     query = """
         WITH notesToUpdate as (
             SELECT distinct n.id AS nid, mid, flds, guid, tags
@@ -108,6 +107,7 @@ def notes_to_update(last_updated, included_mids):
         """.format(
         ",".join([str(m) for m in included_mids]), last_updated, filter_susp_leeches
     )
+    # pylint:enable=consider-using-f-string
 
     return mw.col.db.execute(query)
 
@@ -258,7 +258,7 @@ def update_notes(
     )
 
     fid_db = all_db.fid_db(recalc=True)
-    loc_db: Dict[Location, Set[Morpheme]] = all_db.loc_db(recalc=False)
+    loc_db: dict[Location, set[Morpheme]] = all_db.loc_db(recalc=False)
 
     # read tag names
     (
@@ -304,7 +304,7 @@ def update_notes(
     frequency_list_exists = False
 
     try:
-        with io.open(frequency_list_path, encoding="utf-8-sig") as csvfile:
+        with open(frequency_list_path, encoding="utf-8-sig") as csvfile:
             csvreader = csv.reader(csvfile, delimiter="\t")
             rows = list(csvreader)
 
@@ -381,6 +381,7 @@ def update_notes(
         if include_all or m["name"] in included_types
     ]
 
+    # pylint:disable=consider-using-f-string
     query = """
         SELECT n.id as nid, mid, flds, guid, tags, max(c.type) AS maxtype
         FROM notes n JOIN cards c ON (n.id = c.nid)
@@ -391,6 +392,8 @@ def update_notes(
         ",".join([str(id) for id in refresh_notes]),
         last_updated,
     )
+    # pylint:enable=consider-using-f-string
+
     query_results = db.execute(query)
 
     notes_amount = len(query_results)

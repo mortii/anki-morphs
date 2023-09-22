@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import codecs
 import datetime
 from os import path
@@ -44,7 +43,7 @@ def get_filter_by_mid_and_tags(mid, tags):
     return get_filter_by_type_and_tags(mw.col.models.get(mid)["name"], tags)
 
 
-def get_filter_by_type_and_tags(note_type: str, note_tags: List[str]) -> Optional[dict]:
+def get_filter_by_type_and_tags(note_type: str, note_tags: list[str]) -> Optional[dict]:
     for note_filter in get_preference("Filter"):
         if (
             note_type == note_filter["Type"] or note_filter["Type"] is None

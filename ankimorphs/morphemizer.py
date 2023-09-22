@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import re
 from functools import lru_cache
 from typing import Optional
@@ -132,7 +131,10 @@ class CjkCharMorphemizer(Morphemizer):
     def _get_morphemes_from_expr(self, expression):
         return [
             Morpheme(character, character, character, character, "CJK_CHAR", "UNKNOWN")
-            for character in re.findall("[%s]" % characters, expression)
+            for character in re.findall(
+                "[%s]" % characters,  # pylint:disable=consider-using-f-string
+                expression,
+            )
         ]
 
     def get_description(self):
@@ -152,7 +154,12 @@ class JiebaMorphemizer(Morphemizer):
 
     def _get_morphemes_from_expr(self, expression):
         # remove all punctuation
-        expression = "".join(re.findall("[%s]" % characters, expression))
+        expression = "".join(
+            re.findall(
+                "[%s]" % characters,  # pylint:disable=consider-using-f-string
+                expression,
+            )
+        )
         return [
             Morpheme(m.word, m.word, m.word, m.word, m.flag, "UNKNOWN")
             for m in posseg.cut(expression)

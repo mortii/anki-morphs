@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import codecs
 import gzip
 import os
@@ -10,25 +9,23 @@ from typing import Dict, Set
 
 import aqt
 
-# need some fallbacks if not running from anki and thus ankimorphs.util isn't available
-try:
-    from .util import error_msg
-except ImportError:
+from .exceptions import ProfileNotYetLoadedException
 
-    def error_msg(msg):
-        pass
+
+def error_msg(msg):
+    pass
 
 
 try:
     from .preferences import get_preference as cfg
-except:
+except ProfileNotYetLoadedException:
 
     def cfg(config_string):
         return None
 
 
 def char_set(start: str, end: str) -> set:
-    return set(chr(_char) for _char in range(ord(start), ord(end) + 1))
+    return {chr(_char) for _char in range(ord(start), ord(end) + 1)}
 
 
 kanji_chars = char_set("㐀", "䶵") | char_set("一", "鿋") | char_set("豈", "頻")
@@ -115,7 +112,13 @@ class Morpheme:
 
 
 def ms2str(morphs):  # [(Morpheme, locs)] -> Str
-    return "\n".join(["%d\t%s" % (len(m[1]), m[0].show()) for m in morphs])
+    return "\n".join(
+        [
+            "%d\t%s"  # pylint:disable=consider-using-f-string
+            % (len(m[1]), m[0].show())
+            for m in morphs
+        ]
+    )
 
 
 class MorphDBUnpickler(pickle.Unpickler):
@@ -272,7 +275,7 @@ class MorphDb:  # pylint:disable=too-many-instance-attributes,too-many-public-me
         data = MorphDb()
         try:
             data.import_file(path, morphemizer, maturity=maturity)
-        except (UnicodeDecodeError, IOError) as error:
+        except (UnicodeDecodeError, OSError) as error:
             return error_msg(
                 "Unable to import file. Please verify it is a UTF-8 text file and you have "
                 + f"permissions.\nFull error:\n{error}"
@@ -293,7 +296,7 @@ class MorphDb:  # pylint:disable=too-many-instance-attributes,too-many-public-me
         if path:
             try:
                 self.load(path)
-            except IOError:
+            except OSError:
                 if not ignore_errors:
                     raise
         self.analyze()
@@ -451,7 +454,7 @@ class MorphDb:  # pylint:disable=too-many-instance-attributes,too-many-public-me
         return sum(getattr(loc, "weight", 1) for loc in self.get_matching_locs(morph))
 
     # Analysis (global)
-    def loc_db(self, recalc: bool = True) -> Dict[Location, Set[Morpheme]]:
+    def loc_db(self, recalc: bool = True) -> dict[Location, set[Morpheme]]:
         if hasattr(self, "_locDb") and not recalc:
             return self._loc_db  # pylint: disable=E0203 # pylint is wrong
         self._loc_db = data = {}  # type: Dict[Location, Set[Morpheme]]
@@ -476,8 +479,9 @@ class MorphDb:  # pylint:disable=too-many-instance-attributes,too-many-public-me
 
     def count_by_type(self):  # Map Pos Int
         data = {}
-        for morph in self.db.keys():
-            data[morph.pos] = data.get(morph.pos, 0) + 1
+        # for morph in self.db.keys():
+        for morph in self.db.values():
+            morph.pos = data.get(morph.pos, 0) + 1
         return data
 
     def analyze(self):  # m ()
@@ -488,7 +492,8 @@ class MorphDb:  # pylint:disable=too-many-instance-attributes,too-many-public-me
     def analyze2str(self):  # m Str
         self.analyze()
         pos_str = "\n".join(
-            "%d\t%d%%\t%s" % (v, 100.0 * v / self.v_count, k)
+            "%d\t%d%%\t%s"  # pylint:disable=consider-using-f-string
+            % (v, 100.0 * v / self.v_count, k)
             for k, v in self.pos_break_down.items()
         )
         return f"Total normalized morphemes: {self.k_count}\nTotal variations: {self.v_count}\nBy part of speech:\n{pos_str}"
@@ -553,7 +558,7 @@ def save_db_all_morphs(current, db, table_name):  # pylint:disable=invalid-name
 
     # insert them all at once
     current.executemany(
-        "INSERT INTO %s (%s) VALUES(?,?,?,?,?,?,?);" % (table_name, fields), tuples
+        f"INSERT INTO {table_name} ({fields}) VALUES(?,?,?,?,?,?,?);", tuples
     )
 
 
@@ -611,7 +616,7 @@ def save_db_locations(cur, db, table_name="locations"):  # pylint:disable=invali
     tuples = [val for sublist in locations_lists for val in sublist]
 
     cur.executemany(
-        "INSERT INTO %s (%s) VALUES(?,?,?,?,?,?,?);" % (table_name, fields), tuples
+        f"INSERT INTO {table_name} ({fields}) VALUES(?,?,?,?,?,?,?);", tuples
     )
 
 

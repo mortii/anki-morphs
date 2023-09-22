@@ -3,6 +3,7 @@ import math
 from collections import defaultdict, namedtuple
 
 from . import util
+from .exceptions import ProfileNotYetLoadedException
 from .morphemes import AnkiDeck
 from .preferences import get_preference as cfg
 from .util import mw
@@ -162,7 +163,11 @@ def _get_reviews(  # pylint:disable=too-many-locals
         #                    )
         #                  )
         #               """ % (id_cutoff, id_cutoff))
-    where_clause = "WHERE %s" % (" AND ".join(filters)) if filters else ""
+    where_clause = (
+        "WHERE %s" % (" AND ".join(filters))  # pylint:disable=consider-using-f-string
+        if filters
+        else ""
+    )
 
     # id - The time at which the review was conducted, in epoch time (milliseconds)
     # nid - The ID of the note that was reviewed.  Also equals card creation time (milliseconds).
@@ -178,24 +183,20 @@ def _get_reviews(  # pylint:disable=too-many-locals
     # Convert the time to the day, where 0 is today (i.e. after the cutoff for today), -1 is yesterday, etc.
     # We add 0.5 and round in order to round up.
 
-    query = """\
+    query = f"""\
       SELECT cards.id,
              cards.nid,
              cards.did,
              cards.type,
              rl.id,
-             CAST(round(( (rl.id/1000.0 - %d) / 86400.0 / %d ) + 0.5) as int)
+             CAST(round(( (rl.id/1000.0 - {day_cutoff_seconds}) / 86400.0 / {bucket_size_days} ) + 0.5) as int)
                as bucket_index,
              rl.ease, rl.ivl, rl.lastIvl, cards.ivl, rl.type
       FROM revlog rl
       INNER JOIN cards ON rl.cid = cards.id
-      %s
+      {where_clause}
       ORDER BY rl.cid ASC, rl.id ASC;
-      """ % (
-        day_cutoff_seconds,
-        bucket_size_days,
-        where_clause,
-    )
+      """
 
     result = db_table.all(query)
 
@@ -549,18 +550,19 @@ def morph_graphs(args, kwargs):
         color=COL_V,
     )
 
+    # pylint:disable=consider-using-f-string
     morph_result += self._title(
         "Net Learned Cards & Morphs",
         "Summary of net learned cards and morphemes by deck",
     )
     morph_result += """
         <style>
-            td.morph_trl { border: 1px solid; text-align: left; padding: 5px; }
-            td.morph_trr { border: 1px solid; text-align: right; padding: 5px; }
-            td.morph_trc { border: 1px solid; text-align: center; padding: 5px;}
-            span.morph_c { color: %(c_color)s }
-            span.morph_k { color: %(k_color)s }
-            span.morph_v { color: %(v_color)s }
+            td.morph_trl {{ border: 1px solid; text-align: left; padding: 5px; }}
+            td.morph_trr {{ border: 1px solid; text-align: right; padding: 5px; }}
+            td.morph_trc {{ border: 1px solid; text-align: center; padding: 5px;}}
+            span.morph_c {{ color: {c_color} }}
+            span.morph_k {{ color: {k_color} }}
+            span.morph_v {{ color: {v_color} }}
         </style>
         <br /><br />
         <table style="border-collapse: collapse;" cellspacing="0" cellpadding="2">
@@ -576,11 +578,13 @@ def morph_graphs(args, kwargs):
                 <td class="morph_trc"><span class="morph_v"><b>Learned</b></span></td>
                 <td class="morph_trc"><span class="morph_v"><b>Matured</b></span></td>
             </tr>
-            """ % {
-        "c_color": COL_CARD,
-        "k_color": COL_K,
-        "v_color": COL_V,
-    }
+            """.format(
+        c_color=COL_CARD,
+        k_color=COL_K,
+        v_color=COL_V,
+    )
+    # pylint:enable=consider-using-f-string
+
     total = ProgressStats()
     for deck in sorted(stats["all_deck_stats"].keys()):
         deck_stats = stats["all_deck_stats"][deck]
@@ -700,16 +704,16 @@ def _plot(  # pylint:disable=too-many-locals,too-many-arguments
 
     y_axes = [
         {
-            "min": _round_down_min(min((y for (x, y) in data))),
-            "max": _round_up_max(max((y for (x, y) in data))),
+            "min": _round_down_min(min(y for (x, y) in data)),
+            "max": _round_up_max(max(y for (x, y) in data)),
         }
     ]
 
     if include_cumulative:
         y_axes.append(
             {
-                "min": _round_down_min(min((y for (x, y) in cumulative_data))),
-                "max": _round_up_max(max((y for (x, y) in cumulative_data))),
+                "min": _round_down_min(min(y for (x, y) in cumulative_data)),
+                "max": _round_up_max(max(y for (x, y) in cumulative_data)),
                 "position": "right",
             }
         )
@@ -730,7 +734,7 @@ def _plot(  # pylint:disable=too-many-locals,too-many-arguments
             graph_kwargs["ylabel"] = "Morphemes"
         if "ylabel2" in inspect.signature(self._graph).parameters:
             graph_kwargs["ylabel2"] = "Cumulative Morphemes"
-    except Exception:  # TODO: Catch too broad!
+    except ProfileNotYetLoadedException:
         pass
 
     txt += self._graph(**graph_kwargs)
