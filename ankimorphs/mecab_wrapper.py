@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import importlib
 import importlib.util
 import re
@@ -175,7 +174,7 @@ def spawn_mecab(base_cmd, startupinfo):
     mecab_encoding = charset_match.group(1)
 
     args = [
-        "--node-format=%s\r" % ("\t".join(node_parts),),
+        "--node-format={}\r".format("\t".join(node_parts)),
         "--eos-format=\n",
         "--unk-format=",
     ]

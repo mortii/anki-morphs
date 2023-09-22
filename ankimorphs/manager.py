@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 
 # from aqt.qt import QWidget, QFileDialog, QProgressBar, QLabel, QLineEdit
@@ -128,16 +127,17 @@ class MorphMan(QDialog):  # pylint: disable=too-many-instance-attributes
     def on_show_a(self):
         try:
             self.load_a()
-        except Exception as error:
-            return error_msg(f"Can't load db:\n{error}")
-        self.db = self.db_a
-        self.update_display()
+            self.db = self.db_a
+            self.update_display()
+        except OSError as error:
+            error_msg(f"Can't load db:\n{error}")
 
     def on_diff(self, kind):
         try:
             self.load_ab()
-        except Exception as error:
-            return error_msg(f"Can't load dbs:\n{error}")
+        except OSError as error:
+            error_msg(f"Can't load dbs:\n{error}")
+            return
 
         a_set = set(self.db_a.db.keys())
         b_set = set(self.db_b.db.keys())
@@ -197,7 +197,8 @@ class MorphMan(QDialog):  # pylint: disable=too-many-instance-attributes
         if not dest_path:
             return
         if not hasattr(self, "db"):
-            return error_msg("No results to save")
+            error_msg("No results to save")
+            return
         self.db.save(str(dest_path))
         info_msg("Saved successfully")
 
@@ -214,7 +215,7 @@ class MorphMan(QDialog):  # pylint: disable=too-many-instance-attributes
             self.morph_display.setText(self.db.show_ms())
         else:
             self.morph_display.setText(
-                "\n".join(sorted(list(set([m.norm for m in self.db.db]))))
+                "\n".join(sorted(list({m.norm for m in self.db.db})))
             )
         self.analysis_display.setText(self.db.analyze2str())
 

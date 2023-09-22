@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
 import codecs
 import re
-from typing import List, Optional
+from typing import Optional
 
 from anki.consts import CARD_TYPE_NEW
 from anki.notes import Note
@@ -18,7 +17,7 @@ from .util import get_filter
 seen_morphs = set()  # TODO: use the db instead
 
 
-def try_to_get_focus_morphs(note: Note) -> Optional[List[str]]:
+def try_to_get_focus_morphs(note: Note) -> Optional[list[str]]:
     try:
         focus_value = note[get_preference("Field_FocusMorph")].strip()
         if focus_value == "":
@@ -93,10 +92,8 @@ def my_next_card(self: Reviewer, _old) -> None:
 
         if focus_morphs is None:
             tooltip(
-                (
-                    "Encountered card without the 'focus morph' field configured in the preferences. Please check "
-                    "your MorphMan settings and note models."
-                )
+                "Encountered card without the 'focus morph' field configured in the preferences. Please check "
+                "your MorphMan settings and note models."
             )
             break
 

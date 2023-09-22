@@ -26,7 +26,7 @@ def get_size(obj, seen=None):
 ###############################################################################
 # Functional tools
 ###############################################################################
-class Memoize(object):
+class Memoize:
     """Decorator that memoizes a function"""
 
     def __init__(self, func):

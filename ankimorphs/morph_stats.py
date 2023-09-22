@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import gzip
 import pickle
 from functools import partial
@@ -21,7 +20,7 @@ def load_stats():
         data = pickle.load(file)
         file.close()
         return data
-    except IOError:  # file DNE => create it
+    except OSError:  # file DNE => create it
         return update_stats()
     except (
         ProfileNotYetLoadedException

@@ -74,7 +74,7 @@ def glob1(dirname, pattern):
         dirname = str(dirname, sys.getfilesystemencoding() or sys.getdefaultencoding())
     try:
         names = os.listdir(dirname)
-    except os.error:
+    except OSError:
         return []
     if pattern[0] != ".":
         names = [x for x in names if x[0] != "."]

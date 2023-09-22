@@ -28,7 +28,7 @@ def warn(msg):
 CLI_PROFILE_PATH: Optional[Union[bytes, str]] = None
 
 
-def profile_base_path():
+def profile_base_path() -> Optional[str]:
     """Dies if we can't find it."""
     if CLI_PROFILE_PATH is not None:
         return os.path.dirname(CLI_PROFILE_PATH)
@@ -43,9 +43,9 @@ def profile_base_path():
         os.path.expanduser("~/Anki"),
         os.path.expanduser("~/Documents/Anki"),
     ]
-    for data in candidates:
-        if os.path.exists(data):
-            return data
+    for path in candidates:
+        if os.path.exists(path):
+            return path
 
     die(
         """\
@@ -55,6 +55,7 @@ Try passing the profile folder explicitly with `--profile`.
 """
         % ("\n  ".join(candidates))
     )
+    return None
 
 
 def profile_path():
@@ -98,7 +99,7 @@ def cmd_dump(args):
 
     path = db_path(db_name)
     if not os.access(path, os.R_OK):
-        die("can't read db file: %s" % (path,))
+        die(f"can't read db file: {path}")
     db = MorphDb(path)  # pylint:disable=invalid-name
 
     for morph in list(db.db.keys()):
@@ -174,12 +175,12 @@ def main():
         default="mecab",
         choices=list(MIZERS.keys()),
         metavar="NAME",
-        help="how to split morphemes (%s) (default %s)"
+        help="how to split morphemes (%s) (default %s)"  # pylint:disable=consider-using-f-string
         % (", ".join(list(MIZERS.keys())), "mecab"),
     )
 
     args = parser.parse_args()
-    global CLI_PROFILE_PATH
+    global CLI_PROFILE_PATH  # pylint:disable=global-statement
     if args.profile is not None:
         CLI_PROFILE_PATH = os.path.expanduser(os.path.normpath(args.profile))
     args.action(args)
