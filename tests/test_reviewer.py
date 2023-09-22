@@ -64,6 +64,13 @@ def fake_environment():
     patch_preferences_config_py.stop()
     patch_show_skipped_cards.stop()
 
+    os.remove(collection_path_duplicate)
+
+    collection_path_duplicate_media = os.path.join(
+        os.getcwd(), "tests", "data", "duplicate_collection.media"
+    )
+    shutil.rmtree(collection_path_duplicate_media)
+
 
 def mock_get_config_py_preference(key):
     return FakeConfig().default[key]
