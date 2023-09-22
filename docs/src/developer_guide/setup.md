@@ -25,6 +25,8 @@
    ```
 
    pre-commit run --all-files or pre-commit run --a
+5. 
+6. https://flake8.pycqa.org/en/latest/
 
    You can run these commands in a terminal manually if you want, or you can set the script up to run automatically before commits by running `scripts/setup_dev.sh`. Alternatively, you
    can create a run configuration in your IDE to execute the script, that way you can easily run it at your convenience.
