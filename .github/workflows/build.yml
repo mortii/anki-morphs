@@ -29,7 +29,7 @@ jobs:
           source pyenv/bin/activate
         fi
         python -m pip install -r requirements.txt
-    - name: Lint
+    - name: Lint & Test
       shell: bash
       run: |
         if [ "${{ runner.os }}" = "Windows" ]; then
@@ -37,14 +37,4 @@ jobs:
         else
           source pyenv/bin/activate
         fi
-        export PYTHONPATH=./
-        python -m pylint ankimorphs tests -d W0611
-    - name: Test
-      shell: bash
-      run: |
-        if [ "${{ runner.os }}" = "Windows" ]; then
-          source pyenv/Scripts/activate
-        else
-          source pyenv/bin/activate
-        fi
-        pytest
+        pre-commit run --all-files
