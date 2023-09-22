@@ -36,5 +36,11 @@ repos:
               ankimorphs/config.py|
               tests/fake_preferences.py|
           )$
+      - id: pytest
+        name: pytest
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
 default_language_version:
   python: python3.11

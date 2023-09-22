@@ -1,3 +1,4 @@
+import os
 from unittest import mock
 
 import pytest
@@ -34,6 +35,12 @@ def fake_environment():
     patch_preferences_mw.stop()
     patch_morph_stats_mw.stop()
     patch_preferences_config_py.stop()
+
+    os.remove(mock_get_config_py_preference("path_all"))
+    os.remove(mock_get_config_py_preference("path_known"))
+    os.remove(mock_get_config_py_preference("path_mature"))
+    os.remove(mock_get_config_py_preference("path_seen"))
+    os.remove(mock_get_config_py_preference("path_stats"))
 
 
 def mock_get_config_py_preference(key):
