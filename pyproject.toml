@@ -1,15 +1,3 @@
-[tool.pylint."MASTER"]
-ignore = [
-    "deps", # morphemizers
-    "readability_settings_ui.py",
-    "adaptiveSubs.py",
-    "readability.py",
-    "readability_ui.py",
-    "preferencesDialog.py",
-    "fake_preferences.py",
-    "config.py"
-]
-
 [tool.pylint."MESSAGES CONTROL"]
 disable = """
     missing-module-docstring,
