@@ -5,24 +5,14 @@ MorphMan has significant technical-debt that needs to be paid off before adding 
 1. Expand automatic tests before refactoring the code
     * Add a test collection and match it after recalc
     * Add tests for readability analyzer functions
-    * https://pypa-build.readthedocs.io/en/stable/test_suite.html
-    * https://pypa-build.readthedocs.io/en/stable/index.html
-2. suuper clean!! https://github.com/sourcery-ai/python-best-practices-cookiecutter
-   * others: https://github.com/topics/cookiecutter-template
-   * https://stackoverflow.com/questions/46330327/how-are-pipfile-and-pipfile-lock-used
-   * https://packaging.python.org/en/latest/tutorials/packaging-projects/
-3. Add packages that incraese code quality
+2. Add packages that increase code quality
    * Add mypy and gradually increase its strictness.
    * Add [vulture](https://github.com/jendrikseipp/vulture)
-4. add isort to pre-commit: https://pycqa.github.io/isort/docs/configuration/pre-commit.html
-5. prune adaptiveSubs.py
-5. travis cli: https://docs.travis-ci.com/user/customizing-the-build/
-6. remove intrinsic macab 
-7. Rename to ankimorphs, figure out how to version the addon...
-8. Fix configs
+3. Remove intrinsic macab and jieba
+4. Fix configs
     * Migrate from config.py to [config.json and user_files](https://addon-docs.ankiweb.net/addon-config.html)
     * Refactor preferences.py and make configs more robust
-9. Fix recalc & databases
+5. Fix recalc & databases
     * It is in desperate need of some deep cleaning to make it less obfuscated.
     * Improve MMI
         * Separate the priorities and make them explicit and exclusive (collection frequency and frequency.txt)
@@ -34,8 +24,8 @@ MorphMan has significant technical-debt that needs to be paid off before adding 
         * The databases have unnecessarily overlapping data which make them less useful...
         * known.db is a misleading name, it contains all morphs ever seen.
         * Refactor morphemes.py and move the different classes into separate files instead.
-10. Improve file management
-     * mm.py, cli.py, and glob.py
-11. Make the focus morph field optional
-     * Adding a focus morph field to cards is a significant pain point in the setup process and it's not _strictly_
-       necessary for MorphMan to work
+6. Improve file management
+    * mm.py, cli.py, and glob.py
+7. Make the focus morph field optional
+    * Adding a focus morph field to cards is a significant pain point in the setup process and it's not _strictly_
+      necessary for MorphMan to work
