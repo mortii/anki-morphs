@@ -16,6 +16,7 @@ DEFAULT_COLOR = "#2F2"
 
 _NUM_GRAPHS = 0
 
+
 # an individual review of a card with a bucket_index representing the time period the review
 # occurred in (e.g. which day, month, etc.)
 CardReview = namedtuple(
