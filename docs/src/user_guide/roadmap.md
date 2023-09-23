@@ -24,8 +24,9 @@ MorphMan has significant technical-debt that needs to be paid off before adding 
         * The databases have unnecessarily overlapping data which make them less useful...
         * known.db is a misleading name, it contains all morphs ever seen.
         * Refactor morphemes.py and move the different classes into separate files instead.
-6. Improve file management
+6. Fix undo-review
+7. Improve file management
     * mm.py, cli.py, and glob.py
-7. Make the focus morph field optional
+8. Make the focus morph field optional
     * Adding a focus morph field to cards is a significant pain point in the setup process and it's not _strictly_
       necessary for MorphMan to work
