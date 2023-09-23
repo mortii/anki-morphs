@@ -14,7 +14,8 @@ from aqt.utils import tooltip
 from ankimorphs import morph_stats as stats
 from ankimorphs import util
 from ankimorphs.exceptions import NoteFilterFieldsException
-from ankimorphs.morphemes import AnkiDeck, Location, MorphDb, Morpheme, get_morphemes
+from ankimorphs.morph_db import MorphDb
+from ankimorphs.morphemes import AnkiDeck, Location, Morpheme, get_morphemes
 from ankimorphs.morphemizer import get_morphemizer_by_name
 from ankimorphs.preferences import get_preference, get_preferences
 from ankimorphs.util import (

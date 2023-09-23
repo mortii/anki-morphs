@@ -7,8 +7,8 @@ import sys
 from collections import Counter
 from typing import Optional, Union
 
-from .morphemes import MorphDb
-from .morphemizer import (
+from ankimorphs.morph_db import MorphDb
+from ankimorphs.morphemizer import (
     CjkCharMorphemizer,
     JiebaMorphemizer,
     MecabMorphemizer,

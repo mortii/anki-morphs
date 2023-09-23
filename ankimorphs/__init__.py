@@ -18,7 +18,7 @@ from ankimorphs import (
     reviewing_utils,
 )
 from ankimorphs.mecab_wrapper import get_morphemes_mecab
-from ankimorphs.morphemes import MorphDb
+from ankimorphs.morph_db import MorphDb
 from ankimorphs.preferences import get_preference, init_preferences
 
 # A bug in the anki module leads to cyclic imports if these are placed higher

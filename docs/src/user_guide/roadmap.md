@@ -2,17 +2,19 @@
 
 MorphMan has significant technical-debt that needs to be paid off before adding any new functionality.
 
-1. Expand automatic tests before refactoring the code
+1. Expand automatic tests
     * Add a test collection and match it after recalc
     * Add tests for readability analyzer functions
-2. Add packages that increase code quality
+2. Rebuild ui files
+3. Add packages that increase code quality
    * Add mypy and gradually increase its strictness.
    * Add [vulture](https://github.com/jendrikseipp/vulture)
-3. Remove intrinsic macab and jieba
-4. Fix configs
+4. Remove intrinsic macab and jieba
+5. Refactor morphmemes.py
+5. Fix configs
     * Migrate from config.py to [config.json and user_files](https://addon-docs.ankiweb.net/addon-config.html)
     * Refactor preferences.py and make configs more robust
-5. Fix recalc & databases
+6. Fix recalc & databases
     * It is in desperate need of some deep cleaning to make it less obfuscated.
     * Improve MMI
         * Separate the priorities and make them explicit and exclusive (collection frequency and frequency.txt)
@@ -24,9 +26,9 @@ MorphMan has significant technical-debt that needs to be paid off before adding 
         * The databases have unnecessarily overlapping data which make them less useful...
         * known.db is a misleading name, it contains all morphs ever seen.
         * Refactor morphemes.py and move the different classes into separate files instead.
-6. Fix undo-review
-7. Improve file management
+7. Fix undo-review
+8. Improve file management
     * mm.py, cli.py, and glob.py
-8. Make the focus morph field optional
+9. Make the focus morph field optional
     * Adding a focus morph field to cards is a significant pain point in the setup process and it's not _strictly_
       necessary for MorphMan to work
