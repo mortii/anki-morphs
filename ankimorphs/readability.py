@@ -19,14 +19,17 @@ from pathlib import Path
 
 from anki.utils import strip_html
 from aqt.qt import *
-from PyQt6 import QtNetwork, QtWebSockets
 
-from . import custom_table_widget, readability_settings_ui, readability_ui
-from .morphemes import MorphDb, Morpheme, alt_includes_morpheme, get_morphemes
-from .morphemizer import get_all_morphemizers
-from .preferences import get_preference as cfg
-from .preferences import update_preferences
-from .util import mw
+from ankimorphs import custom_table_widget, readability_settings_ui, readability_ui
+from ankimorphs.morph_db import MorphDb
+from ankimorphs.morphemes import Morpheme, alt_includes_morpheme, get_morphemes
+from ankimorphs.morphemizer import get_all_morphemizers
+from ankimorphs.preferences import get_preference as cfg
+from ankimorphs.preferences import update_preferences
+from ankimorphs.util import mw
+
+# from PyQt6 import QtNetwork, QtWebSockets
+
 
 importlib.reload(custom_table_widget)
 importlib.reload(readability_ui)

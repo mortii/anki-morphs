@@ -6,11 +6,11 @@ from aqt.browser import Browser
 from aqt.reviewer import RefreshNeeded
 from aqt.utils import tooltip
 
-from . import util
-from .morphemes import get_morphemes, ms2str
-from .morphemizer import get_morphemizer_by_name
-from .preferences import get_preference
-from .reviewing_utils import focus_query, try_to_get_focus_morphs
+from ankimorphs import util
+from ankimorphs.morphemes import get_morphemes, ms2str
+from ankimorphs.morphemizer import get_morphemizer_by_name
+from ankimorphs.preferences import get_preference
+from ankimorphs.reviewing_utils import focus_query, try_to_get_focus_morphs
 
 browser: Optional[Browser] = None
 

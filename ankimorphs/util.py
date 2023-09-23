@@ -8,8 +8,8 @@ from aqt import mw
 from aqt.qt.qt6 import QPushButton  # pylint:disable=no-name-in-module
 from aqt.utils import showCritical, showInfo
 
-from .morphemes import MorphDb
-from .preferences import get_preference
+from ankimorphs.morph_db import MorphDb
+from ankimorphs.preferences import get_preference
 
 _all_db = None  # pylint:disable=invalid-name
 

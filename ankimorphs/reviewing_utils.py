@@ -8,11 +8,12 @@ from aqt import dialogs
 from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
 
-from . import text_utils
-from .morphemes import MorphDb, get_morphemes
-from .morphemizer import get_morphemizer_by_name
-from .preferences import get_preference
-from .util import get_filter
+from ankimorphs import text_utils
+from ankimorphs.morph_db import MorphDb
+from ankimorphs.morphemes import get_morphemes
+from ankimorphs.morphemizer import get_morphemizer_by_name
+from ankimorphs.preferences import get_preference
+from ankimorphs.util import get_filter
 
 seen_morphs = set()  # TODO: use the db instead
 

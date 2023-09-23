@@ -4,10 +4,10 @@ from functools import partial
 
 from aqt.utils import tooltip
 
-from .exceptions import ProfileNotYetLoadedException
-from .morphemes import MorphDb
-from .preferences import get_preference as cfg
-from .util import mw
+from ankimorphs.exceptions import ProfileNotYetLoadedException
+from ankimorphs.morph_db import MorphDb
+from ankimorphs.preferences import get_preference as cfg
+from ankimorphs.util import mw
 
 
 def get_stat_path():

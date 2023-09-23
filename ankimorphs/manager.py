@@ -16,11 +16,11 @@ from PyQt6.QtWidgets import (  # pylint:disable=no-name-in-module
     QWidget,
 )
 
-from .morphemes import MorphDb
-from .morphemizer import get_all_morphemizers
-from .preferences import get_preference as cfg
-from .ui import MorphemizerComboBox
-from .util import error_msg, info_msg, mk_btn, mw
+from ankimorphs.morph_db import MorphDb
+from ankimorphs.morphemizer import get_all_morphemizers
+from ankimorphs.preferences import get_preference as cfg
+from ankimorphs.ui import MorphemizerComboBox
+from ankimorphs.util import error_msg, info_msg, mk_btn, mw
 
 
 def get_path(line_edit):  # LineEdit -> GUI ()
