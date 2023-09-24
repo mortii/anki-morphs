@@ -1,24 +1,29 @@
+import json
 import os
 import shutil
 from unittest import mock
 
 import pytest
-from anki import hooks
-from anki.collection import Collection
 from aqt import setupLangAndBackend
 from aqt.reviewer import Reviewer
 
-from ankimorphs import preferences, reviewing_utils
-from tests.fake_config import FakeConfig
+# A bug in the anki module leads to cyclic imports if these are placed higher
+from ankimorphs import (  # isort:skip pylint:disable=wrong-import-order
+    preferences,
+    reviewing_utils,
+)
+
+from anki import hooks  # isort:skip pylint:disable=wrong-import-order
+from anki.collection import Collection  # isort:skip pylint:disable=wrong-import-order
 
 
 @pytest.fixture
 def fake_environment():
-    collection_path_original = os.path.join(
-        os.getcwd(), "tests", "data", "collection.anki2"
-    )
-    collection_path_duplicate = os.path.join(
-        os.getcwd(), "tests", "data", "duplicate_collection.anki2"
+    tests_path = os.path.join(os.path.abspath("tests"), "data")
+    collection_path_original = os.path.join(tests_path, "collection.anki2")
+    collection_path_duplicate = os.path.join(tests_path, "duplicate_collection.anki2")
+    collection_path_duplicate_media = os.path.join(
+        tests_path, "duplicate_collection.media"
     )
 
     # If dst already exists, it will be replaced
@@ -29,51 +34,43 @@ def fake_environment():
     mock_mw.backend = setupLangAndBackend(
         pm=mock.Mock(name="fake_pm"), app=mock.Mock(name="fake_app"), force="en"
     )
+
+    _config_data = None
+    with open("ankimorphs/config.json", encoding="utf-8") as file:
+        _config_data = json.load(file)
+
+    mock_mw.addonManager.getConfig.return_value = _config_data
+
     mock_mw.reviewer = Reviewer(mock_mw)
     mock_mw.reviewer._showQuestion = lambda: None
 
     Reviewer.nextCard = hooks.wrap(
         Reviewer.nextCard, reviewing_utils.my_next_card, "around"
     )
-    # hooks.field_filter.append(reviewing_utils.highlight)
     Reviewer._shortcutKeys = hooks.wrap(
         Reviewer._shortcutKeys, reviewing_utils.my_reviewer_shortcut_keys, "around"
     )
 
-    mock_config_py = FakeConfig()
-
     mock_show_skipped_cards = mock.Mock(name="show_skipped_cards")
 
     patch_preferences_mw = mock.patch.object(preferences, "mw", mock_mw)
-    patch_preferences_config_py = mock.patch.object(
-        preferences, "config_py", mock_config_py
-    )
+
     patch_show_skipped_cards = mock.patch(
         "ankimorphs.reviewing_utils.SkippedCards.show_tooltip_of_skipped_cards",
         mock_show_skipped_cards,
     )
 
     patch_preferences_mw.start()
-    patch_preferences_config_py.start()
     patch_show_skipped_cards.start()
 
     yield mock_mw
 
     mock_mw.col.close()
     patch_preferences_mw.stop()
-    patch_preferences_config_py.stop()
     patch_show_skipped_cards.stop()
 
     os.remove(collection_path_duplicate)
-
-    collection_path_duplicate_media = os.path.join(
-        os.getcwd(), "tests", "data", "duplicate_collection.media"
-    )
     shutil.rmtree(collection_path_duplicate_media)
-
-
-def mock_get_config_py_preference(key):
-    return FakeConfig().default[key]
 
 
 def test_next_card(fake_environment):

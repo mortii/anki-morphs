@@ -5,6 +5,7 @@ import pickle
 import sqlite3
 
 import aqt
+from aqt import mw
 
 from ankimorphs.morpheme import Morpheme
 from ankimorphs.morphemes import (
@@ -88,7 +89,8 @@ class MorphDb:  # pylint:disable=too-many-instance-attributes,too-many-public-me
     def show_ms(self):  # Str
         return ms2str(sorted(self.db.items(), key=lambda it: it[0].show()))
 
-    def save(self, path):  # FilePath -> IO ()
+    def save(self, file_name):  # FilePath -> IO ()
+        path = os.path.join(mw.pm.profileFolder(), "dbs", file_name)
         par = os.path.split(path)[0]
         if not os.path.exists(par):
             os.makedirs(par)

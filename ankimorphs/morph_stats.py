@@ -1,10 +1,11 @@
 import gzip
+import os
 import pickle
 from functools import partial
+from typing import Optional
 
 from aqt.utils import tooltip
 
-from ankimorphs.exceptions import ProfileNotYetLoadedException
 from ankimorphs.morph_db import MorphDb
 from ankimorphs.preferences import get_preference as cfg
 from ankimorphs.util import mw
@@ -14,22 +15,25 @@ def get_stat_path():
     return cfg("path_stats")
 
 
-def load_stats():
+def load_stats() -> Optional[dict]:
     try:
-        file = gzip.open(get_stat_path())
+        mw.pm.profileFolder()
+    except TypeError:  # Profile not yet loaded
+        return None
+
+    try:
+        path = os.path.join(mw.pm.profileFolder(), get_stat_path())
+        file = gzip.open(path)
         data = pickle.load(file)
         file.close()
         return data
-    except OSError:  # file DNE => create it
-        return update_stats()
-    except (
-        ProfileNotYetLoadedException
-    ):  # profile not loaded yet, can't do anything but wait
+    except OSError:  # file did not exist
+        update_stats()
         return None
 
 
-def save_stats(data):
-    file = gzip.open(get_stat_path(), "wb")
+def save_stats(data) -> None:
+    file = gzip.open(os.path.join(mw.pm.profileFolder(), get_stat_path()), "wb")
     pickle.dump(data, file, -1)
     file.close()
 
@@ -56,7 +60,6 @@ def get_unique_morph_toolbar_stats():
         return "U ???", "???"
 
     unique_morphs = data.get("totalKnown", 0)
-
     name = f"U: {unique_morphs}"
     details = "U = Known Unique Morphs"
     return name, details
