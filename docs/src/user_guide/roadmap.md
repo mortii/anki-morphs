@@ -10,10 +10,7 @@ MorphMan has significant technical-debt that needs to be paid off before adding 
    * Add mypy and gradually increase its strictness.
    * Add [vulture](https://github.com/jendrikseipp/vulture)
 4. Remove intrinsic macab and jieba
-5. Refactor morphmemes.py
-5. Fix configs
-    * Migrate from config.py to [config.json and user_files](https://addon-docs.ankiweb.net/addon-config.html)
-    * Refactor preferences.py and make configs more robust
+5. Add advanced preferences tab
 6. Fix recalc & databases
     * It is in desperate need of some deep cleaning to make it less obfuscated.
     * Improve MMI
