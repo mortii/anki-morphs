@@ -19,12 +19,11 @@ from ankimorphs import (
 )
 from ankimorphs.mecab_wrapper import get_morphemes_mecab
 from ankimorphs.morph_db import MorphDb
-from ankimorphs.preferences import get_preference, init_preferences
+from ankimorphs.preferences import get_preference
 
 # A bug in the anki module leads to cyclic imports if these are placed higher
 import anki.stats  # isort:skip pylint:disable=wrong-import-order
 from anki import hooks  # isort:skip pylint:disable=wrong-import-order
-
 
 TOOL_MENU = "morphman_tool_menu"
 BROWSE_MENU = "morphman_browse_menu"
@@ -35,7 +34,15 @@ def main():
     # Support anki version 2.1.50 and above
     # Hooks should be placed in the order they are executed!
 
-    gui_hooks.profile_did_open.append(init_preferences)
+    # Adds the 'U: A:' to the toolbar
+    gui_hooks.top_toolbar_did_init_links.append(add_morph_stats_to_toolbar)
+
+    # TODO: create dbs if they don't exist to prevent bugs
+    # gui_hooks.profile_did_open.append(init_dbs)
+
+    # Update the toolbar stats
+    gui_hooks.profile_did_open.append(redraw_toolbar_wrapper)
+
     gui_hooks.profile_did_open.append(init_tool_menu_and_actions)
     gui_hooks.profile_did_open.append(replace_reviewer_functions)
     gui_hooks.profile_did_open.append(init_browser_menus_and_actions)
@@ -46,8 +53,10 @@ def main():
     # This stores the focus morphs seen today, necessary for the respective skipping option to work
     gui_hooks.reviewer_did_answer_card.append(mark_morph_seen_wrapper)
 
-    # Adds the 'U: A:' to the toolbar
-    gui_hooks.top_toolbar_did_init_links.append(add_morph_stats_to_toolbar)
+
+def redraw_toolbar_wrapper():
+    # wrapping this makes testing easier because we don't have to mock mw
+    mw.toolbar.draw()
 
 
 def init_tool_menu_and_actions():
@@ -246,12 +255,14 @@ def morph_graphs_wrapper(*args, **kwargs):
 
 
 def test_function() -> None:
-    known_db = MorphDb(get_preference("path_known"), ignore_errors=True)
+    # known_db = MorphDb(get_preference("path_known"), ignore_errors=True)
+    #
+    # for group in known_db.groups.values():
+    #     for _morph in group:
+    #         print("morph: ", _morph.inflected)
+    #     print("group break\n")
 
-    for group in known_db.groups.values():
-        for _morph in group:
-            print("morph: ", _morph.inflected)
-        print("group break\n")
+    mw.toolbar.draw()
 
 
 main()

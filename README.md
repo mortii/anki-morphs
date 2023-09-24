@@ -6,4 +6,6 @@
 
 Guide and docs: https://mortii.github.io/anki-morphs/
 
+Will eventually implement https://spacy.io/ 
+
 Estimated release: november 2023

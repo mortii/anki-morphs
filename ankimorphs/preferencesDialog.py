@@ -351,7 +351,7 @@ class PreferencesDialog(QDialog):
         modelComboBox = QComboBox()
         active = 0
         modelComboBox.addItem("All note types")
-        for i, model in enumerate(mw.col.models.allNames()):
+        for i, model in enumerate(mw.col.models.all_names()):
             if model == data["Type"]:
                 active = i + 1
             modelComboBox.addItem(model)

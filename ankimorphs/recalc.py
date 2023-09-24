@@ -182,7 +182,7 @@ def make_all_db(
         m_name = mid_cfg["Morphemizer"]
         morphemizer = get_morphemizer_by_name(m_name)
 
-        conf = partial(get_preference, model_id=mid)
+        conf = get_preference
 
         if conf("ignore maturity"):
             max_mat = 0
@@ -284,7 +284,6 @@ def update_notes(
         get_preference("Tag_Frequency"),
     )
     col_tags.register(tag_names)
-    bad_length_tag = get_preference("Tag_BadLength")
 
     # handle secondary databases
     mw.taskman.run_on_main(
@@ -419,7 +418,7 @@ def update_notes(
             continue
 
         # add bonus for morphs in priority.db and frequency.txt
-        conf = partial(get_preference, model_id=model_id)
+        conf = get_preference
 
         frequency_bonus = conf("frequency.txt bonus")
         if conf("Option_AlwaysPrioritizeFrequencyMorphs"):
@@ -610,10 +609,6 @@ def update_notes(
             model_id, fields_list, field_unmatures, ", ".join(u.base for u in unmatures)
         )
         set_field(model_id, fields_list, field_unknown_freq, f"{frequency_avg}")
-
-        # remove deprecated tag
-        if bad_length_tag is not None and bad_length_tag in tags_list:
-            tags_list.remove(bad_length_tag)
 
         # other tags
         if priority_tag in tags_list:
