@@ -28,6 +28,9 @@ from ankimorphs.util import (
 )
 from ankimorphs.util_external import Memoize
 
+from anki.cards import Card
+from anki.notes import Note
+
 
 @Memoize
 def get_field_index(field_name, mid) -> Optional[int]:
@@ -267,6 +270,137 @@ def get_frequency_map(frequency_list_path) -> dict:
         return _frequency_map
 
 
+def get_card_morphs(note: Note, note_filter, field_index) -> set[Morpheme]:
+    try:
+        morphemizer = get_morphemizer_by_name(note_filter["Morphemizer"])
+        expression = strip_html(note.fields[field_index])
+        _morphs = get_morphemes(morphemizer, expression)
+        # print(f"morphemizer: {morphemizer}")
+        # print(f"expression: {expression}")
+        # print(f"_morphs: {_morphs}")
+        return set(_morphs)
+    except KeyError:
+        return set()
+
+
+def get_note_types_to_use(_note_filter, _my_note_type):
+    note_types_to_use = []
+    for field_index, field in enumerate(_my_note_type["flds"]):
+        if field["name"] == _note_filter["Fields"][0]:
+            note_types_to_use.append((field_index, _my_note_type))
+    return note_types_to_use
+
+
+def get_included_mids():
+    included_types, include_all = get_modify_enabled_models()
+    return [
+        m["id"]
+        for m in mw.col.models.all()
+        if include_all or m["name"] in included_types
+    ]
+
+
+def recalc2():
+    included_note_types = get_included_mids()
+    note_type = mw.col.models.get(included_note_types[0])
+    note_filter = get_filter_by_mid_and_tags(note_type["id"], tags=[""])
+    note_types_to_use = get_note_types_to_use(note_filter, note_type)
+
+    branch_1 = 0
+    branch_2 = 0
+    branch_3 = 0
+
+    for field_index, _note_type in note_types_to_use:
+        card_ids = mw.col.find_cards(f"note:{note_type['name']}")
+        card_amount = len(card_ids)
+        for counter, card_id in enumerate(card_ids):
+            # print(f"counter: {counter}")
+            if counter % 1000 == 0:
+                mw.taskman.run_on_main(
+                    partial(
+                        mw.progress.update,
+                        label=f"Recalculated {counter} of {card_amount} cards ",
+                        value=counter,
+                        max=card_amount,
+                    )
+                )
+
+            if (counter + 1) % 3000 == 0:
+                print(
+                    f"branch_1: {branch_1}, branch_2: {branch_2}, branch_3: {branch_3}"
+                )
+                return
+
+            card = mw.col.get_card(card_id)
+            note = card.note()
+            morphemes = get_card_morphs(note, note_filter, field_index)
+            # print(f"morph len: {len(morphemes)}")
+
+            # Determine un-seen/known/mature and i+N
+            (
+                unseens_amount,
+                unknowns_amount,
+                unmatures_amount,
+                new_knowns_amount,
+            ) = get_morph_amounts(morphemes)
+
+            # print(
+            #     f"unseens_amount: {unseens_amount}, "
+            #     + f"unknowns_amount: {unknowns_amount}, "
+            #     + f"unmatures_amount: {unmatures_amount}, "
+            #     + f"new_knowns_amount: {new_knowns_amount}"
+            # )
+
+            skip_comprehension_cards = get_preference("Option_SkipComprehensionCards")
+
+            if unknowns_amount > 3:
+                # print("unknows_amount > 3")
+                branch_1 += 1
+                continue
+            if skip_comprehension_cards and unknowns_amount == 0:
+                # print("ukip_comprehension_cards and unknows_amount == 0:")
+                branch_2 += 1
+                continue
+
+            # print(f"passed both ifs")
+            branch_3 += 1
+
+
+def get_morph_amounts(morphemes):
+    db_path = os.path.join(mw.pm.profileFolder(), "dbs")
+    seen_db_path = os.path.join(db_path, get_preference("path_seen"))
+    known_db_path = os.path.join(db_path, get_preference("path_known"))
+    mature_db_path = os.path.join(db_path, get_preference("path_mature"))
+
+    seen_db = MorphDb(seen_db_path, ignore_errors=True)
+    known_db = MorphDb(known_db_path, ignore_errors=True)
+    mature_db = MorphDb(mature_db_path, ignore_errors=True)
+
+    proper_nouns_known = get_preference("Option_ProperNounsAlreadyKnown")
+
+    unseens, unknowns, un_matures, new_knowns = set(), set(), set(), set()
+    for morpheme in morphemes:
+        if proper_nouns_known and morpheme.is_proper_noun():
+            continue
+        morpheme = morpheme.deinflected()
+        if not seen_db.matches(morpheme):
+            unseens.add(morpheme)
+        if not known_db.matches(morpheme):
+            unknowns.add(morpheme)
+        if not mature_db.matches(morpheme):
+            un_matures.add(morpheme)
+            if known_db.matches(morpheme):
+                new_knowns.add(morpheme)
+
+    # Determine MMI - Morph Man Index
+    unseens_amount = len(unseens)
+    unknowns_amount = len(unknowns)
+    unmatures_amount = len(un_matures)
+    new_knowns_amount = len(new_knowns)
+
+    return unseens_amount, unknowns_amount, unmatures_amount, new_knowns_amount
+
+
 def recalc():  # pylint:disable=too-many-branches,too-many-statements,too-many-locals
     # t_0 = time.time()
     now = int_time()
@@ -395,10 +529,9 @@ def recalc():  # pylint:disable=too-many-branches,too-many-statements,too-many-l
     print(f"ids {card_ids}")
 
     for card_id in card_ids:
-        card = mw.col.get_card(card_id)
+        card = mw.col.get_card(card_id, _note_filter)
         print(f"card.due: {card.due}")
-
-    return None
+        morphs = get_card_morphs(card, no)
 
     # pylint:disable=consider-using-f-string
     query = """
@@ -779,7 +912,8 @@ def main_background_op(collection: Collection):
 
     # TODO: 'Known' is a horrendously bad name for this db... it actually contains every morph that has ever been
     #  seen, so it is super misleading... rename it to something better like 'learned' or 'unmature'
-    recalc()
+    # recalc()
+    recalc2()
 
     print("running main4")
 
