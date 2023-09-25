@@ -43,7 +43,7 @@ class Morpheme:
         self.inflected = data["inflected"]
         self.read = data["read"]
         self.pos = data["pos"]
-        self.sub_pos = data["subPos"]
+        self.sub_pos = data["sub_pos"]
 
     def __eq__(self, other):
         return all(

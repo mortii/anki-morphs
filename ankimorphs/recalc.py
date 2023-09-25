@@ -1,5 +1,7 @@
 import csv
 import itertools
+import os
+import pprint
 import time
 from functools import partial
 from typing import Optional, Union
@@ -12,7 +14,6 @@ from aqt.operations import QueryOp
 from aqt.utils import tooltip
 
 from ankimorphs import morph_stats as stats
-from ankimorphs import util
 from ankimorphs.exceptions import NoteFilterFieldsException
 from ankimorphs.morph_db import MorphDb
 from ankimorphs.morphemes import AnkiDeck, Location, Morpheme, get_morphemes
@@ -243,12 +244,35 @@ def filter_db_by_mat(db, mat):  # pylint:disable=invalid-name
     return new_db
 
 
-def update_notes(
-    all_db,
-):  # pylint:disable=too-many-branches,too-many-statements,too-many-locals
+def get_frequency_map(frequency_list_path) -> dict:
+    _frequency_map = {}
+    try:
+        with open(frequency_list_path, encoding="utf-8-sig") as csvfile:
+            csvreader = csv.reader(csvfile, delimiter="\t")
+            rows = list(csvreader)
+
+            if rows[0][0] == "#study_plan_frequency":
+                _frequency_map = dict(
+                    zip(
+                        [
+                            Morpheme(row[0], row[1], row[2], row[3], row[4], row[5])
+                            for row in rows[1:]
+                        ],
+                        itertools.count(0),
+                    )
+                )
+            else:
+                _frequency_map = dict(zip([row[0] for row in rows], itertools.count(0)))
+    except (FileNotFoundError, IndexError):
+        return _frequency_map
+
+
+def recalc():  # pylint:disable=too-many-branches,too-many-statements,too-many-locals
     # t_0 = time.time()
     now = int_time()
     db = mw.col.db  # pylint:disable=invalid-name
+
+    print(f"mw.col.db: {mw.col.db}")
 
     col_tags: TagManager = mw.col.tags
     _notes_to_update = []
@@ -258,32 +282,34 @@ def update_notes(
         partial(mw.progress.start, label="Updating data", immediate=True)
     )
 
+    all_db_path = os.path.join(mw.pm.profileFolder(), "dbs", get_preference("path_all"))
+    all_db = MorphDb(all_db_path, ignore_errors=True)
+
     fid_db = all_db.fid_db(recalc=True)
     loc_db: dict[Location, set[Morpheme]] = all_db.loc_db(recalc=False)
 
-    # read tag names
-    (
-        comp_tag,
-        vocab_tag,
-        fresh_tag,
-        not_ready_tag,
-        already_known_tag,  # pylint:disable=unused-variable
-        priority_tag,
-        too_short_tag,
-        too_long_tag,
-        frequency_tag,
-    ) = tag_names = (
-        get_preference("Tag_Comprehension"),
-        get_preference("Tag_Vocab"),
-        get_preference("Tag_Fresh"),
-        get_preference("Tag_NotReady"),
-        get_preference("Tag_AlreadyKnown"),
-        get_preference("Tag_Priority"),
-        get_preference("Tag_TooShort"),
-        get_preference("Tag_TooLong"),
-        get_preference("Tag_Frequency"),
+    comp_tag = get_preference("Tag_Comprehension")
+    vocab_tag = get_preference("Tag_Vocab")
+    fresh_tag = get_preference("Tag_Fresh")
+    not_ready_tag = get_preference("Tag_NotReady")
+    already_known_tag = get_preference(  # pylint:disable=unused-variable
+        "Tag_AlreadyKnown"
     )
-    col_tags.register(tag_names)
+    priority_tag = get_preference("Tag_Priority")
+    too_short_tag = get_preference("Tag_TooShort")
+    too_long_tag = get_preference("Tag_TooLong")
+    frequency_tag = get_preference("Tag_Frequency")
+
+    field_focus_morph = get_preference("Field_FocusMorph")
+    field_unknown_count = get_preference("Field_UnknownMorphCount")
+    field_unmature_count = get_preference("Field_UnmatureMorphCount")
+    field_morph_man_index = get_preference("Field_MorphManIndex")
+    field_unknowns = get_preference("Field_Unknowns")
+    field_unmatures = get_preference("Field_Unmatures")
+    field_unknown_freq = get_preference("Field_UnknownFreq")
+    field_focus_morph_pos = get_preference("Field_FocusMorphPos")
+    skip_comprehension_cards = get_preference("Option_SkipComprehensionCards")
+    skip_fresh_cards = get_preference("Option_SkipFreshVocabCards")
 
     # handle secondary databases
     mw.taskman.run_on_main(
@@ -300,50 +326,16 @@ def update_notes(
     mw.taskman.run_on_main(partial(mw.progress.update, label="Loading frequency.txt"))
 
     frequency_list_path = get_preference("path_frequency")
-    frequency_map = {}
-    frequency_list_exists = False
-
-    try:
-        with open(frequency_list_path, encoding="utf-8-sig") as csvfile:
-            csvreader = csv.reader(csvfile, delimiter="\t")
-            rows = list(csvreader)
-
-            if rows[0][0] == "#study_plan_frequency":
-                frequency_list_exists = True
-                frequency_map = dict(
-                    zip(
-                        [
-                            Morpheme(row[0], row[1], row[2], row[3], row[4], row[5])
-                            for row in rows[1:]
-                        ],
-                        itertools.count(0),
-                    )
-                )
-            else:
-                frequency_map = dict(zip([row[0] for row in rows], itertools.count(0)))
-
-    except (FileNotFoundError, IndexError):
-        pass
-
+    frequency_map = get_frequency_map(frequency_list_path)
+    frequency_list_exists = bool(frequency_map)
     frequency_list_length = len(frequency_map)
-
-    # prefetch cfg for fields
-    field_focus_morph = get_preference("Field_FocusMorph")
-    field_unknown_count = get_preference("Field_UnknownMorphCount")
-    field_unmature_count = get_preference("Field_UnmatureMorphCount")
-    field_morph_man_index = get_preference("Field_MorphManIndex")
-    field_unknowns = get_preference("Field_Unknowns")
-    field_unmatures = get_preference("Field_Unmatures")
-    field_unknown_freq = get_preference("Field_UnknownFreq")
-    field_focus_morph_pos = get_preference("Field_FocusMorphPos")
-
-    skip_comprehension_cards = get_preference("Option_SkipComprehensionCards")
-    skip_fresh_cards = get_preference("Option_SkipFreshVocabCards")
 
     # Find all morphs that changed maturity and the notes that refer to them.
     last_maturities = all_db.meta.get("last_maturities", {})
     new_maturities = {}
     refresh_notes = set()
+
+    print(f"last_maturities: {last_maturities}")
 
     # Recompute everything if preferences changed.
     last_preferences = all_db.meta.get("last_preferences", {})
@@ -374,12 +366,39 @@ def update_notes(
                     if isinstance(loc, AnkiDeck):
                         refresh_notes.add(loc.note_id)
 
+    # print(f"get_modify_enabled_models(): {get_modify_enabled_models()}")
+
     included_types, include_all = get_modify_enabled_models()
     included_mids = [
         m["id"]
         for m in mw.col.models.all()
         if include_all or m["name"] in included_types
     ]
+
+    print(f"included_mids: {included_mids}")
+
+    _my_note_type = mw.col.models.get(included_mids[0])
+    print(f"_my_note_type: {pprint.pprint(_my_note_type)}")
+
+    _note_filter = get_filter_by_mid_and_tags(_my_note_type["id"], tags=[""])
+
+    note_types_to_use = []
+    for field in _my_note_type["flds"]:
+        print(
+            f"field.name: {field['name']}, note_filter['Fields']: {_note_filter['Fields'][0]}"
+        )
+        if field["name"] == _note_filter["Fields"][0]:
+            print("HIT!")
+            note_types_to_use.append(_my_note_type)
+
+    card_ids = mw.col.find_cards(f"note:{_my_note_type['name']}")
+    print(f"ids {card_ids}")
+
+    for card_id in card_ids:
+        card = mw.col.get_card(card_id)
+        print(f"card.due: {card.due}")
+
+    return None
 
     # pylint:disable=consider-using-f-string
     query = """
@@ -398,6 +417,12 @@ def update_notes(
 
     notes_amount = len(query_results)
 
+    print(f"notes_amount: {notes_amount}")
+
+    branch_1 = 0
+    branch_2 = 0
+    branch_3 = 0
+
     for i, (note_id, model_id, fields, guid, tags, max_type) in enumerate(
         query_results
     ):
@@ -413,8 +438,11 @@ def update_notes(
                 )
             )
 
-        note_cfg = get_filter_by_mid_and_tags(model_id, tags_list)
-        if note_cfg is None or not note_cfg["Modify"]:
+        note_filter = get_filter_by_mid_and_tags(model_id, tags_list)
+
+        # print(f"note_cfg: {note_cfg}")
+
+        if note_filter is None or not note_filter["Modify"]:
             continue
 
         # add bonus for morphs in priority.db and frequency.txt
@@ -429,14 +457,36 @@ def update_notes(
         priority_db_weight = conf("priority.db weight")
         proper_nouns_known = get_preference("Option_ProperNounsAlreadyKnown")
 
+        # Fill in various fields/tags on the note based on cfg
+        fields_list = split_fields(fields)
+
+        # clear any 'special' tags, the appropriate will be set in the next few lines
+        tags_list = [
+            t
+            for t in tags_list
+            if t not in (not_ready_tag, comp_tag, vocab_tag, fresh_tag)
+        ]
+
         # Get all morphemes for note
         morphemes = set()
-        for field_name in note_cfg["Fields"]:
-            try:
-                loc = fid_db[(note_id, guid, field_name)]
-                morphemes.update(loc_db[loc])
-            except KeyError:
-                continue
+
+        # for field_name in note_filter["Fields"]:
+        try:
+            # pprint.pprint(fields)
+
+            morphemizer = get_morphemizer_by_name(note_filter["Morphemizer"])
+            expression = strip_html(fields_list[get_sort_field_index(model_id)])
+
+            morphemes.add(get_morphemes(morphemizer, expression))
+            # print(f"note_id: {note_id}")
+            # print(f"guid: {guid}")
+            # print(f"field_name: {field_name}")
+
+            # loc = fid_db[(note_id, guid, field_name)]
+            print(f"morphemes: {morphemes}")
+            # morphemes.update(loc_db[loc])
+        except KeyError:
+            continue
 
         # Determine un-seen/known/mature and i+N
         unseens, unknowns, unmatures, new_knowns = set(), set(), set(), set()
@@ -464,12 +514,21 @@ def update_notes(
         morphman_index = 2147483647
         note_id_morphman_index[note_id] = morphman_index
 
+        # print(f"unknows_amount: {unknows_amount}")
+
         # Bail early if card has more than 3 unknown morphs for lite update
         # TODO: Add to preferences GUI to make it adjustable
         if unknows_amount > 3:
+            # print("unknows_amount > 3")
+            branch_1 += 1
             continue
         if skip_comprehension_cards and unknows_amount == 0:
+            # print("ukip_comprehension_cards and unknows_amount == 0:")
+            branch_2 += 1
             continue
+
+        # print(f"passed both ifs")
+        branch_3 += 1
 
         is_priority = False
         is_frequency = False
@@ -527,16 +586,6 @@ def update_notes(
             max(0, morphemes_amount - conf("max good sentence length")),
         )
         len_diff = min(9, abs(len_diff_raw))
-
-        # Fill in various fields/tags on the note based on cfg
-        fields_list = split_fields(fields)
-
-        # clear any 'special' tags, the appropriate will be set in the next few lines
-        tags_list = [
-            t
-            for t in tags_list
-            if t not in (not_ready_tag, comp_tag, vocab_tag, fresh_tag)
-        ]
 
         # apply penalty for cards that aren't prioritized for learning
         if not (is_priority or is_frequency):
@@ -694,20 +743,18 @@ def update_notes(
         # printf('Updated %d notes + saved dbs in %f sec' % (N_notes, time.time() - t_0))
 
     mw.taskman.run_on_main(mw.progress.finish)
+
+    print(f"branch_1: {branch_1}, branch_2: {branch_2}, branch_3: {branch_3}")
+
     return known_db
 
 
 def main():
-    print(f"recalc main pre, mw.inMainThread(): {mw.inMainThread()}")
-
     operation = QueryOp(
         parent=mw,
         op=main_background_op,
         success=lambda t: tooltip("Finished Recalc"),  # t = return value of the op
     )
-
-    # if with_progress() is not called, no progress window will be shown.
-    # note: QueryOp.with_progress() was broken until Anki 2.1.50
     operation.with_progress().run_in_background()
     operation.failure(on_failure)
 
@@ -720,41 +767,28 @@ def main_background_op(collection: Collection):
     mw.taskman.run_on_main(
         partial(mw.progress.start, label="Loading existing all.db", immediate=True)
     )
-    current_all_db = util.get_all_db() if get_preference("loadAllDb") else None
+    # current_all_db = util.get_all_db() if get_preference("loadAllDb") else None
     mw.taskman.run_on_main(mw.progress.finish)
 
     print("running main2")
 
     # update all.db
-    all_db = make_all_db(current_all_db)
+    # all_db = make_all_db(current_all_db)
 
     print("running main3")
 
-    # merge in external.db
-    mw.taskman.run_on_main(
-        partial(mw.progress.start, label="Merging ext.db", immediate=True)
-    )
-    ext = MorphDb(get_preference("path_ext"), ignore_errors=True)
-    all_db.merge(ext)
-    mw.taskman.run_on_main(mw.progress.finish)
-
-    print("running main3.5")
-
     # TODO: 'Known' is a horrendously bad name for this db... it actually contains every morph that has ever been
     #  seen, so it is super misleading... rename it to something better like 'learned' or 'unmature'
-    known_db = update_notes(all_db)
+    recalc()
 
     print("running main4")
 
     # update stats and refresh display
-    stats.update_stats(known_db)
+    stats.update_stats()
 
     print("running main5")
 
     mw.taskman.run_on_main(mw.toolbar.draw)
-
-    # set global allDb
-    util._all_db = all_db
 
     print("running main6")
 

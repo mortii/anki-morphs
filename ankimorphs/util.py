@@ -38,8 +38,7 @@ def get_filter(note: Note) -> Optional[dict]:
     return get_filter_by_type_and_tags(note_type, note.tags)
 
 
-def get_filter_by_mid_and_tags(mid, tags):
-    # type: (Any, List[str]) -> Optional[Dict[...]]
+def get_filter_by_mid_and_tags(mid: Any, tags: List[str]) -> Optional[dict]:
     return get_filter_by_type_and_tags(mw.col.models.get(mid)["name"], tags)
 
 

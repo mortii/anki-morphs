@@ -224,7 +224,7 @@ class MorphDb:  # pylint:disable=too-many-instance-attributes,too-many-public-me
 
     # Analysis (global)
     def loc_db(self, recalc: bool = True) -> dict[Location, set[Morpheme]]:
-        if hasattr(self, "_locDb") and not recalc:
+        if hasattr(self, "_loc_db") and not recalc:
             return self._loc_db  # pylint: disable=E0203 # pylint is wrong
         self._loc_db = data = {}  # type: Dict[Location, Set[Morpheme]]
         for morph, locs in self.db.items():
@@ -236,22 +236,26 @@ class MorphDb:  # pylint:disable=too-many-instance-attributes,too-many-public-me
         return data
 
     def fid_db(self, recalc=True):  # Maybe Bool -> m Map FactId Location
-        if hasattr(self, "_fidDb") and not recalc:
+        if hasattr(self, "_fid_db") and not recalc:
             return self._fid_db  # pylint: disable=E0203 # pylint is wrong
         self._fid_db = data = {}
-        for loc in self.loc_db():
+        for loc in self.loc_db():  # loc: AnkiDeck
+            # print(f"loc in fid: {loc}")
             try:
-                data[(loc.noteId, loc.guid, loc.fieldName)] = loc
+                # print(f"loc.noteId: {loc.note_id}")
+                data[(loc.note_id, loc.guid, loc.field_name)] = loc
+                # print("not AttributeError")
             except AttributeError:
                 pass  # location isn't an anki fact
         return data
 
     def count_by_type(self):  # Map Pos Int
-        data = {}
-        # for morph in self.db.keys():
-        for morph in self.db.values():
-            morph.pos = data.get(morph.pos, 0) + 1
-        return data
+        count = {}
+        for morph in self.db:
+            # print(f"key: {morph}")
+            count[morph.pos] = count.get(morph.pos, 0) + 1
+        # print(f"data: {count}")
+        return count
 
     def analyze(self):  # m ()
         self.pos_break_down = self.count_by_type()
