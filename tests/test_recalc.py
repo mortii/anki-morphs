@@ -56,7 +56,7 @@ def fake_environment():
 
     patch_get_filter_by_mid_and_tags = mock.patch(
         "ankimorphs.recalc.get_filter_by_mid_and_tags",
-        lambda x, y: {
+        lambda x, tags: {
             "Type": "morphman_sub2srs",
             "Tags": [],
             "Fields": ["Japanese"],

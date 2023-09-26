@@ -300,6 +300,13 @@ def get_included_mids():
     ]
 
 
+def get_card_difficulty() -> int:
+    # morphman_index = 2147483647
+    # note_id_morphman_index[note_id] = morphman_index
+    difficulty = 2147483647
+    return difficulty
+
+
 def recalc2():
     included_note_types = get_included_mids()
     note_type = mw.col.models.get(included_note_types[0])
@@ -325,7 +332,7 @@ def recalc2():
                     )
                 )
 
-            if (counter + 1) % 3000 == 0:
+            if (counter + 1) % 100 == 0:
                 print(
                     f"branch_1: {branch_1}, branch_2: {branch_2}, branch_3: {branch_3}"
                 )
@@ -353,6 +360,10 @@ def recalc2():
 
             skip_comprehension_cards = get_preference("Option_SkipComprehensionCards")
 
+            card_difficulty = get_card_difficulty()
+            card.due = card_difficulty
+            mw.col.update_card(card)
+
             if unknowns_amount > 3:
                 # print("unknows_amount > 3")
                 branch_1 += 1
@@ -364,6 +375,9 @@ def recalc2():
 
             # print(f"passed both ifs")
             branch_3 += 1
+
+            # make sure no cards have the same due
+            # reshuffle_cards()
 
 
 def get_morph_amounts(morphemes):
@@ -913,18 +927,23 @@ def main_background_op(collection: Collection):
     # TODO: 'Known' is a horrendously bad name for this db... it actually contains every morph that has ever been
     #  seen, so it is super misleading... rename it to something better like 'learned' or 'unmature'
     # recalc()
-    recalc2()
 
-    print("running main4")
+    # gete_morphhemes is the slowest part of the recalc,
+    # if they instead are stored in a database then it would be bypassed
+    # cashe_card_morphemes()
 
-    # update stats and refresh display
-    stats.update_stats()
-
-    print("running main5")
-
-    mw.taskman.run_on_main(mw.toolbar.draw)
-
-    print("running main6")
+    # recalc2()
+    #
+    # print("running main4")
+    #
+    # # update stats and refresh display
+    # stats.update_stats()
+    #
+    # print("running main5")
+    #
+    # mw.taskman.run_on_main(mw.toolbar.draw)
+    #
+    # print("running main6")
 
 
 def on_failure(_exception: Union[Exception, NoteFilterFieldsException]):
