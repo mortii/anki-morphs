@@ -9,7 +9,6 @@ from aqt.utils import tooltip
 
 from ankimorphs import (
     browser_utils,
-    manager,
     morph_stats,
     preferencesDialog,
     recalc,
@@ -156,7 +155,7 @@ def add_morph_stats_to_toolbar(links, toolbar) -> None:
 
 def create_morphman_tool_menu() -> QMenu:
     assert mw is not None
-    morphman_tool_menu = QMenu("MorphMan", mw)
+    morphman_tool_menu = QMenu("AnkiMorphs", mw)
     morphman_tool_menu_creation_action = mw.form.menuTools.addMenu(morphman_tool_menu)
     morphman_tool_menu_creation_action.setObjectName(TOOL_MENU)
     return morphman_tool_menu
@@ -175,16 +174,6 @@ def create_preferences_action() -> QAction:
     action.setStatusTip("Change inspected cards, fields and tags")
     action.setShortcut("Ctrl+O")
     action.triggered.connect(preferencesDialog.main)
-    return action
-
-
-def create_database_manager_action() -> QAction:
-    action = QAction("&Database Manager", mw)
-    action.setStatusTip(
-        "Open gui manager to inspect, compare, and analyze MorphMan DBs"
-    )
-    action.setShortcut("Ctrl+D")
-    action.triggered.connect(manager.main)
     return action
 
 
