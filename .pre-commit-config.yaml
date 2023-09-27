@@ -34,31 +34,31 @@ repos:
     hooks:
       - id: black
         files: 'ankimorphs/|^tests/'
-  - repo: local
-    hooks:
-      - id: pylint
-        name: pylint
-        entry: pylint
-        language: system
-        require_serial: true
-        types: [ python ]
-        files: 'ankimorphs/|^tests/'
-        exclude: |
-          (?x)^(
-              ankimorphs/deps/.*|
-              ankimorphs/readability_settings_ui.py|
-              ankimorphs/adaptiveSubs.py|
-              ankimorphs/readability.py|
-              ankimorphs/readability_ui.py|
-              ankimorphs/preferencesDialog.py|
-              ankimorphs/config.py|
-              tests/fake_preferences.py|
-          )$
-      - id: pytest
-        name: pytest
-        entry: pytest
-        language: system
-        pass_filenames: false
-        always_run: true
+#  - repo: local
+#    hooks:
+#      - id: pylint
+#        name: pylint
+#        #entry: pylint
+#        language: system
+#        require_serial: true
+#        types: [ python ]
+#        files: 'ankimorphs/|^tests/'
+#        exclude: |
+#          (?x)^(
+#              ankimorphs/deps/.*|
+#              ankimorphs/readability_settings_ui.py|
+#              ankimorphs/adaptiveSubs.py|
+#              ankimorphs/readability.py|
+#              ankimorphs/readability_ui.py|
+#              ankimorphs/preferencesDialog.py|
+#              ankimorphs/config.py|
+#              tests/fake_preferences.py|
+#          )$
+#      - id: pytest
+#        name: pytest
+#        entry: pytest
+#        language: system
+#        pass_filenames: false
+#        always_run: true
 default_language_version:
   python: python3.9

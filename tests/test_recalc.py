@@ -4,11 +4,10 @@ import shutil
 from unittest import mock
 
 import pytest
-
 from aqt import setupLangAndBackend
 
-
 from ankimorphs import get_preference, morph_db, morph_stats, preferences, recalc
+
 from anki.collection import Collection  # isort:skip pylint:disable=wrong-import-order
 
 

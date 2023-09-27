@@ -2,19 +2,20 @@ import csv
 import itertools
 import os
 import pprint
-import sqlite3
 import time
 from functools import partial
 from typing import Optional, Union
 
+from anki.cards import Card
 from anki.collection import Collection
 from anki.models import FieldDict, NotetypeDict
+from anki.notes import Note
 from anki.tags import TagManager
 from anki.utils import field_checksum, int_time, join_fields, split_fields, strip_html
 from aqt.operations import QueryOp
 from aqt.utils import tooltip
 
-from ankimorphs import morph_stats as stats
+from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.exceptions import NoteFilterFieldsException
 from ankimorphs.morph_db import MorphDb
 from ankimorphs.morphemes import AnkiDeck, Location, Morpheme, get_morphemes
@@ -28,9 +29,6 @@ from ankimorphs.util import (
     mw,
 )
 from ankimorphs.util_external import Memoize
-
-from anki.cards import Card
-from anki.notes import Note
 
 
 @Memoize
@@ -267,6 +265,7 @@ def get_frequency_map(frequency_list_path) -> dict:
                 )
             else:
                 _frequency_map = dict(zip([row[0] for row in rows], itertools.count(0)))
+        return _frequency_map
     except (FileNotFoundError, IndexError):
         return _frequency_map
 
@@ -908,20 +907,18 @@ def main():
 
 
 def cache_card_morphemes():
-    # use card id as primary key and morphs as values
-    # also check for updates to expression field, if so cache it again.
+    # check for updates to expression field, if so cache it again.
     included_note_types = get_included_mids()
     note_type = mw.col.models.get(included_note_types[0])
     note_filter = get_filter_by_mid_and_tags(note_type["id"], tags=[""])
     note_types_to_use = get_note_types_to_use(note_filter, note_type)
 
-    card_morph_dict = {}
+    card_morph_dict_lists = []
 
     for field_index, _note_type in note_types_to_use:
         card_ids = mw.col.find_cards(f"note:{note_type['name']}")
         card_amount = len(card_ids)
         for counter, card_id in enumerate(card_ids):
-            # print(f"counter: {counter}")
             if counter % 1000 == 0:
                 mw.taskman.run_on_main(
                     partial(
@@ -935,21 +932,48 @@ def cache_card_morphemes():
             card = mw.col.get_card(card_id)
             note = card.note()
             morphemes = get_card_morphs(note, note_filter, field_index)
-            card_morph_dict[card_id] = morphemes
+            card_morphs = []
 
-    for key in card_morph_dict:
-        print(f"key: {key}, morph: {card_morph_dict[key]}")
+            for morph in morphemes:
+                morph_dict = {
+                    "norm": morph.norm,
+                    "base": morph.base,
+                    "inflected": morph.inflected,
+                    "read": morph.read,
+                    "pos": morph.pos,
+                    "sub_pos": morph.sub_pos,
+                    "is_base": True if morph.norm == morph.inflected else False,
+                }
+                morph_dict["id"] = AnkiMorphsDB.get_morph_hash(morph_dict)
+                card_morphs.append(morph_dict)
 
-    con = sqlite3.connect("cards.db")
-    with con:
-        con.executemany(
-            "INSERT OR IGNORE INTO cards2 VALUES(:id, :morphs)", card_morph_dict
+            card_morphs_dict = {"card_id": card_id, "morphs_list": card_morphs}
+            card_morph_dict_lists.append(card_morphs_dict)
+
+    morph_table_data = []
+    card_table_data = []
+    card_morphs_table_data = []
+
+    for counter, card_morphs_dict in enumerate(card_morph_dict_lists):
+        print(counter)
+        counter += 1
+        card_table_data.append(
+            {"id": card_morphs_dict["card_id"], "just_reviewed": False}
         )
+        for morph in card_morphs_dict["morphs_list"]:
+            morph_table_data.append(morph)
+            card_morph = {
+                "card_id": card_morphs_dict["card_id"],
+                "morph_id": morph["id"],
+            }
+            card_morphs_table_data.append(card_morph)
 
-    for row in con.execute("SELECT id, morphs FROM cards2"):
-        # print(f"row: {row}")
-        _id, morphs = row
-        print(f"id: {_id}, morphs: {morphs}")
+    am_db = AnkiMorphsDB()
+    am_db.insert_many_into_morph_table(morph_table_data)
+    am_db.insert_many_into_card_table(card_table_data)
+    am_db.insert_many_into_card_morph_table(card_morphs_table_data)
+    # am_db.print_table({})
+    am_db.con.close()
 
 
 def main_background_op(collection: Collection):
@@ -960,15 +984,7 @@ def main_background_op(collection: Collection):
     mw.taskman.run_on_main(
         partial(mw.progress.start, label="Loading existing all.db", immediate=True)
     )
-    # current_all_db = util.get_all_db() if get_preference("loadAllDb") else None
     mw.taskman.run_on_main(mw.progress.finish)
-
-    print("running main2")
-
-    # update all.db
-    # all_db = make_all_db(current_all_db)
-
-    print("running main3")
 
     # TODO: 'Known' is a horrendously bad name for this db... it actually contains every morph that has ever been
     #  seen, so it is super misleading... rename it to something better like 'learned' or 'unmature'

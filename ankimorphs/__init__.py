@@ -1,6 +1,3 @@
-# TODO: importlib is seemingly used to patch over and disguise veeeeery bad bugs... remove its usages and fix the bugs
-import importlib
-
 from aqt import gui_hooks, mw
 from aqt.browser import Browser
 from aqt.qt import QAction, QMenu  # pylint:disable=no-name-in-module
@@ -14,6 +11,7 @@ from ankimorphs import (
     recalc,
     reviewing_utils,
 )
+from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.mecab_wrapper import get_morphemes_mecab
 from ankimorphs.morph_db import MorphDb
 from ankimorphs.preferences import get_preference
@@ -34,7 +32,7 @@ def main():
     # Adds the 'U: A:' to the toolbar
     gui_hooks.top_toolbar_did_init_links.append(add_morph_stats_to_toolbar)
 
-    # TODO: create dbs if they don't exist to prevent bugs
+    # TODO: create dbs if they don't exist to prevent bugs?
     # gui_hooks.profile_did_open.append(init_dbs)
 
     # Update the toolbar stats
@@ -60,12 +58,10 @@ def init_tool_menu_and_actions():
 
     recalc_action = create_recalc_action()
     preferences_action = create_preferences_action()
-    database_manager_action = create_database_manager_action()
 
     morphman_tool_menu = create_morphman_tool_menu()
     morphman_tool_menu.addAction(recalc_action)
     morphman_tool_menu.addAction(preferences_action)
-    morphman_tool_menu.addAction(database_manager_action)
 
     test_action = create_test_action()
     morphman_tool_menu.addAction(test_action)
@@ -225,7 +221,14 @@ def test_function() -> None:
     #         print("morph: ", _morph.inflected)
     #     print("group break\n")
 
-    mw.toolbar.draw()
+    am_db = AnkiMorphsDB()
+    # am_db.testing_morphs_db()
+    # am_db.create_cards_table()
+    # am_db.insert_card_db()
+    # print(f"created card morph table?: {am_db.create_card_morph_table()}")
+    # am_db.insert_card_morph_table()
+    am_db.print_table({"table_name": "morph"})
+    am_db.con.close()
 
 
 main()
