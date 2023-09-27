@@ -9,7 +9,6 @@ from aqt.utils import tooltip
 
 from ankimorphs import (
     browser_utils,
-    graphs,
     manager,
     morph_stats,
     preferencesDialog,
@@ -45,9 +44,6 @@ def main():
     gui_hooks.profile_did_open.append(init_tool_menu_and_actions)
     gui_hooks.profile_did_open.append(replace_reviewer_functions)
     gui_hooks.profile_did_open.append(init_browser_menus_and_actions)
-
-    # See morph stats by holding 'Shift'-key while pressing 'Stats' in toolbar
-    gui_hooks.profile_did_open.append(add_morph_stats_to_ease_graph)
 
     # This stores the focus morphs seen today, necessary for the respective skipping option to work
     gui_hooks.reviewer_did_answer_card.append(mark_morph_seen_wrapper)
@@ -158,12 +154,6 @@ def add_morph_stats_to_toolbar(links, toolbar) -> None:
     )
 
 
-def add_morph_stats_to_ease_graph() -> None:
-    anki.stats.CollectionStats.easeGraph = hooks.wrap(
-        anki.stats.CollectionStats.easeGraph, morph_graphs_wrapper, "around"
-    )
-
-
 def create_morphman_tool_menu() -> QMenu:
     assert mw is not None
     morphman_tool_menu = QMenu("MorphMan", mw)
@@ -236,11 +226,6 @@ def create_test_action() -> QAction:
     action.setShortcut("Ctrl+T")
     action.triggered.connect(test_function)
     return action
-
-
-def morph_graphs_wrapper(*args, **kwargs):
-    importlib.reload(graphs)
-    return graphs.morph_graphs(args, kwargs)
 
 
 def test_function() -> None:
