@@ -2,6 +2,7 @@ import csv
 import itertools
 import os
 import pprint
+import sqlite3
 import time
 from functools import partial
 from typing import Optional, Union
@@ -906,6 +907,51 @@ def main():
     operation.failure(on_failure)
 
 
+def cache_card_morphemes():
+    # use card id as primary key and morphs as values
+    # also check for updates to expression field, if so cache it again.
+    included_note_types = get_included_mids()
+    note_type = mw.col.models.get(included_note_types[0])
+    note_filter = get_filter_by_mid_and_tags(note_type["id"], tags=[""])
+    note_types_to_use = get_note_types_to_use(note_filter, note_type)
+
+    card_morph_dict = {}
+
+    for field_index, _note_type in note_types_to_use:
+        card_ids = mw.col.find_cards(f"note:{note_type['name']}")
+        card_amount = len(card_ids)
+        for counter, card_id in enumerate(card_ids):
+            # print(f"counter: {counter}")
+            if counter % 1000 == 0:
+                mw.taskman.run_on_main(
+                    partial(
+                        mw.progress.update,
+                        label=f"Recalculated {counter} of {card_amount} cards ",
+                        value=counter,
+                        max=card_amount,
+                    )
+                )
+
+            card = mw.col.get_card(card_id)
+            note = card.note()
+            morphemes = get_card_morphs(note, note_filter, field_index)
+            card_morph_dict[card_id] = morphemes
+
+    for key in card_morph_dict:
+        print(f"key: {key}, morph: {card_morph_dict[key]}")
+
+    con = sqlite3.connect("cards.db")
+    with con:
+        con.executemany(
+            "INSERT OR IGNORE INTO cards2 VALUES(:id, :morphs)", card_morph_dict
+        )
+
+    for row in con.execute("SELECT id, morphs FROM cards2"):
+        # print(f"row: {row}")
+        _id, morphs = row
+        print(f"id: {_id}, morphs: {morphs}")
+
+
 def main_background_op(collection: Collection):
     assert mw is not None
 
@@ -930,7 +976,7 @@ def main_background_op(collection: Collection):
 
     # gete_morphhemes is the slowest part of the recalc,
     # if they instead are stored in a database then it would be bypassed
-    # cashe_card_morphemes()
+    cache_card_morphemes()
 
     # recalc2()
     #

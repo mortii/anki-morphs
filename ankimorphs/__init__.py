@@ -13,7 +13,6 @@ from ankimorphs import (
     manager,
     morph_stats,
     preferencesDialog,
-    readability,
     recalc,
     reviewing_utils,
 )
@@ -67,13 +66,11 @@ def init_tool_menu_and_actions():
     recalc_action = create_recalc_action()
     preferences_action = create_preferences_action()
     database_manager_action = create_database_manager_action()
-    readability_analyzer_action = create_readability_analyzer_action()
 
     morphman_tool_menu = create_morphman_tool_menu()
     morphman_tool_menu.addAction(recalc_action)
     morphman_tool_menu.addAction(preferences_action)
     morphman_tool_menu.addAction(database_manager_action)
-    morphman_tool_menu.addAction(readability_analyzer_action)
 
     test_action = create_test_action()
     morphman_tool_menu.addAction(test_action)
@@ -198,14 +195,6 @@ def create_database_manager_action() -> QAction:
     )
     action.setShortcut("Ctrl+D")
     action.triggered.connect(manager.main)
-    return action
-
-
-def create_readability_analyzer_action() -> QAction:
-    action = QAction("Readability &Analyzer", mw)
-    action.setStatusTip("Check readability and build frequency lists")
-    action.setShortcut("Ctrl+A")
-    action.triggered.connect(readability.main)
     return action
 
 
