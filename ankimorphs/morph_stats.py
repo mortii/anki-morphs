@@ -6,7 +6,6 @@ from typing import Optional
 
 from aqt.utils import tooltip
 
-from ankimorphs.morph_db import MorphDb
 from ankimorphs.preferences import get_preference as cfg
 from ankimorphs.util import mw
 
@@ -45,7 +44,8 @@ def update_stats(known_db=None):
 
     # Load known.db and get total morphemes known
     if known_db is None:
-        known_db = MorphDb(cfg("path_known"), ignore_errors=True)
+        pass
+        # known_db = MorphDb(cfg("path_known"), ignore_errors=True)
 
     data = {"totalVariations": len(known_db.db), "totalKnown": len(known_db.groups)}
 

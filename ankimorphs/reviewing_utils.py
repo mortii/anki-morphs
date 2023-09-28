@@ -9,7 +9,6 @@ from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
 
 from ankimorphs import text_utils
-from ankimorphs.morph_db import MorphDb
 from ankimorphs.morphemes import get_morphemes
 from ankimorphs.morphemizer import get_morphemizer_by_name
 from ankimorphs.preferences import get_preference
@@ -183,56 +182,56 @@ def highlight(  # pylint:disable=too-many-locals
     """When a field is marked with the 'focusMorph' command, we format it by
     wrapping all the morphemes in <span>s with attributes set to its maturity"""
 
-    if note_filter != "morphHighlight":
-        return txt
-
-    frequency_list_path = get_preference("path_frequency")
-    try:
-        with codecs.open(frequency_list_path, encoding="utf-8") as file:
-            frequency_list = [line.strip().split("\t")[0] for line in file.readlines()]
-    except FileNotFoundError:
-        frequency_list = []
-
-    note = ctx.note()
-    tags = note.string_tags()
-
-    note_filter = get_filter(note)
-    if note_filter is None:
-        return txt
-
-    morphemizer = get_morphemizer_by_name(note_filter["Morphemizer"])
-    if morphemizer is None:
-        return txt
-
-    proper_nouns_known = get_preference("Option_ProperNounsAlreadyKnown")
-
-    # TODO: store these somewhere fitting to avoid instantiating them every function call
-    known_db = MorphDb(path=get_preference("path_known"))
-    mature_db = MorphDb(path=get_preference("path_mature"))
-    priority_db = MorphDb(get_preference("path_priority"), ignore_errors=True).db
-
-    morphemes = get_morphemes(morphemizer, txt, tags)
-
-    # Avoid formatting a smaller morph that is contained in a bigger morph, reverse sort fixes this
-    sorted_morphs = sorted(morphemes, key=lambda x: len(x.inflected), reverse=True)
-
-    for morph in sorted_morphs:
-        if proper_nouns_known and morph.is_proper_noun():
-            maturity = "none"
-        elif mature_db.matches(morph):
-            maturity = "mature"
-        elif known_db.matches(morph):  # TODO: fix knowndb...
-            maturity = "unmature"
-        else:
-            maturity = "unknown"
-
-        priority = "true" if morph in priority_db else "false"
-
-        focus_morph_string = morph.show().split()[0]
-        frequency = "true" if focus_morph_string in frequency_list else "false"
-
-        replacement = f'<span class="morphHighlight" mtype="{maturity}" priority="{priority}" frequency="{frequency}"">\\1</span>'
-        txt = text_utils.non_span_sub(f"({morph.inflected})", replacement, txt)
+    # if note_filter != "morphHighlight":
+    #     return txt
+    #
+    # frequency_list_path = get_preference("path_frequency")
+    # try:
+    #     with codecs.open(frequency_list_path, encoding="utf-8") as file:
+    #         frequency_list = [line.strip().split("\t")[0] for line in file.readlines()]
+    # except FileNotFoundError:
+    #     frequency_list = []
+    #
+    # note = ctx.note()
+    # tags = note.string_tags()
+    #
+    # note_filter = get_filter(note)
+    # if note_filter is None:
+    #     return txt
+    #
+    # morphemizer = get_morphemizer_by_name(note_filter["Morphemizer"])
+    # if morphemizer is None:
+    #     return txt
+    #
+    # proper_nouns_known = get_preference("Option_ProperNounsAlreadyKnown")
+    #
+    # # TODO: store these somewhere fitting to avoid instantiating them every function call
+    # known_db = MorphDb(path=get_preference("path_known"))
+    # mature_db = MorphDb(path=get_preference("path_mature"))
+    # priority_db = MorphDb(get_preference("path_priority"), ignore_errors=True).db
+    #
+    # morphemes = get_morphemes(morphemizer, txt, tags)
+    #
+    # # Avoid formatting a smaller morph that is contained in a bigger morph, reverse sort fixes this
+    # sorted_morphs = sorted(morphemes, key=lambda x: len(x.inflected), reverse=True)
+    #
+    # for morph in sorted_morphs:
+    #     if proper_nouns_known and morph.is_proper_noun():
+    #         maturity = "none"
+    #     elif mature_db.matches(morph):
+    #         maturity = "mature"
+    #     elif known_db.matches(morph):  # TODO: fix knowndb...
+    #         maturity = "unmature"
+    #     else:
+    #         maturity = "unknown"
+    #
+    #     priority = "true" if morph in priority_db else "false"
+    #
+    #     focus_morph_string = morph.show().split()[0]
+    #     frequency = "true" if focus_morph_string in frequency_list else "false"
+    #
+    #     replacement = f'<span class="morphHighlight" mtype="{maturity}" priority="{priority}" frequency="{frequency}"">\\1</span>'
+    #     txt = text_utils.non_span_sub(f"({morph.inflected})", replacement, txt)
 
     return txt
 

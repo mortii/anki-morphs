@@ -8,23 +8,7 @@ from aqt import mw
 from aqt.qt.qt6 import QPushButton  # pylint:disable=no-name-in-module
 from aqt.utils import showCritical, showInfo
 
-from ankimorphs.morph_db import MorphDb
 from ankimorphs.preferences import get_preference
-
-_all_db = None  # pylint:disable=invalid-name
-
-
-def get_all_db() -> MorphDb:
-    global _all_db  # pylint:disable=global-statement
-
-    # Force reload if all.db got deleted
-    all_db_path = get_preference("path_all")
-    reload = not path.isfile(all_db_path)
-
-    if reload or (_all_db is None):
-        _all_db = MorphDb(all_db_path, ignore_errors=True)
-    return _all_db
-
 
 ###############################################################################
 # Preferences

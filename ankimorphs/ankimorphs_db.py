@@ -48,7 +48,6 @@ class AnkiMorphsDB:
                 )
                 return True
         except sqlite3.OperationalError:
-            # except KeyError:
             return False  # already exists, etc.
 
     def create_morph_table(self) -> bool:
@@ -190,10 +189,6 @@ class AnkiMorphsDB:
                     card_morph_list,
                 )
 
-            # with self.con:
-            #     for row in self.con.execute("SELECT * FROM morph"):
-            #         print(f"row: {row}")
-
             return True
         except sqlite3.IntegrityError:
             # except KeyError:
@@ -201,49 +196,25 @@ class AnkiMorphsDB:
 
     @staticmethod
     def get_morph_hash(morph: dict) -> int:
-        #  https://stackoverflow.com/questions/22029012/probability-of-64bit-hash-code-collisions
+        # sqllite integers are max 2^(63)-1 = 9,223,372,036,854,775,807
+        # The chance of hash collision is 50% when sqrt(2^(n/2)) where n is bits of the hash
+        # With 64 bits the prob of collision
+        # becomes sqrt(2^(64/2)) = 65,536
         byte_string = (morph["norm"] + morph["inflected"]).encode()
         hash_int = int.from_bytes(hashlib.sha256(byte_string).digest()[:7], "little")
         return hash_int
 
-    def testing_morphs_db(self):
-        self.create_morph_table()
-
-        test_morph = {
-            "norm": "a",
-            "base": "b",
-            "inflected": "c",
-            "read": "d",
-            "pos": "e",
-            "sub_pos": "f",
-            "is_base": False,
-        }
-
-        test_morph["id"] = self.get_morph_hash(test_morph)
-
-        self.insert_into_morph_table(test_morph)
-
-        for row in self.con.execute("SELECT * FROM morph"):
-            print(f"row: {row}")
-
-        # self.con.close()
-
-    def insert_card_db(self):
-        test_card = {"id": 35, "just_reviewed": False}
-
-        self.insert_into_card_table(test_card)
-
-        for row in self.con.execute("SELECT * FROM card"):
-            print(f"row: {row}")
-
-    def insert_card_morph_table(self):
-        test_card_morph = {"card_id": 35, "morph_id": 2801410083479028}
-
-        self.insert_into_card_morph_table(test_card_morph)
-
-        for row in self.con.execute("SELECT * FROM card_morph"):
-            print(f"row: {row}")
-
     def print_table(self, table):
         for row in self.con.execute("SELECT * FROM card_morph"):
             print(f"row: {row}")
+
+    def test_insert_card(self, card_dict):
+        try:
+            with self.con:
+                self.con.execute(
+                    "INSERT OR IGNORE INTO card_morph VALUES(:id, :just_reviewed)",
+                    card_dict,
+                )
+        # except sqlite3.IntegrityError:
+        except KeyError:
+            return False  # already exists

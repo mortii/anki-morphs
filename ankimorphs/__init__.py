@@ -13,7 +13,6 @@ from ankimorphs import (
 )
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.mecab_wrapper import get_morphemes_mecab
-from ankimorphs.morph_db import MorphDb
 from ankimorphs.preferences import get_preference
 
 # A bug in the anki module leads to cyclic imports if these are placed higher
@@ -30,7 +29,7 @@ def main():
     # Hooks should be placed in the order they are executed!
 
     # Adds the 'U: A:' to the toolbar
-    gui_hooks.top_toolbar_did_init_links.append(add_morph_stats_to_toolbar)
+    # gui_hooks.top_toolbar_did_init_links.append(add_morph_stats_to_toolbar)
 
     # TODO: create dbs if they don't exist to prevent bugs?
     # gui_hooks.profile_did_open.append(init_dbs)
@@ -227,7 +226,11 @@ def test_function() -> None:
     # am_db.insert_card_db()
     # print(f"created card morph table?: {am_db.create_card_morph_table()}")
     # am_db.insert_card_morph_table()
-    am_db.print_table({"table_name": "morph"})
+    # am_db.print_table({"table_name": "morph"})
+    # am_db.test_insert_card({"id": 9223372036854775807, "just_reviewed": False})
+    with am_db.con:
+        result = am_db.con.execute("SELECT count(*) FROM morph")
+        print(f"morphs: {result.fetchall()}")
     am_db.con.close()
 
 
