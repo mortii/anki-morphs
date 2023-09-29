@@ -10,6 +10,7 @@ from ankimorphs import (
     preferences_dialog,
     recalc,
     reviewing_utils,
+    tab_widget,
 )
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.mecab_wrapper import get_morphemes_mecab
@@ -168,7 +169,8 @@ def create_preferences_action() -> QAction:
     action = QAction("&Preferences", mw)
     action.setStatusTip("Change inspected cards, fields and tags")
     action.setShortcut("Ctrl+O")
-    action.triggered.connect(preferences_dialog.main)
+    # action.triggered.connect(preferences_dialog.main)
+    action.triggered.connect(tab_widget.main)
     return action
 
 
