@@ -1,18 +1,13 @@
 import codecs
 import datetime
-from os import path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from anki.notes import Note
 from aqt import mw
-from aqt.qt.qt6 import QPushButton  # pylint:disable=no-name-in-module
+from aqt.qt import QPushButton  # pylint:disable=no-name-in-module
 from aqt.utils import showCritical, showInfo
 
 from ankimorphs.preferences import get_preference
-
-###############################################################################
-# Preferences
-###############################################################################
 
 
 # Filters are the 'note filter' option in morphman gui preferences on which note types they want morphman to handle
@@ -27,6 +22,7 @@ def get_filter_by_mid_and_tags(mid: Any, tags: list[str]) -> Optional[dict]:
 
 
 def get_filter_by_type_and_tags(note_type: str, note_tags: list[str]) -> Optional[dict]:
+    # TODO NEVER ALLOW NONE?
     for note_filter in get_preference("Filter"):
         if (
             note_type == note_filter["Type"] or note_filter["Type"] is None
@@ -86,13 +82,3 @@ def printf(msg):
 def clear_log():
     with codecs.open(get_preference("path_log"), "w", "utf-8"):
         pass
-
-
-###############################################################################
-# Qt helper functions
-###############################################################################
-def mk_btn(txt, _function, parent):
-    _btn = QPushButton(txt)
-    _btn.clicked.connect(_function)
-    parent.addWidget(_btn)
-    return _btn

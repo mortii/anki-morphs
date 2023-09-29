@@ -50,7 +50,7 @@ repos:
 #              ankimorphs/adaptiveSubs.py|
 #              ankimorphs/readability.py|
 #              ankimorphs/readability_ui.py|
-#              ankimorphs/preferencesDialog.py|
+#              ankimorphs/preferences_dialog.py|
 #              ankimorphs/config.py|
 #              tests/fake_preferences.py|
 #          )$

@@ -7,7 +7,7 @@ from aqt.utils import tooltip
 from ankimorphs import (
     browser_utils,
     morph_stats,
-    preferencesDialog,
+    preferences_dialog,
     recalc,
     reviewing_utils,
 )
@@ -168,7 +168,7 @@ def create_preferences_action() -> QAction:
     action = QAction("&Preferences", mw)
     action.setStatusTip("Change inspected cards, fields and tags")
     action.setShortcut("Ctrl+O")
-    action.triggered.connect(preferencesDialog.main)
+    action.triggered.connect(preferences_dialog.main)
     return action
 
 
@@ -221,16 +221,16 @@ def test_function() -> None:
     #     print("group break\n")
 
     am_db = AnkiMorphsDB()
-    # am_db.testing_morphs_db()
-    # am_db.create_cards_table()
-    # am_db.insert_card_db()
-    # print(f"created card morph table?: {am_db.create_card_morph_table()}")
-    # am_db.insert_card_morph_table()
-    # am_db.print_table({"table_name": "morph"})
-    # am_db.test_insert_card({"id": 9223372036854775807, "just_reviewed": False})
     with am_db.con:
-        result = am_db.con.execute("SELECT count(*) FROM morph")
+        result = am_db.con.execute("SELECT count(*) FROM Card WHERE type=3")
         print(f"morphs: {result.fetchall()}")
+
+    with am_db.con:
+        result = am_db.con.execute(
+            "SELECT * FROM Card_Morph_Map WHERE card_id=1691325537329"
+        )
+        print(f"Card_Morph_Map: {result.fetchall()}")
+
     am_db.con.close()
 
 
