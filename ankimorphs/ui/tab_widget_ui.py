@@ -9,29 +9,28 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
-class Ui_Form:
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(400, 300)
-        self.tabWidget = QtWidgets.QTabWidget(parent=Form)
-        self.tabWidget.setGeometry(QtCore.QRect(90, 50, 127, 80))
-        self.tabWidget.setObjectName("tabWidget")
-        self.tab = QtWidgets.QWidget()
-        self.tab.setObjectName("tab")
-        self.tabWidget.addTab(self.tab, "")
-        self.tab_2 = QtWidgets.QWidget()
-        self.tab_2.setObjectName("tab_2")
-        self.tabWidget.addTab(self.tab_2, "")
+class Ui_Dialog:
+    def setupUi(self, Dialog):
+        Dialog.setObjectName("Dialog")
+        Dialog.resize(400, 300)
+        self.buttonBox = QtWidgets.QDialogButtonBox(parent=Dialog)
+        self.buttonBox.setGeometry(QtCore.QRect(30, 240, 341, 32))
+        self.buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
+        self.buttonBox.setStandardButtons(
+            QtWidgets.QDialogButtonBox.StandardButton.Cancel
+            | QtWidgets.QDialogButtonBox.StandardButton.Ok
+        )
+        self.buttonBox.setObjectName("buttonBox")
+        self.label = QtWidgets.QLabel(parent=Dialog)
+        self.label.setGeometry(QtCore.QRect(100, 120, 57, 14))
+        self.label.setObjectName("label")
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(Dialog)
+        self.buttonBox.accepted.connect(Dialog.accept)  # type: ignore
+        self.buttonBox.rejected.connect(Dialog.reject)  # type: ignore
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
 
-    def retranslateUi(self, Form):
+    def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tab), _translate("Form", "Tab 1")
-        )
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tab_2), _translate("Form", "Tab 2")
-        )
+        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        self.label.setText(_translate("Dialog", "TextLabel"))

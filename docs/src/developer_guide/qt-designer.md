@@ -19,3 +19,5 @@ Start Qt Designer with the command:
 https://www.pythontutorial.net/pyqt/qt-designer/
 
 https://realpython.com/qt-designer-python/
+
+https://www.pythonguis.com/tutorials/pyqt6-first-steps-qt-designer/
