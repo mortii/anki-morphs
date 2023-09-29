@@ -1,9 +1,8 @@
 *.pyc
 .vscode
 .venv
+.designer-venv
 .DS_Store
 meta.json
 .idea
 docs/book
-profile.scope
-ankimorphs.db

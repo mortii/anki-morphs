@@ -3,11 +3,11 @@ authors = ["mortii"]
 language = "en"
 multilingual = false
 src = "src"
-title = "Morphman"
+title = "AnkiMorphs"
 
 [output.html]
-git-repository-url = "https://github.com/kaegi/MorphMan"
-edit-url-template = "https://github.com/mortii/MorphMan/edit/website/docs/{path}"
+git-repository-url = "https://github.com/mortii/anki-morphs"
+edit-url-template = "hhttps://github.com/mortii/anki-morphs/edit/website/docs/{path}"
 additional-css = ["src/custom.css"]
 
 [output.html.fold]
