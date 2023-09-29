@@ -161,9 +161,9 @@ def browse_same_focus(self, vocab_tag=False):  # 3
 
 
 def my_reviewer_shortcut_keys(self: Reviewer, _old):
-    key_browse = get_preference("browse same focus key")
-    key_browse_non_vocab = get_preference("browse same focus key non vocab")
-    key_skip = get_preference("set known and skip key")
+    key_browse = get_preference("shortcut_browse_same_focus_morph")
+    key_browse_non_vocab = get_preference("shortcut_browse_same_focus_morph_all")
+    key_skip = get_preference("shortcut_set_known_and_skip")
 
     keys = _old(self)
     keys.extend(

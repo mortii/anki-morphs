@@ -7,10 +7,10 @@ from aqt.utils import tooltip
 from ankimorphs import (
     browser_utils,
     morph_stats,
+    new_preferences_dialog,
     preferences_dialog,
     recalc,
     reviewing_utils,
-    tab_widget,
 )
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.mecab_wrapper import get_morphemes_mecab
@@ -170,14 +170,14 @@ def create_preferences_action() -> QAction:
     action.setStatusTip("Change inspected cards, fields and tags")
     action.setShortcut("Ctrl+O")
     # action.triggered.connect(preferences_dialog.main)
-    action.triggered.connect(tab_widget.main)
+    action.triggered.connect(new_preferences_dialog.main)
     return action
 
 
 def create_learn_now_action():
     action = QAction("&Learn Card Now", mw)
     action.setStatusTip("Immediately review the selected new cards")
-    action.setShortcut(get_preference("set learn now key"))
+    action.setShortcut(get_preference("shortcut_learn_now"))
     action.triggered.connect(browser_utils.run_learn_card_now)
     return action
 
@@ -185,7 +185,7 @@ def create_learn_now_action():
 def create_browse_morph_action():
     action = QAction("&Browse Same Morphs", mw)
     action.setStatusTip("Browse all notes containing the morphs from selected notes")
-    action.setShortcut(get_preference("browse same focus key"))
+    action.setShortcut(get_preference("shortcut_browse_same_focus_morph"))
     action.triggered.connect(browser_utils.run_browse_morph)
     return action
 
@@ -193,7 +193,7 @@ def create_browse_morph_action():
 def create_view_morphs_action() -> QAction:
     action = QAction("&View Morphemes", mw)
     action.setStatusTip("View Morphemes for selected note")
-    action.setShortcut(get_preference("set view morphemes key"))
+    action.setShortcut(get_preference("shortcut_view_morphemes"))
     action.triggered.connect(browser_utils.run_view_morphs)
     return action
 
@@ -201,7 +201,7 @@ def create_view_morphs_action() -> QAction:
 def create_already_known_tagger_action():
     action = QAction("&Tag As Known", mw)
     action.setStatusTip("Tag all selected cards as already known")
-    action.setShortcut(get_preference("set known and skip key"))
+    action.setShortcut(get_preference("shortcut_set_known_and_skip"))
     action.triggered.connect(browser_utils.run_already_known_tagger)
     return action
 

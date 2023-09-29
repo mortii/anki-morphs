@@ -978,6 +978,7 @@ def cache_card_morphemes():
     # TODO create a separate tools menu option "Delete Cache".
     # TODO reset cache after preferences changed
     # TODO check make_all_db for any missing pieces (preference settings, etc)
+    # TODO check for added or removed cards
 
     """
     Extracting morphs from cards is expensive so caching them yields a significant

@@ -26,6 +26,7 @@
 - [Changelog](user_guide/changelog.md)
 - [Known Problems](user_guide/known-problems.md)
 - [Roadmap](user_guide/roadmap.md)
+- [FAQ](user_guide/faq.md)
 
 # Developer Guide
 - [Setup](developer_guide/setup.md)

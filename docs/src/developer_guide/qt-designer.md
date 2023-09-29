@@ -15,9 +15,13 @@ Start Qt Designer with the command:
 ./designer-venv/lib/python3.9/site-packages/qt6_applications/Qt/bin/designer
 ```
 
-
-https://www.pythontutorial.net/pyqt/qt-designer/
+Start Qt Designer with the command:
+```bash
+pyuic6 -o ankimorphs/ui/preferences_dialog_ui.py ankimorphs/ui/preferences_dialog.ui
+```
 
 https://realpython.com/qt-designer-python/
 
-https://www.pythonguis.com/tutorials/pyqt6-first-steps-qt-designer/
+https://www.pythontutorial.net/pyqt/qt-designer/
+
+https://doc.qt.io/qt-6/modelview.html

@@ -21,21 +21,17 @@ from aqt.qt import (
 )
 from aqt.utils import tooltip
 
-from ankimorphs.morphemizer import get_all_morphemizers
-from ankimorphs.preferences import get_preference, update_preferences
-from ankimorphs.ui import MorphemizerComboBox
-from ankimorphs.ui.tab_widget_ui import Ui_Dialog
+from ankimorphs.ui.preferences_dialog_ui import Ui_Dialog
 
 
-class AnalyzerDialog(QDialog):
+class PreferencesDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-
         self.mw = parent
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
 
 
 def main():
-    mw.ankimorphs_preferences = AnalyzerDialog(mw)
-    mw.ankimorphs_preferences.exec()
+    mw.ankimorphs_preferences_dialog = PreferencesDialog(mw)
+    mw.ankimorphs_preferences_dialog.exec()
