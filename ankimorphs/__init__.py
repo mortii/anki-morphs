@@ -13,8 +13,8 @@ from ankimorphs import (
     reviewing_utils,
 )
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
+from ankimorphs.config import get_config
 from ankimorphs.mecab_wrapper import get_morphemes_mecab
-from ankimorphs.preferences import get_preference
 
 # A bug in the anki module leads to cyclic imports if these are placed higher
 import anki.stats  # isort:skip pylint:disable=wrong-import-order
@@ -163,7 +163,7 @@ def create_recalc_action() -> QAction:
 
 
 def create_preferences_action() -> QAction:
-    action = QAction("&Preferences", mw)
+    action = QAction("&Settings", mw)
     action.setStatusTip("Change inspected cards, fields and tags")
     action.setShortcut("Ctrl+O")
     # action.triggered.connect(preferences_dialog.main)
@@ -174,7 +174,7 @@ def create_preferences_action() -> QAction:
 def create_learn_now_action():
     action = QAction("&Learn Card Now", mw)
     action.setStatusTip("Immediately review the selected new cards")
-    action.setShortcut(get_preference("shortcut_learn_now"))
+    action.setShortcut(get_config("shortcut_learn_now"))
     action.triggered.connect(browser_utils.run_learn_card_now)
     return action
 
@@ -182,7 +182,7 @@ def create_learn_now_action():
 def create_browse_morph_action():
     action = QAction("&Browse Same Morphs", mw)
     action.setStatusTip("Browse all notes containing the morphs from selected notes")
-    action.setShortcut(get_preference("shortcut_browse_same_focus_morph"))
+    action.setShortcut(get_config("shortcut_browse_same_focus_morph"))
     action.triggered.connect(browser_utils.run_browse_morph)
     return action
 
@@ -190,7 +190,7 @@ def create_browse_morph_action():
 def create_view_morphs_action() -> QAction:
     action = QAction("&View Morphemes", mw)
     action.setStatusTip("View Morphemes for selected note")
-    action.setShortcut(get_preference("shortcut_view_morphemes"))
+    action.setShortcut(get_config("shortcut_view_morphemes"))
     action.triggered.connect(browser_utils.run_view_morphs)
     return action
 
@@ -198,7 +198,7 @@ def create_view_morphs_action() -> QAction:
 def create_already_known_tagger_action():
     action = QAction("&Tag As Known", mw)
     action.setStatusTip("Tag all selected cards as already known")
-    action.setShortcut(get_preference("shortcut_set_known_and_skip"))
+    action.setShortcut(get_config("shortcut_set_known_and_skip"))
     action.triggered.connect(browser_utils.run_already_known_tagger)
     return action
 

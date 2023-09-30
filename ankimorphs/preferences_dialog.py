@@ -21,8 +21,8 @@ from aqt.qt import (
 )
 from aqt.utils import tooltip
 
+from ankimorphs.config import get_config, update_configs
 from ankimorphs.morphemizer import get_all_morphemizers
-from ankimorphs.preferences import get_preference, update_preferences
 
 # from ankimorphs.ui import MorphemizerComboBox
 
@@ -88,7 +88,7 @@ class PreferencesDialog(QDialog):
         self.table_model.setHeaderData(4, Qt.Orientation.Horizontal, "Read")
         self.table_model.setHeaderData(5, Qt.Orientation.Horizontal, "Modify")
 
-        row_data = get_preference("Filter")
+        row_data = get_config("Filter")
         self.table_model.setRowCount(len(row_data))
         self.row_gui = []
         for i, row in enumerate(row_data):
@@ -176,7 +176,7 @@ class PreferencesDialog(QDialog):
         ]
         self.field_entry_list = []
         for i, (name, key, tooltipInfo) in enumerate(fields_list):
-            entry = QLineEdit(get_preference(key))
+            entry = QLineEdit(get_config(key))
             entry.setToolTip(tooltipInfo)
             self.field_entry_list.append((key, entry))
 
@@ -237,7 +237,7 @@ class PreferencesDialog(QDialog):
         self.tag_entry_list = []
         number_of_columns = 2
         for i, (name, key, tooltipInfo) in enumerate(tag_list):
-            entry = QLineEdit(get_preference(key))
+            entry = QLineEdit(get_config(key))
             entry.setToolTip(tooltipInfo)
             self.tag_entry_list.append((key, entry))
 
@@ -253,7 +253,7 @@ class PreferencesDialog(QDialog):
         self.checkbox_set_not_required_tags = QCheckBox("Add tags even if not required")
         self.checkbox_set_not_required_tags.setCheckState(
             Qt.CheckState.Checked
-            if get_preference("Option_SetNotRequiredTags")
+            if get_config("Option_SetNotRequiredTags")
             else Qt.CheckState.Unchecked
         )
         vbox.addWidget(self.checkbox_set_not_required_tags)
@@ -356,9 +356,7 @@ class PreferencesDialog(QDialog):
         for i, (layout, name, key, tooltipInfo) in enumerate(option_list):
             check_box = QCheckBox(name)
             check_box.setCheckState(
-                Qt.CheckState.Checked
-                if get_preference(key)
-                else Qt.CheckState.Unchecked
+                Qt.CheckState.Checked if get_config(key) else Qt.CheckState.Unchecked
             )
             check_box.setToolTip(tooltipInfo)
             check_box.setMinimumSize(0, 30)
@@ -491,7 +489,7 @@ class PreferencesDialog(QDialog):
         self.close()
 
     def on_okay(self):
-        update_preferences(self.read_config_from_gui())
+        update_configs(self.read_config_from_gui())
         self.close()
         tooltip(_("Please recalculate your database to avoid unexpected behaviour."))
 

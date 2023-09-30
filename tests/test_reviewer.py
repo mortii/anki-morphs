@@ -9,7 +9,7 @@ from aqt.reviewer import Reviewer
 
 # A bug in the anki module leads to cyclic imports if these are placed higher
 from ankimorphs import (  # isort:skip pylint:disable=wrong-import-order
-    preferences,
+    config,
     reviewing_utils,
 )
 

@@ -16,10 +16,10 @@ from aqt.operations import QueryOp
 from aqt.utils import tooltip
 
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
+from ankimorphs.config import get_config, get_configs
 from ankimorphs.exceptions import NoteFilterFieldsException
 from ankimorphs.morphemes import AnkiDeck, Location, Morpheme, get_morphemes
 from ankimorphs.morphemizer import get_morphemizer_by_name
-from ankimorphs.preferences import get_preference, get_preferences
 from ankimorphs.util import (
     error_msg,
     get_filter_by_mid_and_tags,
@@ -85,7 +85,7 @@ def notes_to_update(last_updated, included_mids):
     #     are suspended and are not Leeches
     #
     # we build a predicate that we append to the where clause
-    if get_preference("Option_IgnoreSuspendedLeeches"):
+    if get_config("Option_IgnoreSuspendedLeeches"):
         filter_susp_leeches = (
             "(c.queue <> -1 or (c.queue = -1 and not instr(tags, ' leech ')))"
         )
@@ -138,7 +138,7 @@ def make_all_db(
 
     # Recompute everything if preferences changed.
     last_preferences = all_db.meta.get("last_preferences", {})
-    if not last_preferences == get_preferences():
+    if not last_preferences == get_configs():
         print("Preferences changed.  Recomputing all_db...")
         all_db = MorphDb()  # Clear all db
         last_updated = 0
@@ -184,11 +184,11 @@ def make_all_db(
         m_name = mid_cfg["Morphemizer"]
         morphemizer = get_morphemizer_by_name(m_name)
 
-        conf = get_preference
+        conf = get_config
 
         if conf("ignore maturity"):
             max_mat = 0
-        tags_list, already_known_tag = col_tags.split(tags), get_preference(
+        tags_list, already_known_tag = col_tags.split(tags), get_config(
             "Tag_AlreadyKnown"
         )
         if already_known_tag in tags_list:
@@ -357,7 +357,7 @@ def recalc2():
             #     + f"new_knowns_amount: {new_knowns_amount}"
             # )
 
-            skip_comprehension_cards = get_preference("Option_SkipComprehensionCards")
+            skip_comprehension_cards = get_config("Option_SkipComprehensionCards")
 
             card_difficulty = get_card_difficulty()
             card.due = card_difficulty
@@ -381,15 +381,15 @@ def recalc2():
 
 def get_morph_amounts(morphemes):
     db_path = os.path.join(mw.pm.profileFolder(), "dbs")
-    seen_db_path = os.path.join(db_path, get_preference("path_seen"))
-    known_db_path = os.path.join(db_path, get_preference("path_known"))
-    mature_db_path = os.path.join(db_path, get_preference("path_mature"))
+    seen_db_path = os.path.join(db_path, get_config("path_seen"))
+    known_db_path = os.path.join(db_path, get_config("path_known"))
+    mature_db_path = os.path.join(db_path, get_config("path_mature"))
 
     seen_db = MorphDb(seen_db_path, ignore_errors=True)
     known_db = MorphDb(known_db_path, ignore_errors=True)
     mature_db = MorphDb(mature_db_path, ignore_errors=True)
 
-    proper_nouns_known = get_preference("Option_ProperNounsAlreadyKnown")
+    proper_nouns_known = get_config("Option_ProperNounsAlreadyKnown")
 
     unseens, unknowns, un_matures, new_knowns = set(), set(), set(), set()
     for morpheme in morphemes:
@@ -429,50 +429,48 @@ def recalc():  # pylint:disable=too-many-branches,too-many-statements,too-many-l
         partial(mw.progress.start, label="Updating data", immediate=True)
     )
 
-    all_db_path = os.path.join(mw.pm.profileFolder(), "dbs", get_preference("path_all"))
+    all_db_path = os.path.join(mw.pm.profileFolder(), "dbs", get_config("path_all"))
     all_db = MorphDb(all_db_path, ignore_errors=True)
 
     fid_db = all_db.fid_db(recalc=True)
     loc_db: dict[Location, set[Morpheme]] = all_db.loc_db(recalc=False)
 
-    comp_tag = get_preference("Tag_Comprehension")
-    vocab_tag = get_preference("Tag_Vocab")
-    fresh_tag = get_preference("Tag_Fresh")
-    not_ready_tag = get_preference("Tag_NotReady")
-    already_known_tag = get_preference(  # pylint:disable=unused-variable
-        "Tag_AlreadyKnown"
-    )
-    priority_tag = get_preference("Tag_Priority")
-    too_short_tag = get_preference("Tag_TooShort")
-    too_long_tag = get_preference("Tag_TooLong")
-    frequency_tag = get_preference("Tag_Frequency")
+    comp_tag = get_config("Tag_Comprehension")
+    vocab_tag = get_config("Tag_Vocab")
+    fresh_tag = get_config("Tag_Fresh")
+    not_ready_tag = get_config("Tag_NotReady")
+    already_known_tag = get_config("Tag_AlreadyKnown")  # pylint:disable=unused-variable
+    priority_tag = get_config("Tag_Priority")
+    too_short_tag = get_config("Tag_TooShort")
+    too_long_tag = get_config("Tag_TooLong")
+    frequency_tag = get_config("Tag_Frequency")
 
-    field_focus_morph = get_preference("Field_FocusMorph")
-    field_unknown_count = get_preference("Field_UnknownMorphCount")
-    field_unmature_count = get_preference("Field_UnmatureMorphCount")
-    field_morph_man_index = get_preference("Field_MorphManIndex")
-    field_unknowns = get_preference("Field_Unknowns")
-    field_unmatures = get_preference("Field_Unmatures")
-    field_unknown_freq = get_preference("Field_UnknownFreq")
-    field_focus_morph_pos = get_preference("Field_FocusMorphPos")
-    skip_comprehension_cards = get_preference("Option_SkipComprehensionCards")
-    skip_fresh_cards = get_preference("Option_SkipFreshVocabCards")
+    field_focus_morph = get_config("Field_FocusMorph")
+    field_unknown_count = get_config("Field_UnknownMorphCount")
+    field_unmature_count = get_config("Field_UnmatureMorphCount")
+    field_morph_man_index = get_config("Field_MorphManIndex")
+    field_unknowns = get_config("Field_Unknowns")
+    field_unmatures = get_config("Field_Unmatures")
+    field_unknown_freq = get_config("Field_UnknownFreq")
+    field_focus_morph_pos = get_config("Field_FocusMorphPos")
+    skip_comprehension_cards = get_config("Option_SkipComprehensionCards")
+    skip_fresh_cards = get_config("Option_SkipFreshVocabCards")
 
     # handle secondary databases
     mw.taskman.run_on_main(
         partial(mw.progress.update, label="Creating seen/known/mature from all.db")
     )
 
-    seen_db = filter_db_by_mat(all_db, get_preference("threshold_seen"))
-    known_db = filter_db_by_mat(all_db, get_preference("threshold_known"))
-    mature_db = filter_db_by_mat(all_db, get_preference("threshold_mature"))
+    seen_db = filter_db_by_mat(all_db, get_config("threshold_seen"))
+    known_db = filter_db_by_mat(all_db, get_config("threshold_known"))
+    mature_db = filter_db_by_mat(all_db, get_config("threshold_mature"))
 
     mw.taskman.run_on_main(partial(mw.progress.update, label="Loading priority.db"))
-    priority_db = MorphDb(get_preference("path_priority"), ignore_errors=True)
+    priority_db = MorphDb(get_config("path_priority"), ignore_errors=True)
 
     mw.taskman.run_on_main(partial(mw.progress.update, label="Loading frequency.txt"))
 
-    frequency_list_path = get_preference("path_frequency")
+    frequency_list_path = get_config("path_frequency")
     frequency_map = get_frequency_map(frequency_list_path)
     frequency_list_exists = bool(frequency_map)
     frequency_list_length = len(frequency_map)
@@ -486,7 +484,7 @@ def recalc():  # pylint:disable=too-many-branches,too-many-statements,too-many-l
 
     # Recompute everything if preferences changed.
     last_preferences = all_db.meta.get("last_preferences", {})
-    if not last_preferences == get_preferences():
+    if not last_preferences == get_configs():
         print("Preferences changed.  Updating all notes...")
         last_updated = 0
     else:
@@ -592,7 +590,7 @@ def recalc():  # pylint:disable=too-many-branches,too-many-statements,too-many-l
             continue
 
         # add bonus for morphs in priority.db and frequency.txt
-        conf = get_preference
+        conf = get_config
 
         frequency_bonus = conf("frequency.txt bonus")
         if conf("Option_AlwaysPrioritizeFrequencyMorphs"):
@@ -601,7 +599,7 @@ def recalc():  # pylint:disable=too-many-branches,too-many-statements,too-many-l
             no_priority_penalty = 0
         reinforce_new_vocab_weight = conf("reinforce new vocab weight")
         priority_db_weight = conf("priority.db weight")
-        proper_nouns_known = get_preference("Option_ProperNounsAlreadyKnown")
+        proper_nouns_known = get_config("Option_ProperNounsAlreadyKnown")
 
         # Fill in various fields/tags on the note based on cfg
         fields_list = split_fields(fields)
@@ -827,7 +825,7 @@ def recalc():  # pylint:disable=too-many-branches,too-many-statements,too-many-l
             tags_list.append(too_long_tag)
 
         # remove unnecessary tags
-        if not get_preference("Option_SetNotRequiredTags"):
+        if not get_config("Option_SetNotRequiredTags"):
             unnecessary = [priority_tag, too_short_tag, too_long_tag]
             tags_list = [tag for tag in tags_list if tag not in unnecessary]
 
@@ -872,20 +870,20 @@ def recalc():  # pylint:disable=too-many-branches,too-many-statements,too-many-l
 
     mw.taskman.run_on_main(mw.reset)
 
-    all_db.meta["last_preferences"] = get_preferences()
+    all_db.meta["last_preferences"] = get_configs()
     all_db.meta["last_maturities"] = new_maturities
     all_db.meta["last_updated"] = int(time.time() + 0.5)
 
     # printf('Updated %d notes in %f sec' % (N_notes, time.time() - t_0))
 
-    if get_preference("saveDbs"):
+    if get_config("saveDbs"):
         mw.taskman.run_on_main(
             partial(mw.progress.update, label="Saving all/seen/known/mature dbs")
         )
-        all_db.save(get_preference("path_all"))
-        seen_db.save(get_preference("path_seen"))
-        known_db.save(get_preference("path_known"))
-        mature_db.save(get_preference("path_mature"))
+        all_db.save(get_config("path_all"))
+        seen_db.save(get_config("path_seen"))
+        known_db.save(get_config("path_known"))
+        mature_db.save(get_config("path_mature"))
         # printf('Updated %d notes + saved dbs in %f sec' % (N_notes, time.time() - t_0))
 
     mw.taskman.run_on_main(mw.progress.finish)

@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from ankimorphs import morphemes, preferences
+from ankimorphs import config, morphemes
 
 
 @pytest.fixture(
@@ -25,14 +25,14 @@ def fake_environment():
 
 
 def test_get_preference_in_config_py(fake_environment):
-    assert preferences.get_preference("threshold_mature") == 21
+    assert preferences.get_config("threshold_mature") == 21
 
 
 def test_ignore_square_brackets(fake_environment):
     sentence_1 = "[こんにちは]私の名前は[シャン]です。"
     case_1 = "私の名前はです。"
 
-    assert preferences.get_preference("Option_IgnoreBracketContents") is True
+    assert preferences.get_config("Option_IgnoreBracketContents") is True
     assert morphemes.replace_bracket_contents(sentence_1) == case_1
 
     # preferences.update_preferences({"Option_IgnoreBracketContents": True})
@@ -43,7 +43,7 @@ def test_ignore_round_brackets_slim(fake_environment):
     sentence_1 = "(こんにちは)私の名前は(シャン)です。"
     case_1 = "私の名前はです。"
 
-    assert preferences.get_preference("Option_IgnoreSlimRoundBracketContents") is True
+    assert preferences.get_config("Option_IgnoreSlimRoundBracketContents") is True
     assert morphemes.replace_bracket_contents(sentence_1) == case_1
 
     # preferences.update_preferences({"Option_IgnoreSlimRoundBracketContents": True})
@@ -54,7 +54,7 @@ def test_ignore_round_brackets_japanese(fake_environment):
     sentence_1 = "（こんにちは）私の名前は（シャン）です。"
     case_1 = "私の名前はです。"
 
-    assert preferences.get_preference("Option_IgnoreRoundBracketContents") is True
+    assert preferences.get_config("Option_IgnoreRoundBracketContents") is True
     assert morphemes.replace_bracket_contents(sentence_1) == case_1
 
     # preferences.update_preferences({"Option_IgnoreRoundBracketContents": True})

@@ -11,7 +11,7 @@ def error_msg(msg):
 
 
 try:
-    from .preferences import get_preference as cfg
+    from .config import get_config as cfg
 except ProfileNotYetLoadedException:
 
     def cfg(config_string):

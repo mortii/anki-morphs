@@ -6,7 +6,7 @@ from unittest import mock
 import pytest
 from aqt import setupLangAndBackend
 
-from ankimorphs import get_preference, morph_db, morph_stats, preferences, recalc
+from ankimorphs import config, get_config, morph_db, morph_stats, recalc
 
 from anki.collection import Collection  # isort:skip pylint:disable=wrong-import-order
 
@@ -77,11 +77,11 @@ def fake_environment():
     tests_path = os.path.join(mock_mw.pm.profileFolder())
     db_path = os.path.join(mock_mw.pm.profileFolder(), "dbs")
 
-    os.remove(os.path.join(db_path, get_preference("path_all")))
-    os.remove(os.path.join(db_path, get_preference("path_known")))
-    os.remove(os.path.join(db_path, get_preference("path_mature")))
-    os.remove(os.path.join(db_path, get_preference("path_seen")))
-    os.remove(os.path.join(tests_path, get_preference("path_stats")))
+    os.remove(os.path.join(db_path, get_config("path_all")))
+    os.remove(os.path.join(db_path, get_config("path_known")))
+    os.remove(os.path.join(db_path, get_config("path_mature")))
+    os.remove(os.path.join(db_path, get_config("path_seen")))
+    os.remove(os.path.join(tests_path, get_config("path_stats")))
 
     mock_mw.col.close()
 

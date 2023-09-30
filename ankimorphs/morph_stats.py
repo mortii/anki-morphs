@@ -6,7 +6,7 @@ from typing import Optional
 
 from aqt.utils import tooltip
 
-from ankimorphs.preferences import get_preference as cfg
+from ankimorphs.config import get_config as cfg
 from ankimorphs.util import mw
 
 

@@ -7,9 +7,9 @@ from aqt.reviewer import RefreshNeeded
 from aqt.utils import tooltip
 
 from ankimorphs import util
+from ankimorphs.config import get_config
 from ankimorphs.morphemes import get_morphemes, ms2str
 from ankimorphs.morphemizer import get_morphemizer_by_name
-from ankimorphs.preferences import get_preference
 from ankimorphs.reviewing_utils import focus_query, try_to_get_focus_morphs
 
 browser: Optional[Browser] = None
@@ -25,7 +25,7 @@ def run_browse_morph() -> None:
         for focus_morph in try_to_get_focus_morphs(note):
             run_browse_morph_dict["focusMorphs"].add(focus_morph)
 
-        focus_field = get_preference("Field_FocusMorph")
+        focus_field = get_config("Field_FocusMorph")
         focus_morphs = run_browse_morph_dict["focusMorphs"]
 
         query = focus_query(focus_field, focus_morphs)
@@ -38,7 +38,7 @@ def run_browse_morph() -> None:
 
 
 def run_already_known_tagger():
-    known_tag = get_preference("Tag_AlreadyKnown")
+    known_tag = get_config("Tag_AlreadyKnown")
     selected_cards = browser.selectedCards()
 
     for cid in selected_cards:

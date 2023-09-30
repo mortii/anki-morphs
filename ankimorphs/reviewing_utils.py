@@ -9,9 +9,9 @@ from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
 
 from ankimorphs import text_utils
+from ankimorphs.config import get_config
 from ankimorphs.morphemes import get_morphemes
 from ankimorphs.morphemizer import get_morphemizer_by_name
-from ankimorphs.preferences import get_preference
 from ankimorphs.util import get_filter
 
 seen_morphs = set()  # TODO: use the db instead
@@ -19,7 +19,7 @@ seen_morphs = set()  # TODO: use the db instead
 
 def try_to_get_focus_morphs(note: Note) -> Optional[list[str]]:
     try:
-        focus_value = note[get_preference("Field_FocusMorph")].strip()
+        focus_value = note[get_config("Field_FocusMorph")].strip()
         if focus_value == "":
             return []
         return [f.strip() for f in focus_value.split(",")]
@@ -37,7 +37,7 @@ def focus_query(field_name, focus_morphs, vocab_tag=False):
     if len(focus_morphs) > 0:
         query = f"{query}"
     if vocab_tag:
-        query += f"tag:{get_preference('Tag_Vocab')}"
+        query += f"tag:{get_config('Tag_Vocab')}"
     return query
 
 
@@ -110,7 +110,7 @@ def my_next_card(self: Reviewer, _old) -> None:
     self._showQuestion()
 
     # TODO: add option to preferences GUI
-    if skipped_cards.skipped_at_least_one_card() and get_preference(
+    if skipped_cards.skipped_at_least_one_card() and get_config(
         "print number of alternatives skipped"
     ):
         skipped_cards.show_tooltip_of_skipped_cards()
@@ -127,7 +127,7 @@ def set_known_and_skip(self: Reviewer) -> None:
 
     self.mw.checkpoint("Set already known focus morph")
     note = self.card.note()
-    note.add_tag(get_preference("Tag_AlreadyKnown"))
+    note.add_tag(get_config("Tag_AlreadyKnown"))
     note.flush()
     mark_morph_seen(note)
 
@@ -154,16 +154,16 @@ def browse_same_focus(self, vocab_tag=False):  # 3
         tooltip("Focus morph field is empty!")
         return
 
-    query = focus_query(get_preference("Field_FocusMorph"), focus_morphs, vocab_tag)
+    query = focus_query(get_config("Field_FocusMorph"), focus_morphs, vocab_tag)
     browser = dialogs.open("Browser", self.mw)
     browser.form.searchEdit.lineEdit().setText(query)
     browser.onSearchActivated()
 
 
 def my_reviewer_shortcut_keys(self: Reviewer, _old):
-    key_browse = get_preference("shortcut_browse_same_focus_morph")
-    key_browse_non_vocab = get_preference("shortcut_browse_same_focus_morph_all")
-    key_skip = get_preference("shortcut_set_known_and_skip")
+    key_browse = get_config("shortcut_browse_same_focus_morph")
+    key_browse_non_vocab = get_config("shortcut_browse_same_focus_morph_all")
+    key_skip = get_config("shortcut_set_known_and_skip")
 
     keys = _old(self)
     keys.extend(
@@ -239,19 +239,17 @@ def highlight(  # pylint:disable=too-many-locals
 class SkippedCards:
     def __init__(self):
         self.skipped_cards = {"comprehension": 0, "fresh": 0, "known": 0, "today": 0}
-        self.skip_comprehension = get_preference("Option_SkipComprehensionCards")
-        self.skip_fresh = get_preference("Option_SkipFreshVocabCards")
-        self.skip_focus_morph_seen_today = get_preference(
-            "Option_SkipFocusMorphSeenToday"
-        )
+        self.skip_comprehension = get_config("Option_SkipComprehensionCards")
+        self.skip_fresh = get_config("Option_SkipFreshVocabCards")
+        self.skip_focus_morph_seen_today = get_config("Option_SkipFocusMorphSeenToday")
 
     def process_skip_conditions_of_card(
         self, note: Note, focus_morphs: list[str]
     ) -> bool:
         # skip conditions set in preferences GUI
-        is_comprehension_card = note.has_tag(get_preference("Tag_Comprehension"))
-        is_fresh_vocab = note.has_tag(get_preference("Tag_Fresh"))
-        is_already_known = note.has_tag(get_preference("Tag_AlreadyKnown"))
+        is_comprehension_card = note.has_tag(get_config("Tag_Comprehension"))
+        is_fresh_vocab = note.has_tag(get_config("Tag_Fresh"))
+        is_already_known = note.has_tag(get_config("Tag_AlreadyKnown"))
 
         if is_comprehension_card:
             if self.skip_comprehension:

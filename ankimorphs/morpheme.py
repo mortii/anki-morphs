@@ -1,4 +1,4 @@
-from ankimorphs.preferences import get_preference as cfg
+from ankimorphs.config import get_config as cfg
 
 
 def char_set(start: str, end: str) -> set:
