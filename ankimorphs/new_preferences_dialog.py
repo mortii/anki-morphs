@@ -15,12 +15,14 @@ from aqt.qt import (
     QStandardItemModel,
     Qt,
     QTableView,
+    QTableWidgetItem,
     QTabWidget,
     QVBoxLayout,
     QWidget,
 )
 from aqt.utils import tooltip
 
+from ankimorphs.morphemizer import get_all_morphemizers
 from ankimorphs.preferences import get_preference, update_preferences
 from ankimorphs.ui.preferences_dialog_ui import Ui_Dialog
 
@@ -31,122 +33,51 @@ class PreferencesDialog(QDialog):
         self.mw = parent
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        self.setup_table()
+        self.setup_am_table()
+        self.setup_buttons()
 
-    def setup_table(self):
-        # vbox = QVBoxLayout()
-        # vbox.setContentsMargins(0, 20, 0, 0)
-        # self.ui.tab.setLayout(vbox)
+    def setup_buttons(self):
+        self.ui.save_button.clicked.connect(self.save_to_config)
+        self.ui.cancel_button.clicked.connect(self.close)
 
-        self.note_filter_tab_widget = QWidget()
-        self.ui.tabWidget.addTab(self.note_filter_tab_widget, "Note Filter")
-        vbox = QVBoxLayout()
-        vbox.setContentsMargins(0, 20, 0, 0)
-        self.note_filter_tab_widget.setLayout(vbox)
+    def save_to_config(self):
+        update_preferences({"whatisthis": True})
 
-        self.table_model = QStandardItemModel(0, 6)
-        self.table_view = QTableView()
-        self.table_view.setModel(self.table_model)
-        self.table_view.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
-        )
-        self.table_view.setSelectionBehavior(
-            QAbstractItemView.SelectionBehavior.SelectRows
-        )
-        self.table_view.setSelectionMode(
-            QAbstractItemView.SelectionMode.SingleSelection
-        )
-        self.table_model.setHeaderData(0, Qt.Orientation.Horizontal, "Note type")
-        self.table_model.setHeaderData(1, Qt.Orientation.Horizontal, "Tags")
-        self.table_model.setHeaderData(2, Qt.Orientation.Horizontal, "Field")
-        self.table_model.setHeaderData(3, Qt.Orientation.Horizontal, "Morphemizer")
-        self.table_model.setHeaderData(4, Qt.Orientation.Horizontal, "Read")
-        self.table_model.setHeaderData(5, Qt.Orientation.Horizontal, "Modify")
+    def setup_am_table(self):
+        self.ui.tableWidget.setColumnWidth(3, 200)
+        # self.table_model = QStandardItemModel(0, 6)
+        # self.table_view = QTableView()
+        self.ui.tableWidget.setRowCount(2)
+        self.ui.tableWidget.setRowHeight(1, 50)
+        self.ui.tableWidget.alternatingRowColors()
 
-        row_data = get_preference("filters")
-        self.table_model.setRowCount(len(row_data))
-        self.row_gui = []
-        for i, row in enumerate(row_data):
-            print(f"row: {row}")
-            self.set_table_row(i, row)
+        for row, am_filter in enumerate(get_preference("filters")):
+            note_type_cbox = QComboBox(self.ui.tableWidget)
+            note_type_cbox.addItems(mw.col.models.all_names())
 
-        label = QLabel(
-            """
-            Any card that has the given `Note type` and all of the given `Tags` will have its `Fields` analyzed with the specified `Morphemizer`.
-            'A morphemizer specifies how words are extraced from a sentence. `Fields` and `Tags` are both comma-separated lists (e.x: "tag1, tag2, tag3"). 
-            If `Tags` is empty, there are no tag restrictions.
-            If `Modify` is deactivated, the note will only be analyzed.\n\nIf a note is matched multple times, only the first filter in this list will be used.
-            """
-        )
-        label.setWordWrap(True)
-        vbox.addWidget(label)
-        vbox.addSpacing(20)
-        vbox.addWidget(self.table_view)
+            # model_combo_box.setCurrentIndex(active)
 
-        hbox = QHBoxLayout()
-        vbox.addLayout(hbox)
+            morphemizer_cbox = QComboBox(self.ui.tableWidget)
 
-    def set_table_row(self, row_index, data):
-        assert row_index >= 0, "Negative row numbers? Really?"
-        assert (
-            len(self.row_gui) >= row_index
-        ), "Row can't be appended because it would leave an empty row"
+            mizers = get_all_morphemizers()
+            mizers = [mizer.get_description() for mizer in mizers]
 
-        row_gui = {}
+            morphemizer_cbox.addItems(mizers)
 
-        print(f"Data: {data}")
+            read_checkbox = QCheckBox()
+            read_checkbox.setChecked(am_filter["read"])
 
-        model_combo_box = QComboBox()
-        active = 0
-        for i, model in enumerate(mw.col.models.all_names()):
-            if model == data["type"]:
-                active = i + 1
-            model_combo_box.addItem(model)
-        model_combo_box.setCurrentIndex(active)
+            modify_checkbox = QCheckBox()
+            modify_checkbox.setChecked(am_filter["read"])
 
-        # morphemizer_combo_box = MorphemizerComboBox()
-        # morphemizer_combo_box.set_morphemizers(get_all_morphemizers())
-        # morphemizer_combo_box.set_current_by_name(data["Morphemizer"])
+            tags = ", ".join(am_filter["tags"])
 
-        read_item = QStandardItem()
-        read_item.setCheckable(True)
-        # read_item.setTextAlignment(Qt.AlignmentFlag.AlignRight)
-        # print(f"alignment: {read_item.textAlignment()}")
-        read_item.setCheckState(
-            Qt.CheckState.Checked if data.get("Read", True) else Qt.CheckState.Unchecked
-        )
-
-        modify_item = QStandardItem()
-        modify_item.setCheckable(True)
-        modify_item.setCheckState(
-            Qt.CheckState.Checked
-            if data.get("Modify", True)
-            else Qt.CheckState.Unchecked
-        )
-
-        row_gui["modelComboBox"] = model_combo_box
-        row_gui["tagsEntry"] = QLineEdit(", ".join(data["tags"]))
-        row_gui["fieldsEntry"] = QLineEdit(", ".join(data["field"]))
-        row_gui["morphemizerComboBox"] = model_combo_box
-        row_gui["readCheckBox"] = read_item
-        row_gui["modifyCheckBox"] = modify_item
-
-        def set_column(col, widget):
-            self.table_view.setIndexWidget(
-                self.table_model.index(row_index, col), widget
-            )
-
-        set_column(0, row_gui["modelComboBox"])
-        set_column(1, row_gui["tagsEntry"])
-        set_column(2, row_gui["fieldsEntry"])
-        set_column(3, row_gui["morphemizerComboBox"])
-        self.table_model.setItem(row_index, 4, read_item)
-        self.table_model.setItem(row_index, 5, modify_item)
-
-        if len(self.row_gui) == row_index:
-            self.row_gui.append(row_gui)
-        else:
-            self.row_gui[row_index] = row_gui
+            self.ui.tableWidget.setCellWidget(row, 0, note_type_cbox)
+            self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(tags))
+            self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(am_filter["field"]))
+            self.ui.tableWidget.setCellWidget(row, 3, morphemizer_cbox)
+            self.ui.tableWidget.setCellWidget(row, 4, read_checkbox)
+            self.ui.tableWidget.setCellWidget(row, 5, modify_checkbox)
 
 
 def main():

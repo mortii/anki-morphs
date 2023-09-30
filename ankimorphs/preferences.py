@@ -11,6 +11,8 @@ def get_preferences():
 
 
 def update_preferences(_new_json_configs) -> None:
+    print(f"update_preferences, _new_json_configs: {_new_json_configs}")
+
     config = mw.addonManager.getConfig(__name__)
 
     for key, value in _new_json_configs.items():

@@ -32,9 +32,6 @@ def main():
     # Adds the 'U: A:' to the toolbar
     # gui_hooks.top_toolbar_did_init_links.append(add_morph_stats_to_toolbar)
 
-    # TODO: create dbs if they don't exist to prevent bugs?
-    # gui_hooks.profile_did_open.append(init_dbs)
-
     # Update the toolbar stats
     gui_hooks.profile_did_open.append(redraw_toolbar_wrapper)
 
