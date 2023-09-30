@@ -38,7 +38,7 @@
   "tag_too_long": "am_tooLong",
   "tag_frequency": "am_frequency",
   "tag_set_not_required_tags": true,
-  "filter": [
+  "filters": [
     {
       "type": "",
       "type_id": "",
