@@ -1,3 +1,6 @@
+import pprint
+from functools import partial
+
 from anki.models import FieldDict, NotetypeDict
 from aqt import mw
 from aqt.qt import (
@@ -30,9 +33,20 @@ from ankimorphs.ui.preferences_dialog_ui import Ui_Dialog
 
 
 class PreferencesDialog(QDialog):
+    """
+    The UI comes from ankimorphs/ui/preferences_dialog.ui which is used in Qt Designer,
+    which is then converted to ankimorphs/ui/preferences_dialog_ui.py,
+    which is then imported here.
+
+    Here we make the final adjustments that can't be made (or are hard to make) in
+    the Qt Designer, like setting up tables and buttons.
+
+    """
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.mw = parent
+        self.models = None
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setup_am_table()
@@ -54,26 +68,29 @@ class PreferencesDialog(QDialog):
         self.ui.tableWidget.setRowHeight(1, 50)
         self.ui.tableWidget.alternatingRowColors()
         # self.ui.horizontalLayout_2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.models = mw.col.models.all_names_and_ids()
 
         for row, am_filter in enumerate(get_config("filters")):
             note_type_cbox = QComboBox(self.ui.tableWidget)
-            note_type_cbox.addItems(mw.col.models.all_names())
-            note_type_cbox.setCurrentIndex(0)
+            note_type_cbox.addItems([model.name for model in self.models])
+            note_type_cbox.setCurrentIndex(2)
 
-            print(f"mw.col.models.all_names(): {mw.col.models.all_names_and_ids()}")
+            current_model_id = self.models[note_type_cbox.currentIndex()].id
 
-            note_type = mw.col.models.get(1691076536776)
+            note_type = mw.col.models.get(current_model_id)
 
             # note_type: NotetypeDict = mw.col.models.get(note_type_cbox.currentIndex())
-            print(f"note_type: {note_type}")
+            # print(f"note_type: {note_type}")
             fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(
                 note_type
             )
 
-            # return fields[field_name][1]["ord"]
-
             field_cbox = QComboBox(self.ui.tableWidget)
             field_cbox.addItems(fields)
+
+            note_type_cbox.currentIndexChanged.connect(
+                partial(self.update_fields_cbox, field_cbox, note_type_cbox)
+            )
 
             morphemizer_cbox = QComboBox(self.ui.tableWidget)
             morphemizers = get_all_morphemizers()
@@ -99,6 +116,13 @@ class PreferencesDialog(QDialog):
             self.ui.tableWidget.setCellWidget(row, 3, morphemizer_cbox)
             self.ui.tableWidget.setCellWidget(row, 4, read_checkbox)
             self.ui.tableWidget.setCellWidget(row, 5, modify_checkbox)
+
+    def update_fields_cbox(self, field_cbox, note_type_cbox):
+        current_model_id = self.models[note_type_cbox.currentIndex()].id
+        note_type = mw.col.models.get(current_model_id)
+        fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
+        field_cbox.clear()
+        field_cbox.addItems(fields)
 
 
 def main():

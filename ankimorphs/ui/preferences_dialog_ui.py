@@ -127,7 +127,7 @@ class Ui_Dialog:
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "AnkiMorph Preferences"))
+        Dialog.setWindowTitle(_translate("Dialog", "AnkiMorph Settings"))
         item = self.tableWidget.horizontalHeaderItem(0)
         item.setText(_translate("Dialog", "Note Type"))
         item = self.tableWidget.horizontalHeaderItem(1)
