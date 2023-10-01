@@ -140,7 +140,7 @@ class Ui_Dialog:
         item.setText(_translate("Dialog", "Read"))
         item = self.tableWidget.horizontalHeaderItem(5)
         item.setText(_translate("Dialog", "Modify"))
-        self.delete_row_button.setText(_translate("Dialog", "Delete Row"))
+        self.delete_row_button.setText(_translate("Dialog", "Delete Selected Row"))
         self.add_new_row_button.setText(_translate("Dialog", "Add New Row"))
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.tab), _translate("Dialog", "Note Filters")

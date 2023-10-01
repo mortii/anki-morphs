@@ -67,7 +67,7 @@
              <item>
               <widget class="QPushButton" name="delete_row_button">
                <property name="text">
-                <string>Delete Row</string>
+                <string>Delete Selected Row</string>
                </property>
               </widget>
              </item>
