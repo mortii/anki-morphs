@@ -39,7 +39,7 @@ class PreferencesDialog(QDialog):
     which is then imported here.
 
     Here we make the final adjustments that can't be made (or are hard to make) in
-    the Qt Designer, like setting up tables and buttons.
+    the Qt Designer, like setting up tables and button-connections.
 
     """
 
@@ -57,6 +57,63 @@ class PreferencesDialog(QDialog):
     def setup_buttons(self):
         self.ui.save_button.clicked.connect(self.save_to_config)
         self.ui.cancel_button.clicked.connect(self.close)
+        self.ui.add_new_row_button.clicked.connect(self.add_new_row)
+        # delete_row_button
+
+    def add_new_row(self):
+        self.ui.tableWidget.setRowCount(self.ui.tableWidget.rowCount() + 1)
+        # self.ui.tableWidget.setRowHeight(1, 50)
+        # self.ui.tableWidget.setAlternatingRowColors(True)
+        # self.ui.horizontalLayout_2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # self.models = mw.col.models.all_names_and_ids()
+        am_filter = get_config("filters")[0]  # TODO get from config.json, not meta.json
+        row = self.ui.tableWidget.rowCount() - 1
+
+        print(f"row: {row}")
+
+        note_type_cbox = QComboBox(self.ui.tableWidget)
+        note_type_cbox.addItems([model.name for model in self.models])
+        note_type_cbox.setCurrentIndex(2)
+
+        current_model_id = self.models[note_type_cbox.currentIndex()].id
+
+        note_type = mw.col.models.get(current_model_id)
+
+        # note_type: NotetypeDict = mw.col.models.get(note_type_cbox.currentIndex())
+        # print(f"note_type: {note_type}")
+        fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
+
+        field_cbox = QComboBox(self.ui.tableWidget)
+        field_cbox.addItems(fields)
+
+        note_type_cbox.currentIndexChanged.connect(
+            partial(self.update_fields_cbox, field_cbox, note_type_cbox)
+        )
+
+        morphemizer_cbox = QComboBox(self.ui.tableWidget)
+        morphemizers = get_all_morphemizers()
+        morphemizers = [mizer.get_description() for mizer in morphemizers]
+        morphemizer_cbox.addItems(morphemizers)
+
+        read_checkbox = QCheckBox()
+        read_checkbox.setChecked(am_filter["read"])
+        read_checkbox.setStyleSheet("margin-left:auto; margin-right:auto;")
+
+        modify_checkbox = QCheckBox()
+        modify_checkbox.setChecked(am_filter["read"])
+        modify_checkbox.setStyleSheet("margin-left:auto; margin-right:auto;")
+
+        tags = ", ".join(am_filter["tags"])
+
+        field_item = QTableWidgetItem(am_filter["field"])
+        field_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.ui.tableWidget.setCellWidget(row, 0, note_type_cbox)
+        self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(tags))
+        self.ui.tableWidget.setCellWidget(row, 2, field_cbox)
+        self.ui.tableWidget.setCellWidget(row, 3, morphemizer_cbox)
+        self.ui.tableWidget.setCellWidget(row, 4, read_checkbox)
+        self.ui.tableWidget.setCellWidget(row, 5, modify_checkbox)
 
     def save_to_config(self):
         update_configs({"whatisthis": True})
@@ -66,7 +123,7 @@ class PreferencesDialog(QDialog):
         # self.ui.tableWidget.setColumnWidth(5, 75)  # modify-column
         self.ui.tableWidget.setRowCount(2)
         self.ui.tableWidget.setRowHeight(1, 50)
-        self.ui.tableWidget.alternatingRowColors()
+        self.ui.tableWidget.setAlternatingRowColors(True)
         # self.ui.horizontalLayout_2.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.models = mw.col.models.all_names_and_ids()
 

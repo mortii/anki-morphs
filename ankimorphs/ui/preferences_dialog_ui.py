@@ -44,9 +44,9 @@ class Ui_Dialog:
         self.verticalLayout_3.addWidget(self.tableWidget)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.pushButton_4 = QtWidgets.QPushButton(parent=self.tab)
-        self.pushButton_4.setObjectName("pushButton_4")
-        self.horizontalLayout_2.addWidget(self.pushButton_4)
+        self.delete_row_button = QtWidgets.QPushButton(parent=self.tab)
+        self.delete_row_button.setObjectName("delete_row_button")
+        self.horizontalLayout_2.addWidget(self.delete_row_button)
         spacerItem = QtWidgets.QSpacerItem(
             40,
             20,
@@ -54,9 +54,9 @@ class Ui_Dialog:
             QtWidgets.QSizePolicy.Policy.Minimum,
         )
         self.horizontalLayout_2.addItem(spacerItem)
-        self.pushButton_5 = QtWidgets.QPushButton(parent=self.tab)
-        self.pushButton_5.setObjectName("pushButton_5")
-        self.horizontalLayout_2.addWidget(self.pushButton_5)
+        self.add_new_row_button = QtWidgets.QPushButton(parent=self.tab)
+        self.add_new_row_button.setObjectName("add_new_row_button")
+        self.horizontalLayout_2.addWidget(self.add_new_row_button)
         self.verticalLayout_3.addLayout(self.horizontalLayout_2)
         self.verticalLayout_4.addLayout(self.verticalLayout_3)
         self.tabWidget.addTab(self.tab, "")
@@ -140,8 +140,8 @@ class Ui_Dialog:
         item.setText(_translate("Dialog", "Read"))
         item = self.tableWidget.horizontalHeaderItem(5)
         item.setText(_translate("Dialog", "Modify"))
-        self.pushButton_4.setText(_translate("Dialog", "Delete Row"))
-        self.pushButton_5.setText(_translate("Dialog", "Add New Row"))
+        self.delete_row_button.setText(_translate("Dialog", "Delete Row"))
+        self.add_new_row_button.setText(_translate("Dialog", "Add New Row"))
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.tab), _translate("Dialog", "Note Filters")
         )

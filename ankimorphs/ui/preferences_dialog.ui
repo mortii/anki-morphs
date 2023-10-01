@@ -65,7 +65,7 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_2">
              <item>
-              <widget class="QPushButton" name="pushButton_4">
+              <widget class="QPushButton" name="delete_row_button">
                <property name="text">
                 <string>Delete Row</string>
                </property>
@@ -85,7 +85,7 @@
               </spacer>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_5">
+              <widget class="QPushButton" name="add_new_row_button">
                <property name="text">
                 <string>Add New Row</string>
                </property>
