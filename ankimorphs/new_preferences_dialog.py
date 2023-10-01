@@ -38,6 +38,8 @@ class PreferencesDialog(QDialog):
         self.setup_am_table()
         self.setup_buttons()
 
+        # TODO MAKE EXTRA FIELDS A TABLE WITH COMBOBOXES
+
     def setup_buttons(self):
         self.ui.save_button.clicked.connect(self.save_to_config)
         self.ui.cancel_button.clicked.connect(self.close)

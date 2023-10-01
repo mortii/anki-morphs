@@ -1,6 +1,8 @@
 from aqt import mw
 
 
+# TODO make a class
+# TODO move get included models here
 def get_config(key):
     config = mw.addonManager.getConfig(__name__)
     return config[key]
