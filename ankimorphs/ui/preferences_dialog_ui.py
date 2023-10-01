@@ -19,32 +19,32 @@ class Ui_Dialog:
         self.verticalLayout.setObjectName("verticalLayout")
         self.tabWidget = QtWidgets.QTabWidget(parent=Dialog)
         self.tabWidget.setObjectName("tabWidget")
-        self.tab = QtWidgets.QWidget()
-        self.tab.setObjectName("tab")
-        self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.tab)
+        self.note_filters_tab = QtWidgets.QWidget()
+        self.note_filters_tab.setObjectName("note_filters_tab")
+        self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.note_filters_tab)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout()
         self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.tableWidget = QtWidgets.QTableWidget(parent=self.tab)
-        self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget.setColumnCount(6)
-        self.tableWidget.setRowCount(0)
+        self.note_filters_table = QtWidgets.QTableWidget(parent=self.note_filters_tab)
+        self.note_filters_table.setObjectName("note_filters_table")
+        self.note_filters_table.setColumnCount(6)
+        self.note_filters_table.setRowCount(0)
         item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(0, item)
+        self.note_filters_table.setHorizontalHeaderItem(0, item)
         item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(1, item)
+        self.note_filters_table.setHorizontalHeaderItem(1, item)
         item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(2, item)
+        self.note_filters_table.setHorizontalHeaderItem(2, item)
         item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(3, item)
+        self.note_filters_table.setHorizontalHeaderItem(3, item)
         item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(4, item)
+        self.note_filters_table.setHorizontalHeaderItem(4, item)
         item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(5, item)
-        self.verticalLayout_3.addWidget(self.tableWidget)
+        self.note_filters_table.setHorizontalHeaderItem(5, item)
+        self.verticalLayout_3.addWidget(self.note_filters_table)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.delete_row_button = QtWidgets.QPushButton(parent=self.tab)
+        self.delete_row_button = QtWidgets.QPushButton(parent=self.note_filters_tab)
         self.delete_row_button.setObjectName("delete_row_button")
         self.horizontalLayout_2.addWidget(self.delete_row_button)
         spacerItem = QtWidgets.QSpacerItem(
@@ -54,12 +54,50 @@ class Ui_Dialog:
             QtWidgets.QSizePolicy.Policy.Minimum,
         )
         self.horizontalLayout_2.addItem(spacerItem)
-        self.add_new_row_button = QtWidgets.QPushButton(parent=self.tab)
+        self.add_new_row_button = QtWidgets.QPushButton(parent=self.note_filters_tab)
         self.add_new_row_button.setObjectName("add_new_row_button")
         self.horizontalLayout_2.addWidget(self.add_new_row_button)
         self.verticalLayout_3.addLayout(self.horizontalLayout_2)
         self.verticalLayout_4.addLayout(self.verticalLayout_3)
-        self.tabWidget.addTab(self.tab, "")
+        self.tabWidget.addTab(self.note_filters_tab, "")
+        self.extra_fields_tab = QtWidgets.QWidget()
+        self.extra_fields_tab.setObjectName("extra_fields_tab")
+        self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.extra_fields_tab)
+        self.verticalLayout_6.setObjectName("verticalLayout_6")
+        self.verticalLayout_5 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.extra_fields_table = QtWidgets.QTableWidget(parent=self.extra_fields_tab)
+        self.extra_fields_table.setObjectName("extra_fields_table")
+        self.extra_fields_table.setColumnCount(4)
+        self.extra_fields_table.setRowCount(0)
+        item = QtWidgets.QTableWidgetItem()
+        self.extra_fields_table.setHorizontalHeaderItem(0, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.extra_fields_table.setHorizontalHeaderItem(1, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.extra_fields_table.setHorizontalHeaderItem(2, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.extra_fields_table.setHorizontalHeaderItem(3, item)
+        self.verticalLayout_5.addWidget(self.extra_fields_table)
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.reset_extra_fields_row_button = QtWidgets.QPushButton(
+            parent=self.extra_fields_tab
+        )
+        self.reset_extra_fields_row_button.setObjectName(
+            "reset_extra_fields_row_button"
+        )
+        self.horizontalLayout_3.addWidget(self.reset_extra_fields_row_button)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout_3.addItem(spacerItem1)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_3)
+        self.verticalLayout_6.addLayout(self.verticalLayout_5)
+        self.tabWidget.addTab(self.extra_fields_tab, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.tab_2)
@@ -77,9 +115,9 @@ class Ui_Dialog:
         self.gridLayout.addWidget(self.checkBox_3, 2, 0, 1, 1)
         self.gridLayout_2.addLayout(self.gridLayout, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab_2, "")
-        self.tab_3 = QtWidgets.QWidget()
-        self.tab_3.setObjectName("tab_3")
-        self.tabWidget.addTab(self.tab_3, "")
+        self.tab_7 = QtWidgets.QWidget()
+        self.tab_7.setObjectName("tab_7")
+        self.tabWidget.addTab(self.tab_7, "")
         self.tab_4 = QtWidgets.QWidget()
         self.tab_4.setObjectName("tab_4")
         self.tabWidget.addTab(self.tab_4, "")
@@ -95,16 +133,6 @@ class Ui_Dialog:
         self.pushButton_3 = QtWidgets.QPushButton(parent=Dialog)
         self.pushButton_3.setObjectName("pushButton_3")
         self.horizontalLayout.addWidget(self.pushButton_3)
-        spacerItem1 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
-        self.horizontalLayout.addItem(spacerItem1)
-        self.label = QtWidgets.QLabel(parent=Dialog)
-        self.label.setObjectName("label")
-        self.horizontalLayout.addWidget(self.label)
         spacerItem2 = QtWidgets.QSpacerItem(
             40,
             20,
@@ -112,6 +140,16 @@ class Ui_Dialog:
             QtWidgets.QSizePolicy.Policy.Minimum,
         )
         self.horizontalLayout.addItem(spacerItem2)
+        self.label = QtWidgets.QLabel(parent=Dialog)
+        self.label.setObjectName("label")
+        self.horizontalLayout.addWidget(self.label)
+        spacerItem3 = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout.addItem(spacerItem3)
         self.cancel_button = QtWidgets.QPushButton(parent=Dialog)
         self.cancel_button.setObjectName("cancel_button")
         self.horizontalLayout.addWidget(self.cancel_button)
@@ -122,28 +160,44 @@ class Ui_Dialog:
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         self.retranslateUi(Dialog)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "AnkiMorph Settings"))
-        item = self.tableWidget.horizontalHeaderItem(0)
+        item = self.note_filters_table.horizontalHeaderItem(0)
         item.setText(_translate("Dialog", "Note Type"))
-        item = self.tableWidget.horizontalHeaderItem(1)
+        item = self.note_filters_table.horizontalHeaderItem(1)
         item.setText(_translate("Dialog", "Tags"))
-        item = self.tableWidget.horizontalHeaderItem(2)
+        item = self.note_filters_table.horizontalHeaderItem(2)
         item.setText(_translate("Dialog", "Field"))
-        item = self.tableWidget.horizontalHeaderItem(3)
+        item = self.note_filters_table.horizontalHeaderItem(3)
         item.setText(_translate("Dialog", "Morphemizer"))
-        item = self.tableWidget.horizontalHeaderItem(4)
+        item = self.note_filters_table.horizontalHeaderItem(4)
         item.setText(_translate("Dialog", "Read"))
-        item = self.tableWidget.horizontalHeaderItem(5)
+        item = self.note_filters_table.horizontalHeaderItem(5)
         item.setText(_translate("Dialog", "Modify"))
         self.delete_row_button.setText(_translate("Dialog", "Delete Selected Row"))
         self.add_new_row_button.setText(_translate("Dialog", "Add New Row"))
         self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tab), _translate("Dialog", "Note Filters")
+            self.tabWidget.indexOf(self.note_filters_tab),
+            _translate("Dialog", "Note Filters"),
+        )
+        item = self.extra_fields_table.horizontalHeaderItem(0)
+        item.setText(_translate("Dialog", "Note Type"))
+        item = self.extra_fields_table.horizontalHeaderItem(1)
+        item.setText(_translate("Dialog", "Focus Morph"))
+        item = self.extra_fields_table.horizontalHeaderItem(2)
+        item.setText(_translate("Dialog", "Highlighted"))
+        item = self.extra_fields_table.horizontalHeaderItem(3)
+        item.setText(_translate("Dialog", "Difficulty"))
+        self.reset_extra_fields_row_button.setText(
+            _translate("Dialog", "Reset Selected Row Fields")
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.extra_fields_tab),
+            _translate("Dialog", "Extra Fields"),
         )
         self.checkBox.setText(_translate("Dialog", "CheckBox"))
         self.checkBox_2.setText(_translate("Dialog", "CheckBox"))
@@ -152,7 +206,7 @@ class Ui_Dialog:
             self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Tags")
         )
         self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tab_3), _translate("Dialog", "Extra Fields")
+            self.tabWidget.indexOf(self.tab_7), _translate("Dialog", "Parse")
         )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.tab_4), _translate("Dialog", "Skip")
@@ -163,7 +217,7 @@ class Ui_Dialog:
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.tab_6), _translate("Dialog", "Shortcuts")
         )
-        self.pushButton_3.setText(_translate("Dialog", "Reset All Preferences"))
+        self.pushButton_3.setText(_translate("Dialog", "Reset All Settings"))
         self.label.setText(_translate("Dialog", "AnkiMorphs version: 0.1-alpha"))
         self.cancel_button.setText(_translate("Dialog", "Cancel"))
         self.save_button.setText(_translate("Dialog", "Save"))

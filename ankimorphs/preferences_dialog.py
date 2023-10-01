@@ -521,8 +521,8 @@ class PreferencesDialog(QDialog):
 
         data1 = self.row_index_to_filter(row - 1)
         data2 = self.row_index_to_filter(row - 0)
-        self.set_table_row(row - 1, data2)
-        self.set_table_row(row - 0, data1)
+        self.set_note_filters_table_row(row - 1, data2)
+        self.set_note_filters_table_row(row - 0, data1)
 
     def on_up(self):
         row = self.get_current_row()

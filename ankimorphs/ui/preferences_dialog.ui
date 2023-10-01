@@ -19,9 +19,9 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
-       <widget class="QWidget" name="tab">
+       <widget class="QWidget" name="note_filters_tab">
         <attribute name="title">
          <string>Note Filters</string>
         </attribute>
@@ -29,7 +29,7 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
-            <widget class="QTableWidget" name="tableWidget">
+            <widget class="QTableWidget" name="note_filters_table">
              <column>
               <property name="text">
                <string>Note Type</string>
@@ -97,6 +97,65 @@
          </item>
         </layout>
        </widget>
+       <widget class="QWidget" name="extra_fields_tab">
+        <attribute name="title">
+         <string>Extra Fields</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_6">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_5">
+           <item>
+            <widget class="QTableWidget" name="extra_fields_table">
+             <column>
+              <property name="text">
+               <string>Note Type</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Focus Morph</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Highlighted</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Difficulty</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QPushButton" name="reset_extra_fields_row_button">
+               <property name="text">
+                <string>Reset Selected Row Fields</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_4">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
        <widget class="QWidget" name="tab_2">
         <attribute name="title">
          <string>Tags</string>
@@ -129,9 +188,9 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="tab_3">
+       <widget class="QWidget" name="tab_7">
         <attribute name="title">
-         <string>Extra Fields</string>
+         <string>Parse</string>
         </attribute>
        </widget>
        <widget class="QWidget" name="tab_4">
@@ -156,7 +215,7 @@
        <item>
         <widget class="QPushButton" name="pushButton_3">
          <property name="text">
-          <string>Reset All Preferences</string>
+          <string>Reset All Settings</string>
          </property>
         </widget>
        </item>

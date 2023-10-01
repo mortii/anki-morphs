@@ -20,14 +20,6 @@
   "parse_ignore_round_bracket_contents": true,
   "parse_ignore_slim_round_bracket_contents": true,
   "parse_proper_nouns_already_known": true,
-  "extra_field_focus_morph": "",
-  "extra_field_difficulty": "",
-  "extra_field_unmatures": "",
-  "extra_field_unmature_morph_count": "",
-  "extra_field_unknowns": "",
-  "extra_field_unknown_freq": "",
-  "extra_field_unknown_morph_count": "",
-  "extra_field_part_of_speech": "",
   "tag_comprehension": "am_comprehension",
   "tag_vocab": "am_vocab",
   "tag_fresh": "am_fresh",
@@ -48,7 +40,9 @@
       "field": "meh",
       "morphemizer": "",
       "read": true,
-      "modify": true
+      "modify": true,
+      "focus_morph": "",
+      "difficulty": "Front"
     }
   ]
 }
