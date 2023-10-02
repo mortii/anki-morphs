@@ -4,9 +4,9 @@ from functools import partial
 from anki.models import FieldDict
 from aqt import mw
 from aqt.qt import QCheckBox, QComboBox, QDialog, QTableWidgetItem
+from aqt.utils import tooltip
 
-# from ankimorphs import ANKIMORPHS_VERSION
-from ankimorphs.config import get_config, update_configs
+from ankimorphs.config import get_config, get_default_configs, update_configs
 from ankimorphs.morphemizer import get_all_morphemizers
 from ankimorphs.ui.preferences_dialog_ui import Ui_Dialog
 
@@ -18,7 +18,7 @@ class PreferencesDialog(QDialog):
     which is then imported here.
 
     Here we make the final adjustments that can't be made (or are hard to make) in
-    the Qt Designer, like setting up tables and button-connections.
+    the Qt Designer, like setting up tables and widget-connections.
 
     """
 
@@ -39,11 +39,25 @@ class PreferencesDialog(QDialog):
             lambda x: self.setup_extra_fields_table() if x == 1 else None
         )
 
+        self.populate_tags_tab()
+        self.populate_shortcuts_tab()
+
     def setup_buttons(self):
         self.ui.save_button.clicked.connect(self.save_to_config)
         self.ui.cancel_button.clicked.connect(self.close)
         self.ui.add_new_row_button.clicked.connect(self.add_new_row)
         self.ui.delete_row_button.clicked.connect(self.delete_row)
+        self.ui.restore_tags_defaults_button.clicked.connect(self.restore_tags_defaults)
+
+    def restore_tags_defaults(self):
+        self.ui.ripe_tag_input.setText(get_default_configs("tag_ripe"))
+        self.ui.budding_tag_input.setText(get_default_configs("tag_budding"))
+        self.ui.stale_tag_input.setText(get_default_configs("tag_stale"))
+
+    def populate_tags_tab(self):
+        self.ui.ripe_tag_input.setText(get_config("tag_ripe"))
+        self.ui.budding_tag_input.setText(get_config("tag_budding"))
+        self.ui.stale_tag_input.setText(get_config("tag_stale"))
 
     def delete_row(self):
         selected_row = self.ui.note_filters_table.currentRow()
@@ -99,7 +113,14 @@ class PreferencesDialog(QDialog):
         self.set_note_filters_table_row(row, am_filter)
 
     def save_to_config(self):
-        update_configs({"whatisthis": True})
+        new_config = {}
+
+        new_config["tag_ripe"] = self.ui.ripe_tag_input.text()
+        new_config["tag_budding"] = self.ui.budding_tag_input.text()
+        new_config["tag_stale"] = self.ui.stale_tag_input.text()
+
+        update_configs(new_config)
+        tooltip("Please recalc to avoid unexpected behaviour", parent=mw)
 
     def setup_note_filters_table(self):
         self.ui.note_filters_table.setColumnWidth(0, 150)
@@ -178,6 +199,27 @@ class PreferencesDialog(QDialog):
         print(f"widget: {note_type_widget}, at row: {row}")
         print(f"widget: {self.ui.extra_fields_table.itemAt(row, 0)}")
         print(f"item_text: {item_text}")
+
+    def populate_shortcuts_tab(self):
+        shortcut_browse_same_unknown_ripe = get_config(
+            "shortcut_browse_same_unknown_ripe"
+        )
+        shortcut_browse_same_unknown_ripe_budding = get_config(
+            "shortcut_browse_same_unknown_ripe_budding"
+        )
+        shortcut_set_known_and_skip = get_config("shortcut_set_known_and_skip")
+        shortcut_learn_now = get_config("shortcut_learn_now")
+        shortcut_view_morphemes = get_config("shortcut_view_morphemes")
+
+        self.ui.shortcut_browse_same_ripe_input.setText(
+            shortcut_browse_same_unknown_ripe
+        )
+        self.ui.shortcut_browse_same_ripe_budding_input.setText(
+            shortcut_browse_same_unknown_ripe_budding
+        )
+        self.ui.shortcut_known_and_skip_input.setText(shortcut_set_known_and_skip)
+        self.ui.shortcut_learn_now_input.setText(shortcut_learn_now)
+        self.ui.shortcut_view_morphs_input.setText(shortcut_view_morphemes)
 
 
 def main():

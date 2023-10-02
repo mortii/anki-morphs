@@ -11,10 +11,10 @@ from aqt.reviewer import Reviewer
 from ankimorphs import (
     browser_utils,
     morph_stats,
-    new_preferences_dialog,
     preferences_dialog,
     recalc,
     reviewing_utils,
+    settings_dialog,
 )
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.config import get_config
@@ -173,7 +173,7 @@ def create_recalc_action() -> QAction:
 def create_settings_action() -> QAction:
     action = QAction("&Settings", mw)
     action.setShortcut("Ctrl+O")
-    action.triggered.connect(new_preferences_dialog.main)
+    action.triggered.connect(settings_dialog.main)
     return action
 
 
@@ -206,7 +206,7 @@ def create_learn_now_action():
 
 def create_browse_morph_action():
     action = QAction("&Browse Same Morphs", mw)
-    action.setShortcut(get_config("shortcut_browse_same_focus_morph"))
+    action.setShortcut(get_config("shortcut_browse_same_unknown_ripe"))
     action.triggered.connect(browser_utils.run_browse_morph)
     return action
 

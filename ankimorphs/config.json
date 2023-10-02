@@ -1,6 +1,6 @@
 {
-  "shortcut_browse_same_focus_morph": "l",
-  "shortcut_browse_same_focus_morph_all": "Shift+l",
+  "shortcut_browse_same_unknown_ripe": "l",
+  "shortcut_browse_same_unknown_ripe_budding": "Shift+l",
   "shortcut_set_known_and_skip": "k",
   "shortcut_learn_now": "Ctrl+Alt+N",
   "shortcut_view_morphemes": "Ctrl+Alt+V",
@@ -18,9 +18,9 @@
   "parse_ignore_round_bracket_contents": true,
   "parse_ignore_slim_round_bracket_contents": true,
   "parse_proper_nouns_already_known": true,
-  "tag_comprehension": "am_comprehension",
-  "tag_vocab": "am_vocab",
-  "tag_already_known": "am_alreadyKnown",
+  "tag_ripe": "ripe",
+  "tag_budding": "budding",
+  "tag_stale": "stale",
   "filters": [
     {
       "type": "",

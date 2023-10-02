@@ -8,6 +8,12 @@ def get_config(key):
     return config[key]
 
 
+def get_default_configs(key):
+    addon = mw.addonManager.addonFromModule(__name__)  # necessary to prevent anki bug
+    config = mw.addonManager.addonConfigDefaults(addon)
+    return config[key]
+
+
 def get_configs():
     return mw.addonManager.getConfig(__name__)
 

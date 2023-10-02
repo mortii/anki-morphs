@@ -19,7 +19,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="note_filters_tab">
         <attribute name="title">
@@ -146,21 +146,21 @@
                <item>
                 <widget class="QLabel" name="label_2">
                  <property name="text">
-                  <string>One Unknown</string>
+                  <string>One unknown morph</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QLabel" name="label_3">
                  <property name="text">
-                  <string>Multiple Unknowns</string>
+                  <string>Multiple Unknown morphs</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QLabel" name="label_4">
                  <property name="text">
-                  <string>All Known</string>
+                  <string>All morphs known</string>
                  </property>
                 </widget>
                </item>
@@ -169,13 +169,13 @@
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_7">
                <item>
-                <widget class="QLineEdit" name="lineEdit_2"/>
+                <widget class="QLineEdit" name="ripe_tag_input"/>
                </item>
                <item>
-                <widget class="QLineEdit" name="lineEdit"/>
+                <widget class="QLineEdit" name="budding_tag_input"/>
                </item>
                <item>
-                <widget class="QLineEdit" name="lineEdit_3"/>
+                <widget class="QLineEdit" name="stale_tag_input"/>
                </item>
               </layout>
              </item>
@@ -212,7 +212,7 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_7">
            <item>
-            <widget class="QPushButton" name="pushButton_4">
+            <widget class="QPushButton" name="restore_tags_defaults_button">
              <property name="text">
               <string>Restore Default Tags Settings</string>
              </property>
@@ -274,6 +274,13 @@
             <widget class="QCheckBox" name="checkBox_5">
              <property name="text">
               <string>Ignore proper nouns</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBox_12">
+             <property name="text">
+              <string>Ignore morphs in suspended cards</string>
              </property>
             </widget>
            </item>
@@ -448,13 +455,6 @@
              </property>
             </widget>
            </item>
-           <item>
-            <widget class="QCheckBox" name="checkBox_11">
-             <property name="text">
-              <string>Ignore suspended cards</string>
-             </property>
-            </widget>
-           </item>
           </layout>
          </item>
          <item>
@@ -536,21 +536,21 @@
              <item>
               <widget class="QLabel" name="label_8">
                <property name="text">
-                <string>Browse same focus morph</string>
+                <string>Browse ripe cards with same unknown morph</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="label_9">
                <property name="text">
-                <string>Browse same focus morph all</string>
+                <string>Browse ripe and budding cards with same unknown morph</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="label_10">
                <property name="text">
-                <string>Set known and skip</string>
+                <string>Set card as known and skip</string>
                </property>
               </widget>
              </item>
@@ -573,19 +573,19 @@
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_15">
              <item>
-              <widget class="QLineEdit" name="lineEdit_7"/>
+              <widget class="QLineEdit" name="shortcut_browse_same_ripe_input"/>
              </item>
              <item>
-              <widget class="QLineEdit" name="lineEdit_8"/>
+              <widget class="QLineEdit" name="shortcut_browse_same_ripe_budding_input"/>
              </item>
              <item>
-              <widget class="QLineEdit" name="lineEdit_9"/>
+              <widget class="QLineEdit" name="shortcut_known_and_skip_input"/>
              </item>
              <item>
-              <widget class="QLineEdit" name="lineEdit_10"/>
+              <widget class="QLineEdit" name="shortcut_learn_now_input"/>
              </item>
              <item>
-              <widget class="QLineEdit" name="lineEdit_11"/>
+              <widget class="QLineEdit" name="shortcut_view_morphs_input"/>
              </item>
             </layout>
            </item>

@@ -103,15 +103,15 @@ class Ui_Dialog:
         self.horizontalLayout_3.addLayout(self.verticalLayout_8)
         self.verticalLayout_7 = QtWidgets.QVBoxLayout()
         self.verticalLayout_7.setObjectName("verticalLayout_7")
-        self.lineEdit_2 = QtWidgets.QLineEdit(parent=self.tags_tab)
-        self.lineEdit_2.setObjectName("lineEdit_2")
-        self.verticalLayout_7.addWidget(self.lineEdit_2)
-        self.lineEdit = QtWidgets.QLineEdit(parent=self.tags_tab)
-        self.lineEdit.setObjectName("lineEdit")
-        self.verticalLayout_7.addWidget(self.lineEdit)
-        self.lineEdit_3 = QtWidgets.QLineEdit(parent=self.tags_tab)
-        self.lineEdit_3.setObjectName("lineEdit_3")
-        self.verticalLayout_7.addWidget(self.lineEdit_3)
+        self.ripe_tag_input = QtWidgets.QLineEdit(parent=self.tags_tab)
+        self.ripe_tag_input.setObjectName("ripe_tag_input")
+        self.verticalLayout_7.addWidget(self.ripe_tag_input)
+        self.budding_tag_input = QtWidgets.QLineEdit(parent=self.tags_tab)
+        self.budding_tag_input.setObjectName("budding_tag_input")
+        self.verticalLayout_7.addWidget(self.budding_tag_input)
+        self.stale_tag_input = QtWidgets.QLineEdit(parent=self.tags_tab)
+        self.stale_tag_input.setObjectName("stale_tag_input")
+        self.verticalLayout_7.addWidget(self.stale_tag_input)
         self.horizontalLayout_3.addLayout(self.verticalLayout_7)
         spacerItem1 = QtWidgets.QSpacerItem(
             40,
@@ -131,9 +131,9 @@ class Ui_Dialog:
         self.verticalLayout_12.addItem(spacerItem2)
         self.horizontalLayout_7 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_7.setObjectName("horizontalLayout_7")
-        self.pushButton_4 = QtWidgets.QPushButton(parent=self.tags_tab)
-        self.pushButton_4.setObjectName("pushButton_4")
-        self.horizontalLayout_7.addWidget(self.pushButton_4)
+        self.restore_tags_defaults_button = QtWidgets.QPushButton(parent=self.tags_tab)
+        self.restore_tags_defaults_button.setObjectName("restore_tags_defaults_button")
+        self.horizontalLayout_7.addWidget(self.restore_tags_defaults_button)
         spacerItem3 = QtWidgets.QSpacerItem(
             40,
             20,
@@ -164,6 +164,9 @@ class Ui_Dialog:
         self.checkBox_5 = QtWidgets.QCheckBox(parent=self.parse_tab)
         self.checkBox_5.setObjectName("checkBox_5")
         self.verticalLayout_9.addWidget(self.checkBox_5)
+        self.checkBox_12 = QtWidgets.QCheckBox(parent=self.parse_tab)
+        self.checkBox_12.setObjectName("checkBox_12")
+        self.verticalLayout_9.addWidget(self.checkBox_12)
         self.verticalLayout_13.addLayout(self.verticalLayout_9)
         spacerItem4 = QtWidgets.QSpacerItem(
             20,
@@ -258,9 +261,6 @@ class Ui_Dialog:
         self.checkBox_6 = QtWidgets.QCheckBox(parent=self.recalc_tab)
         self.checkBox_6.setObjectName("checkBox_6")
         self.verticalLayout_17.addWidget(self.checkBox_6)
-        self.checkBox_11 = QtWidgets.QCheckBox(parent=self.recalc_tab)
-        self.checkBox_11.setObjectName("checkBox_11")
-        self.verticalLayout_17.addWidget(self.checkBox_11)
         self.verticalLayout_18.addLayout(self.verticalLayout_17)
         self.verticalLayout_14 = QtWidgets.QVBoxLayout()
         self.verticalLayout_14.setContentsMargins(-1, 10, -1, -1)
@@ -322,21 +322,33 @@ class Ui_Dialog:
         self.horizontalLayout_5.addLayout(self.verticalLayout_16)
         self.verticalLayout_15 = QtWidgets.QVBoxLayout()
         self.verticalLayout_15.setObjectName("verticalLayout_15")
-        self.lineEdit_7 = QtWidgets.QLineEdit(parent=self.shortcuts_tab)
-        self.lineEdit_7.setObjectName("lineEdit_7")
-        self.verticalLayout_15.addWidget(self.lineEdit_7)
-        self.lineEdit_8 = QtWidgets.QLineEdit(parent=self.shortcuts_tab)
-        self.lineEdit_8.setObjectName("lineEdit_8")
-        self.verticalLayout_15.addWidget(self.lineEdit_8)
-        self.lineEdit_9 = QtWidgets.QLineEdit(parent=self.shortcuts_tab)
-        self.lineEdit_9.setObjectName("lineEdit_9")
-        self.verticalLayout_15.addWidget(self.lineEdit_9)
-        self.lineEdit_10 = QtWidgets.QLineEdit(parent=self.shortcuts_tab)
-        self.lineEdit_10.setObjectName("lineEdit_10")
-        self.verticalLayout_15.addWidget(self.lineEdit_10)
-        self.lineEdit_11 = QtWidgets.QLineEdit(parent=self.shortcuts_tab)
-        self.lineEdit_11.setObjectName("lineEdit_11")
-        self.verticalLayout_15.addWidget(self.lineEdit_11)
+        self.shortcut_browse_same_ripe_input = QtWidgets.QLineEdit(
+            parent=self.shortcuts_tab
+        )
+        self.shortcut_browse_same_ripe_input.setObjectName(
+            "shortcut_browse_same_ripe_input"
+        )
+        self.verticalLayout_15.addWidget(self.shortcut_browse_same_ripe_input)
+        self.shortcut_browse_same_ripe_budding_input = QtWidgets.QLineEdit(
+            parent=self.shortcuts_tab
+        )
+        self.shortcut_browse_same_ripe_budding_input.setObjectName(
+            "shortcut_browse_same_ripe_budding_input"
+        )
+        self.verticalLayout_15.addWidget(self.shortcut_browse_same_ripe_budding_input)
+        self.shortcut_known_and_skip_input = QtWidgets.QLineEdit(
+            parent=self.shortcuts_tab
+        )
+        self.shortcut_known_and_skip_input.setObjectName(
+            "shortcut_known_and_skip_input"
+        )
+        self.verticalLayout_15.addWidget(self.shortcut_known_and_skip_input)
+        self.shortcut_learn_now_input = QtWidgets.QLineEdit(parent=self.shortcuts_tab)
+        self.shortcut_learn_now_input.setObjectName("shortcut_learn_now_input")
+        self.verticalLayout_15.addWidget(self.shortcut_learn_now_input)
+        self.shortcut_view_morphs_input = QtWidgets.QLineEdit(parent=self.shortcuts_tab)
+        self.shortcut_view_morphs_input.setObjectName("shortcut_view_morphs_input")
+        self.verticalLayout_15.addWidget(self.shortcut_view_morphs_input)
         self.horizontalLayout_5.addLayout(self.verticalLayout_15)
         spacerItem11 = QtWidgets.QSpacerItem(
             40,
@@ -400,7 +412,7 @@ class Ui_Dialog:
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         self.retranslateUi(Dialog)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -436,10 +448,12 @@ class Ui_Dialog:
             self.tabWidget.indexOf(self.extra_fields_tab),
             _translate("Dialog", "Extra Fields"),
         )
-        self.label_2.setText(_translate("Dialog", "One Unknown"))
-        self.label_3.setText(_translate("Dialog", "Multiple Unknowns"))
-        self.label_4.setText(_translate("Dialog", "All Known"))
-        self.pushButton_4.setText(_translate("Dialog", "Restore Default Tags Settings"))
+        self.label_2.setText(_translate("Dialog", "One unknown morph"))
+        self.label_3.setText(_translate("Dialog", "Multiple Unknown morphs"))
+        self.label_4.setText(_translate("Dialog", "All morphs known"))
+        self.restore_tags_defaults_button.setText(
+            _translate("Dialog", "Restore Default Tags Settings")
+        )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.tags_tab), _translate("Dialog", "Tags")
         )
@@ -450,6 +464,9 @@ class Ui_Dialog:
             _translate("Dialog", "ignore slim round bracket contents")
         )
         self.checkBox_5.setText(_translate("Dialog", "Ignore proper nouns"))
+        self.checkBox_12.setText(
+            _translate("Dialog", "Ignore morphs in suspended cards")
+        )
         self.pushButton_5.setText(
             _translate("Dialog", "Restore Default Parse Settings")
         )
@@ -473,7 +490,6 @@ class Ui_Dialog:
         self.checkBox_6.setText(
             _translate("Dialog", "Automatically Recalc before Sync")
         )
-        self.checkBox_11.setText(_translate("Dialog", "Ignore suspended cards"))
         self.label_5.setText(_translate("Dialog", "Prioritize morphs based on:"))
         self.radioButton.setText(_translate("Dialog", "Frequency in card collection"))
         self.radioButton_2.setText(_translate("Dialog", "frequency.txt"))
@@ -481,9 +497,15 @@ class Ui_Dialog:
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.recalc_tab), _translate("Dialog", "Recalc")
         )
-        self.label_8.setText(_translate("Dialog", "Browse same focus morph"))
-        self.label_9.setText(_translate("Dialog", "Browse same focus morph all"))
-        self.label_10.setText(_translate("Dialog", "Set known and skip"))
+        self.label_8.setText(
+            _translate("Dialog", "Browse ripe cards with same unknown morph")
+        )
+        self.label_9.setText(
+            _translate(
+                "Dialog", "Browse ripe and budding cards with same unknown morph"
+            )
+        )
+        self.label_10.setText(_translate("Dialog", "Set card as known and skip"))
         self.label_11.setText(_translate("Dialog", "Learn card now"))
         self.label_12.setText(_translate("Dialog", "View card morphemes"))
         self.pushButton_2.setText(
