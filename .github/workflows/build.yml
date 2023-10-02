@@ -1,0 +1,58 @@
+name: Lint and Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python_version: ['3.9']
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+        anki: ['2.1.54']
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version:  ${{ matrix.python_version }}
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install virtualenv
+        python -m virtualenv pyenv
+        if [ "${{ runner.os }}" = "Windows" ]; then
+          source pyenv/Scripts/activate
+        else
+          # Qt6 complains because Ubuntu is missing libEGL.so.1
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            sudo apt-get update -y -qq
+            sudo apt-get install -y -qq libegl1
+          fi
+          source pyenv/bin/activate
+        fi
+        python -m pip install aqt[qt5]==${{ matrix.anki }} aqt[qt6]==${{ matrix.anki }} anki==${{ matrix.anki }} PyQt6-WebEngine pylint
+    - name: Lint
+      shell: bash
+      run: |
+        if [ "${{ runner.os }}" = "Windows" ]; then
+          source pyenv/Scripts/activate
+        else
+          source pyenv/bin/activate
+        fi
+        export PYTHONPATH=./
+        python -m pylint . morph test -d W0611
+    - name: Test
+      shell: bash
+      run: |
+        if [ "${{ runner.os }}" = "Windows" ]; then
+          source pyenv/Scripts/activate
+        else
+          source pyenv/bin/activate
+        fi
+        export QT_QPA_PLATFORM=minimal
+        export PYTHONPATH=./
+        python test.py
+
