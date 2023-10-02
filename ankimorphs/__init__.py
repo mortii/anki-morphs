@@ -24,6 +24,7 @@ from ankimorphs.mecab_wrapper import get_morphemes_mecab
 import anki.stats  # isort:skip pylint:disable=wrong-import-order
 from anki import hooks  # isort:skip pylint:disable=wrong-import-order
 
+mw.ANKIMORPHS_VERSION = "0.1-alpha"
 TOOL_MENU = "am_tool_menu"
 BROWSE_MENU = "am_browse_menu"
 CONTEXT_MENU = "am_context_menu"
@@ -33,7 +34,7 @@ def main():
     # Support anki version 2.1.50 and above
     # Hooks should be placed in the order they are executed!
 
-    # Adds the 'U: A:' to the toolbar
+    # Adds the 'U: A:' to the toolbar  # TODO add recalc
     # gui_hooks.top_toolbar_did_init_links.append(add_morph_stats_to_toolbar)
 
     # Update the toolbar stats

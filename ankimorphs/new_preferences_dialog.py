@@ -5,6 +5,7 @@ from anki.models import FieldDict
 from aqt import mw
 from aqt.qt import QCheckBox, QComboBox, QDialog, QTableWidgetItem
 
+# from ankimorphs import ANKIMORPHS_VERSION
 from ankimorphs.config import get_config, update_configs
 from ankimorphs.morphemizer import get_all_morphemizers
 from ankimorphs.ui.preferences_dialog_ui import Ui_Dialog
@@ -27,6 +28,9 @@ class PreferencesDialog(QDialog):
         self.models = None
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
+        self.ui.ankimorphs_version_label.setText(
+            f"AnkiMorphs version: {mw.ANKIMORPHS_VERSION}"
+        )
         self.setup_note_filters_table()
         self.setup_extra_fields_table()
         self.setup_buttons()

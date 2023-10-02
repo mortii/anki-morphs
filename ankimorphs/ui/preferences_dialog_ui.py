@@ -79,15 +79,40 @@ class Ui_Dialog:
         item = QtWidgets.QTableWidgetItem()
         self.extra_fields_table.setHorizontalHeaderItem(3, item)
         self.verticalLayout_5.addWidget(self.extra_fields_table)
+        self.verticalLayout_6.addLayout(self.verticalLayout_5)
+        self.tabWidget.addTab(self.extra_fields_tab, "")
+        self.tags_tab = QtWidgets.QWidget()
+        self.tags_tab.setObjectName("tags_tab")
+        self.verticalLayout_12 = QtWidgets.QVBoxLayout(self.tags_tab)
+        self.verticalLayout_12.setObjectName("verticalLayout_12")
+        self.verticalLayout_10 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_10.setObjectName("verticalLayout_10")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.reset_extra_fields_row_button = QtWidgets.QPushButton(
-            parent=self.extra_fields_tab
-        )
-        self.reset_extra_fields_row_button.setObjectName(
-            "reset_extra_fields_row_button"
-        )
-        self.horizontalLayout_3.addWidget(self.reset_extra_fields_row_button)
+        self.verticalLayout_8 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_8.setObjectName("verticalLayout_8")
+        self.label_2 = QtWidgets.QLabel(parent=self.tags_tab)
+        self.label_2.setObjectName("label_2")
+        self.verticalLayout_8.addWidget(self.label_2)
+        self.label_3 = QtWidgets.QLabel(parent=self.tags_tab)
+        self.label_3.setObjectName("label_3")
+        self.verticalLayout_8.addWidget(self.label_3)
+        self.label_4 = QtWidgets.QLabel(parent=self.tags_tab)
+        self.label_4.setObjectName("label_4")
+        self.verticalLayout_8.addWidget(self.label_4)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_8)
+        self.verticalLayout_7 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_7.setObjectName("verticalLayout_7")
+        self.lineEdit_2 = QtWidgets.QLineEdit(parent=self.tags_tab)
+        self.lineEdit_2.setObjectName("lineEdit_2")
+        self.verticalLayout_7.addWidget(self.lineEdit_2)
+        self.lineEdit = QtWidgets.QLineEdit(parent=self.tags_tab)
+        self.lineEdit.setObjectName("lineEdit")
+        self.verticalLayout_7.addWidget(self.lineEdit)
+        self.lineEdit_3 = QtWidgets.QLineEdit(parent=self.tags_tab)
+        self.lineEdit_3.setObjectName("lineEdit_3")
+        self.verticalLayout_7.addWidget(self.lineEdit_3)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_7)
         spacerItem1 = QtWidgets.QSpacerItem(
             40,
             20,
@@ -95,61 +120,276 @@ class Ui_Dialog:
             QtWidgets.QSizePolicy.Policy.Minimum,
         )
         self.horizontalLayout_3.addItem(spacerItem1)
-        self.verticalLayout_5.addLayout(self.horizontalLayout_3)
-        self.verticalLayout_6.addLayout(self.verticalLayout_5)
-        self.tabWidget.addTab(self.extra_fields_tab, "")
-        self.tab_2 = QtWidgets.QWidget()
-        self.tab_2.setObjectName("tab_2")
-        self.gridLayout_2 = QtWidgets.QGridLayout(self.tab_2)
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.gridLayout = QtWidgets.QGridLayout()
-        self.gridLayout.setObjectName("gridLayout")
-        self.checkBox = QtWidgets.QCheckBox(parent=self.tab_2)
-        self.checkBox.setObjectName("checkBox")
-        self.gridLayout.addWidget(self.checkBox, 0, 0, 1, 1)
-        self.checkBox_2 = QtWidgets.QCheckBox(parent=self.tab_2)
-        self.checkBox_2.setObjectName("checkBox_2")
-        self.gridLayout.addWidget(self.checkBox_2, 1, 0, 1, 1)
-        self.checkBox_3 = QtWidgets.QCheckBox(parent=self.tab_2)
-        self.checkBox_3.setObjectName("checkBox_3")
-        self.gridLayout.addWidget(self.checkBox_3, 2, 0, 1, 1)
-        self.gridLayout_2.addLayout(self.gridLayout, 0, 0, 1, 1)
-        self.tabWidget.addTab(self.tab_2, "")
-        self.tab_7 = QtWidgets.QWidget()
-        self.tab_7.setObjectName("tab_7")
-        self.tabWidget.addTab(self.tab_7, "")
-        self.tab_4 = QtWidgets.QWidget()
-        self.tab_4.setObjectName("tab_4")
-        self.tabWidget.addTab(self.tab_4, "")
-        self.tab_5 = QtWidgets.QWidget()
-        self.tab_5.setObjectName("tab_5")
-        self.tabWidget.addTab(self.tab_5, "")
-        self.tab_6 = QtWidgets.QWidget()
-        self.tab_6.setObjectName("tab_6")
-        self.tabWidget.addTab(self.tab_6, "")
-        self.verticalLayout.addWidget(self.tabWidget)
-        self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.pushButton_3 = QtWidgets.QPushButton(parent=Dialog)
-        self.pushButton_3.setObjectName("pushButton_3")
-        self.horizontalLayout.addWidget(self.pushButton_3)
+        self.verticalLayout_10.addLayout(self.horizontalLayout_3)
+        self.verticalLayout_12.addLayout(self.verticalLayout_10)
         spacerItem2 = QtWidgets.QSpacerItem(
-            40,
             20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
+            40,
             QtWidgets.QSizePolicy.Policy.Minimum,
+            QtWidgets.QSizePolicy.Policy.Expanding,
         )
-        self.horizontalLayout.addItem(spacerItem2)
-        self.label = QtWidgets.QLabel(parent=Dialog)
-        self.label.setObjectName("label")
-        self.horizontalLayout.addWidget(self.label)
+        self.verticalLayout_12.addItem(spacerItem2)
+        self.horizontalLayout_7 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_7.setObjectName("horizontalLayout_7")
+        self.pushButton_4 = QtWidgets.QPushButton(parent=self.tags_tab)
+        self.pushButton_4.setObjectName("pushButton_4")
+        self.horizontalLayout_7.addWidget(self.pushButton_4)
         spacerItem3 = QtWidgets.QSpacerItem(
             40,
             20,
             QtWidgets.QSizePolicy.Policy.Expanding,
             QtWidgets.QSizePolicy.Policy.Minimum,
         )
-        self.horizontalLayout.addItem(spacerItem3)
+        self.horizontalLayout_7.addItem(spacerItem3)
+        self.verticalLayout_12.addLayout(self.horizontalLayout_7)
+        self.tabWidget.addTab(self.tags_tab, "")
+        self.parse_tab = QtWidgets.QWidget()
+        self.parse_tab.setObjectName("parse_tab")
+        self.verticalLayout_13 = QtWidgets.QVBoxLayout(self.parse_tab)
+        self.verticalLayout_13.setObjectName("verticalLayout_13")
+        self.verticalLayout_9 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_9.setObjectName("verticalLayout_9")
+        self.checkBox = QtWidgets.QCheckBox(parent=self.parse_tab)
+        self.checkBox.setObjectName("checkBox")
+        self.verticalLayout_9.addWidget(self.checkBox)
+        self.checkBox_2 = QtWidgets.QCheckBox(parent=self.parse_tab)
+        self.checkBox_2.setObjectName("checkBox_2")
+        self.verticalLayout_9.addWidget(self.checkBox_2)
+        self.checkBox_3 = QtWidgets.QCheckBox(parent=self.parse_tab)
+        self.checkBox_3.setObjectName("checkBox_3")
+        self.verticalLayout_9.addWidget(self.checkBox_3)
+        self.checkBox_4 = QtWidgets.QCheckBox(parent=self.parse_tab)
+        self.checkBox_4.setObjectName("checkBox_4")
+        self.verticalLayout_9.addWidget(self.checkBox_4)
+        self.checkBox_5 = QtWidgets.QCheckBox(parent=self.parse_tab)
+        self.checkBox_5.setObjectName("checkBox_5")
+        self.verticalLayout_9.addWidget(self.checkBox_5)
+        self.verticalLayout_13.addLayout(self.verticalLayout_9)
+        spacerItem4 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
+        self.verticalLayout_13.addItem(spacerItem4)
+        self.horizontalLayout_8 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_8.setObjectName("horizontalLayout_8")
+        self.pushButton_5 = QtWidgets.QPushButton(parent=self.parse_tab)
+        self.pushButton_5.setObjectName("pushButton_5")
+        self.horizontalLayout_8.addWidget(self.pushButton_5)
+        spacerItem5 = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout_8.addItem(spacerItem5)
+        self.verticalLayout_13.addLayout(self.horizontalLayout_8)
+        self.tabWidget.addTab(self.parse_tab, "")
+        self.skip_tab = QtWidgets.QWidget()
+        self.skip_tab.setObjectName("skip_tab")
+        self.gridLayout_3 = QtWidgets.QGridLayout(self.skip_tab)
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.verticalLayout_11 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_11.setObjectName("verticalLayout_11")
+        self.checkBox_7 = QtWidgets.QCheckBox(parent=self.skip_tab)
+        self.checkBox_7.setObjectName("checkBox_7")
+        self.verticalLayout_11.addWidget(self.checkBox_7)
+        self.checkBox_8 = QtWidgets.QCheckBox(parent=self.skip_tab)
+        self.checkBox_8.setObjectName("checkBox_8")
+        self.verticalLayout_11.addWidget(self.checkBox_8)
+        self.checkBox_10 = QtWidgets.QCheckBox(parent=self.skip_tab)
+        self.checkBox_10.setObjectName("checkBox_10")
+        self.verticalLayout_11.addWidget(self.checkBox_10)
+        self.checkBox_9 = QtWidgets.QCheckBox(parent=self.skip_tab)
+        self.checkBox_9.setObjectName("checkBox_9")
+        self.verticalLayout_11.addWidget(self.checkBox_9)
+        self.gridLayout_3.addLayout(self.verticalLayout_11, 0, 0, 1, 1)
+        spacerItem6 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
+        self.gridLayout_3.addItem(spacerItem6, 1, 0, 1, 1)
+        self.tabWidget.addTab(self.skip_tab, "")
+        self.recalc_tab = QtWidgets.QWidget()
+        self.recalc_tab.setObjectName("recalc_tab")
+        self.verticalLayout_18 = QtWidgets.QVBoxLayout(self.recalc_tab)
+        self.verticalLayout_18.setObjectName("verticalLayout_18")
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        self.label_6 = QtWidgets.QLabel(parent=self.recalc_tab)
+        self.label_6.setObjectName("label_6")
+        self.horizontalLayout_6.addWidget(self.label_6)
+        self.spinBox = QtWidgets.QSpinBox(parent=self.recalc_tab)
+        self.spinBox.setObjectName("spinBox")
+        self.horizontalLayout_6.addWidget(self.spinBox)
+        spacerItem7 = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout_6.addItem(spacerItem7)
+        self.verticalLayout_18.addLayout(self.horizontalLayout_6)
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.label_7 = QtWidgets.QLabel(parent=self.recalc_tab)
+        self.label_7.setObjectName("label_7")
+        self.horizontalLayout_4.addWidget(self.label_7)
+        self.spinBox_2 = QtWidgets.QSpinBox(parent=self.recalc_tab)
+        self.spinBox_2.setObjectName("spinBox_2")
+        self.horizontalLayout_4.addWidget(self.spinBox_2)
+        self.label = QtWidgets.QLabel(parent=self.recalc_tab)
+        self.label.setObjectName("label")
+        self.horizontalLayout_4.addWidget(self.label)
+        spacerItem8 = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout_4.addItem(spacerItem8)
+        self.verticalLayout_18.addLayout(self.horizontalLayout_4)
+        self.verticalLayout_17 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_17.setContentsMargins(-1, 10, -1, -1)
+        self.verticalLayout_17.setObjectName("verticalLayout_17")
+        self.checkBox_6 = QtWidgets.QCheckBox(parent=self.recalc_tab)
+        self.checkBox_6.setObjectName("checkBox_6")
+        self.verticalLayout_17.addWidget(self.checkBox_6)
+        self.checkBox_11 = QtWidgets.QCheckBox(parent=self.recalc_tab)
+        self.checkBox_11.setObjectName("checkBox_11")
+        self.verticalLayout_17.addWidget(self.checkBox_11)
+        self.verticalLayout_18.addLayout(self.verticalLayout_17)
+        self.verticalLayout_14 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_14.setContentsMargins(-1, 10, -1, -1)
+        self.verticalLayout_14.setObjectName("verticalLayout_14")
+        self.label_5 = QtWidgets.QLabel(parent=self.recalc_tab)
+        self.label_5.setObjectName("label_5")
+        self.verticalLayout_14.addWidget(self.label_5)
+        self.radioButton = QtWidgets.QRadioButton(parent=self.recalc_tab)
+        self.radioButton.setObjectName("radioButton")
+        self.verticalLayout_14.addWidget(self.radioButton)
+        self.radioButton_2 = QtWidgets.QRadioButton(parent=self.recalc_tab)
+        self.radioButton_2.setObjectName("radioButton_2")
+        self.verticalLayout_14.addWidget(self.radioButton_2)
+        self.verticalLayout_18.addLayout(self.verticalLayout_14)
+        spacerItem9 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
+        self.verticalLayout_18.addItem(spacerItem9)
+        self.horizontalLayout_9 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_9.setObjectName("horizontalLayout_9")
+        self.pushButton = QtWidgets.QPushButton(parent=self.recalc_tab)
+        self.pushButton.setObjectName("pushButton")
+        self.horizontalLayout_9.addWidget(self.pushButton)
+        spacerItem10 = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout_9.addItem(spacerItem10)
+        self.verticalLayout_18.addLayout(self.horizontalLayout_9)
+        self.tabWidget.addTab(self.recalc_tab, "")
+        self.shortcuts_tab = QtWidgets.QWidget()
+        self.shortcuts_tab.setObjectName("shortcuts_tab")
+        self.verticalLayout_19 = QtWidgets.QVBoxLayout(self.shortcuts_tab)
+        self.verticalLayout_19.setObjectName("verticalLayout_19")
+        self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        self.verticalLayout_16 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_16.setObjectName("verticalLayout_16")
+        self.label_8 = QtWidgets.QLabel(parent=self.shortcuts_tab)
+        self.label_8.setObjectName("label_8")
+        self.verticalLayout_16.addWidget(self.label_8)
+        self.label_9 = QtWidgets.QLabel(parent=self.shortcuts_tab)
+        self.label_9.setObjectName("label_9")
+        self.verticalLayout_16.addWidget(self.label_9)
+        self.label_10 = QtWidgets.QLabel(parent=self.shortcuts_tab)
+        self.label_10.setObjectName("label_10")
+        self.verticalLayout_16.addWidget(self.label_10)
+        self.label_11 = QtWidgets.QLabel(parent=self.shortcuts_tab)
+        self.label_11.setObjectName("label_11")
+        self.verticalLayout_16.addWidget(self.label_11)
+        self.label_12 = QtWidgets.QLabel(parent=self.shortcuts_tab)
+        self.label_12.setObjectName("label_12")
+        self.verticalLayout_16.addWidget(self.label_12)
+        self.horizontalLayout_5.addLayout(self.verticalLayout_16)
+        self.verticalLayout_15 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_15.setObjectName("verticalLayout_15")
+        self.lineEdit_7 = QtWidgets.QLineEdit(parent=self.shortcuts_tab)
+        self.lineEdit_7.setObjectName("lineEdit_7")
+        self.verticalLayout_15.addWidget(self.lineEdit_7)
+        self.lineEdit_8 = QtWidgets.QLineEdit(parent=self.shortcuts_tab)
+        self.lineEdit_8.setObjectName("lineEdit_8")
+        self.verticalLayout_15.addWidget(self.lineEdit_8)
+        self.lineEdit_9 = QtWidgets.QLineEdit(parent=self.shortcuts_tab)
+        self.lineEdit_9.setObjectName("lineEdit_9")
+        self.verticalLayout_15.addWidget(self.lineEdit_9)
+        self.lineEdit_10 = QtWidgets.QLineEdit(parent=self.shortcuts_tab)
+        self.lineEdit_10.setObjectName("lineEdit_10")
+        self.verticalLayout_15.addWidget(self.lineEdit_10)
+        self.lineEdit_11 = QtWidgets.QLineEdit(parent=self.shortcuts_tab)
+        self.lineEdit_11.setObjectName("lineEdit_11")
+        self.verticalLayout_15.addWidget(self.lineEdit_11)
+        self.horizontalLayout_5.addLayout(self.verticalLayout_15)
+        spacerItem11 = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout_5.addItem(spacerItem11)
+        self.verticalLayout_19.addLayout(self.horizontalLayout_5)
+        spacerItem12 = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
+        self.verticalLayout_19.addItem(spacerItem12)
+        self.horizontalLayout_10 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_10.setObjectName("horizontalLayout_10")
+        self.pushButton_2 = QtWidgets.QPushButton(parent=self.shortcuts_tab)
+        self.pushButton_2.setObjectName("pushButton_2")
+        self.horizontalLayout_10.addWidget(self.pushButton_2)
+        spacerItem13 = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout_10.addItem(spacerItem13)
+        self.verticalLayout_19.addLayout(self.horizontalLayout_10)
+        self.tabWidget.addTab(self.shortcuts_tab, "")
+        self.verticalLayout.addWidget(self.tabWidget)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.pushButton_3 = QtWidgets.QPushButton(parent=Dialog)
+        self.pushButton_3.setObjectName("pushButton_3")
+        self.horizontalLayout.addWidget(self.pushButton_3)
+        spacerItem14 = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout.addItem(spacerItem14)
+        self.ankimorphs_version_label = QtWidgets.QLabel(parent=Dialog)
+        self.ankimorphs_version_label.setObjectName("ankimorphs_version_label")
+        self.horizontalLayout.addWidget(self.ankimorphs_version_label)
+        spacerItem15 = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout.addItem(spacerItem15)
         self.cancel_button = QtWidgets.QPushButton(parent=Dialog)
         self.cancel_button.setObjectName("cancel_button")
         self.horizontalLayout.addWidget(self.cancel_button)
@@ -160,7 +400,7 @@ class Ui_Dialog:
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         self.retranslateUi(Dialog)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -192,32 +432,70 @@ class Ui_Dialog:
         item.setText(_translate("Dialog", "Highlighted"))
         item = self.extra_fields_table.horizontalHeaderItem(3)
         item.setText(_translate("Dialog", "Difficulty"))
-        self.reset_extra_fields_row_button.setText(
-            _translate("Dialog", "Reset Selected Row Fields")
-        )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.extra_fields_tab),
             _translate("Dialog", "Extra Fields"),
         )
-        self.checkBox.setText(_translate("Dialog", "CheckBox"))
-        self.checkBox_2.setText(_translate("Dialog", "CheckBox"))
-        self.checkBox_3.setText(_translate("Dialog", "CheckBox"))
+        self.label_2.setText(_translate("Dialog", "One Unknown"))
+        self.label_3.setText(_translate("Dialog", "Multiple Unknowns"))
+        self.label_4.setText(_translate("Dialog", "All Known"))
+        self.pushButton_4.setText(_translate("Dialog", "Restore Default Tags Settings"))
         self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Tags")
+            self.tabWidget.indexOf(self.tags_tab), _translate("Dialog", "Tags")
+        )
+        self.checkBox.setText(_translate("Dialog", "ignore grammar position"))
+        self.checkBox_2.setText(_translate("Dialog", "ignore bracket contents"))
+        self.checkBox_3.setText(_translate("Dialog", "ignore round bracket contents"))
+        self.checkBox_4.setText(
+            _translate("Dialog", "ignore slim round bracket contents")
+        )
+        self.checkBox_5.setText(_translate("Dialog", "Ignore proper nouns"))
+        self.pushButton_5.setText(
+            _translate("Dialog", "Restore Default Parse Settings")
         )
         self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tab_7), _translate("Dialog", "Parse")
+            self.tabWidget.indexOf(self.parse_tab), _translate("Dialog", "Parse")
+        )
+        self.checkBox_7.setText(_translate("Dialog", "Skip all known cards"))
+        self.checkBox_8.setText(_translate("Dialog", "skip fresh vocab cards"))
+        self.checkBox_10.setText(_translate("Dialog", "Skip focus morph seen today"))
+        self.checkBox_9.setText(
+            _translate("Dialog", 'Don\'t show "skipped x cards" notification')
         )
         self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tab_4), _translate("Dialog", "Skip")
+            self.tabWidget.indexOf(self.skip_tab), _translate("Dialog", "Skip")
+        )
+        self.label_6.setText(_translate("Dialog", "Preferred sentence length (morphs)"))
+        self.label_7.setText(
+            _translate("Dialog", "Only Recalc cards that have less than")
+        )
+        self.label.setText(_translate("Dialog", "unknown morphs"))
+        self.checkBox_6.setText(
+            _translate("Dialog", "Automatically Recalc before Sync")
+        )
+        self.checkBox_11.setText(_translate("Dialog", "Ignore suspended cards"))
+        self.label_5.setText(_translate("Dialog", "Prioritize morphs based on:"))
+        self.radioButton.setText(_translate("Dialog", "Frequency in card collection"))
+        self.radioButton_2.setText(_translate("Dialog", "frequency.txt"))
+        self.pushButton.setText(_translate("Dialog", "Restore Default Recalc Settings"))
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.recalc_tab), _translate("Dialog", "Recalc")
+        )
+        self.label_8.setText(_translate("Dialog", "Browse same focus morph"))
+        self.label_9.setText(_translate("Dialog", "Browse same focus morph all"))
+        self.label_10.setText(_translate("Dialog", "Set known and skip"))
+        self.label_11.setText(_translate("Dialog", "Learn card now"))
+        self.label_12.setText(_translate("Dialog", "View card morphemes"))
+        self.pushButton_2.setText(
+            _translate("Dialog", "Restore Default Shortcut Settings")
         )
         self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tab_5), _translate("Dialog", "Recalc")
+            self.tabWidget.indexOf(self.shortcuts_tab),
+            _translate("Dialog", "Shortcuts"),
         )
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tab_6), _translate("Dialog", "Shortcuts")
+        self.pushButton_3.setText(_translate("Dialog", "Restore All Default Settings"))
+        self.ankimorphs_version_label.setText(
+            _translate("Dialog", "AnkiMorphs version: 0.1-alpha")
         )
-        self.pushButton_3.setText(_translate("Dialog", "Reset All Settings"))
-        self.label.setText(_translate("Dialog", "AnkiMorphs version: 0.1-alpha"))
         self.cancel_button.setText(_translate("Dialog", "Cancel"))
         self.save_button.setText(_translate("Dialog", "Save"))

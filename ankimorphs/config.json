@@ -12,8 +12,6 @@
   "recalc_always_prioritize_frequency_morphs": false,
   "recalc_min_good_sentence_length": 2,
   "recalc_max_good_sentence_length": 30,
-  "recalc_reinforce_new_vocab_weight": 5.0,
-  "recalc_verb_bonus": 0,
   "recalc_only_update_cards_with_less_than_unknowns": 3,
   "parse_ignore_grammar_position": false,
   "parse_ignore_bracket_contents": true,
@@ -22,14 +20,7 @@
   "parse_proper_nouns_already_known": true,
   "tag_comprehension": "am_comprehension",
   "tag_vocab": "am_vocab",
-  "tag_fresh": "am_fresh",
-  "tag_not_ready": "am_notReady",
   "tag_already_known": "am_alreadyKnown",
-  "tag_priority": "am_priority",
-  "tag_too_short": "am_tooShort",
-  "tag_too_long": "am_tooLong",
-  "tag_frequency": "am_frequency",
-  "tag_set_not_required_tags": true,
   "filters": [
     {
       "type": "",
