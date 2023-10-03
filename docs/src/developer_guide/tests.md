@@ -13,13 +13,6 @@ https://docs.python.org/3/library/unittest.mock.html
 
 ## Pytest Add-ons
 
-### pytest-randomly
-
-* [pypi docs](https://pypi.org/project/pytest-randomly/)
-
-Pytest plugin to randomly order tests to discover hidden flaws in the tests themselves, as well as giving a little more
-coverage to your system.
-
 ### pytest-qt
 
 * [official docs](https://pytest-qt.readthedocs.io/en/latest/intro.html)

@@ -65,28 +65,7 @@ The databases are stored in the following directory:
 * Mac: `/Users/[user]/Library/Application Support/Anki2/[profile_name]/dbs`
 * Linux: `/home/[user]/.local/share/Anki2/[profile_name]/dbs`
 
-The seven databases are:
 
-* **all.db**:  
-  Automatically generated; contains all Morphs contained within specified fields + all Morphs that have been
-  imported from external.db.
-* **mature.db**:  
-  Automatically generated; contains all mature Morphs.
-* **known.db**:   
-  Automatically generated; The name of this db is misleading, it contains all morphs ever seen. It will be changed in
-  the future.
-* **seen.db**:  
-  Automatically generated; contains all seen Morphs.
-* **priority.db _[Legacy option, will be removed soon]_**:  
-  Manually generated using the Database Manager; cards containing Morphs in this database will be
-  prioritized over cards that would otherwise have the same MorphMan Index.
-* **frequency.txt**:  
-  Manually generated; functions as a frequency list. Cards with Morphs positioned higher on this list
-  will be prioritized over cards with Morphs positioned lower.
-* **external.db**:  
-  Manually generated using the Database Manager; user-managed database that tracks outside-Anki
-  knowledge.
-  MorphMan assumes that all Morphs in this database are mature.
 
 ### MorphMan Index (MMI)
 
@@ -133,82 +112,4 @@ the following criteria:
   mature card has an interval of less than 1 day, .5 is used in place of the interval. If a card contains multiple
   unmature Morphs, the points for each Morph are added up. The default “reinforce new vocab weight” is set to 5. This
   can be changed in config.py.
-
-### config.py
-
-**[This is a legacy file that will be removed soon! The variables will be moved to the preferences GUI instead.]**
-
-Originally, the config.py file was used to control all of MorphMan’s settings. Which
-decks/note-types/fields you want MorphMan to look through, what tags you want MorphMan to add, etc., was all configured
-through this file. Portions of the file are completely obsolete in the current version of MorphMan and changing
-them won’t have any effect; they will simply be overwritten by whatever is specified in Preferences. But there still are
-some there are some options that are controlled in config.py.
-
-The default config.py settings are just fine, so you don’t need to mess with them if you don’t want to.
-
-#### Editing config.py
-
-The file is located in the following directory when installing MorphMan:
-
-* Windows: `C:\Users\[user]\AppData\Roaming\Anki2\addons21\900801631\morph\config.py`
-* Mac: `/Users/[user]/Library/Application Support/Anki2/addons21/900801631/morph/config.py`
-* Linux: `/home/[user]/.local/share/Anki2/addons21/900801631/morph/config.py`
-
-Code editors with like Notepad++ or Sublime Text have syntax highlighting, which makes viewing and editing config.py
-much easier. But ultimately any text editor will do.
-
-Once you open up config.py in your text editor of choice, here is a list of the following options you can tinker with (
-remember, some options are obsolete and don’t influence MorphMan at all):
-
-* Line 24: Mature threshold. How many days a card’s interval must be before the Morphs contained in the card are
-  considered “mature”.
-* Line 25: Known threshold. How many seconds has passed since a card was initially seen before the Morphs contained in
-  the card are considered “known”. Once a card graduates from the learning queue, its Morphs will be considered “known”
-  regardless of whether it has reached the threshold or not. If left at the default value of “10 seconds,” there will be
-  no distinction between Seen and Known cards; all will be considered Known.
-* Line 26: Seen threshold. How many seconds has passed since a card was initially seen before the Morphs contained in
-  the card are considered “seen”.
-* Line 27: Text file import maturity. Default interval given to Morphs that are manually imported by the user via the
-  external.db database.
-* Line 30: Ignore grammar position. If this is set to “True”, words that can function as multiple parts of speech will
-  all be counted as the same Morph, regardless of what part of speech they are being used as. By default, words that can
-  function as multiple parts of speech are counted as a unique Morph for each part of speech they are being used as.
-  Because of this, setting this option to “True” will reduce the total number of known Morphs. Delete all.db and run
-  Recalc each time you change this setting.
-* Line 34: Default morphemizer. Controls which parsing dictionary the Readability Analyzer uses. Set to
-  “SpaceMorphemizer” for languages with spaces between words, “CjkCharMorphemizer” for languages that use CJK
-  characters, and “JiebaMorphemizer” for Chinese.
-* Line 37: Set “Browse Morphs” hotkey.
-* Line 38: Set “Already Known Tagger” hotkey.
-* Line 39: Set “Batch Play” hotkey.
-* Line 40: Set “Extract Morphemes” hotkey.
-* Line 41: Set “Learn Now” hotkey.
-* Line 42: Set “Mass Tagger” hotkey.
-* Line 43: Set “View Morphemes” hotkey.
-* Line 45: Print number of alternatives skipped. If “Skip card if focus morph was already seen today” is checked off in
-  “MorphMan Preferences” > “General,” MorphMan will continue to reorder the New Card Queue while you rep to ensure that
-  you only see cards that are 1T. If “Print number of alternatives skipped” is set to “True,” whenever this reordering
-  happens while you are reviewing, a small notification box will briefly appear. If set to “False,” the reordering will
-  still happen, but this notification box will not appear.
-* Line 50: LoadAllDb. If this is set to “False”, all.db will be generate from scratch each time Recalc is run. This will
-  make running Recalc take much longer.
-* Line 65: Batch media fields. By specifying the fields that contain audio on your cards, you can enable the Batch Play
-  option in the browser.
-* Line 68: Min good sentence length. The minimum number of Morphs for a sentence to not be considered “too short”. Cards
-  with sentences considered “too short” will receive a lower MorphMan Index. For Japanese, a “5” may be a good minimum.
-* Line 69: Max good sentence length. The maximum number of Morphs for a sentence to not be considered “too long”. Cards
-  with sentences considered “too long” will receive a lower Morph Man Index. For Japanese, a “15” may be a good maximum.
-* Line 70: Reinforce new vocab weight. When a card contains unmature Morphs, the amount specified here will be divided
-  by the interval of the most mature card containing that Morph, and that amount will be subtracted from the MorphMan
-  Index of that card.
-* Line 71: Verb bonus. The amount specified here will be subtracted from the MorphMan Index of cards that contain an
-  unknown verb. The idea is that verbs tend to be more useful to learn than other parts of speech.
-* Line 74: Priority.db weight. The amount specified here will be subtracted from the MorphMan Index of cards that
-  contain an unknown Morph that appears in the priority.db database.
-* Line 79: Frequency weight. For cards with Morphs contained within frequency.txt, the amount specified here will be
-  multiplied by the “total number of words in frequency.txt” minus “Morph’s position in frequency.txt”, and that amount
-  will be subtracted from the MorphMan Index of the card.
-* Line 82: Only update k+2 and below. If this option is set to “True,” cards that contain more than two unknown morphs
-  won’t be sorted by MorphMan. This reduces how many notes are changed after a Recalc by not updating notes that aren’t
-  as important, in return reducing the sync burden.
 

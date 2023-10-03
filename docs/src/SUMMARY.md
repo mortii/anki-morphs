@@ -8,6 +8,13 @@
   - [Changes To Anki](user_guide/installation/changes-to-anki.md)
 - [Setup](user_guide/setup.md)
   - [Decks](user_guide/setup/decks.md)
+  - [Settings](user_guide/setup/settings.md)
+    - [Note Filter](user_guide/setup/settings/note-filter.md)
+    - [Extra Fields](user_guide/setup/settings/extra-fields.md)
+    - [Tags](user_guide/setup/settings/tags.md)
+    - [Parse](user_guide/setup/settings/parse.md)
+    - [Recalc](user_guide/setup/settings/recalc.md)
+    - [Shortcuts](user_guide/setup/settings/Shortcuts.md)
   - [Preferences](user_guide/setup/preferences.md)
     - [Note Filter](user_guide/setup/preferences/note-filter.md)
     - [Extra Fields](user_guide/setup/preferences/extra-fields.md)
@@ -20,9 +27,6 @@
   - [Recalc](user_guide/usage/recalc.md)
   - [Reviewing Cards](user_guide/usage/reviewing-cards.md)
   - [Browser](user_guide/usage/browser.md)
-  - [Database Manager](user_guide/usage/database-manager.md)
-  - [Readability Analyzer](user_guide/usage/readability-analyzer.md)
-  - [Statistics](user_guide/usage/statistics.md)
 - [Changelog](user_guide/changelog.md)
 - [Known Problems](user_guide/known-problems.md)
 - [Roadmap](user_guide/roadmap.md)
@@ -33,9 +37,7 @@
 - [Docs](developer_guide/docs.md)
 - [Qt Designer](developer_guide/qt-designer.md)
 - [Tests](developer_guide/tests.md)
-- [Databases](developer_guide/databases.md)
-- [Morphemizer](developer_guide/morphemizer.md)
-- [Extra Fields](developer_guide/extra_fields.md)
+
 
 
 -----------

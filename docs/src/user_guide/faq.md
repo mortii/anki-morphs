@@ -2,7 +2,7 @@
 
 ### Can you add make AnkiMorphs work on Anki qt5?
 
-Supporting multiple versions of Qt creates too much complexity in the code and the workflow of the project to be worth it.
+No, supporting multiple versions of Qt is too detrimental to the project's workflow and code-base.
 
 [The last release of Qt 5 was in May 2023](https://www.qt.io/blog/the-conversion-program-is-ending), so using Qt 6 is
 the sensible thing to do. 

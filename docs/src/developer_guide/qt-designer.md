@@ -20,8 +20,9 @@ Convert ui file to python:
 pyuic6 -o ankimorphs/ui/settings_dialog_ui.py ankimorphs/ui/settings_dialog.ui
 ```
 
-https://realpython.com/qt-designer-python/
+Useful guides:
+- https://realpython.com/qt-designer-python/
+- https://www.pythontutorial.net/pyqt/qt-designer/
 
-https://www.pythontutorial.net/pyqt/qt-designer/
 
-https://doc.qt.io/qt-6/modelview.html
+
