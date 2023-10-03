@@ -8,7 +8,7 @@ from aqt.utils import tooltip
 
 from ankimorphs.config import get_config, get_default_configs, update_configs
 from ankimorphs.morphemizer import get_all_morphemizers
-from ankimorphs.ui.preferences_dialog_ui import Ui_Dialog
+from ankimorphs.ui.settings_dialog_ui import Ui_Dialog
 
 
 def get_cbox_index(items, filter_field) -> Optional[int]:
@@ -27,8 +27,8 @@ def get_model_cbox_index(items, filter_field) -> Optional[int]:
 
 class PreferencesDialog(QDialog):
     """
-    The UI comes from ankimorphs/ui/preferences_dialog.ui which is used in Qt Designer,
-    which is then converted to ankimorphs/ui/preferences_dialog_ui.py,
+    The UI comes from ankimorphs/ui/settings_dialog.ui which is used in Qt Designer,
+    which is then converted to ankimorphs/ui/settings_dialog_ui.py,
     which is then imported here.
 
     Here we make the final adjustments that can't be made (or are hard to make) in

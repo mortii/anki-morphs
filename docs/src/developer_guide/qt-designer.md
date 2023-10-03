@@ -15,9 +15,9 @@ Start Qt Designer with the command:
 ./designer-venv/lib/python3.9/site-packages/qt6_applications/Qt/bin/designer
 ```
 
-Start Qt Designer with the command:
+Convert ui file to python:
 ```bash
-pyuic6 -o ankimorphs/ui/preferences_dialog_ui.py ankimorphs/ui/preferences_dialog.ui
+pyuic6 -o ankimorphs/ui/settings_dialog_ui.py ankimorphs/ui/settings_dialog.ui
 ```
 
 https://realpython.com/qt-designer-python/
