@@ -9,9 +9,10 @@
 7. Fix undo-review
 8. Implement spaCy
 9. Remove intrinsic macab and jieba
-10. Re-add statistics page
-11. Re-add redability analyzer
-12. Reintroduce and rework tests
-13. Add [vulture](https://github.com/jendrikseipp/vulture)
-14. Add mypy?
+10. Release AnkiMorphs stable version?
+11. Re-add statistics page
+12. Re-add readability analyzer
+13. Reintroduce and rework tests
+14. Add [vulture](https://github.com/jendrikseipp/vulture)
+15. Add mypy?
 
