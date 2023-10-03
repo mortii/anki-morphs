@@ -19,7 +19,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>5</number>
+        <number>4</number>
        </property>
        <widget class="QWidget" name="note_filters_tab">
         <attribute name="title">
@@ -243,44 +243,37 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_9">
            <item>
-            <widget class="QCheckBox" name="checkBox">
+            <widget class="QCheckBox" name="parse_ignore_bracket_contents_input">
              <property name="text">
-              <string>ignore grammar position</string>
+              <string>ignore content in brackets</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="checkBox_2">
+            <widget class="QCheckBox" name="parse_ignore_round_bracket_contents_input">
              <property name="text">
-              <string>ignore bracket contents</string>
+              <string>ignore content in round brackets</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="checkBox_3">
+            <widget class="QCheckBox" name="parse_ignore_slim_round_bracket_contents_input">
              <property name="text">
-              <string>ignore round bracket contents</string>
+              <string>ignore content in slim round brackets</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="checkBox_4">
-             <property name="text">
-              <string>ignore slim round bracket contents</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="checkBox_5">
+            <widget class="QCheckBox" name="parse_ignore_proper_nouns_input">
              <property name="text">
               <string>Ignore proper nouns</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="checkBox_12">
+            <widget class="QCheckBox" name="parse_ignore_suspended_cards_content_input">
              <property name="text">
-              <string>Ignore morphs in suspended cards</string>
+              <string>Ignore content in suspended cards</string>
              </property>
             </widget>
            </item>
@@ -302,7 +295,7 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_8">
            <item>
-            <widget class="QPushButton" name="pushButton_5">
+            <widget class="QPushButton" name="restore_parse_defaults_button">
              <property name="text">
               <string>Restore Default Parse Settings</string>
              </property>
@@ -329,40 +322,33 @@
         <attribute name="title">
          <string>Skip</string>
         </attribute>
-        <layout class="QGridLayout" name="gridLayout_3">
-         <item row="0" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_20">
+         <item>
           <layout class="QVBoxLayout" name="verticalLayout_11">
            <item>
-            <widget class="QCheckBox" name="checkBox_7">
+            <widget class="QCheckBox" name="skip_stale_cards_input">
              <property name="text">
-              <string>Skip all known cards</string>
+              <string>Skip stale cards</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="checkBox_8">
+            <widget class="QCheckBox" name="skip_unknown_morph_seen_today_cards_input">
              <property name="text">
-              <string>skip fresh vocab cards</string>
+              <string>Skip cards that have unknown morphs already seen today</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="checkBox_10">
+            <widget class="QCheckBox" name="skip_show_num_of_skipped_cards_input">
              <property name="text">
-              <string>Skip focus morph seen today</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="checkBox_9">
-             <property name="text">
-              <string>Don't show &quot;skipped x cards&quot; notification</string>
+              <string>Show &quot;skipped x cards&quot; notifications</string>
              </property>
             </widget>
            </item>
           </layout>
          </item>
-         <item row="1" column="0">
+         <item>
           <spacer name="verticalSpacer_4">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
@@ -374,6 +360,30 @@
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_11">
+           <item>
+            <widget class="QPushButton" name="restore_skip_defaults_button">
+             <property name="text">
+              <string>Restore Default Skip Settings</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_12">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -670,7 +680,7 @@
        <item>
         <widget class="QLabel" name="ankimorphs_version_label">
          <property name="text">
-          <string>AnkiMorphs version: 0.1-alpha</string>
+          <string>AnkiMorphs version: x</string>
          </property>
         </widget>
        </item>

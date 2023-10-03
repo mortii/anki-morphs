@@ -1,5 +1,5 @@
-import pprint
 from functools import partial
+from typing import Optional
 
 from anki.models import FieldDict
 from aqt import mw
@@ -11,6 +11,20 @@ from ankimorphs.morphemizer import get_all_morphemizers
 from ankimorphs.ui.preferences_dialog_ui import Ui_Dialog
 
 
+def get_cbox_index(items, filter_field) -> Optional[int]:
+    for index, field in enumerate(items):
+        if field == filter_field:
+            return index
+    return None
+
+
+def get_model_cbox_index(items, filter_field) -> Optional[int]:
+    for index, model in enumerate(items):
+        if model.name == filter_field:
+            return index
+    return None
+
+
 class PreferencesDialog(QDialog):
     """
     The UI comes from ankimorphs/ui/preferences_dialog.ui which is used in Qt Designer,
@@ -19,7 +33,6 @@ class PreferencesDialog(QDialog):
 
     Here we make the final adjustments that can't be made (or are hard to make) in
     the Qt Designer, like setting up tables and widget-connections.
-
     """
 
     def __init__(self, parent=None):
@@ -28,20 +41,27 @@ class PreferencesDialog(QDialog):
         self.models = None
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
+        self.setup_note_filters_table()
+        self.setup_extra_fields_table()
+        self.populate_tags_tab()
+        self.populate_parse_tab()
+        self.populate_skip_tab()
+        self.populate_shortcuts_tab()
+        self.populate_recalc_tab()
+        self.setup_buttons()
+        self.ui.tabWidget.currentChanged.connect(self.tab_change)
         self.ui.ankimorphs_version_label.setText(
             f"AnkiMorphs version: {mw.ANKIMORPHS_VERSION}"
         )
-        self.setup_note_filters_table()
-        self.setup_extra_fields_table()
-        self.setup_buttons()
 
-        self.ui.tabWidget.currentChanged.connect(
-            lambda x: self.setup_extra_fields_table() if x == 1 else None
-        )
-
-        self.populate_tags_tab()
-        self.populate_shortcuts_tab()
-        self.populate_recalc_tab()
+    def tab_change(self, tab_index):
+        """
+        The extra fields settings are dependent on the note filters, so
+        everytime the extra fields tab is opened we just re-populate it
+        in case the note filters have changed.
+        """
+        if tab_index == 1:
+            self.setup_extra_fields_table()
 
     def setup_buttons(self):
         self.ui.save_button.clicked.connect(self.save_to_config)
@@ -55,35 +75,71 @@ class PreferencesDialog(QDialog):
         self.ui.restore_shortcut_defaults_button.clicked.connect(
             self.restore_shortcuts_defaults
         )
+        self.ui.restore_parse_defaults_button.clicked.connect(
+            self.restore_parse_defaults
+        )
+        self.ui.restore_skip_defaults_button.clicked.connect(self.restore_skip_defaults)
 
     def restore_tags_defaults(self):
-        self.ui.ripe_tag_input.setText(get_default_configs("tag_ripe"))
-        self.ui.budding_tag_input.setText(get_default_configs("tag_budding"))
-        self.ui.stale_tag_input.setText(get_default_configs("tag_stale"))
+        title = "Confirmation"
+        text = "Are you sure you want to restore default tags settings?"
+        confirmed = self.warning_dialog(title, text)
+
+        if confirmed:
+            self.ui.ripe_tag_input.setText(get_default_configs("tag_ripe"))
+            self.ui.budding_tag_input.setText(get_default_configs("tag_budding"))
+            self.ui.stale_tag_input.setText(get_default_configs("tag_stale"))
 
     def populate_tags_tab(self):
         self.ui.ripe_tag_input.setText(get_config("tag_ripe"))
         self.ui.budding_tag_input.setText(get_config("tag_budding"))
         self.ui.stale_tag_input.setText(get_config("tag_stale"))
 
+    def populate_parse_tab(self):
+        self.ui.parse_ignore_bracket_contents_input.setChecked(
+            get_config("parse_ignore_bracket_contents")
+        )
+        self.ui.parse_ignore_round_bracket_contents_input.setChecked(
+            get_config("parse_ignore_round_bracket_contents")
+        )
+        self.ui.parse_ignore_slim_round_bracket_contents_input.setChecked(
+            get_config("parse_ignore_slim_round_bracket_contents")
+        )
+        self.ui.parse_ignore_proper_nouns_input.setChecked(
+            get_config("parse_ignore_proper_nouns")
+        )
+        self.ui.parse_ignore_suspended_cards_content_input.setChecked(
+            get_config("parse_ignore_suspended_cards_content")
+        )
+
     def delete_row(self):
         selected_row = self.ui.note_filters_table.currentRow()
         self.ui.note_filters_table.removeRow(selected_row)
 
     def set_note_filters_table_row(self, row, am_filter):
+        filters = get_config("filters")
+        # print(f"filters: {filters}")
+        _filter = filters[row]
+        # print(f"filters row note type: {_filter['note_type']}")
+
         self.ui.note_filters_table.setRowHeight(row, 35)
 
         note_type_cbox = QComboBox(self.ui.note_filters_table)
         note_type_cbox.addItems([model.name for model in self.models])
-        note_type_cbox.setCurrentIndex(2)
+        note_type_name_index = get_model_cbox_index(self.models, _filter["note_type"])
+        if note_type_name_index is not None:
+            tooltip("Found set note type", parent=mw)
+            note_type_cbox.setCurrentIndex(note_type_name_index)
 
         current_model_id = self.models[note_type_cbox.currentIndex()].id
-
         note_type = mw.col.models.get(current_model_id)
 
         fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
         field_cbox = QComboBox(self.ui.note_filters_table)
         field_cbox.addItems(fields)
+        field_cbox_index = get_cbox_index(fields, _filter["field"])
+        if field_cbox_index is not None:
+            field_cbox.setCurrentIndex(field_cbox_index)
 
         note_type_cbox.currentIndexChanged.connect(
             partial(self.update_fields_cbox, field_cbox, note_type_cbox)
@@ -93,6 +149,9 @@ class PreferencesDialog(QDialog):
         morphemizers = get_all_morphemizers()
         morphemizers = [mizer.get_description() for mizer in morphemizers]
         morphemizer_cbox.addItems(morphemizers)
+        morphemizer_cbox_index = get_cbox_index(morphemizers, _filter["morphemizer"])
+        if morphemizer_cbox_index is not None:
+            morphemizer_cbox.setCurrentIndex(morphemizer_cbox_index)
 
         read_checkbox = QCheckBox()
         read_checkbox.setChecked(am_filter["read"])
@@ -115,7 +174,7 @@ class PreferencesDialog(QDialog):
         self.ui.note_filters_table.setRowCount(
             self.ui.note_filters_table.rowCount() + 1
         )
-        am_filter = get_config("filters")[0]  # TODO get from config.json, not meta.json
+        am_filter = get_default_configs("filters")[0]
         row = self.ui.note_filters_table.rowCount() - 1
         self.set_note_filters_table_row(row, am_filter)
 
@@ -134,7 +193,39 @@ class PreferencesDialog(QDialog):
             "recalc_before_sync": self.ui.recalc_before_sync_input.isChecked(),
             "recalc_prioritize_collection": self.ui.recalc_prioritize_collection_input.isChecked(),
             "recalc_prioritize_textfile": self.ui.recalc_prioritize_textfile_input.isChecked(),
+            "parse_ignore_bracket_contents": self.ui.parse_ignore_bracket_contents_input.isChecked(),
+            "parse_ignore_round_bracket_contents": self.ui.parse_ignore_round_bracket_contents_input.isChecked(),
+            "parse_ignore_slim_round_bracket_contents": self.ui.parse_ignore_slim_round_bracket_contents_input.isChecked(),
+            "parse_ignore_proper_nouns": self.ui.parse_ignore_proper_nouns_input.isChecked(),
+            "parse_ignore_suspended_cards_content": self.ui.parse_ignore_suspended_cards_content_input.isChecked(),
+            "skip_stale_cards": self.ui.skip_stale_cards_input.isChecked(),
+            "skip_unknown_morph_seen_today_cards": self.ui.skip_unknown_morph_seen_today_cards_input.isChecked(),
+            "skip_show_num_of_skipped_cards": self.ui.skip_show_num_of_skipped_cards_input.isChecked(),
         }
+
+        filters = []
+        rows = self.ui.note_filters_table.rowCount()
+        for row in range(rows):
+            note_type_widget = self.ui.note_filters_table.cellWidget(row, 0)
+            field_widget = self.ui.note_filters_table.cellWidget(row, 2)
+            morphemizer_widget = self.ui.note_filters_table.cellWidget(row, 3)
+
+            _filter = {
+                "note_type": note_type_widget.itemText(note_type_widget.currentIndex()),
+                "note_type_id": self.models[note_type_widget.currentIndex()].id,
+                "tags": [self.ui.note_filters_table.item(row, 1).text()],
+                "field": field_widget.itemText(field_widget.currentIndex()),
+                "morphemizer": morphemizer_widget.itemText(
+                    morphemizer_widget.currentIndex()
+                ),
+                "read": self.ui.note_filters_table.cellWidget(row, 4).isChecked(),
+                "modify": self.ui.note_filters_table.cellWidget(row, 5).isChecked(),
+                "focus_morph": "",
+                "difficulty": "Front",
+            }
+            filters.append(_filter)
+
+        new_config["filters"] = filters
 
         update_configs(new_config)
         tooltip("Please recalc to avoid unexpected behaviour", parent=mw)
@@ -186,6 +277,7 @@ class PreferencesDialog(QDialog):
         focus_morph_cbox = QComboBox(self.ui.extra_fields_table)
         focus_morph_cbox.addItems(["(none)"])
         focus_morph_cbox.addItems(fields)
+        focus_morph_cbox.currentIndex()
 
         highlighted_cbox = QComboBox(self.ui.extra_fields_table)
         highlighted_cbox.addItems(["(none)"])
@@ -217,15 +309,40 @@ class PreferencesDialog(QDialog):
         )
 
     def warning_dialog(self, title, text) -> bool:
-        answer = QMessageBox.warning(
-            self,
-            title,
-            text,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        warning_box = QMessageBox(self)
+        warning_box.setWindowTitle(title)
+        warning_box.setIcon(QMessageBox.Icon.Warning)
+        warning_box.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
+        warning_box.setText(text)
+        answer = warning_box.exec()
         if answer == QMessageBox.StandardButton.Yes:
+            tooltip("Remember to save!", parent=mw)
             return True
         return False
+
+    def restore_parse_defaults(self):
+        title = "Confirmation"
+        text = "Are you sure you want to restore default parse settings?"
+        confirmed = self.warning_dialog(title, text)
+
+        if confirmed:
+            self.ui.parse_ignore_bracket_contents_input.setChecked(
+                get_default_configs("parse_ignore_bracket_contents")
+            )
+            self.ui.parse_ignore_round_bracket_contents_input.setChecked(
+                get_default_configs("parse_ignore_round_bracket_contents")
+            )
+            self.ui.parse_ignore_slim_round_bracket_contents_input.setChecked(
+                get_default_configs("parse_ignore_slim_round_bracket_contents")
+            )
+            self.ui.parse_ignore_proper_nouns_input.setChecked(
+                get_default_configs("parse_ignore_proper_nouns")
+            )
+            self.ui.parse_ignore_suspended_cards_content_input.setChecked(
+                get_default_configs("parse_ignore_suspended_cards_content")
+            )
 
     def restore_shortcuts_defaults(self):
         title = "Confirmation"
@@ -266,21 +383,51 @@ class PreferencesDialog(QDialog):
         )
 
     def restore_recalc_defaults(self):
-        self.ui.preferred_sentence_length_input.setValue(
-            get_default_configs("recalc_preferred_sentence_length")
+        title = "Confirmation"
+        text = "Are you sure you want to restore default recalc settings?"
+        confirmed = self.warning_dialog(title, text)
+
+        if confirmed:
+            self.ui.preferred_sentence_length_input.setValue(
+                get_default_configs("recalc_preferred_sentence_length")
+            )
+            self.ui.recalc_unknown_morphs_count_input.setValue(
+                get_default_configs("recalc_unknown_morphs_count")
+            )
+            self.ui.recalc_before_sync_input.setChecked(
+                get_default_configs("recalc_before_sync")
+            )
+            self.ui.recalc_prioritize_collection_input.setChecked(
+                get_default_configs("recalc_prioritize_collection")
+            )
+            self.ui.recalc_prioritize_textfile_input.setChecked(
+                get_default_configs("recalc_prioritize_textfile")
+            )
+
+    def populate_skip_tab(self):
+        self.ui.skip_stale_cards_input.setChecked(get_config("skip_stale_cards"))
+        self.ui.skip_unknown_morph_seen_today_cards_input.setChecked(
+            get_config("skip_unknown_morph_seen_today_cards")
         )
-        self.ui.recalc_unknown_morphs_count_input.setValue(
-            get_default_configs("recalc_unknown_morphs_count")
+        self.ui.skip_show_num_of_skipped_cards_input.setChecked(
+            get_config("skip_show_num_of_skipped_cards")
         )
-        self.ui.recalc_before_sync_input.setChecked(
-            get_default_configs("recalc_before_sync")
-        )
-        self.ui.recalc_prioritize_collection_input.setChecked(
-            get_default_configs("recalc_prioritize_collection")
-        )
-        self.ui.recalc_prioritize_textfile_input.setChecked(
-            get_default_configs("recalc_prioritize_textfile")
-        )
+
+    def restore_skip_defaults(self):
+        title = "Confirmation"
+        text = "Are you sure you want to restore default skip settings?"
+        confirmed = self.warning_dialog(title, text)
+
+        if confirmed:
+            self.ui.skip_stale_cards_input.setChecked(
+                get_default_configs("skip_stale_cards")
+            )
+            self.ui.skip_unknown_morph_seen_today_cards_input.setChecked(
+                get_default_configs("skip_unknown_morph_seen_today_cards")
+            )
+            self.ui.skip_show_num_of_skipped_cards_input.setChecked(
+                get_default_configs("skip_show_num_of_skipped_cards")
+            )
 
 
 def main():

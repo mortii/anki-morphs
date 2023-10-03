@@ -1,13 +1,12 @@
 {
-  "shortcut_browse_same_unknown_ripe": "l",
-  "shortcut_browse_same_unknown_ripe_budding": "Shift+l",
-  "shortcut_set_known_and_skip": "k",
+  "shortcut_browse_same_unknown_ripe": "L",
+  "shortcut_browse_same_unknown_ripe_budding": "Shift+L",
+  "shortcut_set_known_and_skip": "K",
   "shortcut_learn_now": "Ctrl+Alt+N",
   "shortcut_view_morphemes": "Ctrl+Alt+V",
-  "skip_comprehension_cards": true,
-  "skip_fresh_vocab_cards": true,
-  "skip_focus_morph_seen_today": true,
-  "skip_print_number_of_alternatives_skipped": true,
+  "skip_stale_cards": true,
+  "skip_unknown_morph_seen_today_cards": true,
+  "skip_show_num_of_skipped_cards": true,
   "recalc_ignore_suspended_leeches": true,
   "recalc_always_prioritize_frequency_morphs": false,
   "recalc_preferred_sentence_length": 7,
@@ -15,27 +14,26 @@
   "recalc_before_sync": false,
   "recalc_prioritize_collection": true,
   "recalc_prioritize_textfile": false,
-  "parse_ignore_grammar_position": false,
   "parse_ignore_bracket_contents": true,
   "parse_ignore_round_bracket_contents": true,
   "parse_ignore_slim_round_bracket_contents": true,
-  "parse_proper_nouns_already_known": true,
+  "parse_ignore_proper_nouns": true,
+  "parse_ignore_suspended_cards_content": true,
   "tag_ripe": "ripe",
   "tag_budding": "budding",
   "tag_stale": "stale",
   "filters": [
     {
-      "type": "",
-      "type_id": "",
-      "tags": [
-        "fake", "news"
-      ],
-      "field": "meh",
+      "note_type": "",
+      "note_type_id": null,
+      "tags": [""],
+      "field": "",
       "morphemizer": "",
       "read": true,
       "modify": true,
       "focus_morph": "",
-      "difficulty": "Front"
+      "highlighted": "",
+      "difficulty": ""
     }
   ]
 }
