@@ -3,7 +3,7 @@ from functools import partial
 
 from anki.models import FieldDict
 from aqt import mw
-from aqt.qt import QCheckBox, QComboBox, QDialog, QTableWidgetItem
+from aqt.qt import QCheckBox, QComboBox, QDialog, QMessageBox, QTableWidgetItem
 from aqt.utils import tooltip
 
 from ankimorphs.config import get_config, get_default_configs, update_configs
@@ -216,22 +216,39 @@ class PreferencesDialog(QDialog):
             get_config("shortcut_view_morphemes")
         )
 
+    def warning_dialog(self, title, text) -> bool:
+        answer = QMessageBox.warning(
+            self,
+            title,
+            text,
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if answer == QMessageBox.StandardButton.Yes:
+            return True
+        return False
+
     def restore_shortcuts_defaults(self):
-        self.ui.shortcut_browse_same_ripe_input.setText(
-            get_default_configs("shortcut_browse_same_unknown_ripe")
-        )
-        self.ui.shortcut_browse_same_ripe_budding_input.setText(
-            get_default_configs("shortcut_browse_same_unknown_ripe_budding")
-        )
-        self.ui.shortcut_known_and_skip_input.setText(
-            get_default_configs("shortcut_set_known_and_skip")
-        )
-        self.ui.shortcut_learn_now_input.setText(
-            get_default_configs("shortcut_learn_now")
-        )
-        self.ui.shortcut_view_morphs_input.setText(
-            get_default_configs("shortcut_view_morphemes")
-        )
+        title = "Confirmation"
+        text = "Are you sure you want to restore default shortcut settings?"
+        confirmed = self.warning_dialog(title, text)
+
+        if confirmed:
+            self.ui.shortcut_browse_same_ripe_input.setText(
+                get_default_configs("shortcut_browse_same_unknown_ripe")
+            )
+            self.ui.shortcut_browse_same_ripe_budding_input.setText(
+                get_default_configs("shortcut_browse_same_unknown_ripe_budding")
+            )
+            self.ui.shortcut_known_and_skip_input.setText(
+                get_default_configs("shortcut_set_known_and_skip")
+            )
+            self.ui.shortcut_learn_now_input.setText(
+                get_default_configs("shortcut_learn_now")
+            )
+            self.ui.shortcut_view_morphs_input.setText(
+                get_default_configs("shortcut_view_morphemes")
+                # self.close()
+            )
 
     def populate_recalc_tab(self):
         self.ui.preferred_sentence_length_input.setValue(
