@@ -19,7 +19,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>2</number>
+        <number>5</number>
        </property>
        <widget class="QWidget" name="note_filters_tab">
         <attribute name="title">
@@ -392,7 +392,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QSpinBox" name="spinBox"/>
+            <widget class="QSpinBox" name="preferred_sentence_length_input"/>
            </item>
            <item>
             <spacer name="horizontalSpacer_9">
@@ -419,7 +419,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QSpinBox" name="spinBox_2"/>
+            <widget class="QSpinBox" name="recalc_unknown_morphs_count_input"/>
            </item>
            <item>
             <widget class="QLabel" name="label">
@@ -449,7 +449,7 @@
             <number>10</number>
            </property>
            <item>
-            <widget class="QCheckBox" name="checkBox_6">
+            <widget class="QCheckBox" name="recalc_before_sync_input">
              <property name="text">
               <string>Automatically Recalc before Sync</string>
              </property>
@@ -470,14 +470,14 @@
             </widget>
            </item>
            <item>
-            <widget class="QRadioButton" name="radioButton">
+            <widget class="QRadioButton" name="recalc_prioritize_collection_input">
              <property name="text">
               <string>Frequency in card collection</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QRadioButton" name="radioButton_2">
+            <widget class="QRadioButton" name="recalc_prioritize_textfile_input">
              <property name="text">
               <string>frequency.txt</string>
              </property>
@@ -501,7 +501,7 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_9">
            <item>
-            <widget class="QPushButton" name="pushButton">
+            <widget class="QPushButton" name="restore_recalc_defaults_button">
              <property name="text">
               <string>Restore Default Recalc Settings</string>
              </property>
@@ -620,7 +620,7 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_10">
            <item>
-            <widget class="QPushButton" name="pushButton_2">
+            <widget class="QPushButton" name="restore_shortcut_defaults_button">
              <property name="text">
               <string>Restore Default Shortcut Settings</string>
              </property>

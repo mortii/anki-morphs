@@ -41,6 +41,7 @@ class PreferencesDialog(QDialog):
 
         self.populate_tags_tab()
         self.populate_shortcuts_tab()
+        self.populate_recalc_tab()
 
     def setup_buttons(self):
         self.ui.save_button.clicked.connect(self.save_to_config)
@@ -48,6 +49,12 @@ class PreferencesDialog(QDialog):
         self.ui.add_new_row_button.clicked.connect(self.add_new_row)
         self.ui.delete_row_button.clicked.connect(self.delete_row)
         self.ui.restore_tags_defaults_button.clicked.connect(self.restore_tags_defaults)
+        self.ui.restore_recalc_defaults_button.clicked.connect(
+            self.restore_recalc_defaults
+        )
+        self.ui.restore_shortcut_defaults_button.clicked.connect(
+            self.restore_shortcuts_defaults
+        )
 
     def restore_tags_defaults(self):
         self.ui.ripe_tag_input.setText(get_default_configs("tag_ripe"))
@@ -113,11 +120,21 @@ class PreferencesDialog(QDialog):
         self.set_note_filters_table_row(row, am_filter)
 
     def save_to_config(self):
-        new_config = {}
-
-        new_config["tag_ripe"] = self.ui.ripe_tag_input.text()
-        new_config["tag_budding"] = self.ui.budding_tag_input.text()
-        new_config["tag_stale"] = self.ui.stale_tag_input.text()
+        new_config = {
+            "tag_ripe": self.ui.ripe_tag_input.text(),
+            "tag_budding": self.ui.budding_tag_input.text(),
+            "tag_stale": self.ui.stale_tag_input.text(),
+            "shortcut_browse_same_unknown_ripe": self.ui.shortcut_browse_same_ripe_input.text(),
+            "shortcut_browse_same_unknown_ripe_budding": self.ui.shortcut_browse_same_ripe_budding_input.text(),
+            "shortcut_set_known_and_skip": self.ui.shortcut_known_and_skip_input.text(),
+            "shortcut_learn_now": self.ui.shortcut_learn_now_input.text(),
+            "shortcut_view_morphemes": self.ui.shortcut_view_morphs_input.text(),
+            "recalc_preferred_sentence_length": self.ui.preferred_sentence_length_input.value(),
+            "recalc_unknown_morphs_count": self.ui.recalc_unknown_morphs_count_input.value(),
+            "recalc_before_sync": self.ui.recalc_before_sync_input.isChecked(),
+            "recalc_prioritize_collection": self.ui.recalc_prioritize_collection_input.isChecked(),
+            "recalc_prioritize_textfile": self.ui.recalc_prioritize_textfile_input.isChecked(),
+        }
 
         update_configs(new_config)
         tooltip("Please recalc to avoid unexpected behaviour", parent=mw)
@@ -179,47 +196,74 @@ class PreferencesDialog(QDialog):
         difficulty_cbox.addItems(["(none)"])
         difficulty_cbox.addItems(fields)
 
-        # for counter, item in enumerate(fields):
-        #     print(f"item: {item}, difficulty_field: {difficulty_field}")
-        #     if item == difficulty_field:
-        #         difficulty_cbox.setCurrentIndex(
-        #             counter + 1  # +1 because (none) is prepended
-        #         )
-        #         break
-
-        # note_type_cbox.currentIndexChanged.connect(
-        #     partial(self.update_fields_cbox, highlighted_cbox, note_type_cbox)
-        # )
-
         self.ui.extra_fields_table.setItem(row, 0, QTableWidgetItem(item_text))
         self.ui.extra_fields_table.setCellWidget(row, 1, focus_morph_cbox)
         self.ui.extra_fields_table.setCellWidget(row, 2, highlighted_cbox)
         self.ui.extra_fields_table.setCellWidget(row, 3, difficulty_cbox)
 
-        print(f"widget: {note_type_widget}, at row: {row}")
-        print(f"widget: {self.ui.extra_fields_table.itemAt(row, 0)}")
-        print(f"item_text: {item_text}")
-
     def populate_shortcuts_tab(self):
-        shortcut_browse_same_unknown_ripe = get_config(
-            "shortcut_browse_same_unknown_ripe"
-        )
-        shortcut_browse_same_unknown_ripe_budding = get_config(
-            "shortcut_browse_same_unknown_ripe_budding"
-        )
-        shortcut_set_known_and_skip = get_config("shortcut_set_known_and_skip")
-        shortcut_learn_now = get_config("shortcut_learn_now")
-        shortcut_view_morphemes = get_config("shortcut_view_morphemes")
-
         self.ui.shortcut_browse_same_ripe_input.setText(
-            shortcut_browse_same_unknown_ripe
+            get_config("shortcut_browse_same_unknown_ripe")
         )
         self.ui.shortcut_browse_same_ripe_budding_input.setText(
-            shortcut_browse_same_unknown_ripe_budding
+            get_config("shortcut_browse_same_unknown_ripe_budding")
         )
-        self.ui.shortcut_known_and_skip_input.setText(shortcut_set_known_and_skip)
-        self.ui.shortcut_learn_now_input.setText(shortcut_learn_now)
-        self.ui.shortcut_view_morphs_input.setText(shortcut_view_morphemes)
+        self.ui.shortcut_known_and_skip_input.setText(
+            get_config("shortcut_set_known_and_skip")
+        )
+        self.ui.shortcut_learn_now_input.setText(get_config("shortcut_learn_now"))
+        self.ui.shortcut_view_morphs_input.setText(
+            get_config("shortcut_view_morphemes")
+        )
+
+    def restore_shortcuts_defaults(self):
+        self.ui.shortcut_browse_same_ripe_input.setText(
+            get_default_configs("shortcut_browse_same_unknown_ripe")
+        )
+        self.ui.shortcut_browse_same_ripe_budding_input.setText(
+            get_default_configs("shortcut_browse_same_unknown_ripe_budding")
+        )
+        self.ui.shortcut_known_and_skip_input.setText(
+            get_default_configs("shortcut_set_known_and_skip")
+        )
+        self.ui.shortcut_learn_now_input.setText(
+            get_default_configs("shortcut_learn_now")
+        )
+        self.ui.shortcut_view_morphs_input.setText(
+            get_default_configs("shortcut_view_morphemes")
+        )
+
+    def populate_recalc_tab(self):
+        self.ui.preferred_sentence_length_input.setValue(
+            get_config("recalc_preferred_sentence_length")
+        )
+        self.ui.recalc_unknown_morphs_count_input.setValue(
+            get_config("recalc_unknown_morphs_count")
+        )
+        self.ui.recalc_before_sync_input.setChecked(get_config("recalc_before_sync"))
+        self.ui.recalc_prioritize_collection_input.setChecked(
+            get_config("recalc_prioritize_collection")
+        )
+        self.ui.recalc_prioritize_textfile_input.setChecked(
+            get_config("recalc_prioritize_textfile")
+        )
+
+    def restore_recalc_defaults(self):
+        self.ui.preferred_sentence_length_input.setValue(
+            get_default_configs("recalc_preferred_sentence_length")
+        )
+        self.ui.recalc_unknown_morphs_count_input.setValue(
+            get_default_configs("recalc_unknown_morphs_count")
+        )
+        self.ui.recalc_before_sync_input.setChecked(
+            get_default_configs("recalc_before_sync")
+        )
+        self.ui.recalc_prioritize_collection_input.setChecked(
+            get_default_configs("recalc_prioritize_collection")
+        )
+        self.ui.recalc_prioritize_textfile_input.setChecked(
+            get_default_configs("recalc_prioritize_textfile")
+        )
 
 
 def main():

@@ -225,9 +225,13 @@ class Ui_Dialog:
         self.label_6 = QtWidgets.QLabel(parent=self.recalc_tab)
         self.label_6.setObjectName("label_6")
         self.horizontalLayout_6.addWidget(self.label_6)
-        self.spinBox = QtWidgets.QSpinBox(parent=self.recalc_tab)
-        self.spinBox.setObjectName("spinBox")
-        self.horizontalLayout_6.addWidget(self.spinBox)
+        self.preferred_sentence_length_input = QtWidgets.QSpinBox(
+            parent=self.recalc_tab
+        )
+        self.preferred_sentence_length_input.setObjectName(
+            "preferred_sentence_length_input"
+        )
+        self.horizontalLayout_6.addWidget(self.preferred_sentence_length_input)
         spacerItem7 = QtWidgets.QSpacerItem(
             40,
             20,
@@ -241,9 +245,13 @@ class Ui_Dialog:
         self.label_7 = QtWidgets.QLabel(parent=self.recalc_tab)
         self.label_7.setObjectName("label_7")
         self.horizontalLayout_4.addWidget(self.label_7)
-        self.spinBox_2 = QtWidgets.QSpinBox(parent=self.recalc_tab)
-        self.spinBox_2.setObjectName("spinBox_2")
-        self.horizontalLayout_4.addWidget(self.spinBox_2)
+        self.recalc_unknown_morphs_count_input = QtWidgets.QSpinBox(
+            parent=self.recalc_tab
+        )
+        self.recalc_unknown_morphs_count_input.setObjectName(
+            "recalc_unknown_morphs_count_input"
+        )
+        self.horizontalLayout_4.addWidget(self.recalc_unknown_morphs_count_input)
         self.label = QtWidgets.QLabel(parent=self.recalc_tab)
         self.label.setObjectName("label")
         self.horizontalLayout_4.addWidget(self.label)
@@ -258,9 +266,9 @@ class Ui_Dialog:
         self.verticalLayout_17 = QtWidgets.QVBoxLayout()
         self.verticalLayout_17.setContentsMargins(-1, 10, -1, -1)
         self.verticalLayout_17.setObjectName("verticalLayout_17")
-        self.checkBox_6 = QtWidgets.QCheckBox(parent=self.recalc_tab)
-        self.checkBox_6.setObjectName("checkBox_6")
-        self.verticalLayout_17.addWidget(self.checkBox_6)
+        self.recalc_before_sync_input = QtWidgets.QCheckBox(parent=self.recalc_tab)
+        self.recalc_before_sync_input.setObjectName("recalc_before_sync_input")
+        self.verticalLayout_17.addWidget(self.recalc_before_sync_input)
         self.verticalLayout_18.addLayout(self.verticalLayout_17)
         self.verticalLayout_14 = QtWidgets.QVBoxLayout()
         self.verticalLayout_14.setContentsMargins(-1, 10, -1, -1)
@@ -268,12 +276,20 @@ class Ui_Dialog:
         self.label_5 = QtWidgets.QLabel(parent=self.recalc_tab)
         self.label_5.setObjectName("label_5")
         self.verticalLayout_14.addWidget(self.label_5)
-        self.radioButton = QtWidgets.QRadioButton(parent=self.recalc_tab)
-        self.radioButton.setObjectName("radioButton")
-        self.verticalLayout_14.addWidget(self.radioButton)
-        self.radioButton_2 = QtWidgets.QRadioButton(parent=self.recalc_tab)
-        self.radioButton_2.setObjectName("radioButton_2")
-        self.verticalLayout_14.addWidget(self.radioButton_2)
+        self.recalc_prioritize_collection_input = QtWidgets.QRadioButton(
+            parent=self.recalc_tab
+        )
+        self.recalc_prioritize_collection_input.setObjectName(
+            "recalc_prioritize_collection_input"
+        )
+        self.verticalLayout_14.addWidget(self.recalc_prioritize_collection_input)
+        self.recalc_prioritize_textfile_input = QtWidgets.QRadioButton(
+            parent=self.recalc_tab
+        )
+        self.recalc_prioritize_textfile_input.setObjectName(
+            "recalc_prioritize_textfile_input"
+        )
+        self.verticalLayout_14.addWidget(self.recalc_prioritize_textfile_input)
         self.verticalLayout_18.addLayout(self.verticalLayout_14)
         spacerItem9 = QtWidgets.QSpacerItem(
             20,
@@ -284,9 +300,13 @@ class Ui_Dialog:
         self.verticalLayout_18.addItem(spacerItem9)
         self.horizontalLayout_9 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_9.setObjectName("horizontalLayout_9")
-        self.pushButton = QtWidgets.QPushButton(parent=self.recalc_tab)
-        self.pushButton.setObjectName("pushButton")
-        self.horizontalLayout_9.addWidget(self.pushButton)
+        self.restore_recalc_defaults_button = QtWidgets.QPushButton(
+            parent=self.recalc_tab
+        )
+        self.restore_recalc_defaults_button.setObjectName(
+            "restore_recalc_defaults_button"
+        )
+        self.horizontalLayout_9.addWidget(self.restore_recalc_defaults_button)
         spacerItem10 = QtWidgets.QSpacerItem(
             40,
             20,
@@ -367,9 +387,13 @@ class Ui_Dialog:
         self.verticalLayout_19.addItem(spacerItem12)
         self.horizontalLayout_10 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_10.setObjectName("horizontalLayout_10")
-        self.pushButton_2 = QtWidgets.QPushButton(parent=self.shortcuts_tab)
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.horizontalLayout_10.addWidget(self.pushButton_2)
+        self.restore_shortcut_defaults_button = QtWidgets.QPushButton(
+            parent=self.shortcuts_tab
+        )
+        self.restore_shortcut_defaults_button.setObjectName(
+            "restore_shortcut_defaults_button"
+        )
+        self.horizontalLayout_10.addWidget(self.restore_shortcut_defaults_button)
         spacerItem13 = QtWidgets.QSpacerItem(
             40,
             20,
@@ -412,7 +436,7 @@ class Ui_Dialog:
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         self.retranslateUi(Dialog)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(5)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -487,13 +511,19 @@ class Ui_Dialog:
             _translate("Dialog", "Only Recalc cards that have less than")
         )
         self.label.setText(_translate("Dialog", "unknown morphs"))
-        self.checkBox_6.setText(
+        self.recalc_before_sync_input.setText(
             _translate("Dialog", "Automatically Recalc before Sync")
         )
         self.label_5.setText(_translate("Dialog", "Prioritize morphs based on:"))
-        self.radioButton.setText(_translate("Dialog", "Frequency in card collection"))
-        self.radioButton_2.setText(_translate("Dialog", "frequency.txt"))
-        self.pushButton.setText(_translate("Dialog", "Restore Default Recalc Settings"))
+        self.recalc_prioritize_collection_input.setText(
+            _translate("Dialog", "Frequency in card collection")
+        )
+        self.recalc_prioritize_textfile_input.setText(
+            _translate("Dialog", "frequency.txt")
+        )
+        self.restore_recalc_defaults_button.setText(
+            _translate("Dialog", "Restore Default Recalc Settings")
+        )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.recalc_tab), _translate("Dialog", "Recalc")
         )
@@ -508,7 +538,7 @@ class Ui_Dialog:
         self.label_10.setText(_translate("Dialog", "Set card as known and skip"))
         self.label_11.setText(_translate("Dialog", "Learn card now"))
         self.label_12.setText(_translate("Dialog", "View card morphemes"))
-        self.pushButton_2.setText(
+        self.restore_shortcut_defaults_button.setText(
             _translate("Dialog", "Restore Default Shortcut Settings")
         )
         self.tabWidget.setTabText(

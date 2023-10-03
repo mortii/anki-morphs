@@ -6,7 +6,9 @@
 
 A MorphMan fork rebuilt from the ground up with a focus on performance and a clean codebase with minimal technical debt.
 
-Guide and docs: https://mortii.github.io/anki-morphs/
+Guide and docs (much is outdated): https://mortii.github.io/anki-morphs/
+
+Roadmap (up-to-date): https://mortii.github.io/anki-morphs/user_guide/roadmap.html
 
 Will eventually implement https://spacy.io/ 
 
