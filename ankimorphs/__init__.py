@@ -11,7 +11,6 @@ from aqt.reviewer import Reviewer
 from ankimorphs import (
     browser_utils,
     morph_stats,
-    preferences_dialog,
     recalc,
     reviewing_utils,
     settings_dialog,

@@ -64,21 +64,7 @@ def get_modify_enabled_models():
 
 def error_msg(msg):
     showCritical(msg)
-    printf(msg)
 
 
 def info_msg(msg):
     showInfo(msg)
-    printf(msg)
-
-
-def printf(msg):
-    txt = f"{datetime.datetime.now()}: {msg}"
-    with codecs.open(get_config("path_log"), "a", "utf-8") as file:
-        file.write(txt + "\r\n")
-    print(txt.encode("utf-8"))
-
-
-def clear_log():
-    with codecs.open(get_config("path_log"), "w", "utf-8"):
-        pass

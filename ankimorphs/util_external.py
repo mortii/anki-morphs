@@ -2,6 +2,7 @@ import functools
 import sys
 
 
+# TODO: Remove file after having removed mecab, it uses memoize.
 def get_size(obj, seen=None):
     """Recursively finds size of objects"""
     size = sys.getsizeof(obj)
