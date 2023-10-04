@@ -4,10 +4,10 @@ import pickle
 from functools import partial
 from typing import Optional
 
+from aqt import mw
 from aqt.utils import tooltip
 
 from ankimorphs.config import get_config as cfg
-from ankimorphs.util import mw
 
 
 def get_stat_path():

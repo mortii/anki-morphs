@@ -1,10 +1,13 @@
+from typing import Any, Optional, Union
+
+from anki.notes import Note
 from aqt import mw
 
 
 # TODO make a class
 # TODO move get included models here
 def get_config(key):
-    config = mw.addonManager.getConfig(__name__)
+    config = get_configs()
     return config[key]
 
 
@@ -28,6 +31,15 @@ def update_configs(new_configs) -> None:
     for key, value in new_configs.items():
         config[key] = value
     mw.addonManager.writeConfig(__name__, config)
+
+
+def get_read_filters() -> list:
+    config_filters = get_config("filters")
+    read_filters = []
+    for config_filter in config_filters:
+        if config_filter["read"]:
+            read_filters.append(config_filter)
+    return read_filters
 
 
 # Filters are the 'note filter' option in morphman gui preferences on which note types they want morphman to handle

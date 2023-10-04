@@ -6,7 +6,6 @@ from aqt.browser import Browser
 from aqt.reviewer import RefreshNeeded
 from aqt.utils import showInfo, tooltip
 
-from ankimorphs import util
 from ankimorphs.config import get_config
 from ankimorphs.morphemes import get_morphemes, ms2str
 from ankimorphs.morphemizer import get_morphemizer_by_name

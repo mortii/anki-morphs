@@ -11,6 +11,7 @@ from aqt.reviewer import Reviewer
 from ankimorphs import (
     browser_utils,
     morph_stats,
+    new_recalc,
     recalc,
     reviewing_utils,
     settings_dialog,
@@ -165,7 +166,7 @@ def create_am_tool_menu() -> QMenu:
 def create_recalc_action() -> QAction:
     action = QAction("&Recalc", mw)
     action.setShortcut("Ctrl+M")
-    action.triggered.connect(recalc.main)
+    action.triggered.connect(new_recalc.main)
     return action
 
 

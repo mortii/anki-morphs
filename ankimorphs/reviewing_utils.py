@@ -10,9 +10,6 @@ from aqt.utils import tooltip
 
 from ankimorphs import text_utils
 from ankimorphs.config import get_config
-from ankimorphs.morphemes import get_morphemes
-from ankimorphs.morphemizer import get_morphemizer_by_name
-from ankimorphs.util import get_filter
 
 seen_morphs = set()  # TODO: use the db instead
 
