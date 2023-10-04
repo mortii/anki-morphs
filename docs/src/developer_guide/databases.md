@@ -22,7 +22,7 @@ Anki collection db tables:
 
 
 
-Anki notes table:
+notes table:
 ```
 [[0, 'id', 'INTEGER', 0, None, 1],
 [1, 'guid', 'TEXT', 1, None, 0],
@@ -38,7 +38,7 @@ Anki notes table:
 ```
 
 
-Anki notetypes table:
+notetypes table:
 ```
 [[0, 'id', 'INTEGER', 1, None, 1],
 [1, 'name', 'TEXT', 1, None, 0],
@@ -48,7 +48,7 @@ Anki notetypes table:
 ```
 
 
-Anki cards table:
+cards table:
 ```
 [[0, 'id', 'INTEGER', 0, None, 1],
 [1, 'nid', 'INTEGER', 1, None, 0],
