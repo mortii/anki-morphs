@@ -443,10 +443,13 @@ class PreferencesDialog(QDialog):
             highlighted_widget = self.ui.extra_fields_table.cellWidget(row, 2)
             difficulty_widget = self.ui.extra_fields_table.cellWidget(row, 3)
 
+            tags = self.ui.note_filters_table.item(row, 1).text().split(",")
+            tags = [tag.strip() for tag in tags]
+
             _filter = {
                 "note_type": note_type_widget.itemText(note_type_widget.currentIndex()),
                 "note_type_id": self.models[note_type_widget.currentIndex()].id,
-                "tags": [self.ui.note_filters_table.item(row, 1).text()],
+                "tags": tags,
                 "field": field_widget.itemText(field_widget.currentIndex()),
                 "morphemizer": morphemizer_widget.itemText(
                     morphemizer_widget.currentIndex()

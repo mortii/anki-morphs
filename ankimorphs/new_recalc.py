@@ -82,6 +82,7 @@ def cache_card_morphemes():
 
     for config_filter_read in config_filters_read:
         notes = get_notes_to_update(am_db, config_filter_read)
+        continue
         card_ids = get_gets_to_update(am_db, config_filter_read)
         card_amount = len(card_ids)
         for counter, card_id in enumerate(card_ids):
@@ -124,45 +125,54 @@ def cache_card_morphemes():
 
     mw.taskman.run_on_main(partial(mw.progress.update, label="Saving to ankimorphs.db"))
 
-    am_db.insert_many_into_morph_table(morph_table_data)
-    am_db.insert_many_into_card_table(card_table_data)
-    am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
-    # am_db.print_table({})
-    am_db.con.close()
+    # am_db.insert_many_into_morph_table(morph_table_data)
+    # am_db.insert_many_into_card_table(card_table_data)
+    # am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
+    # # am_db.print_table({})
+    # am_db.con.close()
 
 
 def get_notes_to_update(am_db: AnkiMorphsDB, config_filter_read, full_rebuild=False):
     # TODO SUSPENDED CARDS CONFIG
 
-    query_one = """
-        SELECT *
-        FROM notes
-        WHERE mid=?
-        """
+    model_id = config_filter_read["note_type_id"]
 
-    tags = []
+    print(f"config_filter_read['tags']: {config_filter_read['tags']}")
+    print(f"model_id: {model_id}")
+
+    # TODO get intersection of all cards with tags
+    all_notes = set()
     for tag in config_filter_read["tags"]:
+        notes_with_tag = set()
+        print(f"ran tag: {tag}")
+
         if tag != "":
-            tags.append(tag)
+            tag = f"% {tag} %"
+        else:
+            tag = "%"
+        result = mw.col.db.all(
+            """
+            SELECT * 
+            FROM notes 
+            WHERE mid=? AND tags LIKE ?
+            """,
+            model_id,
+            tag,
+        )
+        # print(f"result: {result}")
 
-    tags = ["4"]
+        for item in result:
+            # print(f"item: {item}")
+            notes_with_tag.add(item[0])
 
-    print(f"tags: {tags}")
+        if len(all_notes) == 0:
+            all_notes = notes_with_tag
+        else:
+            all_notes.intersection_update(notes_with_tag)
 
-    # query = f"SELECT * FROM notes WHERE mid={config_filter_read['note_type_id']} AND tags in ({','.join(['?']*len(config_filter_read['tags']))})"
-    query = f"SELECT * FROM notes WHERE mid={config_filter_read['note_type_id']}"
-    # query_tags = f"SELECT * FROM notes WHERE tags LIKE ' demon_slayer '"
-    query_tags = f"SELECT * FROM notes where tags like ' demon_slayer '"
+        print(f"len all_notes : {len(all_notes)}")
 
-    # all_notes_with_note_type = mw.col.db.all(
-    #     query_one, config_filter_read["note_type_id"]
-    # )
-
-    all_notes_with_note_type = mw.col.db.all(query_tags)
-
-    print(f"all_notes_with_note_type: {all_notes_with_note_type}")
-
-    return all_notes_with_note_type
+    return all_notes
 
 
 def get_gets_to_update(am_db: AnkiMorphsDB, config_filter_read, full_rebuild=False):
