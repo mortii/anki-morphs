@@ -6,27 +6,20 @@ import time
 from functools import partial
 from typing import Optional, Union
 
-from anki.cards import Card
 from anki.collection import Collection
 from anki.models import FieldDict, NotetypeDict
 from anki.notes import Note
 from anki.tags import TagManager
 from anki.utils import field_checksum, int_time, join_fields, split_fields, strip_html
+from aqt import mw
 from aqt.operations import QueryOp
-from aqt.utils import tooltip
+from aqt.utils import showCritical, tooltip
 
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.config import get_config, get_configs
 from ankimorphs.exceptions import NoteFilterFieldsException
 from ankimorphs.morphemes import AnkiDeck, Location, Morpheme, get_morphemes
 from ankimorphs.morphemizer import get_morphemizer_by_name
-from ankimorphs.util import (
-    error_msg,
-    get_filter_by_mid_and_tags,
-    get_modify_enabled_models,
-    get_read_enabled_models,
-    mw,
-)
 from ankimorphs.util_external import Memoize
 
 
@@ -1078,7 +1071,7 @@ def main_background_op(collection: Collection):
 
 def on_failure(_exception: Union[Exception, NoteFilterFieldsException]):
     if isinstance(_exception, NoteFilterFieldsException):
-        error_msg(
+        showCritical(
             f'Did not find a field called "{_exception.field_name}" in the Note Type "{_exception.note_type}"\n\n'
             f"Field names are case-sensitive!\n\n"
             f"Read the guide for more info:\n"

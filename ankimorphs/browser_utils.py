@@ -4,7 +4,7 @@ from anki.utils import strip_html
 from aqt import mw
 from aqt.browser import Browser
 from aqt.reviewer import RefreshNeeded
-from aqt.utils import tooltip
+from aqt.utils import showInfo, tooltip
 
 from ankimorphs import util
 from ankimorphs.config import get_config
@@ -86,8 +86,8 @@ def run_view_morphs() -> None:
             morph_dict["morphemes"] += morphemes
 
         if len(morph_dict["morphemes"]) == 0:
-            util.info_msg("----- No morphemes, check your filters -----")
+            showInfo("----- No morphemes, check your filters -----")
         else:
             morph_strings = ms2str([(m, []) for m in morph_dict["morphemes"]])
-            util.info_msg("----- All -----\n" + morph_strings)
+            showInfo("----- All -----\n" + morph_strings)
     return None
