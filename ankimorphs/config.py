@@ -24,8 +24,6 @@ def get_configs():
 
 
 def update_configs(new_configs) -> None:
-    print(f"update_preferences, _new_json_configs: {new_configs}")
-
     config = mw.addonManager.getConfig(__name__)
 
     for key, value in new_configs.items():
