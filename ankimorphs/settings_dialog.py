@@ -116,19 +116,15 @@ class PreferencesDialog(QDialog):
         selected_row = self.ui.note_filters_table.currentRow()
         self.ui.note_filters_table.removeRow(selected_row)
 
-    def set_note_filters_table_row(self, row, am_filter):
-        filters = get_config("filters")
-        # print(f"filters: {filters}")
-        _filter = filters[row]
-        # print(f"filters row note type: {_filter['note_type']}")
-
+    def set_note_filters_table_row(self, row, config_filter):
         self.ui.note_filters_table.setRowHeight(row, 35)
 
         note_type_cbox = QComboBox(self.ui.note_filters_table)
         note_type_cbox.addItems([model.name for model in self.models])
-        note_type_name_index = get_model_cbox_index(self.models, _filter["note_type"])
+        note_type_name_index = get_model_cbox_index(
+            self.models, config_filter["note_type"]
+        )
         if note_type_name_index is not None:
-            tooltip("Found set note type", parent=mw)
             note_type_cbox.setCurrentIndex(note_type_name_index)
 
         current_model_id = self.models[note_type_cbox.currentIndex()].id
@@ -137,10 +133,11 @@ class PreferencesDialog(QDialog):
         fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
         field_cbox = QComboBox(self.ui.note_filters_table)
         field_cbox.addItems(fields)
-        field_cbox_index = get_cbox_index(fields, _filter["field"])
+        field_cbox_index = get_cbox_index(fields, config_filter["field"])
         if field_cbox_index is not None:
             field_cbox.setCurrentIndex(field_cbox_index)
 
+        # Fields are dependent on note-type
         note_type_cbox.currentIndexChanged.connect(
             partial(self.update_fields_cbox, field_cbox, note_type_cbox)
         )
@@ -149,19 +146,21 @@ class PreferencesDialog(QDialog):
         morphemizers = get_all_morphemizers()
         morphemizers = [mizer.get_description() for mizer in morphemizers]
         morphemizer_cbox.addItems(morphemizers)
-        morphemizer_cbox_index = get_cbox_index(morphemizers, _filter["morphemizer"])
+        morphemizer_cbox_index = get_cbox_index(
+            morphemizers, config_filter["morphemizer"]
+        )
         if morphemizer_cbox_index is not None:
             morphemizer_cbox.setCurrentIndex(morphemizer_cbox_index)
 
         read_checkbox = QCheckBox()
-        read_checkbox.setChecked(am_filter["read"])
+        read_checkbox.setChecked(config_filter["read"])
         read_checkbox.setStyleSheet("margin-left:auto; margin-right:auto;")
 
         modify_checkbox = QCheckBox()
-        modify_checkbox.setChecked(am_filter["modify"])
+        modify_checkbox.setChecked(config_filter["modify"])
         modify_checkbox.setStyleSheet("margin-left:auto; margin-right:auto;")
 
-        tags = ", ".join(am_filter["tags"])
+        tags = ", ".join(config_filter["tags"])
 
         self.ui.note_filters_table.setCellWidget(row, 0, note_type_cbox)
         self.ui.note_filters_table.setItem(row, 1, QTableWidgetItem(tags))
@@ -174,9 +173,9 @@ class PreferencesDialog(QDialog):
         self.ui.note_filters_table.setRowCount(
             self.ui.note_filters_table.rowCount() + 1
         )
-        am_filter = get_default_configs("filters")[0]
+        config_filter = get_default_configs("filters")[0]
         row = self.ui.note_filters_table.rowCount() - 1
-        self.set_note_filters_table_row(row, am_filter)
+        self.set_note_filters_table_row(row, config_filter)
 
     def save_to_config(self):
         new_config = {
@@ -231,13 +230,14 @@ class PreferencesDialog(QDialog):
         tooltip("Please recalc to avoid unexpected behaviour", parent=mw)
 
     def setup_note_filters_table(self):
+        config_filters = get_config("filters")
         self.ui.note_filters_table.setColumnWidth(0, 150)
         self.ui.note_filters_table.setColumnWidth(3, 150)
-        self.ui.note_filters_table.setRowCount(1)
+        self.ui.note_filters_table.setRowCount(len(config_filters))
         self.ui.note_filters_table.setAlternatingRowColors(True)
         self.models = mw.col.models.all_names_and_ids()
 
-        for row, am_filter in enumerate(get_config("filters")):
+        for row, am_filter in enumerate(config_filters):
             self.set_note_filters_table_row(row, am_filter)
 
     def update_fields_cbox(self, field_cbox, note_type_cbox):
