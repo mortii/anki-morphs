@@ -448,9 +448,9 @@ class Ui_SettingsDialog:
         self.verticalLayout.addWidget(self.tabWidget)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.pushButton_3 = QtWidgets.QPushButton(parent=SettingsDialog)
-        self.pushButton_3.setObjectName("pushButton_3")
-        self.horizontalLayout.addWidget(self.pushButton_3)
+        self.restore_all_defaults_button = QtWidgets.QPushButton(parent=SettingsDialog)
+        self.restore_all_defaults_button.setObjectName("restore_all_defaults_button")
+        self.horizontalLayout.addWidget(self.restore_all_defaults_button)
         spacerItem15 = QtWidgets.QSpacerItem(
             40,
             20,
@@ -478,7 +478,7 @@ class Ui_SettingsDialog:
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         self.retranslateUi(SettingsDialog)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(SettingsDialog)
 
     def retranslateUi(self, SettingsDialog):
@@ -614,7 +614,7 @@ class Ui_SettingsDialog:
             self.tabWidget.indexOf(self.shortcuts_tab),
             _translate("SettingsDialog", "Shortcuts"),
         )
-        self.pushButton_3.setText(
+        self.restore_all_defaults_button.setText(
             _translate("SettingsDialog", "Restore All Default Settings")
         )
         self.ankimorphs_version_label.setText(
