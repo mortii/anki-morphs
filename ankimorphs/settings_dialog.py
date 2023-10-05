@@ -3,7 +3,13 @@ from typing import Optional
 
 from anki.models import FieldDict
 from aqt import mw
-from aqt.qt import QCheckBox, QComboBox, QDialog, QMessageBox, QTableWidgetItem
+from aqt.qt import (  # pylint:disable=no-name-in-module
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QMessageBox,
+    QTableWidgetItem,
+)
 from aqt.utils import tooltip
 
 from ankimorphs.config import (
@@ -30,7 +36,7 @@ def get_model_cbox_index(items, filter_field) -> Optional[int]:
     return None
 
 
-class PreferencesDialog(QDialog):
+class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
     """
     The UI comes from ankimorphs/ui/settings_dialog.ui which is used in Qt Designer,
     which is then converted to ankimorphs/ui/settings_dialog_ui.py,
@@ -42,9 +48,9 @@ class PreferencesDialog(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.mw = parent
+        self.mw = parent  # pylint:disable=invalid-name
         self.models = None
-        self.ui = Ui_SettingsDialog()
+        self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)
         self.config_filters = get_config("filters")
         self.setup_note_filters_table(self.config_filters)
@@ -70,7 +76,9 @@ class PreferencesDialog(QDialog):
         for row, am_filter in enumerate(config_filters):
             self.set_note_filters_table_row(row, am_filter)
 
-    def set_note_filters_table_row(self, row, config_filter):
+    def set_note_filters_table_row(  # pylint:disable=too-many-locals
+        self, row, config_filter
+    ):
         self.ui.note_filters_table.setRowHeight(row, 35)
 
         note_type_cbox = QComboBox(self.ui.note_filters_table)
@@ -136,7 +144,9 @@ class PreferencesDialog(QDialog):
         for row in range(note_filters_table_rows):
             self.set_extra_fields_table_row(row, config_filters)
 
-    def set_extra_fields_table_row(self, row, config_filters):
+    def set_extra_fields_table_row(  # pylint:disable=too-many-locals
+        self, row, config_filters
+    ):
         self.ui.extra_fields_table.setRowHeight(row, 35)
 
         note_type_widget = self.ui.note_filters_table.cellWidget(row, 0)
@@ -205,7 +215,7 @@ class PreferencesDialog(QDialog):
             confirmed = self.warning_dialog(title, text)
 
             if not confirmed:
-                return None
+                return
 
         self.ui.ripe_tag_input.setText(get_default_config("tag_ripe"))
         self.ui.budding_tag_input.setText(get_default_config("tag_budding"))
@@ -250,7 +260,7 @@ class PreferencesDialog(QDialog):
             confirmed = self.warning_dialog(title, text)
 
             if not confirmed:
-                return None
+                return
 
         self.ui.parse_ignore_bracket_contents_input.setChecked(
             get_default_config("parse_ignore_bracket_contents")
@@ -275,7 +285,7 @@ class PreferencesDialog(QDialog):
             confirmed = self.warning_dialog(title, text)
 
             if not confirmed:
-                return None
+                return
 
         self.ui.shortcut_browse_same_ripe_input.setText(
             get_default_config("shortcut_browse_same_unknown_ripe")
@@ -315,7 +325,7 @@ class PreferencesDialog(QDialog):
             confirmed = self.warning_dialog(title, text)
 
             if not confirmed:
-                return None
+                return
 
         self.ui.preferred_sentence_length_input.setValue(
             get_default_config("recalc_preferred_sentence_length")
@@ -349,7 +359,7 @@ class PreferencesDialog(QDialog):
             confirmed = self.warning_dialog(title, text)
 
             if not confirmed:
-                return None
+                return
 
         self.ui.skip_stale_cards_input.setChecked(
             get_default_config("skip_stale_cards")

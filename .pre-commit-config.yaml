@@ -28,32 +28,38 @@ repos:
       - id: isort
         name: isort (python)
         files: 'ankimorphs/|^tests/'
-  # Using this mirror lets us use mypyc-compiled black, which is about 2x faster
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.9.1
+  - repo: local
     hooks:
-      - id: black
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        require_serial: true
+        types: [ python ]
         files: 'ankimorphs/|^tests/'
-#  - repo: local
-#    hooks:
-#      - id: pylint
-#        name: pylint
-#        #entry: pylint
-#        language: system
-#        require_serial: true
-#        types: [ python ]
-#        files: 'ankimorphs/|^tests/'
-#        exclude: |
-#          (?x)^(
-#              ankimorphs/deps/.*|
-#              ankimorphs/readability_settings_ui.py|
-#              ankimorphs/adaptiveSubs.py|
-#              ankimorphs/readability.py|
-#              ankimorphs/readability_ui.py|
-#              ankimorphs/preferences_dialog.py|
-#              ankimorphs/config.py|
-#              tests/fake_preferences.py|
-#          )$
+        exclude: |
+          (?x)^(
+              ankimorphs/deps/.*|
+              ankimorphs/ui/.*|
+              ankimorphs/recalc.py|
+              ankimorphs/new_recalc.py|
+              ankimorphs/browser_utils.py|
+              ankimorphs/reviewing_utils.py|
+              tests/.*|
+          )$
+      - id: black
+        name: black
+        entry: black
+        language: system
+        types: [ python ]
+        files: 'ankimorphs/|^tests/'
+        exclude: |
+          (?x)^(
+              ankimorphs/deps/.*|
+              ankimorphs/ui/.*|
+              ankimorphs/recalc.py|
+              tests/.*|
+          )$
 #      - id: pytest
 #        name: pytest
 #        entry: pytest
