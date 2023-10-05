@@ -1,20 +1,18 @@
 # Roadmap
 
-1. Add mypy and monkeypatch all types
-2. Re-add linting
-3. Cache cards and morphs to ankimorphs.db
-4. Finish recalc function
-5. Re-add recalc and stats to toolbar
-6. Re-add browser actions
-7. Release AnkiMorphs alpha-test version?
-8. Re-add highlighting feature
-9. Fix undo-review
-10. Implement spaCy
-11. Remove intrinsic macab and jieba
-12. Release AnkiMorphs stable version?
-13. Re-add statistics page
-14. Re-add readability analyzer
-15. Reintroduce and rework tests
-16. Add [vulture](https://github.com/jendrikseipp/vulture)
+1. Cache cards and morphs to ankimorphs.db
+2. Finish recalc function
+3. Re-add recalc and stats to toolbar
+4. Re-add browser actions
+5. Release AnkiMorphs alpha-test version?
+6. Re-add highlighting feature
+7. Fix undo-review
+8. Implement spaCy
+9. Remove intrinsic macab and jieba
+10. Release AnkiMorphs stable version?
+11. Re-add statistics page
+12. Re-add readability analyzer
+13. Reintroduce and rework tests
+14. Add [vulture](https://github.com/jendrikseipp/vulture)
 
 

@@ -1,12 +1,11 @@
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from anki.notes import Note
 from aqt import mw
+from aqt.qt import QKeySequence  # pylint:disable=no-name-in-module
 
 
-# TODO make a class
-# TODO move get included models here
-def get_config(key):
+def get_config(key) -> Union[str, int, bool, list]:
     config = get_configs()
     return config[key]
 
@@ -92,3 +91,19 @@ def get_modify_enabled_models():
                 include_all = True
                 break
     return included_types, include_all
+
+
+class AnkiMorphsConfig:
+    def __init__(self) -> None:
+        self.tag_ripe = get_config("tag_ripe")
+        self.tag_budding = get_config("tag_budding")
+        self.shortcut_learn_now = QKeySequence(get_config("shortcut_learn_now"))
+        self.shortcut_browse_same_unknown_ripe = QKeySequence(
+            get_config("shortcut_browse_same_unknown_ripe")
+        )
+        self.shortcut_view_morphemes = QKeySequence(
+            get_config("shortcut_view_morphemes")
+        )
+        self.shortcut_set_known_and_skip = QKeySequence(
+            get_config("shortcut_set_known_and_skip")
+        )

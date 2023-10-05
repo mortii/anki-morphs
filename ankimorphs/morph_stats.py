@@ -54,7 +54,7 @@ def update_stats(known_db=None):
     return data
 
 
-def get_unique_morph_toolbar_stats():
+def get_unique_morph_toolbar_stats() -> (str, str):
     data = load_stats()
     if not data:
         return "U ???", "???"
@@ -65,7 +65,7 @@ def get_unique_morph_toolbar_stats():
     return name, details
 
 
-def get_all_morph_toolbar_stats():
+def get_all_morph_toolbar_stats() -> (str, str):
     data = load_stats()
     if not data:
         return "A ????", "???"

@@ -1,3 +1,10 @@
+[tool.mypy]
+warn_return_any = "True"
+warn_unused_configs = "True"
+ignore_missing_imports = "True"
+follow_imports = "silent"  # TODO change this eventually
+strict = "True"
+
 [tool.pylint."MESSAGES CONTROL"]
 disable = """
     missing-module-docstring,

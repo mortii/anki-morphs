@@ -60,6 +60,31 @@ repos:
               ankimorphs/recalc.py|
               tests/.*|
           )$
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        types: [ python ]
+        files: 'ankimorphs/|^tests/'
+        exclude: |
+          (?x)^(
+              ankimorphs/deps/.*|
+              ankimorphs/ui/.*|
+              ankimorphs/browser_utils.py|
+              ankimorphs/config.py|
+              ankimorphs/mecab_wrapper.py|
+              ankimorphs/morph_stats.py|
+              ankimorphs/morpheme.py|
+              ankimorphs/morphemes.py|
+              ankimorphs/morphemizer.py|
+              ankimorphs/new_recalc.py|
+              ankimorphs/recalc.py|
+              ankimorphs/reviewing_utils.py|
+              ankimorphs/settings_dialog.py|
+              ankimorphs/text_utils.py|
+              ankimorphs/util_external.py|
+              tests/.*|
+          )$
 #      - id: pytest
 #        name: pytest
 #        entry: pytest

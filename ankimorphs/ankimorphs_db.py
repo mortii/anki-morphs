@@ -1,4 +1,5 @@
 import sqlite3
+from typing import Union
 
 
 class AnkiMorphsDB:
@@ -9,13 +10,13 @@ class AnkiMorphsDB:
     Card -> Card_Morph_Map <- Morph
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.con: sqlite3.Connection = sqlite3.connect("ankimorphs.db")
         self.create_morph_table()
         self.create_cards_table()
         self.create_card_morph_map_table()
 
-    def create_cards_table(self):
+    def create_cards_table(self) -> None:
         with self.con:
             self.con.execute(
                 """
@@ -28,7 +29,7 @@ class AnkiMorphsDB:
                     """
             )
 
-    def create_card_morph_map_table(self):
+    def create_card_morph_map_table(self) -> None:
         with self.con:
             self.con.execute(
                 """
@@ -43,7 +44,7 @@ class AnkiMorphsDB:
                     """
             )
 
-    def create_morph_table(self):
+    def create_morph_table(self) -> None:
         with self.con:
             self.con.execute(
                 """
@@ -61,7 +62,9 @@ class AnkiMorphsDB:
                     """
             )
 
-    def insert_many_into_card_table(self, card_list: list):
+    def insert_many_into_card_table(
+        self, card_list: list[dict[str, Union[int, str, bool]]]
+    ) -> None:
         with self.con:
             self.con.executemany(
                 """
@@ -75,7 +78,9 @@ class AnkiMorphsDB:
                 card_list,
             )
 
-    def insert_many_into_morph_table(self, morph_list: list):
+    def insert_many_into_morph_table(
+        self, morph_list: list[dict[str, Union[int, str, bool]]]
+    ) -> None:
         with self.con:
             self.con.executemany(
                 """
@@ -93,7 +98,9 @@ class AnkiMorphsDB:
                 morph_list,
             )
 
-    def insert_many_into_card_morph_map_table(self, card_morph_list: list):
+    def insert_many_into_card_morph_map_table(
+        self, card_morph_list: list[dict[str, Union[int, str, bool]]]
+    ) -> None:
         with self.con:
             self.con.executemany(
                 """
@@ -107,6 +114,6 @@ class AnkiMorphsDB:
                 card_morph_list,
             )
 
-    def print_table(self, table):
+    def print_table(self) -> None:
         for row in self.con.execute("SELECT * FROM Card_Morph_Map"):
             print(f"row: {row}")

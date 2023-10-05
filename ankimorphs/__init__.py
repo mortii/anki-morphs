@@ -1,12 +1,15 @@
+from anki.cards import Card
 from aqt import gui_hooks, mw
-from aqt.browser import Browser
+from aqt.browser.browser import Browser
 from aqt.qt import (  # pylint:disable=no-name-in-module
     QAction,
     QDesktopServices,
+    QKeySequence,
     QMenu,
     QUrl,
 )
 from aqt.reviewer import Reviewer
+from aqt.toolbar import Toolbar
 
 from ankimorphs import (
     browser_utils,
@@ -17,20 +20,20 @@ from ankimorphs import (
     settings_dialog,
 )
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
-from ankimorphs.config import get_config
+from ankimorphs.config import AnkiMorphsConfig, get_config
 from ankimorphs.mecab_wrapper import get_morphemes_mecab
 
 # A bug in the anki module leads to cyclic imports if these are placed higher
 import anki.stats  # isort:skip pylint:disable=wrong-import-order
 from anki import hooks  # isort:skip pylint:disable=wrong-import-order
 
-mw.ANKIMORPHS_VERSION = "0.1-alpha"
+mw.ANKIMORPHS_VERSION = "0.1-alpha"  # type: ignore
 TOOL_MENU = "am_tool_menu"
 BROWSE_MENU = "am_browse_menu"
 CONTEXT_MENU = "am_context_menu"
 
 
-def main():
+def main() -> None:
     # Support anki version 2.1.50 and above
     # Hooks should be placed in the order they are executed!
 
@@ -48,12 +51,15 @@ def main():
     gui_hooks.reviewer_did_answer_card.append(mark_morph_seen_wrapper)
 
 
-def redraw_toolbar_wrapper():
+def redraw_toolbar_wrapper() -> None:
     # wrapping this makes testing easier because we don't have to mock mw
+    assert mw
     mw.toolbar.draw()
 
 
-def init_tool_menu_and_actions():
+def init_tool_menu_and_actions() -> None:
+    assert mw
+
     for action in mw.form.menuTools.actions():
         if action.objectName() == TOOL_MENU:
             return  # prevents duplicate menus on profile-switch
@@ -74,12 +80,14 @@ def init_tool_menu_and_actions():
 
 
 def init_browser_menus_and_actions() -> None:
-    view_action = create_view_morphs_action()
-    learn_now_action = create_learn_now_action()
-    browse_morph_action = create_browse_morph_action()
-    already_known_tagger_action = create_already_known_tagger_action()
+    am_config = AnkiMorphsConfig()
 
-    def setup_browser_menu(_browser: Browser):
+    view_action = create_view_morphs_action(am_config)
+    learn_now_action = create_learn_now_action()
+    browse_morph_action = create_browse_morph_action(am_config)
+    already_known_tagger_action = create_already_known_tagger_action(am_config)
+
+    def setup_browser_menu(_browser: Browser) -> None:
         browser_utils.browser = _browser
 
         for action in browser_utils.browser.form.menubar.actions():
@@ -90,19 +98,20 @@ def init_browser_menus_and_actions() -> None:
         am_browse_menu_creation_action = browser_utils.browser.form.menubar.addMenu(
             am_browse_menu
         )
+        assert am_browse_menu_creation_action
         am_browse_menu_creation_action.setObjectName(BROWSE_MENU)
-
         am_browse_menu.addAction(view_action)
         am_browse_menu.addAction(learn_now_action)
         am_browse_menu.addAction(browse_morph_action)
         am_browse_menu.addAction(already_known_tagger_action)
 
-    def setup_context_menu(_browser: Browser, context_menu: QMenu):
+    def setup_context_menu(_browser: Browser, context_menu: QMenu) -> None:
         for action in context_menu.actions():
             if action.objectName() == CONTEXT_MENU:
                 return  # prevents duplicate menus on profile-switch
 
         context_menu_creation_action = context_menu.insertSeparator(view_action)
+        assert context_menu_creation_action
         context_menu.addAction(view_action)
         context_menu.addAction(learn_now_action)
         context_menu.addAction(browse_morph_action)
@@ -110,29 +119,29 @@ def init_browser_menus_and_actions() -> None:
         context_menu_creation_action.setObjectName(CONTEXT_MENU)
 
     gui_hooks.browser_menus_did_init.append(setup_browser_menu)
-
     gui_hooks.browser_will_show_context_menu.append(setup_context_menu)
 
 
-def mark_morph_seen_wrapper(reviewer: Reviewer, card, ease):
+def mark_morph_seen_wrapper(reviewer: Reviewer, card: Card, ease: int) -> None:
     reviewing_utils.mark_morph_seen(card.note())
 
 
 def replace_reviewer_functions() -> None:
-    # This skips the cards the user specified in preferences GUI
-    Reviewer.nextCard = hooks.wrap(
-        Reviewer.nextCard, reviewing_utils.my_next_card, "around"
-    )
+    pass
+    # # This skips the cards the user specified in preferences GUI
+    # Reviewer.nextCard = hooks.wrap(
+    #     Reviewer.nextCard, reviewing_utils.my_next_card, "around"
+    # )
+    #
+    # # Automatically highlights morphs on cards if the respective note stylings are present
+    # hooks.field_filter.append(reviewing_utils.highlight)
+    #
+    # Reviewer._shortcutKeys = hooks.wrap(
+    #     Reviewer._shortcutKeys, reviewing_utils.my_reviewer_shortcut_keys, "around"
+    # )
 
-    # Automatically highlights morphs on cards if the respective note stylings are present
-    hooks.field_filter.append(reviewing_utils.highlight)
 
-    Reviewer._shortcutKeys = hooks.wrap(
-        Reviewer._shortcutKeys, reviewing_utils.my_reviewer_shortcut_keys, "around"
-    )
-
-
-def add_morph_stats_to_toolbar(links, toolbar) -> None:
+def add_morph_stats_to_toolbar(links: list[str], toolbar: Toolbar) -> None:
     unique_name, unique_details = morph_stats.get_unique_morph_toolbar_stats()
     all_name, all_details = morph_stats.get_all_morph_toolbar_stats()
     links.append(
@@ -159,6 +168,7 @@ def create_am_tool_menu() -> QMenu:
     assert mw is not None
     am_tool_menu = QMenu("AnkiMorphs", mw)
     am_tool_menu_creation_action = mw.form.menuTools.addMenu(am_tool_menu)
+    assert am_tool_menu_creation_action
     am_tool_menu_creation_action.setObjectName(TOOL_MENU)
     return am_tool_menu
 
@@ -197,37 +207,39 @@ def create_changelog_action() -> QAction:
     return action
 
 
-def create_learn_now_action():
+def create_learn_now_action() -> QAction:
+    config = AnkiMorphsConfig()
     action = QAction("&Learn Card Now", mw)
-    action.setShortcut(get_config("shortcut_learn_now"))
+    action.setShortcut(config.shortcut_learn_now)
     action.triggered.connect(browser_utils.run_learn_card_now)
     return action
 
 
-def create_browse_morph_action():
+def create_browse_morph_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Browse Same Morphs", mw)
-    action.setShortcut(get_config("shortcut_browse_same_unknown_ripe"))
+    action.setShortcut(am_config.shortcut_browse_same_unknown_ripe)
     action.triggered.connect(browser_utils.run_browse_morph)
     return action
 
 
-def create_view_morphs_action() -> QAction:
+def create_view_morphs_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&View Morphemes", mw)
-    action.setShortcut(get_config("shortcut_view_morphemes"))
+    action.setShortcut(am_config.shortcut_view_morphemes)
     action.triggered.connect(browser_utils.run_view_morphs)
     return action
 
 
-def create_already_known_tagger_action():
+def create_already_known_tagger_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Tag As Known", mw)
-    action.setShortcut(get_config("shortcut_set_known_and_skip"))
+    action.setShortcut(am_config.shortcut_set_known_and_skip)
     action.triggered.connect(browser_utils.run_already_known_tagger)
     return action
 
 
 def create_test_action() -> QAction:
+    keys = QKeySequence("Ctrl+T")
     action = QAction("&Test", mw)
-    action.setShortcut("Ctrl+T")
+    action.setShortcut(keys)
     action.triggered.connect(test_function)
     return action
 
