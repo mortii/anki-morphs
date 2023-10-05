@@ -1,39 +1,48 @@
 from typing import Any, Optional, Union
 
-from anki.notes import Note
 from aqt import mw
 from aqt.qt import QKeySequence  # pylint:disable=no-name-in-module
 
 
-def get_config(key) -> Union[str, int, bool, list]:
+def get_config(
+    key: str,
+) -> Union[str, int, bool, list[dict[str, Union[str, bool, list[str], None]]], None]:
     config = get_configs()
-    return config[key]
+    assert config
+    item = config[key]
+    assert isinstance(item, (str, bool, int, list))
+    return item
 
 
-def get_configs():
+def get_configs() -> Optional[dict[str, Any]]:
+    assert mw
     return mw.addonManager.getConfig(__name__)
 
 
-def get_default_config(key):
+def get_default_config(key: str) -> Any:
     config = get_all_default_configs()
+    assert config
     return config[key]
 
 
-def get_all_default_configs():
+def get_all_default_configs() -> Optional[dict[str, Any]]:
+    assert mw
     addon = mw.addonManager.addonFromModule(__name__)  # necessary to prevent anki bug
     return mw.addonManager.addonConfigDefaults(addon)
 
 
-def update_configs(new_configs) -> None:
+def update_configs(new_configs: dict[str, Union[str, int, bool, list[Any]]]) -> None:
+    assert mw
     config = mw.addonManager.getConfig(__name__)
-
+    assert config
     for key, value in new_configs.items():
         config[key] = value
     mw.addonManager.writeConfig(__name__, config)
 
 
-def get_read_filters() -> list:
+def get_read_filters() -> list[dict[str, Optional[Union[str, bool, list[str]]]]]:
     config_filters = get_config("filters")
+    assert isinstance(config_filters, list)
     read_filters = []
     for config_filter in config_filters:
         if config_filter["read"]:
@@ -41,69 +50,90 @@ def get_read_filters() -> list:
     return read_filters
 
 
-# Filters are the 'note filter' option in morphman gui preferences on which note types they want morphman to handle
-# If a note is matched multiple times only the first filter in the list will be used
-def get_filter(note: Note) -> Optional[dict]:
-    note_type = note.note_type()["name"]
-    return get_filter_by_type_and_tags(note_type, note.tags)
-
-
-def get_filter_by_mid_and_tags(mid: Any, tags: list[str]) -> Optional[dict]:
-    return get_filter_by_type_and_tags(mw.col.models.get(mid)["name"], tags)
-
-
-def get_filter_by_type_and_tags(note_type: str, note_tags: list[str]) -> Optional[dict]:
-    # TODO NEVER ALLOW NONE?
-    for note_filter in get_config("filters"):
-        if (
-            note_type == note_filter["type"] or note_filter["type"] is None
-        ):  # None means 'All note types' is selected
-            note_tags = set(note_tags)
-            note_filter_tags = set(note_filter["tags"])
-            if note_filter_tags.issubset(
-                note_tags
-            ):  # required tags have to be subset of actual tags
-                return note_filter
-    return None  # card did not match (note type and tags) set in preferences GUI
-
-
-def get_read_enabled_models():
-    included_types = set()
-    include_all = False
-    for _filter in get_config("filters"):
-        if _filter.get("read", True):
-            if _filter["type"] is not None:
-                included_types.add(_filter["type"])
-            else:
-                include_all = True
-                break
-    return included_types, include_all
-
-
-def get_modify_enabled_models():
-    included_types = set()
-    include_all = False
-    for _filter in get_config("filters"):
-        if _filter.get("modify", True):
-            if _filter["type"] is not None:
-                included_types.add(_filter["type"])
-            else:
-                include_all = True
-                break
-    return included_types, include_all
-
-
 class AnkiMorphsConfig:
     def __init__(self) -> None:
-        self.tag_ripe = get_config("tag_ripe")
-        self.tag_budding = get_config("tag_budding")
-        self.shortcut_learn_now = QKeySequence(get_config("shortcut_learn_now"))
-        self.shortcut_browse_same_unknown_ripe = QKeySequence(
-            get_config("shortcut_browse_same_unknown_ripe")
+        self.shortcut_browse_same_unknown_ripe: QKeySequence = _get_key_sequence_config(
+            "shortcut_browse_same_unknown_ripe"
         )
-        self.shortcut_view_morphemes = QKeySequence(
-            get_config("shortcut_view_morphemes")
+        self.shortcut_browse_same_unknown_ripe_budding: QKeySequence = (
+            _get_key_sequence_config("shortcut_browse_same_unknown_ripe_budding")
         )
-        self.shortcut_set_known_and_skip = QKeySequence(
-            get_config("shortcut_set_known_and_skip")
+        self.shortcut_set_known_and_skip: QKeySequence = _get_key_sequence_config(
+            "shortcut_set_known_and_skip"
         )
+        self.shortcut_learn_now: QKeySequence = _get_key_sequence_config(
+            "shortcut_learn_now"
+        )
+        self.shortcut_view_morphemes: QKeySequence = _get_key_sequence_config(
+            "shortcut_view_morphemes"
+        )
+        self.skip_stale_cards: bool = _get_bool_config("skip_stale_cards")
+        self.skip_unknown_morph_seen_today_cards: bool = _get_bool_config(
+            "skip_unknown_morph_seen_today_cards"
+        )
+        self.skip_show_num_of_skipped_cards: bool = _get_bool_config(
+            "skip_show_num_of_skipped_cards"
+        )
+        self.recalc_ignore_suspended_leeches = _get_bool_config(
+            "recalc_ignore_suspended_leeches"
+        )
+        self.recalc_always_prioritize_frequency_morphs: bool = _get_bool_config(
+            "recalc_always_prioritize_frequency_morphs"
+        )
+        self.recalc_preferred_sentence_length: int = _get_int_config(
+            "recalc_preferred_sentence_length"
+        )
+        self.recalc_unknown_morphs_count: int = _get_int_config(
+            "recalc_unknown_morphs_count"
+        )
+        self.recalc_before_sync: bool = _get_bool_config("recalc_before_sync")
+        self.recalc_prioritize_collection: bool = _get_bool_config(
+            "recalc_prioritize_collection"
+        )
+        self.recalc_prioritize_textfile: bool = _get_bool_config(
+            "recalc_prioritize_textfile"
+        )
+        self.parse_ignore_bracket_contents: bool = _get_bool_config(
+            "parse_ignore_bracket_contents"
+        )
+        self.parse_ignore_round_bracket_contents: bool = _get_bool_config(
+            "parse_ignore_round_bracket_contents"
+        )
+        self.parse_ignore_slim_round_bracket_contents: bool = _get_bool_config(
+            "parse_ignore_slim_round_bracket_contents"
+        )
+        self.parse_ignore_proper_nouns: bool = _get_bool_config(
+            "parse_ignore_proper_nouns"
+        )
+        self.parse_ignore_suspended_cards_content: bool = _get_bool_config(
+            "parse_ignore_suspended_cards_content"
+        )
+        self.tag_ripe: str = _get_string_config("tag_ripe")
+        self.tag_budding: str = _get_string_config("tag_budding")
+        self.tag_stale: str = _get_string_config("tag_stale")
+
+        # TODO add filters
+
+
+def _get_key_sequence_config(key: str) -> QKeySequence:
+    config_item = get_config(key)
+    assert isinstance(config_item, str)
+    return QKeySequence(config_item)
+
+
+def _get_int_config(key: str) -> int:
+    config_item = get_config(key)
+    assert isinstance(config_item, int)
+    return config_item
+
+
+def _get_string_config(key: str) -> str:
+    config_item = get_config(key)
+    assert isinstance(config_item, str)
+    return config_item
+
+
+def _get_bool_config(key: str) -> bool:
+    config_item = get_config(key)
+    assert isinstance(config_item, bool)
+    return config_item

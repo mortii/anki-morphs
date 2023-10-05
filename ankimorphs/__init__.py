@@ -83,7 +83,7 @@ def init_browser_menus_and_actions() -> None:
     am_config = AnkiMorphsConfig()
 
     view_action = create_view_morphs_action(am_config)
-    learn_now_action = create_learn_now_action()
+    learn_now_action = create_learn_now_action(am_config)
     browse_morph_action = create_browse_morph_action(am_config)
     already_known_tagger_action = create_already_known_tagger_action(am_config)
 
@@ -165,7 +165,7 @@ def add_morph_stats_to_toolbar(links: list[str], toolbar: Toolbar) -> None:
 
 
 def create_am_tool_menu() -> QMenu:
-    assert mw is not None
+    assert mw
     am_tool_menu = QMenu("AnkiMorphs", mw)
     am_tool_menu_creation_action = mw.form.menuTools.addMenu(am_tool_menu)
     assert am_tool_menu_creation_action
@@ -188,9 +188,10 @@ def create_settings_action() -> QAction:
 
 
 def create_guide_action() -> QAction:
+    desktop_service = QDesktopServices()
     action = QAction("&Guide (web)", mw)
     action.triggered.connect(
-        lambda: QDesktopServices.openUrl(
+        lambda: desktop_service.openUrl(
             QUrl("https://mortii.github.io/anki-morphs/user_guide/intro.html")
         )
     )
@@ -198,19 +199,19 @@ def create_guide_action() -> QAction:
 
 
 def create_changelog_action() -> QAction:
+    desktop_service = QDesktopServices()
     action = QAction("&Changelog (web)", mw)
     action.triggered.connect(
-        lambda: QDesktopServices.openUrl(
+        lambda: desktop_service.openUrl(
             QUrl("https://mortii.github.io/anki-morphs/user_guide/changelog.html")
         )
     )
     return action
 
 
-def create_learn_now_action() -> QAction:
-    config = AnkiMorphsConfig()
+def create_learn_now_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Learn Card Now", mw)
-    action.setShortcut(config.shortcut_learn_now)
+    action.setShortcut(am_config.shortcut_learn_now)
     action.triggered.connect(browser_utils.run_learn_card_now)
     return action
 

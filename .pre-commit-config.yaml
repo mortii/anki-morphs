@@ -71,7 +71,6 @@ repos:
               ankimorphs/deps/.*|
               ankimorphs/ui/.*|
               ankimorphs/browser_utils.py|
-              ankimorphs/config.py|
               ankimorphs/mecab_wrapper.py|
               ankimorphs/morph_stats.py|
               ankimorphs/morpheme.py|
@@ -80,7 +79,6 @@ repos:
               ankimorphs/new_recalc.py|
               ankimorphs/recalc.py|
               ankimorphs/reviewing_utils.py|
-              ankimorphs/settings_dialog.py|
               ankimorphs/text_utils.py|
               ankimorphs/util_external.py|
               tests/.*|
