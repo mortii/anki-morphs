@@ -25,32 +25,6 @@ def main() -> None:
     mw.ankimorphs_preferences_dialog.exec()  # type: ignore
 
 
-def _get_cbox_index(items: Iterable[str], filter_field: str) -> Optional[int]:
-    for index, field in enumerate(items):
-        if field == filter_field:
-            return index
-    return None
-
-
-def _get_model_cbox_index(
-    items: Iterable[NotetypeNameId], filter_field: str
-) -> Optional[int]:
-    for index, model in enumerate(items):
-        if model.name == filter_field:
-            return index
-    return None
-
-
-def _get_cbox_widget(widget: Optional[QWidget]) -> QComboBox:
-    assert isinstance(widget, QComboBox)
-    return widget
-
-
-def _get_checkbox_widget(widget: Optional[QWidget]) -> QCheckBox:
-    assert isinstance(widget, QCheckBox)
-    return widget
-
-
 class PreferencesDialog(QDialog):
     """
     The UI comes from ankimorphs/ui/settings_dialog.ui which is used in Qt Designer,
@@ -69,6 +43,7 @@ class PreferencesDialog(QDialog):
         self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore
         self.config = AnkiMorphsConfig()
+        self._morphemizers = get_all_morphemizers()
         self._default_config = AnkiMorphsConfig(is_default=True)
         self._setup_note_filters_table(self.config.filters)
         self._setup_extra_fields_table(self.config.filters)
@@ -125,11 +100,10 @@ class PreferencesDialog(QDialog):
         )
 
         morphemizer_cbox = QComboBox(self.ui.note_filters_table)
-        morphemizers = get_all_morphemizers()
-        morphemizers = [mizer.get_description() for mizer in morphemizers]
+        morphemizers = [mizer.get_description() for mizer in self._morphemizers]
         morphemizer_cbox.addItems(morphemizers)
         morphemizer_cbox_index = _get_cbox_index(
-            morphemizers, config_filter.morphemizer
+            morphemizers, config_filter.morphemizer_description
         )
         if morphemizer_cbox_index is not None:
             morphemizer_cbox.setCurrentIndex(morphemizer_cbox_index)
@@ -440,8 +414,12 @@ class PreferencesDialog(QDialog):
         self.ui.restore_all_defaults_button.clicked.connect(self.restore_all_defaults)
 
     def delete_row(self) -> None:
-        selected_row = self.ui.note_filters_table.currentRow()
-        self.ui.note_filters_table.removeRow(selected_row)
+        title = "Confirmation"
+        text = "Are you sure you want to delete the selected row?"
+        confirmed = self.warning_dialog(title, text)
+        if confirmed:
+            selected_row = self.ui.note_filters_table.currentRow()
+            self.ui.note_filters_table.removeRow(selected_row)
 
     def add_new_row(self) -> None:
         self.ui.note_filters_table.setRowCount(
@@ -450,6 +428,7 @@ class PreferencesDialog(QDialog):
         config_filter = self._default_config.filters[0]
         row = self.ui.note_filters_table.rowCount() - 1
         self.set_note_filters_table_row(row, config_filter)
+        self._setup_extra_fields_table(self.config.filters)
 
     def save_to_config(self) -> None:  # pylint:disable=too-many-locals
         new_config = {
@@ -517,9 +496,12 @@ class PreferencesDialog(QDialog):
                 "note_type_id": self.models[note_type_cbox.currentIndex()].id,
                 "tags": tags,
                 "field": field_cbox.itemText(field_cbox.currentIndex()),
-                "morphemizer": morphemizer_widget.itemText(
+                "morphemizer_description": morphemizer_widget.itemText(
                     morphemizer_widget.currentIndex()
                 ),
+                "morphemizer_name": self._morphemizers[
+                    morphemizer_widget.currentIndex()
+                ].get_name(),
                 "read": read_widget.isChecked(),
                 "modify": modify_widget.isChecked(),
                 "focus_morph": focus_morph_widget.itemText(
@@ -571,3 +553,29 @@ class PreferencesDialog(QDialog):
             tooltip("Remember to save!", parent=mw)
             return True
         return False
+
+
+def _get_cbox_index(items: Iterable[str], filter_field: str) -> Optional[int]:
+    for index, field in enumerate(items):
+        if field == filter_field:
+            return index
+    return None
+
+
+def _get_model_cbox_index(
+    items: Iterable[NotetypeNameId], filter_field: str
+) -> Optional[int]:
+    for index, model in enumerate(items):
+        if model.name == filter_field:
+            return index
+    return None
+
+
+def _get_cbox_widget(widget: Optional[QWidget]) -> QComboBox:
+    assert isinstance(widget, QComboBox)
+    return widget
+
+
+def _get_checkbox_widget(widget: Optional[QWidget]) -> QCheckBox:
+    assert isinstance(widget, QCheckBox)
+    return widget

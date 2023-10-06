@@ -45,7 +45,7 @@ morphemizers = None  # pylint:disable=invalid-name
 morphemizers_by_name = {}
 
 
-def get_all_morphemizers() -> [Morphemizer]:
+def get_all_morphemizers() -> list[Morphemizer]:
     global morphemizers  # pylint:disable=global-statement
     if morphemizers is None:
         morphemizers = [

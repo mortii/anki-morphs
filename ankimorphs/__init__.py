@@ -27,7 +27,9 @@ from ankimorphs.mecab_wrapper import get_morphemes_mecab
 import anki.stats  # isort:skip pylint:disable=wrong-import-order
 from anki import hooks  # isort:skip pylint:disable=wrong-import-order
 
-mw.ANKIMORPHS_VERSION = "0.1-alpha"  # type: ignore
+# Semantic Versioning https://semver.org/
+mw.ANKIMORPHS_VERSION = "0.1.0-alpha"  # type: ignore
+
 TOOL_MENU = "am_tool_menu"
 BROWSE_MENU = "am_browse_menu"
 CONTEXT_MENU = "am_context_menu"

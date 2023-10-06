@@ -335,7 +335,7 @@ class Ui_SettingsDialog:
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         self.retranslateUi(SettingsDialog)
-        self.tabWidget.setCurrentIndex(6)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(SettingsDialog)
 
     def retranslateUi(self, SettingsDialog):

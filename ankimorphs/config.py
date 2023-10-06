@@ -2,55 +2,10 @@ from typing import Any, Optional, Union
 
 from aqt import mw
 from aqt.qt import QKeySequence  # pylint:disable=no-name-in-module
-from typing_extensions import TypeAlias
 
-FilterTypeAlias: TypeAlias = dict[str, Union[str, bool, int, list[str], None]]
-
-
-def get_config(  # TODO make private
-    key: str,
-) -> Union[str, int, bool, list[FilterTypeAlias], None]:
-    config = get_configs()
-    assert config
-    item = config[key]
-    assert isinstance(item, (str, bool, int, list))
-    return item
-
-
-def get_configs() -> Optional[dict[str, Any]]:
-    assert mw
-    return mw.addonManager.getConfig(__name__)
-
-
-def get_default_config(key: str) -> Any:
-    config = get_all_default_configs()
-    assert config
-    return config[key]
-
-
-def get_all_default_configs() -> Optional[dict[str, Any]]:
-    assert mw
-    addon = mw.addonManager.addonFromModule(__name__)  # necessary to prevent anki bug
-    return mw.addonManager.addonConfigDefaults(addon)
-
-
-def update_configs(new_configs: dict[str, object]) -> None:
-    assert mw
-    config = mw.addonManager.getConfig(__name__)
-    assert config
-    for key, value in new_configs.items():
-        config[key] = value
-    mw.addonManager.writeConfig(__name__, config)
-
-
-def get_read_filters() -> list[FilterTypeAlias]:
-    config_filters = get_config("filters")
-    assert isinstance(config_filters, list)
-    read_filters = []
-    for config_filter in config_filters:
-        if config_filter["read"]:
-            read_filters.append(config_filter)
-    return read_filters
+# Unfortunately 'TypeAlias' is introduced in python 3.10 so for now
+# we can only create implicit type aliases.
+FilterTypeAlias = dict[str, Union[str, bool, int, list[str], None]]
 
 
 class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
@@ -61,7 +16,10 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
         )
         self.tags: list[str] = _get_filter_str_list(_filter, "tags")
         self.field: str = _get_filter_str(_filter, "field")
-        self.morphemizer: str = _get_filter_str(_filter, "morphemizer")
+        self.morphemizer_description: str = _get_filter_str(
+            _filter, "morphemizer_description"
+        )
+        self.morphemizer_name: str = _get_filter_str(_filter, "morphemizer_name")
         self.read: bool = _get_filter_bool(_filter, "read")
         self.modify: bool = _get_filter_bool(_filter, "modify")
         self.focus_morph: str = _get_filter_str(_filter, "focus_morph")
@@ -142,6 +100,52 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.tag_stale: str = _get_string_config("tag_stale", is_default)
 
         self.filters: list[AnkiMorphsConfigFilter] = _get_filters_config(is_default)
+
+
+def get_config(  # TODO make private
+    key: str,
+) -> Union[str, int, bool, list[FilterTypeAlias], None]:
+    config = get_configs()
+    assert config
+    item = config[key]
+    assert isinstance(item, (str, bool, int, list))
+    return item
+
+
+def get_configs() -> Optional[dict[str, Any]]:
+    assert mw
+    return mw.addonManager.getConfig(__name__)
+
+
+def get_default_config(key: str) -> Any:
+    config = get_all_default_configs()
+    assert config
+    return config[key]
+
+
+def get_all_default_configs() -> Optional[dict[str, Any]]:
+    assert mw
+    addon = mw.addonManager.addonFromModule(__name__)  # necessary to prevent anki bug
+    return mw.addonManager.addonConfigDefaults(addon)
+
+
+def update_configs(new_configs: dict[str, object]) -> None:
+    assert mw
+    config = mw.addonManager.getConfig(__name__)
+    assert config
+    for key, value in new_configs.items():
+        config[key] = value
+    mw.addonManager.writeConfig(__name__, config)
+
+
+def get_read_filters() -> list[AnkiMorphsConfigFilter]:
+    config_filters = _get_filters_config()
+    assert isinstance(config_filters, list)
+    read_filters = []
+    for config_filter in config_filters:
+        if config_filter.read:
+            read_filters.append(config_filter)
+    return read_filters
 
 
 def _get_filters_config(is_default: bool = False) -> list[AnkiMorphsConfigFilter]:

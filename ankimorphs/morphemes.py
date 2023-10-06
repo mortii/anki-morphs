@@ -37,7 +37,7 @@ class MorphDBUnpickler(pickle.Unpickler):
         return pickle.Unpickler.find_class(self, cmodule, cname)
 
 
-def get_morphemes(morphemizer, expression, note_tags=None):
+def get_morphemes(morphemizer, expression, note_tags=None) -> list[Morpheme]:
     expression = replace_bracket_contents(expression)
 
     # go through all replacement rules and search if a rule (which dictates a string to morpheme conversion) can be
