@@ -15,31 +15,35 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from ankimorphs.config import (
-    AnkiMorphsConfig,
-    AnkiMorphsConfigFilter,
-    get_all_default_configs,
-    get_default_config,
-    update_configs,
-)
+from ankimorphs.config import AnkiMorphsConfig, AnkiMorphsConfigFilter, update_configs
 from ankimorphs.morphemizer import get_all_morphemizers
 from ankimorphs.ui.settings_dialog_ui import Ui_SettingsDialog
 
 
-def get_cbox_index(items: Iterable[str], filter_field: str) -> Optional[int]:
+def _get_cbox_index(items: Iterable[str], filter_field: str) -> Optional[int]:
     for index, field in enumerate(items):
         if field == filter_field:
             return index
     return None
 
 
-def get_model_cbox_index(
+def _get_model_cbox_index(
     items: Iterable[NotetypeNameId], filter_field: str
 ) -> Optional[int]:
     for index, model in enumerate(items):
         if model.name == filter_field:
             return index
     return None
+
+
+def _get_cbox_widget(widget: Optional[QWidget]) -> QComboBox:
+    assert isinstance(widget, QComboBox)
+    return widget
+
+
+def _get_checkbox_widget(widget: Optional[QWidget]) -> QCheckBox:
+    assert isinstance(widget, QCheckBox)
+    return widget
 
 
 class PreferencesDialog(QDialog):
@@ -60,6 +64,7 @@ class PreferencesDialog(QDialog):
         self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore
         self.config = AnkiMorphsConfig()
+        self._default_config = AnkiMorphsConfig(is_default=True)
         self._setup_note_filters_table(self.config.filters)
         self._setup_extra_fields_table(self.config.filters)
         self._populate_tags_tab()
@@ -88,12 +93,11 @@ class PreferencesDialog(QDialog):
         self, row: int, config_filter: AnkiMorphsConfigFilter
     ) -> None:
         assert mw
-
         self.ui.note_filters_table.setRowHeight(row, 35)
 
         note_type_cbox = QComboBox(self.ui.note_filters_table)
         note_type_cbox.addItems([model.name for model in self.models])
-        note_type_name_index = get_model_cbox_index(
+        note_type_name_index = _get_model_cbox_index(
             self.models, config_filter.note_type
         )
         if note_type_name_index is not None:
@@ -106,7 +110,7 @@ class PreferencesDialog(QDialog):
         fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
         field_cbox = QComboBox(self.ui.note_filters_table)
         field_cbox.addItems(fields)
-        field_cbox_index = get_cbox_index(fields, config_filter.field)
+        field_cbox_index = _get_cbox_index(fields, config_filter.field)
         if field_cbox_index is not None:
             field_cbox.setCurrentIndex(field_cbox_index)
 
@@ -119,7 +123,9 @@ class PreferencesDialog(QDialog):
         morphemizers = get_all_morphemizers()
         morphemizers = [mizer.get_description() for mizer in morphemizers]
         morphemizer_cbox.addItems(morphemizers)
-        morphemizer_cbox_index = get_cbox_index(morphemizers, config_filter.morphemizer)
+        morphemizer_cbox_index = _get_cbox_index(
+            morphemizers, config_filter.morphemizer
+        )
         if morphemizer_cbox_index is not None:
             morphemizer_cbox.setCurrentIndex(morphemizer_cbox_index)
 
@@ -183,7 +189,9 @@ class PreferencesDialog(QDialog):
         focus_morph_cbox.addItems(fields)
 
         if matching_filter is not None:
-            focus_morph_cbox_index = get_cbox_index(fields, matching_filter.focus_morph)
+            focus_morph_cbox_index = _get_cbox_index(
+                fields, matching_filter.focus_morph
+            )
             if focus_morph_cbox_index is not None:
                 focus_morph_cbox_index += 1  # to offset the added (none) item
                 focus_morph_cbox.setCurrentIndex(focus_morph_cbox_index)
@@ -193,7 +201,7 @@ class PreferencesDialog(QDialog):
         highlighted_cbox.addItems(fields)
 
         if matching_filter is not None:
-            highlighted_cbox_cbox_index = get_cbox_index(
+            highlighted_cbox_cbox_index = _get_cbox_index(
                 fields, matching_filter.highlighted
             )
             if highlighted_cbox_cbox_index is not None:
@@ -205,7 +213,7 @@ class PreferencesDialog(QDialog):
         difficulty_cbox.addItems(fields)
 
         if matching_filter is not None:
-            difficulty_cbox_cbox_index = get_cbox_index(
+            difficulty_cbox_cbox_index = _get_cbox_index(
                 fields, matching_filter.difficulty
             )
             if difficulty_cbox_cbox_index is not None:
@@ -218,10 +226,9 @@ class PreferencesDialog(QDialog):
         self.ui.extra_fields_table.setCellWidget(row, 3, difficulty_cbox)
 
     def _populate_tags_tab(self) -> None:
-        am_config = AnkiMorphsConfig()
-        self.ui.ripe_tag_input.setText(am_config.tag_ripe)
-        self.ui.budding_tag_input.setText(am_config.tag_budding)
-        self.ui.stale_tag_input.setText(am_config.tag_stale)
+        self.ui.ripe_tag_input.setText(self.config.tag_ripe)
+        self.ui.budding_tag_input.setText(self.config.tag_budding)
+        self.ui.stale_tag_input.setText(self.config.tag_stale)
 
     def restore_tags_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -232,46 +239,42 @@ class PreferencesDialog(QDialog):
             if not confirmed:
                 return
 
-        self.ui.ripe_tag_input.setText(get_default_config("tag_ripe"))
-        self.ui.budding_tag_input.setText(get_default_config("tag_budding"))
-        self.ui.stale_tag_input.setText(get_default_config("tag_stale"))
+        self.ui.ripe_tag_input.setText(self._default_config.tag_ripe)
+        self.ui.budding_tag_input.setText(self._default_config.tag_budding)
+        self.ui.stale_tag_input.setText(self._default_config.tag_stale)
 
     def _populate_parse_tab(self) -> None:
-        am_config = AnkiMorphsConfig()
-
         self.ui.parse_ignore_bracket_contents_input.setChecked(
-            am_config.parse_ignore_bracket_contents
+            self.config.parse_ignore_bracket_contents
         )
         self.ui.parse_ignore_round_bracket_contents_input.setChecked(
-            am_config.parse_ignore_round_bracket_contents
+            self.config.parse_ignore_round_bracket_contents
         )
         self.ui.parse_ignore_slim_round_bracket_contents_input.setChecked(
-            am_config.parse_ignore_slim_round_bracket_contents
+            self.config.parse_ignore_slim_round_bracket_contents
         )
         self.ui.parse_ignore_proper_nouns_input.setChecked(
-            am_config.parse_ignore_proper_nouns
+            self.config.parse_ignore_proper_nouns
         )
         self.ui.parse_ignore_suspended_cards_content_input.setChecked(
-            am_config.parse_ignore_suspended_cards_content
+            self.config.parse_ignore_suspended_cards_content
         )
 
     def _populate_shortcuts_tab(self) -> None:
-        am_config = AnkiMorphsConfig()
-
         self.ui.shortcut_browse_same_ripe_input.setKeySequence(
-            am_config.shortcut_browse_same_unknown_ripe.toString()
+            self.config.shortcut_browse_same_unknown_ripe.toString()
         )
         self.ui.shortcut_browse_same_ripe_budding_input.setKeySequence(
-            am_config.shortcut_browse_same_unknown_ripe_budding.toString()
+            self.config.shortcut_browse_same_unknown_ripe_budding.toString()
         )
         self.ui.shortcut_known_and_skip_input.setKeySequence(
-            am_config.shortcut_set_known_and_skip.toString()
+            self.config.shortcut_set_known_and_skip.toString()
         )
         self.ui.shortcut_learn_now_input.setKeySequence(
-            am_config.shortcut_learn_now.toString()
+            self.config.shortcut_learn_now.toString()
         )
         self.ui.shortcut_view_morphs_input.setKeySequence(
-            am_config.shortcut_view_morphemes.toString()
+            self.config.shortcut_view_morphemes.toString()
         )
 
     def restore_parse_defaults(self, skip_confirmation: bool = False) -> None:
@@ -284,19 +287,19 @@ class PreferencesDialog(QDialog):
                 return
 
         self.ui.parse_ignore_bracket_contents_input.setChecked(
-            get_default_config("parse_ignore_bracket_contents")
+            self._default_config.parse_ignore_bracket_contents
         )
         self.ui.parse_ignore_round_bracket_contents_input.setChecked(
-            get_default_config("parse_ignore_round_bracket_contents")
+            self._default_config.parse_ignore_round_bracket_contents
         )
         self.ui.parse_ignore_slim_round_bracket_contents_input.setChecked(
-            get_default_config("parse_ignore_slim_round_bracket_contents")
+            self._default_config.parse_ignore_slim_round_bracket_contents
         )
         self.ui.parse_ignore_proper_nouns_input.setChecked(
-            get_default_config("parse_ignore_proper_nouns")
+            self._default_config.parse_ignore_proper_nouns
         )
         self.ui.parse_ignore_suspended_cards_content_input.setChecked(
-            get_default_config("parse_ignore_suspended_cards_content")
+            self._default_config.parse_ignore_suspended_cards_content
         )
 
     def restore_shortcuts_defaults(self, skip_confirmation: bool = False) -> None:
@@ -309,36 +312,34 @@ class PreferencesDialog(QDialog):
                 return
 
         self.ui.shortcut_browse_same_ripe_input.setKeySequence(
-            get_default_config("shortcut_browse_same_unknown_ripe")
+            self._default_config.shortcut_browse_same_unknown_ripe
         )
         self.ui.shortcut_browse_same_ripe_budding_input.setKeySequence(
-            get_default_config("shortcut_browse_same_unknown_ripe_budding")
+            self._default_config.shortcut_browse_same_unknown_ripe_budding
         )
         self.ui.shortcut_known_and_skip_input.setKeySequence(
-            get_default_config("shortcut_set_known_and_skip")
+            self._default_config.shortcut_set_known_and_skip
         )
         self.ui.shortcut_learn_now_input.setKeySequence(
-            get_default_config("shortcut_learn_now")
+            self._default_config.shortcut_learn_now
         )
         self.ui.shortcut_view_morphs_input.setKeySequence(
-            get_default_config("shortcut_view_morphemes")
+            self._default_config.shortcut_view_morphemes
         )
 
     def _populate_recalc_tab(self) -> None:
-        am_config = AnkiMorphsConfig()
-
         self.ui.preferred_sentence_length_input.setValue(
-            am_config.recalc_preferred_sentence_length
+            self.config.recalc_preferred_sentence_length
         )
         self.ui.recalc_unknown_morphs_count_input.setValue(
-            am_config.recalc_unknown_morphs_count
+            self.config.recalc_unknown_morphs_count
         )
-        self.ui.recalc_before_sync_input.setChecked(am_config.recalc_before_sync)
+        self.ui.recalc_before_sync_input.setChecked(self.config.recalc_before_sync)
         self.ui.recalc_prioritize_collection_input.setChecked(
-            am_config.recalc_prioritize_collection
+            self.config.recalc_prioritize_collection
         )
         self.ui.recalc_prioritize_textfile_input.setChecked(
-            am_config.recalc_prioritize_textfile
+            self.config.recalc_prioritize_textfile
         )
 
     def restore_recalc_defaults(self, skip_confirmation: bool = False) -> None:
@@ -351,30 +352,28 @@ class PreferencesDialog(QDialog):
                 return
 
         self.ui.preferred_sentence_length_input.setValue(
-            get_default_config("recalc_preferred_sentence_length")
+            self._default_config.recalc_preferred_sentence_length
         )
         self.ui.recalc_unknown_morphs_count_input.setValue(
-            get_default_config("recalc_unknown_morphs_count")
+            self._default_config.recalc_unknown_morphs_count
         )
         self.ui.recalc_before_sync_input.setChecked(
-            get_default_config("recalc_before_sync")
+            self._default_config.recalc_before_sync
         )
         self.ui.recalc_prioritize_collection_input.setChecked(
-            get_default_config("recalc_prioritize_collection")
+            self._default_config.recalc_prioritize_collection
         )
         self.ui.recalc_prioritize_textfile_input.setChecked(
-            get_default_config("recalc_prioritize_textfile")
+            self._default_config.recalc_prioritize_textfile
         )
 
     def _populate_skip_tab(self) -> None:
-        am_config = AnkiMorphsConfig()
-
-        self.ui.skip_stale_cards_input.setChecked(am_config.skip_stale_cards)
+        self.ui.skip_stale_cards_input.setChecked(self.config.skip_stale_cards)
         self.ui.skip_unknown_morph_seen_today_cards_input.setChecked(
-            am_config.skip_unknown_morph_seen_today_cards
+            self.config.skip_unknown_morph_seen_today_cards
         )
         self.ui.skip_show_num_of_skipped_cards_input.setChecked(
-            am_config.skip_show_num_of_skipped_cards
+            self.config.skip_show_num_of_skipped_cards
         )
 
     def restore_skip_defaults(self, skip_confirmation: bool = False) -> None:
@@ -386,14 +385,12 @@ class PreferencesDialog(QDialog):
             if not confirmed:
                 return
 
-        self.ui.skip_stale_cards_input.setChecked(
-            get_default_config("skip_stale_cards")
-        )
+        self.ui.skip_stale_cards_input.setChecked(self._default_config.skip_stale_cards)
         self.ui.skip_unknown_morph_seen_today_cards_input.setChecked(
-            get_default_config("skip_unknown_morph_seen_today_cards")
+            self._default_config.skip_unknown_morph_seen_today_cards
         )
         self.ui.skip_show_num_of_skipped_cards_input.setChecked(
-            get_default_config("skip_show_num_of_skipped_cards")
+            self._default_config.skip_show_num_of_skipped_cards
         )
 
     def restore_all_defaults(self) -> None:
@@ -402,9 +399,7 @@ class PreferencesDialog(QDialog):
         confirmed = self.warning_dialog(title, text)
 
         if confirmed:
-            default_configs = get_all_default_configs()
-            assert default_configs
-            default_filters = default_configs["filters"]
+            default_filters = self._default_config.filters
             self._setup_note_filters_table(default_filters)
             self._setup_extra_fields_table(default_filters)
             self.restore_tags_defaults(skip_confirmation=True)
@@ -439,7 +434,7 @@ class PreferencesDialog(QDialog):
         self.ui.note_filters_table.setRowCount(
             self.ui.note_filters_table.rowCount() + 1
         )
-        config_filter = get_default_config("filters")[0]
+        config_filter = self._default_config.filters[0]
         row = self.ui.note_filters_table.rowCount() - 1
         self.set_note_filters_table_row(row, config_filter)
 
@@ -471,63 +466,38 @@ class PreferencesDialog(QDialog):
         filters = []
         rows = self.ui.note_filters_table.rowCount()
         for row in range(rows):
-            note_type_widget: Optional[QWidget] = self.ui.note_filters_table.cellWidget(
-                row, 0
+            note_type_cbox: QComboBox = _get_cbox_widget(
+                self.ui.note_filters_table.cellWidget(row, 0)
             )
-            assert isinstance(note_type_widget, QComboBox)
-            note_type_cbox: QComboBox = note_type_widget
 
             tags_widget: Optional[QTableWidgetItem] = self.ui.note_filters_table.item(
                 row, 1
             )
             assert tags_widget
-
-            field_general_widget: Optional[
-                QWidget
-            ] = self.ui.note_filters_table.cellWidget(row, 2)
-            assert isinstance(field_general_widget, QComboBox)
-            field_cbox: QComboBox = field_general_widget
-
-            morphemizer_general_widget: Optional[
-                QWidget
-            ] = self.ui.note_filters_table.cellWidget(row, 3)
-            assert isinstance(morphemizer_general_widget, QComboBox)
-            morphemizer_widget: QComboBox = morphemizer_general_widget
-
-            read_general_widget: Optional[
-                QWidget
-            ] = self.ui.note_filters_table.cellWidget(row, 4)
-            assert isinstance(read_general_widget, QCheckBox)
-            read_widget: QCheckBox = read_general_widget
-
-            modify_general_widget: Optional[
-                QWidget
-            ] = self.ui.note_filters_table.cellWidget(row, 5)
-            assert isinstance(modify_general_widget, QCheckBox)
-            modify_widget: QCheckBox = modify_general_widget
-
-            focus_morph_general_widget: Optional[
-                QWidget
-            ] = self.ui.extra_fields_table.cellWidget(row, 1)
-            assert isinstance(focus_morph_general_widget, QComboBox)
-            focus_morph_widget: QComboBox = focus_morph_general_widget
-
-            highlighted_general_widget: Optional[
-                QWidget
-            ] = self.ui.extra_fields_table.cellWidget(row, 2)
-            assert isinstance(highlighted_general_widget, QComboBox)
-            highlighted_widget: QComboBox = highlighted_general_widget
-
-            difficulty_general_widget: Optional[
-                QWidget
-            ] = self.ui.extra_fields_table.cellWidget(row, 3)
-            assert isinstance(difficulty_general_widget, QComboBox)
-            difficulty_widget: QComboBox = difficulty_general_widget
-
-            assert difficulty_widget
-
             tags = tags_widget.text().split(",")
             tags = [tag.strip() for tag in tags]
+
+            field_cbox: QComboBox = _get_cbox_widget(
+                self.ui.note_filters_table.cellWidget(row, 2)
+            )
+            morphemizer_widget: QComboBox = _get_cbox_widget(
+                self.ui.note_filters_table.cellWidget(row, 3)
+            )
+            read_widget: QCheckBox = _get_checkbox_widget(
+                self.ui.note_filters_table.cellWidget(row, 4)
+            )
+            modify_widget: QCheckBox = _get_checkbox_widget(
+                self.ui.note_filters_table.cellWidget(row, 5)
+            )
+            focus_morph_widget: QComboBox = _get_cbox_widget(
+                self.ui.extra_fields_table.cellWidget(row, 1)
+            )
+            highlighted_widget: QComboBox = _get_cbox_widget(
+                self.ui.extra_fields_table.cellWidget(row, 2)
+            )
+            difficulty_widget: QComboBox = _get_cbox_widget(
+                self.ui.extra_fields_table.cellWidget(row, 3)
+            )
 
             _filter = {
                 "note_type": note_type_cbox.itemText(note_type_cbox.currentIndex()),

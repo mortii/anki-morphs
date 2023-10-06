@@ -70,72 +70,79 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
 
 
 class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
-    def __init__(self) -> None:
+    def __init__(self, is_default: bool = False) -> None:
         self.shortcut_browse_same_unknown_ripe: QKeySequence = _get_key_sequence_config(
-            "shortcut_browse_same_unknown_ripe"
+            "shortcut_browse_same_unknown_ripe", is_default
         )
         self.shortcut_browse_same_unknown_ripe_budding: QKeySequence = (
-            _get_key_sequence_config("shortcut_browse_same_unknown_ripe_budding")
+            _get_key_sequence_config(
+                "shortcut_browse_same_unknown_ripe_budding", is_default
+            )
         )
         self.shortcut_set_known_and_skip: QKeySequence = _get_key_sequence_config(
-            "shortcut_set_known_and_skip"
+            "shortcut_set_known_and_skip", is_default
         )
         self.shortcut_learn_now: QKeySequence = _get_key_sequence_config(
-            "shortcut_learn_now"
+            "shortcut_learn_now", is_default
         )
         self.shortcut_view_morphemes: QKeySequence = _get_key_sequence_config(
-            "shortcut_view_morphemes"
+            "shortcut_view_morphemes", is_default
         )
-        self.skip_stale_cards: bool = _get_bool_config("skip_stale_cards")
+        self.skip_stale_cards: bool = _get_bool_config("skip_stale_cards", is_default)
         self.skip_unknown_morph_seen_today_cards: bool = _get_bool_config(
-            "skip_unknown_morph_seen_today_cards"
+            "skip_unknown_morph_seen_today_cards", is_default
         )
         self.skip_show_num_of_skipped_cards: bool = _get_bool_config(
-            "skip_show_num_of_skipped_cards"
+            "skip_show_num_of_skipped_cards", is_default
         )
         self.recalc_ignore_suspended_leeches = _get_bool_config(
-            "recalc_ignore_suspended_leeches"
+            "recalc_ignore_suspended_leeches", is_default
         )
         self.recalc_always_prioritize_frequency_morphs: bool = _get_bool_config(
-            "recalc_always_prioritize_frequency_morphs"
+            "recalc_always_prioritize_frequency_morphs", is_default
         )
         self.recalc_preferred_sentence_length: int = _get_int_config(
-            "recalc_preferred_sentence_length"
+            "recalc_preferred_sentence_length", is_default
         )
         self.recalc_unknown_morphs_count: int = _get_int_config(
-            "recalc_unknown_morphs_count"
+            "recalc_unknown_morphs_count", is_default
         )
-        self.recalc_before_sync: bool = _get_bool_config("recalc_before_sync")
+        self.recalc_before_sync: bool = _get_bool_config(
+            "recalc_before_sync", is_default
+        )
         self.recalc_prioritize_collection: bool = _get_bool_config(
-            "recalc_prioritize_collection"
+            "recalc_prioritize_collection", is_default
         )
         self.recalc_prioritize_textfile: bool = _get_bool_config(
-            "recalc_prioritize_textfile"
+            "recalc_prioritize_textfile", is_default
         )
         self.parse_ignore_bracket_contents: bool = _get_bool_config(
-            "parse_ignore_bracket_contents"
+            "parse_ignore_bracket_contents", is_default
         )
         self.parse_ignore_round_bracket_contents: bool = _get_bool_config(
-            "parse_ignore_round_bracket_contents"
+            "parse_ignore_round_bracket_contents", is_default
         )
         self.parse_ignore_slim_round_bracket_contents: bool = _get_bool_config(
-            "parse_ignore_slim_round_bracket_contents"
+            "parse_ignore_slim_round_bracket_contents", is_default
         )
         self.parse_ignore_proper_nouns: bool = _get_bool_config(
-            "parse_ignore_proper_nouns"
+            "parse_ignore_proper_nouns", is_default
         )
         self.parse_ignore_suspended_cards_content: bool = _get_bool_config(
-            "parse_ignore_suspended_cards_content"
+            "parse_ignore_suspended_cards_content", is_default
         )
-        self.tag_ripe: str = _get_string_config("tag_ripe")
-        self.tag_budding: str = _get_string_config("tag_budding")
-        self.tag_stale: str = _get_string_config("tag_stale")
+        self.tag_ripe: str = _get_string_config("tag_ripe", is_default)
+        self.tag_budding: str = _get_string_config("tag_budding", is_default)
+        self.tag_stale: str = _get_string_config("tag_stale", is_default)
 
-        self.filters: list[AnkiMorphsConfigFilter] = _get_filters_config()
+        self.filters: list[AnkiMorphsConfigFilter] = _get_filters_config(is_default)
 
 
-def _get_filters_config() -> list[AnkiMorphsConfigFilter]:
-    filters_config = get_config("filters")
+def _get_filters_config(is_default: bool = False) -> list[AnkiMorphsConfigFilter]:
+    if is_default:
+        filters_config = get_default_config("filters")
+    else:
+        filters_config = get_config("filters")
     assert isinstance(filters_config, list)
     filters = []
 
@@ -145,26 +152,38 @@ def _get_filters_config() -> list[AnkiMorphsConfigFilter]:
     return filters
 
 
-def _get_key_sequence_config(key: str) -> QKeySequence:
-    config_item = get_config(key)
+def _get_key_sequence_config(key: str, is_default: bool = False) -> QKeySequence:
+    if is_default:
+        config_item = get_default_config(key)
+    else:
+        config_item = get_config(key)
     assert isinstance(config_item, str)
     return QKeySequence(config_item)
 
 
-def _get_int_config(key: str) -> int:
-    config_item = get_config(key)
+def _get_int_config(key: str, is_default: bool = False) -> int:
+    if is_default:
+        config_item = get_default_config(key)
+    else:
+        config_item = get_config(key)
     assert isinstance(config_item, int)
     return config_item
 
 
-def _get_string_config(key: str) -> str:
-    config_item = get_config(key)
+def _get_string_config(key: str, is_default: bool = False) -> str:
+    if is_default:
+        config_item = get_default_config(key)
+    else:
+        config_item = get_config(key)
     assert isinstance(config_item, str)
     return config_item
 
 
-def _get_bool_config(key: str) -> bool:
-    config_item = get_config(key)
+def _get_bool_config(key: str, is_default: bool = False) -> bool:
+    if is_default:
+        config_item = get_default_config(key)
+    else:
+        config_item = get_config(key)
     assert isinstance(config_item, bool)
     return config_item
 
