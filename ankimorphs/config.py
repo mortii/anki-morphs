@@ -71,6 +71,12 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
 
 class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
     def __init__(self, is_default: bool = False) -> None:
+        self.shortcut_recalc: QKeySequence = _get_key_sequence_config(
+            "shortcut_recalc", is_default
+        )
+        self.shortcut_settings: QKeySequence = _get_key_sequence_config(
+            "shortcut_settings", is_default
+        )
         self.shortcut_browse_same_unknown_ripe: QKeySequence = _get_key_sequence_config(
             "shortcut_browse_same_unknown_ripe", is_default
         )
@@ -144,11 +150,10 @@ def _get_filters_config(is_default: bool = False) -> list[AnkiMorphsConfigFilter
     else:
         filters_config = get_config("filters")
     assert isinstance(filters_config, list)
-    filters = []
 
+    filters = []
     for _filter in filters_config:
         filters.append(AnkiMorphsConfigFilter(_filter))
-
     return filters
 
 

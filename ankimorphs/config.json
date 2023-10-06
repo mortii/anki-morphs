@@ -1,4 +1,6 @@
 {
+  "shortcut_recalc": "Ctrl+M",
+  "shortcut_settings": "Ctrl+O",
   "shortcut_browse_same_unknown_ripe": "L",
   "shortcut_browse_same_unknown_ripe_budding": "Shift+L",
   "shortcut_set_known_and_skip": "K",

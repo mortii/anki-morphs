@@ -64,8 +64,10 @@ def init_tool_menu_and_actions() -> None:
         if action.objectName() == TOOL_MENU:
             return  # prevents duplicate menus on profile-switch
 
-    recalc_action = create_recalc_action()
-    preferences_action = create_settings_action()
+    am_config = AnkiMorphsConfig()
+
+    recalc_action = create_recalc_action(am_config)
+    preferences_action = create_settings_action(am_config)
     guide_action = create_guide_action()
     changelog_action = create_changelog_action()
 
@@ -173,16 +175,16 @@ def create_am_tool_menu() -> QMenu:
     return am_tool_menu
 
 
-def create_recalc_action() -> QAction:
+def create_recalc_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Recalc", mw)
-    action.setShortcut("Ctrl+M")
+    action.setShortcut(am_config.shortcut_recalc)
     action.triggered.connect(new_recalc.main)
     return action
 
 
-def create_settings_action() -> QAction:
+def create_settings_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Settings", mw)
-    action.setShortcut("Ctrl+O")
+    action.setShortcut(am_config.shortcut_settings)
     action.triggered.connect(settings_dialog.main)
     return action
 

@@ -547,6 +547,20 @@
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_16">
              <item>
+              <widget class="QLabel" name="label_14">
+               <property name="text">
+                <string>Run recalc</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>Open settings</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QLabel" name="label_8">
                <property name="text">
                 <string>Browse ripe cards with same unknown morph</string>
@@ -585,6 +599,12 @@
            </item>
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_15">
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcut_recalc_input"/>
+             </item>
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcut_settings_input"/>
+             </item>
              <item>
               <widget class="QKeySequenceEdit" name="shortcut_browse_same_ripe_input"/>
              </item>

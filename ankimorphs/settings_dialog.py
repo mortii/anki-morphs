@@ -20,6 +20,11 @@ from ankimorphs.morphemizer import get_all_morphemizers
 from ankimorphs.ui.settings_dialog_ui import Ui_SettingsDialog
 
 
+def main() -> None:
+    mw.ankimorphs_preferences_dialog = PreferencesDialog(mw)  # type: ignore
+    mw.ankimorphs_preferences_dialog.exec()  # type: ignore
+
+
 def _get_cbox_index(items: Iterable[str], filter_field: str) -> Optional[int]:
     for index, field in enumerate(items):
         if field == filter_field:
@@ -261,6 +266,8 @@ class PreferencesDialog(QDialog):
         )
 
     def _populate_shortcuts_tab(self) -> None:
+        self.ui.shortcut_recalc_input.setKeySequence(self.config.shortcut_recalc)
+        self.ui.shortcut_settings_input.setKeySequence(self.config.shortcut_settings)
         self.ui.shortcut_browse_same_ripe_input.setKeySequence(
             self.config.shortcut_browse_same_unknown_ripe.toString()
         )
@@ -311,6 +318,12 @@ class PreferencesDialog(QDialog):
             if not confirmed:
                 return
 
+        self.ui.shortcut_recalc_input.setKeySequence(
+            self._default_config.shortcut_recalc
+        )
+        self.ui.shortcut_settings_input.setKeySequence(
+            self._default_config.shortcut_settings
+        )
         self.ui.shortcut_browse_same_ripe_input.setKeySequence(
             self._default_config.shortcut_browse_same_unknown_ripe
         )
@@ -558,8 +571,3 @@ class PreferencesDialog(QDialog):
             tooltip("Remember to save!", parent=mw)
             return True
         return False
-
-
-def main() -> None:
-    mw.ankimorphs_preferences_dialog = PreferencesDialog(mw)  # type: ignore
-    mw.ankimorphs_preferences_dialog.exec()  # type: ignore
