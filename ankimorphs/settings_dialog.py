@@ -2,7 +2,7 @@ from collections.abc import Iterable, Sequence
 from functools import partial
 from typing import Optional
 
-from anki.models import FieldDict, NotetypeNameId
+from anki.models import FieldDict, NotetypeId, NotetypeNameId
 from aqt import mw
 from aqt.qt import (  # pylint:disable=no-name-in-module
     QCheckBox,
@@ -60,20 +60,20 @@ class PreferencesDialog(QDialog):
         self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore
         self.config = AnkiMorphsConfig()
-        self.setup_note_filters_table(self.config.filters)
-        self.setup_extra_fields_table(self.config.filters)
-        self.populate_tags_tab()
-        self.populate_parse_tab()
-        self.populate_skip_tab()
-        self.populate_shortcuts_tab()
-        self.populate_recalc_tab()
-        self.setup_buttons()
+        self._setup_note_filters_table(self.config.filters)
+        self._setup_extra_fields_table(self.config.filters)
+        self._populate_tags_tab()
+        self._populate_parse_tab()
+        self._populate_skip_tab()
+        self._populate_shortcuts_tab()
+        self._populate_recalc_tab()
+        self._setup_buttons()
         self.ui.tabWidget.currentChanged.connect(self.tab_change)
         self.ui.ankimorphs_version_label.setText(
             f"AnkiMorphs version: {mw.ANKIMORPHS_VERSION}"  # type: ignore
         )
 
-    def setup_note_filters_table(
+    def _setup_note_filters_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
     ) -> None:
         self.ui.note_filters_table.setColumnWidth(0, 150)
@@ -100,7 +100,8 @@ class PreferencesDialog(QDialog):
             note_type_cbox.setCurrentIndex(note_type_name_index)
 
         current_model_id = self.models[note_type_cbox.currentIndex()].id
-        note_type = mw.col.models.get(current_model_id)
+        note_type = mw.col.models.get(NotetypeId(int(current_model_id)))
+        assert note_type
 
         fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
         field_cbox = QComboBox(self.ui.note_filters_table)
@@ -139,7 +140,7 @@ class PreferencesDialog(QDialog):
         self.ui.note_filters_table.setCellWidget(row, 4, read_checkbox)
         self.ui.note_filters_table.setCellWidget(row, 5, modify_checkbox)
 
-    def setup_extra_fields_table(
+    def _setup_extra_fields_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
     ) -> None:
         self.ui.extra_fields_table.setColumnWidth(0, 150)
@@ -167,8 +168,8 @@ class PreferencesDialog(QDialog):
         note_type_widget: QComboBox = note_type_general_widget
         note_type_text = note_type_widget.itemText(note_type_widget.currentIndex())
         current_model_id = self.models[note_type_widget.currentIndex()].id
-        note_type = mw.col.models.get(current_model_id)
-
+        note_type = mw.col.models.get(NotetypeId(int(current_model_id)))
+        assert note_type
         fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
 
         matching_filter = None
@@ -216,7 +217,7 @@ class PreferencesDialog(QDialog):
         self.ui.extra_fields_table.setCellWidget(row, 2, highlighted_cbox)
         self.ui.extra_fields_table.setCellWidget(row, 3, difficulty_cbox)
 
-    def populate_tags_tab(self) -> None:
+    def _populate_tags_tab(self) -> None:
         am_config = AnkiMorphsConfig()
 
         self.ui.ripe_tag_input.setText(am_config.tag_ripe)
@@ -236,7 +237,7 @@ class PreferencesDialog(QDialog):
         self.ui.budding_tag_input.setText(get_default_config("tag_budding"))
         self.ui.stale_tag_input.setText(get_default_config("tag_stale"))
 
-    def populate_parse_tab(self) -> None:
+    def _populate_parse_tab(self) -> None:
         am_config = AnkiMorphsConfig()
 
         self.ui.parse_ignore_bracket_contents_input.setChecked(
@@ -255,7 +256,7 @@ class PreferencesDialog(QDialog):
             am_config.parse_ignore_suspended_cards_content
         )
 
-    def populate_shortcuts_tab(self) -> None:
+    def _populate_shortcuts_tab(self) -> None:
         am_config = AnkiMorphsConfig()
 
         self.ui.shortcut_browse_same_ripe_input.setText(
@@ -324,7 +325,7 @@ class PreferencesDialog(QDialog):
             get_default_config("shortcut_view_morphemes")
         )
 
-    def populate_recalc_tab(self) -> None:
+    def _populate_recalc_tab(self) -> None:
         am_config = AnkiMorphsConfig()
 
         self.ui.preferred_sentence_length_input.setValue(
@@ -366,7 +367,7 @@ class PreferencesDialog(QDialog):
             get_default_config("recalc_prioritize_textfile")
         )
 
-    def populate_skip_tab(self) -> None:
+    def _populate_skip_tab(self) -> None:
         am_config = AnkiMorphsConfig()
 
         self.ui.skip_stale_cards_input.setChecked(am_config.skip_stale_cards)
@@ -405,15 +406,15 @@ class PreferencesDialog(QDialog):
             default_configs = get_all_default_configs()
             assert default_configs
             default_filters = default_configs["filters"]
-            self.setup_note_filters_table(default_filters)
-            self.setup_extra_fields_table(default_filters)
+            self._setup_note_filters_table(default_filters)
+            self._setup_extra_fields_table(default_filters)
             self.restore_tags_defaults(skip_confirmation=True)
             self.restore_parse_defaults(skip_confirmation=True)
             self.restore_skip_defaults(skip_confirmation=True)
             self.restore_recalc_defaults(skip_confirmation=True)
             self.restore_shortcuts_defaults(skip_confirmation=True)
 
-    def setup_buttons(self) -> None:
+    def _setup_buttons(self) -> None:
         self.ui.save_button.clicked.connect(self.save_to_config)
         self.ui.cancel_button.clicked.connect(self.close)
         self.ui.add_new_row_button.clicked.connect(self.add_new_row)
@@ -560,7 +561,8 @@ class PreferencesDialog(QDialog):
     ) -> None:
         assert mw
         current_model_id = self.models[note_type_cbox.currentIndex()].id
-        note_type = mw.col.models.get(current_model_id)
+        note_type = mw.col.models.get(NotetypeId(int(current_model_id)))
+        assert note_type
         fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
         field_cbox.clear()
         field_cbox.addItems(fields)
@@ -572,7 +574,7 @@ class PreferencesDialog(QDialog):
         in case the note filters have changed.
         """
         if tab_index == 1:
-            self.setup_extra_fields_table(self.config.filters)
+            self._setup_extra_fields_table(self.config.filters)
 
     def warning_dialog(self, title: str, text: str) -> bool:
         warning_box = QMessageBox(self)

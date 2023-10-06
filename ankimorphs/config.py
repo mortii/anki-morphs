@@ -34,7 +34,7 @@ def get_all_default_configs() -> Optional[dict[str, Any]]:
     return mw.addonManager.addonConfigDefaults(addon)
 
 
-def update_configs(new_configs: dict[str, Union[str, int, bool, list[Any]]]) -> None:
+def update_configs(new_configs: dict[str, object]) -> None:
     assert mw
     config = mw.addonManager.getConfig(__name__)
     assert config
@@ -53,7 +53,7 @@ def get_read_filters() -> list[FilterTypeAlias]:
     return read_filters
 
 
-class AnkiMorphsConfigFilter:
+class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
     def __init__(self, _filter: FilterTypeAlias):
         self.note_type: str = _get_filter_str(_filter, "note_type")
         self.note_type_id: Optional[int] = _get_filter_optional_int(
@@ -69,7 +69,7 @@ class AnkiMorphsConfigFilter:
         self.difficulty: str = _get_filter_str(_filter, "difficulty")
 
 
-class AnkiMorphsConfig:
+class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
     def __init__(self) -> None:
         self.shortcut_browse_same_unknown_ripe: QKeySequence = _get_key_sequence_config(
             "shortcut_browse_same_unknown_ripe"
