@@ -219,7 +219,6 @@ class PreferencesDialog(QDialog):
 
     def _populate_tags_tab(self) -> None:
         am_config = AnkiMorphsConfig()
-
         self.ui.ripe_tag_input.setText(am_config.tag_ripe)
         self.ui.budding_tag_input.setText(am_config.tag_budding)
         self.ui.stale_tag_input.setText(am_config.tag_stale)
@@ -259,19 +258,19 @@ class PreferencesDialog(QDialog):
     def _populate_shortcuts_tab(self) -> None:
         am_config = AnkiMorphsConfig()
 
-        self.ui.shortcut_browse_same_ripe_input.setText(
+        self.ui.shortcut_browse_same_ripe_input.setKeySequence(
             am_config.shortcut_browse_same_unknown_ripe.toString()
         )
-        self.ui.shortcut_browse_same_ripe_budding_input.setText(
+        self.ui.shortcut_browse_same_ripe_budding_input.setKeySequence(
             am_config.shortcut_browse_same_unknown_ripe_budding.toString()
         )
-        self.ui.shortcut_known_and_skip_input.setText(
+        self.ui.shortcut_known_and_skip_input.setKeySequence(
             am_config.shortcut_set_known_and_skip.toString()
         )
-        self.ui.shortcut_learn_now_input.setText(
+        self.ui.shortcut_learn_now_input.setKeySequence(
             am_config.shortcut_learn_now.toString()
         )
-        self.ui.shortcut_view_morphs_input.setText(
+        self.ui.shortcut_view_morphs_input.setKeySequence(
             am_config.shortcut_view_morphemes.toString()
         )
 
@@ -309,19 +308,19 @@ class PreferencesDialog(QDialog):
             if not confirmed:
                 return
 
-        self.ui.shortcut_browse_same_ripe_input.setText(
+        self.ui.shortcut_browse_same_ripe_input.setKeySequence(
             get_default_config("shortcut_browse_same_unknown_ripe")
         )
-        self.ui.shortcut_browse_same_ripe_budding_input.setText(
+        self.ui.shortcut_browse_same_ripe_budding_input.setKeySequence(
             get_default_config("shortcut_browse_same_unknown_ripe_budding")
         )
-        self.ui.shortcut_known_and_skip_input.setText(
+        self.ui.shortcut_known_and_skip_input.setKeySequence(
             get_default_config("shortcut_set_known_and_skip")
         )
-        self.ui.shortcut_learn_now_input.setText(
+        self.ui.shortcut_learn_now_input.setKeySequence(
             get_default_config("shortcut_learn_now")
         )
-        self.ui.shortcut_view_morphs_input.setText(
+        self.ui.shortcut_view_morphs_input.setKeySequence(
             get_default_config("shortcut_view_morphemes")
         )
 
@@ -449,11 +448,11 @@ class PreferencesDialog(QDialog):
             "tag_ripe": self.ui.ripe_tag_input.text(),
             "tag_budding": self.ui.budding_tag_input.text(),
             "tag_stale": self.ui.stale_tag_input.text(),
-            "shortcut_browse_same_unknown_ripe": self.ui.shortcut_browse_same_ripe_input.text(),
-            "shortcut_browse_same_unknown_ripe_budding": self.ui.shortcut_browse_same_ripe_budding_input.text(),
-            "shortcut_set_known_and_skip": self.ui.shortcut_known_and_skip_input.text(),
-            "shortcut_learn_now": self.ui.shortcut_learn_now_input.text(),
-            "shortcut_view_morphemes": self.ui.shortcut_view_morphs_input.text(),
+            "shortcut_browse_same_unknown_ripe": self.ui.shortcut_browse_same_ripe_input.keySequence().toString(),
+            "shortcut_browse_same_unknown_ripe_budding": self.ui.shortcut_browse_same_ripe_budding_input.keySequence().toString(),
+            "shortcut_set_known_and_skip": self.ui.shortcut_known_and_skip_input.keySequence().toString(),
+            "shortcut_learn_now": self.ui.shortcut_learn_now_input.keySequence().toString(),
+            "shortcut_view_morphemes": self.ui.shortcut_view_morphs_input.keySequence().toString(),
             "recalc_preferred_sentence_length": self.ui.preferred_sentence_length_input.value(),
             "recalc_unknown_morphs_count": self.ui.recalc_unknown_morphs_count_input.value(),
             "recalc_before_sync": self.ui.recalc_before_sync_input.isChecked(),
@@ -553,7 +552,7 @@ class PreferencesDialog(QDialog):
             filters.append(_filter)
         new_config["filters"] = filters
         update_configs(new_config)
-        # self.config_filters = get_config("filters") # TODO UPDATE
+        self.config = AnkiMorphsConfig()
         tooltip("Please recalc to avoid unexpected behaviour", parent=mw)
 
     def update_fields_cbox(

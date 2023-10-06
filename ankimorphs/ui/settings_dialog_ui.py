@@ -48,12 +48,7 @@ class Ui_SettingsDialog:
         self.delete_row_button = QtWidgets.QPushButton(parent=self.note_filters_tab)
         self.delete_row_button.setObjectName("delete_row_button")
         self.horizontalLayout_2.addWidget(self.delete_row_button)
-        spacerItem = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
         self.add_new_row_button = QtWidgets.QPushButton(parent=self.note_filters_tab)
         self.add_new_row_button.setObjectName("add_new_row_button")
@@ -114,33 +109,18 @@ class Ui_SettingsDialog:
         self.stale_tag_input.setObjectName("stale_tag_input")
         self.verticalLayout_7.addWidget(self.stale_tag_input)
         self.horizontalLayout_3.addLayout(self.verticalLayout_7)
-        spacerItem1 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem1)
         self.verticalLayout_10.addLayout(self.horizontalLayout_3)
         self.verticalLayout_12.addLayout(self.verticalLayout_10)
-        spacerItem2 = QtWidgets.QSpacerItem(
-            20,
-            40,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
+        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout_12.addItem(spacerItem2)
         self.horizontalLayout_7 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_7.setObjectName("horizontalLayout_7")
         self.restore_tags_defaults_button = QtWidgets.QPushButton(parent=self.tags_tab)
         self.restore_tags_defaults_button.setObjectName("restore_tags_defaults_button")
         self.horizontalLayout_7.addWidget(self.restore_tags_defaults_button)
-        spacerItem3 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_7.addItem(spacerItem3)
         self.verticalLayout_12.addLayout(self.horizontalLayout_7)
         self.tabWidget.addTab(self.tags_tab, "")
@@ -150,66 +130,30 @@ class Ui_SettingsDialog:
         self.verticalLayout_13.setObjectName("verticalLayout_13")
         self.verticalLayout_9 = QtWidgets.QVBoxLayout()
         self.verticalLayout_9.setObjectName("verticalLayout_9")
-        self.parse_ignore_bracket_contents_input = QtWidgets.QCheckBox(
-            parent=self.parse_tab
-        )
-        self.parse_ignore_bracket_contents_input.setObjectName(
-            "parse_ignore_bracket_contents_input"
-        )
+        self.parse_ignore_bracket_contents_input = QtWidgets.QCheckBox(parent=self.parse_tab)
+        self.parse_ignore_bracket_contents_input.setObjectName("parse_ignore_bracket_contents_input")
         self.verticalLayout_9.addWidget(self.parse_ignore_bracket_contents_input)
-        self.parse_ignore_round_bracket_contents_input = QtWidgets.QCheckBox(
-            parent=self.parse_tab
-        )
-        self.parse_ignore_round_bracket_contents_input.setObjectName(
-            "parse_ignore_round_bracket_contents_input"
-        )
+        self.parse_ignore_round_bracket_contents_input = QtWidgets.QCheckBox(parent=self.parse_tab)
+        self.parse_ignore_round_bracket_contents_input.setObjectName("parse_ignore_round_bracket_contents_input")
         self.verticalLayout_9.addWidget(self.parse_ignore_round_bracket_contents_input)
-        self.parse_ignore_slim_round_bracket_contents_input = QtWidgets.QCheckBox(
-            parent=self.parse_tab
-        )
-        self.parse_ignore_slim_round_bracket_contents_input.setObjectName(
-            "parse_ignore_slim_round_bracket_contents_input"
-        )
-        self.verticalLayout_9.addWidget(
-            self.parse_ignore_slim_round_bracket_contents_input
-        )
-        self.parse_ignore_proper_nouns_input = QtWidgets.QCheckBox(
-            parent=self.parse_tab
-        )
-        self.parse_ignore_proper_nouns_input.setObjectName(
-            "parse_ignore_proper_nouns_input"
-        )
+        self.parse_ignore_slim_round_bracket_contents_input = QtWidgets.QCheckBox(parent=self.parse_tab)
+        self.parse_ignore_slim_round_bracket_contents_input.setObjectName("parse_ignore_slim_round_bracket_contents_input")
+        self.verticalLayout_9.addWidget(self.parse_ignore_slim_round_bracket_contents_input)
+        self.parse_ignore_proper_nouns_input = QtWidgets.QCheckBox(parent=self.parse_tab)
+        self.parse_ignore_proper_nouns_input.setObjectName("parse_ignore_proper_nouns_input")
         self.verticalLayout_9.addWidget(self.parse_ignore_proper_nouns_input)
-        self.parse_ignore_suspended_cards_content_input = QtWidgets.QCheckBox(
-            parent=self.parse_tab
-        )
-        self.parse_ignore_suspended_cards_content_input.setObjectName(
-            "parse_ignore_suspended_cards_content_input"
-        )
+        self.parse_ignore_suspended_cards_content_input = QtWidgets.QCheckBox(parent=self.parse_tab)
+        self.parse_ignore_suspended_cards_content_input.setObjectName("parse_ignore_suspended_cards_content_input")
         self.verticalLayout_9.addWidget(self.parse_ignore_suspended_cards_content_input)
         self.verticalLayout_13.addLayout(self.verticalLayout_9)
-        spacerItem4 = QtWidgets.QSpacerItem(
-            20,
-            40,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
+        spacerItem4 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout_13.addItem(spacerItem4)
         self.horizontalLayout_8 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_8.setObjectName("horizontalLayout_8")
-        self.restore_parse_defaults_button = QtWidgets.QPushButton(
-            parent=self.parse_tab
-        )
-        self.restore_parse_defaults_button.setObjectName(
-            "restore_parse_defaults_button"
-        )
+        self.restore_parse_defaults_button = QtWidgets.QPushButton(parent=self.parse_tab)
+        self.restore_parse_defaults_button.setObjectName("restore_parse_defaults_button")
         self.horizontalLayout_8.addWidget(self.restore_parse_defaults_button)
-        spacerItem5 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_8.addItem(spacerItem5)
         self.verticalLayout_13.addLayout(self.horizontalLayout_8)
         self.tabWidget.addTab(self.parse_tab, "")
@@ -222,39 +166,21 @@ class Ui_SettingsDialog:
         self.skip_stale_cards_input = QtWidgets.QCheckBox(parent=self.skip_tab)
         self.skip_stale_cards_input.setObjectName("skip_stale_cards_input")
         self.verticalLayout_11.addWidget(self.skip_stale_cards_input)
-        self.skip_unknown_morph_seen_today_cards_input = QtWidgets.QCheckBox(
-            parent=self.skip_tab
-        )
-        self.skip_unknown_morph_seen_today_cards_input.setObjectName(
-            "skip_unknown_morph_seen_today_cards_input"
-        )
+        self.skip_unknown_morph_seen_today_cards_input = QtWidgets.QCheckBox(parent=self.skip_tab)
+        self.skip_unknown_morph_seen_today_cards_input.setObjectName("skip_unknown_morph_seen_today_cards_input")
         self.verticalLayout_11.addWidget(self.skip_unknown_morph_seen_today_cards_input)
-        self.skip_show_num_of_skipped_cards_input = QtWidgets.QCheckBox(
-            parent=self.skip_tab
-        )
-        self.skip_show_num_of_skipped_cards_input.setObjectName(
-            "skip_show_num_of_skipped_cards_input"
-        )
+        self.skip_show_num_of_skipped_cards_input = QtWidgets.QCheckBox(parent=self.skip_tab)
+        self.skip_show_num_of_skipped_cards_input.setObjectName("skip_show_num_of_skipped_cards_input")
         self.verticalLayout_11.addWidget(self.skip_show_num_of_skipped_cards_input)
         self.verticalLayout_20.addLayout(self.verticalLayout_11)
-        spacerItem6 = QtWidgets.QSpacerItem(
-            20,
-            40,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
+        spacerItem6 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout_20.addItem(spacerItem6)
         self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_11.setObjectName("horizontalLayout_11")
         self.restore_skip_defaults_button = QtWidgets.QPushButton(parent=self.skip_tab)
         self.restore_skip_defaults_button.setObjectName("restore_skip_defaults_button")
         self.horizontalLayout_11.addWidget(self.restore_skip_defaults_button)
-        spacerItem7 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem7 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_11.addItem(spacerItem7)
         self.verticalLayout_20.addLayout(self.horizontalLayout_11)
         self.tabWidget.addTab(self.skip_tab, "")
@@ -267,19 +193,10 @@ class Ui_SettingsDialog:
         self.label_6 = QtWidgets.QLabel(parent=self.recalc_tab)
         self.label_6.setObjectName("label_6")
         self.horizontalLayout_6.addWidget(self.label_6)
-        self.preferred_sentence_length_input = QtWidgets.QSpinBox(
-            parent=self.recalc_tab
-        )
-        self.preferred_sentence_length_input.setObjectName(
-            "preferred_sentence_length_input"
-        )
+        self.preferred_sentence_length_input = QtWidgets.QSpinBox(parent=self.recalc_tab)
+        self.preferred_sentence_length_input.setObjectName("preferred_sentence_length_input")
         self.horizontalLayout_6.addWidget(self.preferred_sentence_length_input)
-        spacerItem8 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem8 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_6.addItem(spacerItem8)
         self.verticalLayout_18.addLayout(self.horizontalLayout_6)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
@@ -287,22 +204,13 @@ class Ui_SettingsDialog:
         self.label_7 = QtWidgets.QLabel(parent=self.recalc_tab)
         self.label_7.setObjectName("label_7")
         self.horizontalLayout_4.addWidget(self.label_7)
-        self.recalc_unknown_morphs_count_input = QtWidgets.QSpinBox(
-            parent=self.recalc_tab
-        )
-        self.recalc_unknown_morphs_count_input.setObjectName(
-            "recalc_unknown_morphs_count_input"
-        )
+        self.recalc_unknown_morphs_count_input = QtWidgets.QSpinBox(parent=self.recalc_tab)
+        self.recalc_unknown_morphs_count_input.setObjectName("recalc_unknown_morphs_count_input")
         self.horizontalLayout_4.addWidget(self.recalc_unknown_morphs_count_input)
         self.label = QtWidgets.QLabel(parent=self.recalc_tab)
         self.label.setObjectName("label")
         self.horizontalLayout_4.addWidget(self.label)
-        spacerItem9 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem9 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem9)
         self.verticalLayout_18.addLayout(self.horizontalLayout_4)
         self.verticalLayout_17 = QtWidgets.QVBoxLayout()
@@ -318,43 +226,21 @@ class Ui_SettingsDialog:
         self.label_5 = QtWidgets.QLabel(parent=self.recalc_tab)
         self.label_5.setObjectName("label_5")
         self.verticalLayout_14.addWidget(self.label_5)
-        self.recalc_prioritize_collection_input = QtWidgets.QRadioButton(
-            parent=self.recalc_tab
-        )
-        self.recalc_prioritize_collection_input.setObjectName(
-            "recalc_prioritize_collection_input"
-        )
+        self.recalc_prioritize_collection_input = QtWidgets.QRadioButton(parent=self.recalc_tab)
+        self.recalc_prioritize_collection_input.setObjectName("recalc_prioritize_collection_input")
         self.verticalLayout_14.addWidget(self.recalc_prioritize_collection_input)
-        self.recalc_prioritize_textfile_input = QtWidgets.QRadioButton(
-            parent=self.recalc_tab
-        )
-        self.recalc_prioritize_textfile_input.setObjectName(
-            "recalc_prioritize_textfile_input"
-        )
+        self.recalc_prioritize_textfile_input = QtWidgets.QRadioButton(parent=self.recalc_tab)
+        self.recalc_prioritize_textfile_input.setObjectName("recalc_prioritize_textfile_input")
         self.verticalLayout_14.addWidget(self.recalc_prioritize_textfile_input)
         self.verticalLayout_18.addLayout(self.verticalLayout_14)
-        spacerItem10 = QtWidgets.QSpacerItem(
-            20,
-            40,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
+        spacerItem10 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout_18.addItem(spacerItem10)
         self.horizontalLayout_9 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_9.setObjectName("horizontalLayout_9")
-        self.restore_recalc_defaults_button = QtWidgets.QPushButton(
-            parent=self.recalc_tab
-        )
-        self.restore_recalc_defaults_button.setObjectName(
-            "restore_recalc_defaults_button"
-        )
+        self.restore_recalc_defaults_button = QtWidgets.QPushButton(parent=self.recalc_tab)
+        self.restore_recalc_defaults_button.setObjectName("restore_recalc_defaults_button")
         self.horizontalLayout_9.addWidget(self.restore_recalc_defaults_button)
-        spacerItem11 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem11 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_9.addItem(spacerItem11)
         self.verticalLayout_18.addLayout(self.horizontalLayout_9)
         self.tabWidget.addTab(self.recalc_tab, "")
@@ -384,64 +270,33 @@ class Ui_SettingsDialog:
         self.horizontalLayout_5.addLayout(self.verticalLayout_16)
         self.verticalLayout_15 = QtWidgets.QVBoxLayout()
         self.verticalLayout_15.setObjectName("verticalLayout_15")
-        self.shortcut_browse_same_ripe_input = QtWidgets.QLineEdit(
-            parent=self.shortcuts_tab
-        )
-        self.shortcut_browse_same_ripe_input.setObjectName(
-            "shortcut_browse_same_ripe_input"
-        )
+        self.shortcut_browse_same_ripe_input = QtWidgets.QKeySequenceEdit(parent=self.shortcuts_tab)
+        self.shortcut_browse_same_ripe_input.setObjectName("shortcut_browse_same_ripe_input")
         self.verticalLayout_15.addWidget(self.shortcut_browse_same_ripe_input)
-        self.shortcut_browse_same_ripe_budding_input = QtWidgets.QLineEdit(
-            parent=self.shortcuts_tab
-        )
-        self.shortcut_browse_same_ripe_budding_input.setObjectName(
-            "shortcut_browse_same_ripe_budding_input"
-        )
+        self.shortcut_browse_same_ripe_budding_input = QtWidgets.QKeySequenceEdit(parent=self.shortcuts_tab)
+        self.shortcut_browse_same_ripe_budding_input.setObjectName("shortcut_browse_same_ripe_budding_input")
         self.verticalLayout_15.addWidget(self.shortcut_browse_same_ripe_budding_input)
-        self.shortcut_known_and_skip_input = QtWidgets.QLineEdit(
-            parent=self.shortcuts_tab
-        )
-        self.shortcut_known_and_skip_input.setObjectName(
-            "shortcut_known_and_skip_input"
-        )
+        self.shortcut_known_and_skip_input = QtWidgets.QKeySequenceEdit(parent=self.shortcuts_tab)
+        self.shortcut_known_and_skip_input.setObjectName("shortcut_known_and_skip_input")
         self.verticalLayout_15.addWidget(self.shortcut_known_and_skip_input)
-        self.shortcut_learn_now_input = QtWidgets.QLineEdit(parent=self.shortcuts_tab)
+        self.shortcut_learn_now_input = QtWidgets.QKeySequenceEdit(parent=self.shortcuts_tab)
         self.shortcut_learn_now_input.setObjectName("shortcut_learn_now_input")
         self.verticalLayout_15.addWidget(self.shortcut_learn_now_input)
-        self.shortcut_view_morphs_input = QtWidgets.QLineEdit(parent=self.shortcuts_tab)
+        self.shortcut_view_morphs_input = QtWidgets.QKeySequenceEdit(parent=self.shortcuts_tab)
         self.shortcut_view_morphs_input.setObjectName("shortcut_view_morphs_input")
         self.verticalLayout_15.addWidget(self.shortcut_view_morphs_input)
         self.horizontalLayout_5.addLayout(self.verticalLayout_15)
-        spacerItem12 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem12 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_5.addItem(spacerItem12)
         self.verticalLayout_19.addLayout(self.horizontalLayout_5)
-        spacerItem13 = QtWidgets.QSpacerItem(
-            20,
-            40,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
+        spacerItem13 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout_19.addItem(spacerItem13)
         self.horizontalLayout_10 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_10.setObjectName("horizontalLayout_10")
-        self.restore_shortcut_defaults_button = QtWidgets.QPushButton(
-            parent=self.shortcuts_tab
-        )
-        self.restore_shortcut_defaults_button.setObjectName(
-            "restore_shortcut_defaults_button"
-        )
+        self.restore_shortcut_defaults_button = QtWidgets.QPushButton(parent=self.shortcuts_tab)
+        self.restore_shortcut_defaults_button.setObjectName("restore_shortcut_defaults_button")
         self.horizontalLayout_10.addWidget(self.restore_shortcut_defaults_button)
-        spacerItem14 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem14 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_10.addItem(spacerItem14)
         self.verticalLayout_19.addLayout(self.horizontalLayout_10)
         self.tabWidget.addTab(self.shortcuts_tab, "")
@@ -451,22 +306,12 @@ class Ui_SettingsDialog:
         self.restore_all_defaults_button = QtWidgets.QPushButton(parent=SettingsDialog)
         self.restore_all_defaults_button.setObjectName("restore_all_defaults_button")
         self.horizontalLayout.addWidget(self.restore_all_defaults_button)
-        spacerItem15 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem15 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout.addItem(spacerItem15)
         self.ankimorphs_version_label = QtWidgets.QLabel(parent=SettingsDialog)
         self.ankimorphs_version_label.setObjectName("ankimorphs_version_label")
         self.horizontalLayout.addWidget(self.ankimorphs_version_label)
-        spacerItem16 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem16 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout.addItem(spacerItem16)
         self.cancel_button = QtWidgets.QPushButton(parent=SettingsDialog)
         self.cancel_button.setObjectName("cancel_button")
@@ -478,14 +323,12 @@ class Ui_SettingsDialog:
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         self.retranslateUi(SettingsDialog)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(6)
         QtCore.QMetaObject.connectSlotsByName(SettingsDialog)
 
     def retranslateUi(self, SettingsDialog):
         _translate = QtCore.QCoreApplication.translate
-        SettingsDialog.setWindowTitle(
-            _translate("SettingsDialog", "AnkiMorph Settings")
-        )
+        SettingsDialog.setWindowTitle(_translate("SettingsDialog", "AnkiMorph Settings"))
         item = self.note_filters_table.horizontalHeaderItem(0)
         item.setText(_translate("SettingsDialog", "Note Type"))
         item = self.note_filters_table.horizontalHeaderItem(1)
@@ -498,14 +341,9 @@ class Ui_SettingsDialog:
         item.setText(_translate("SettingsDialog", "Read"))
         item = self.note_filters_table.horizontalHeaderItem(5)
         item.setText(_translate("SettingsDialog", "Modify"))
-        self.delete_row_button.setText(
-            _translate("SettingsDialog", "Delete Selected Row")
-        )
+        self.delete_row_button.setText(_translate("SettingsDialog", "Delete Selected Row"))
         self.add_new_row_button.setText(_translate("SettingsDialog", "Add New Row"))
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.note_filters_tab),
-            _translate("SettingsDialog", "Note Filters"),
-        )
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.note_filters_tab), _translate("SettingsDialog", "Note Filters"))
         item = self.extra_fields_table.horizontalHeaderItem(0)
         item.setText(_translate("SettingsDialog", "Note Type"))
         item = self.extra_fields_table.horizontalHeaderItem(1)
@@ -514,111 +352,41 @@ class Ui_SettingsDialog:
         item.setText(_translate("SettingsDialog", "Highlighted"))
         item = self.extra_fields_table.horizontalHeaderItem(3)
         item.setText(_translate("SettingsDialog", "Difficulty"))
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.extra_fields_tab),
-            _translate("SettingsDialog", "Extra Fields"),
-        )
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.extra_fields_tab), _translate("SettingsDialog", "Extra Fields"))
         self.label_2.setText(_translate("SettingsDialog", "One unknown morph"))
         self.label_3.setText(_translate("SettingsDialog", "Multiple Unknown morphs"))
         self.label_4.setText(_translate("SettingsDialog", "All morphs known"))
-        self.restore_tags_defaults_button.setText(
-            _translate("SettingsDialog", "Restore Default Tags Settings")
-        )
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tags_tab), _translate("SettingsDialog", "Tags")
-        )
-        self.parse_ignore_bracket_contents_input.setText(
-            _translate("SettingsDialog", "ignore content in brackets")
-        )
-        self.parse_ignore_round_bracket_contents_input.setText(
-            _translate("SettingsDialog", "ignore content in round brackets")
-        )
-        self.parse_ignore_slim_round_bracket_contents_input.setText(
-            _translate("SettingsDialog", "ignore content in slim round brackets")
-        )
-        self.parse_ignore_proper_nouns_input.setText(
-            _translate("SettingsDialog", "Ignore proper nouns")
-        )
-        self.parse_ignore_suspended_cards_content_input.setText(
-            _translate("SettingsDialog", "Ignore content in suspended cards")
-        )
-        self.restore_parse_defaults_button.setText(
-            _translate("SettingsDialog", "Restore Default Parse Settings")
-        )
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.parse_tab),
-            _translate("SettingsDialog", "Parse"),
-        )
-        self.skip_stale_cards_input.setText(
-            _translate("SettingsDialog", "Skip stale cards")
-        )
-        self.skip_unknown_morph_seen_today_cards_input.setText(
-            _translate(
-                "SettingsDialog",
-                "Skip cards that have unknown morphs already seen today",
-            )
-        )
-        self.skip_show_num_of_skipped_cards_input.setText(
-            _translate("SettingsDialog", 'Show "skipped x cards" notifications')
-        )
-        self.restore_skip_defaults_button.setText(
-            _translate("SettingsDialog", "Restore Default Skip Settings")
-        )
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.skip_tab), _translate("SettingsDialog", "Skip")
-        )
-        self.label_6.setText(
-            _translate("SettingsDialog", "Preferred sentence length (morphs)")
-        )
-        self.label_7.setText(
-            _translate("SettingsDialog", "Only Recalc cards that have less than")
-        )
+        self.restore_tags_defaults_button.setText(_translate("SettingsDialog", "Restore Default Tags Settings"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tags_tab), _translate("SettingsDialog", "Tags"))
+        self.parse_ignore_bracket_contents_input.setText(_translate("SettingsDialog", "ignore content in brackets"))
+        self.parse_ignore_round_bracket_contents_input.setText(_translate("SettingsDialog", "ignore content in round brackets"))
+        self.parse_ignore_slim_round_bracket_contents_input.setText(_translate("SettingsDialog", "ignore content in slim round brackets"))
+        self.parse_ignore_proper_nouns_input.setText(_translate("SettingsDialog", "Ignore proper nouns"))
+        self.parse_ignore_suspended_cards_content_input.setText(_translate("SettingsDialog", "Ignore content in suspended cards"))
+        self.restore_parse_defaults_button.setText(_translate("SettingsDialog", "Restore Default Parse Settings"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.parse_tab), _translate("SettingsDialog", "Parse"))
+        self.skip_stale_cards_input.setText(_translate("SettingsDialog", "Skip stale cards"))
+        self.skip_unknown_morph_seen_today_cards_input.setText(_translate("SettingsDialog", "Skip cards that have unknown morphs already seen today"))
+        self.skip_show_num_of_skipped_cards_input.setText(_translate("SettingsDialog", "Show \"skipped x cards\" notifications"))
+        self.restore_skip_defaults_button.setText(_translate("SettingsDialog", "Restore Default Skip Settings"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.skip_tab), _translate("SettingsDialog", "Skip"))
+        self.label_6.setText(_translate("SettingsDialog", "Preferred sentence length (morphs)"))
+        self.label_7.setText(_translate("SettingsDialog", "Only Recalc cards that have less than"))
         self.label.setText(_translate("SettingsDialog", "unknown morphs"))
-        self.recalc_before_sync_input.setText(
-            _translate("SettingsDialog", "Automatically Recalc before Sync")
-        )
-        self.label_5.setText(
-            _translate("SettingsDialog", "Prioritize morphs based on:")
-        )
-        self.recalc_prioritize_collection_input.setText(
-            _translate("SettingsDialog", "Frequency in card collection")
-        )
-        self.recalc_prioritize_textfile_input.setText(
-            _translate("SettingsDialog", "frequency.txt")
-        )
-        self.restore_recalc_defaults_button.setText(
-            _translate("SettingsDialog", "Restore Default Recalc Settings")
-        )
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.recalc_tab),
-            _translate("SettingsDialog", "Recalc"),
-        )
-        self.label_8.setText(
-            _translate("SettingsDialog", "Browse ripe cards with same unknown morph")
-        )
-        self.label_9.setText(
-            _translate(
-                "SettingsDialog",
-                "Browse ripe and budding cards with same unknown morph",
-            )
-        )
-        self.label_10.setText(
-            _translate("SettingsDialog", "Set card as known and skip")
-        )
+        self.recalc_before_sync_input.setText(_translate("SettingsDialog", "Automatically Recalc before Sync"))
+        self.label_5.setText(_translate("SettingsDialog", "Prioritize morphs based on:"))
+        self.recalc_prioritize_collection_input.setText(_translate("SettingsDialog", "Frequency in card collection"))
+        self.recalc_prioritize_textfile_input.setText(_translate("SettingsDialog", "frequency.txt"))
+        self.restore_recalc_defaults_button.setText(_translate("SettingsDialog", "Restore Default Recalc Settings"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.recalc_tab), _translate("SettingsDialog", "Recalc"))
+        self.label_8.setText(_translate("SettingsDialog", "Browse ripe cards with same unknown morph"))
+        self.label_9.setText(_translate("SettingsDialog", "Browse ripe and budding cards with same unknown morph"))
+        self.label_10.setText(_translate("SettingsDialog", "Set card as known and skip"))
         self.label_11.setText(_translate("SettingsDialog", "Learn card now"))
         self.label_12.setText(_translate("SettingsDialog", "View card morphemes"))
-        self.restore_shortcut_defaults_button.setText(
-            _translate("SettingsDialog", "Restore Default Shortcut Settings")
-        )
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.shortcuts_tab),
-            _translate("SettingsDialog", "Shortcuts"),
-        )
-        self.restore_all_defaults_button.setText(
-            _translate("SettingsDialog", "Restore All Default Settings")
-        )
-        self.ankimorphs_version_label.setText(
-            _translate("SettingsDialog", "AnkiMorphs version: x")
-        )
+        self.restore_shortcut_defaults_button.setText(_translate("SettingsDialog", "Restore Default Shortcut Settings"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.shortcuts_tab), _translate("SettingsDialog", "Shortcuts"))
+        self.restore_all_defaults_button.setText(_translate("SettingsDialog", "Restore All Default Settings"))
+        self.ankimorphs_version_label.setText(_translate("SettingsDialog", "AnkiMorphs version: x"))
         self.cancel_button.setText(_translate("SettingsDialog", "Cancel"))
         self.save_button.setText(_translate("SettingsDialog", "Save"))

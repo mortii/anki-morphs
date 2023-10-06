@@ -22,7 +22,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>2</number>
+        <number>6</number>
        </property>
        <widget class="QWidget" name="note_filters_tab">
         <attribute name="title">
@@ -586,19 +586,19 @@
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_15">
              <item>
-              <widget class="QLineEdit" name="shortcut_browse_same_ripe_input"/>
+              <widget class="QKeySequenceEdit" name="shortcut_browse_same_ripe_input"/>
              </item>
              <item>
-              <widget class="QLineEdit" name="shortcut_browse_same_ripe_budding_input"/>
+              <widget class="QKeySequenceEdit" name="shortcut_browse_same_ripe_budding_input"/>
              </item>
              <item>
-              <widget class="QLineEdit" name="shortcut_known_and_skip_input"/>
+              <widget class="QKeySequenceEdit" name="shortcut_known_and_skip_input"/>
              </item>
              <item>
-              <widget class="QLineEdit" name="shortcut_learn_now_input"/>
+              <widget class="QKeySequenceEdit" name="shortcut_learn_now_input"/>
              </item>
              <item>
-              <widget class="QLineEdit" name="shortcut_view_morphs_input"/>
+              <widget class="QKeySequenceEdit" name="shortcut_view_morphs_input"/>
              </item>
             </layout>
            </item>
