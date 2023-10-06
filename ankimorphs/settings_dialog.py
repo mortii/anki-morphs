@@ -1,6 +1,6 @@
 from collections.abc import Iterable, Sequence
 from functools import partial
-from typing import Optional, Union
+from typing import Optional
 
 from anki.models import FieldDict, NotetypeNameId
 from aqt import mw
@@ -17,8 +17,8 @@ from aqt.utils import tooltip
 
 from ankimorphs.config import (
     AnkiMorphsConfig,
+    AnkiMorphsConfigFilter,
     get_all_default_configs,
-    get_config,
     get_default_config,
     update_configs,
 )
@@ -42,7 +42,7 @@ def get_model_cbox_index(
     return None
 
 
-class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
+class PreferencesDialog(QDialog):
     """
     The UI comes from ankimorphs/ui/settings_dialog.ui which is used in Qt Designer,
     which is then converted to ankimorphs/ui/settings_dialog_ui.py,
@@ -59,9 +59,9 @@ class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
         self.models: Sequence[NotetypeNameId] = mw.col.models.all_names_and_ids()
         self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore
-        self.config_filters = get_config("filters")
-        self.setup_note_filters_table(self.config_filters)
-        self.setup_extra_fields_table(self.config_filters)
+        self.config = AnkiMorphsConfig()
+        self.setup_note_filters_table(self.config.filters)
+        self.setup_extra_fields_table(self.config.filters)
         self.populate_tags_tab()
         self.populate_parse_tab()
         self.populate_skip_tab()
@@ -74,7 +74,7 @@ class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
         )
 
     def setup_note_filters_table(
-        self, config_filters: dict[str, Union[str, int, bool, list[str]]]
+        self, config_filters: list[AnkiMorphsConfigFilter]
     ) -> None:
         self.ui.note_filters_table.setColumnWidth(0, 150)
         self.ui.note_filters_table.setColumnWidth(3, 150)
@@ -85,7 +85,7 @@ class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
             self.set_note_filters_table_row(row, am_filter)
 
     def set_note_filters_table_row(  # pylint:disable=too-many-locals
-        self, row: int, config_filter: dict[str, Union[str, int, bool, list[str]]]
+        self, row: int, config_filter: AnkiMorphsConfigFilter
     ) -> None:
         assert mw
 
@@ -94,7 +94,7 @@ class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
         note_type_cbox = QComboBox(self.ui.note_filters_table)
         note_type_cbox.addItems([model.name for model in self.models])
         note_type_name_index = get_model_cbox_index(
-            self.models, config_filter["note_type"]
+            self.models, config_filter.note_type
         )
         if note_type_name_index is not None:
             note_type_cbox.setCurrentIndex(note_type_name_index)
@@ -105,7 +105,7 @@ class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
         fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
         field_cbox = QComboBox(self.ui.note_filters_table)
         field_cbox.addItems(fields)
-        field_cbox_index = get_cbox_index(fields, config_filter["field"])
+        field_cbox_index = get_cbox_index(fields, config_filter.field)
         if field_cbox_index is not None:
             field_cbox.setCurrentIndex(field_cbox_index)
 
@@ -118,21 +118,19 @@ class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
         morphemizers = get_all_morphemizers()
         morphemizers = [mizer.get_description() for mizer in morphemizers]
         morphemizer_cbox.addItems(morphemizers)
-        morphemizer_cbox_index = get_cbox_index(
-            morphemizers, config_filter["morphemizer"]
-        )
+        morphemizer_cbox_index = get_cbox_index(morphemizers, config_filter.morphemizer)
         if morphemizer_cbox_index is not None:
             morphemizer_cbox.setCurrentIndex(morphemizer_cbox_index)
 
         read_checkbox = QCheckBox()
-        read_checkbox.setChecked(config_filter["read"])
+        read_checkbox.setChecked(config_filter.read)
         read_checkbox.setStyleSheet("margin-left:auto; margin-right:auto;")
 
         modify_checkbox = QCheckBox()
-        modify_checkbox.setChecked(config_filter["modify"])
+        modify_checkbox.setChecked(config_filter.modify)
         modify_checkbox.setStyleSheet("margin-left:auto; margin-right:auto;")
 
-        tags = ", ".join(config_filter["tags"])
+        tags = ", ".join(config_filter.tags)
 
         self.ui.note_filters_table.setCellWidget(row, 0, note_type_cbox)
         self.ui.note_filters_table.setItem(row, 1, QTableWidgetItem(tags))
@@ -142,7 +140,7 @@ class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
         self.ui.note_filters_table.setCellWidget(row, 5, modify_checkbox)
 
     def setup_extra_fields_table(
-        self, config_filters: dict[str, Union[str, int, bool, list[str]]]
+        self, config_filters: list[AnkiMorphsConfigFilter]
     ) -> None:
         self.ui.extra_fields_table.setColumnWidth(0, 150)
         self.ui.extra_fields_table.setColumnWidth(1, 120)
@@ -150,14 +148,13 @@ class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
         self.ui.extra_fields_table.setAlternatingRowColors(True)
 
         note_filters_table_rows = self.ui.note_filters_table.rowCount()
-
         self.ui.extra_fields_table.setRowCount(note_filters_table_rows)
 
         for row in range(note_filters_table_rows):
             self.set_extra_fields_table_row(row, config_filters)
 
     def set_extra_fields_table_row(  # pylint:disable=too-many-locals
-        self, row: int, config_filters: dict[str, Union[str, int, bool, list[str]]]
+        self, row: int, config_filters: list[AnkiMorphsConfigFilter]
     ) -> None:
         assert mw
 
@@ -176,7 +173,7 @@ class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
 
         matching_filter = None
         for config_filter in config_filters:
-            if note_type_text == config_filter["note_type"]:
+            if note_type_text == config_filter.note_type:
                 matching_filter = config_filter
                 break
 
@@ -185,9 +182,7 @@ class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
         focus_morph_cbox.addItems(fields)
 
         if matching_filter is not None:
-            focus_morph_cbox_index = get_cbox_index(
-                fields, matching_filter["focus_morph"]
-            )
+            focus_morph_cbox_index = get_cbox_index(fields, matching_filter.focus_morph)
             if focus_morph_cbox_index is not None:
                 focus_morph_cbox_index += 1  # to offset the added (none) item
                 focus_morph_cbox.setCurrentIndex(focus_morph_cbox_index)
@@ -198,7 +193,7 @@ class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
 
         if matching_filter is not None:
             highlighted_cbox_cbox_index = get_cbox_index(
-                fields, matching_filter["highlighted"]
+                fields, matching_filter.highlighted
             )
             if highlighted_cbox_cbox_index is not None:
                 highlighted_cbox_cbox_index += 1  # to offset the added (none) item
@@ -210,7 +205,7 @@ class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
 
         if matching_filter is not None:
             difficulty_cbox_cbox_index = get_cbox_index(
-                fields, matching_filter["difficulty"]
+                fields, matching_filter.difficulty
             )
             if difficulty_cbox_cbox_index is not None:
                 difficulty_cbox_cbox_index += 1  # to offset the added (none) item
@@ -557,7 +552,7 @@ class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
             filters.append(_filter)
         new_config["filters"] = filters
         update_configs(new_config)
-        self.config_filters = get_config("filters")
+        # self.config_filters = get_config("filters") # TODO UPDATE
         tooltip("Please recalc to avoid unexpected behaviour", parent=mw)
 
     def update_fields_cbox(
@@ -577,7 +572,7 @@ class PreferencesDialog(QDialog):  # pylint:disable=too-many-public-methods
         in case the note filters have changed.
         """
         if tab_index == 1:
-            self.setup_extra_fields_table(self.config_filters)
+            self.setup_extra_fields_table(self.config.filters)
 
     def warning_dialog(self, title: str, text: str) -> bool:
         warning_box = QMessageBox(self)

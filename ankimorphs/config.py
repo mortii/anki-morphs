@@ -2,11 +2,14 @@ from typing import Any, Optional, Union
 
 from aqt import mw
 from aqt.qt import QKeySequence  # pylint:disable=no-name-in-module
+from typing_extensions import TypeAlias
+
+FilterTypeAlias: TypeAlias = dict[str, Union[str, bool, int, list[str], None]]
 
 
-def get_config(
+def get_config(  # TODO make private
     key: str,
-) -> Union[str, int, bool, list[dict[str, Union[str, bool, list[str], None]]], None]:
+) -> Union[str, int, bool, list[FilterTypeAlias], None]:
     config = get_configs()
     assert config
     item = config[key]
@@ -40,7 +43,7 @@ def update_configs(new_configs: dict[str, Union[str, int, bool, list[Any]]]) -> 
     mw.addonManager.writeConfig(__name__, config)
 
 
-def get_read_filters() -> list[dict[str, Optional[Union[str, bool, list[str]]]]]:
+def get_read_filters() -> list[FilterTypeAlias]:
     config_filters = get_config("filters")
     assert isinstance(config_filters, list)
     read_filters = []
@@ -48,6 +51,22 @@ def get_read_filters() -> list[dict[str, Optional[Union[str, bool, list[str]]]]]
         if config_filter["read"]:
             read_filters.append(config_filter)
     return read_filters
+
+
+class AnkiMorphsConfigFilter:
+    def __init__(self, _filter: FilterTypeAlias):
+        self.note_type: str = _get_filter_str(_filter, "note_type")
+        self.note_type_id: Optional[int] = _get_filter_optional_int(
+            _filter, "note_type_id"
+        )
+        self.tags: list[str] = _get_filter_str_list(_filter, "tags")
+        self.field: str = _get_filter_str(_filter, "field")
+        self.morphemizer: str = _get_filter_str(_filter, "morphemizer")
+        self.read: bool = _get_filter_bool(_filter, "read")
+        self.modify: bool = _get_filter_bool(_filter, "modify")
+        self.focus_morph: str = _get_filter_str(_filter, "focus_morph")
+        self.highlighted: str = _get_filter_str(_filter, "highlighted")
+        self.difficulty: str = _get_filter_str(_filter, "difficulty")
 
 
 class AnkiMorphsConfig:
@@ -112,7 +131,18 @@ class AnkiMorphsConfig:
         self.tag_budding: str = _get_string_config("tag_budding")
         self.tag_stale: str = _get_string_config("tag_stale")
 
-        # TODO add filters
+        self.filters: list[AnkiMorphsConfigFilter] = _get_filters_config()
+
+
+def _get_filters_config() -> list[AnkiMorphsConfigFilter]:
+    filters_config = get_config("filters")
+    assert isinstance(filters_config, list)
+    filters = []
+
+    for _filter in filters_config:
+        filters.append(AnkiMorphsConfigFilter(_filter))
+
+    return filters
 
 
 def _get_key_sequence_config(key: str) -> QKeySequence:
@@ -137,3 +167,27 @@ def _get_bool_config(key: str) -> bool:
     config_item = get_config(key)
     assert isinstance(config_item, bool)
     return config_item
+
+
+def _get_filter_str(_filter: FilterTypeAlias, key: str) -> str:
+    filter_item = _filter[key]
+    assert isinstance(filter_item, str)
+    return filter_item
+
+
+def _get_filter_bool(_filter: FilterTypeAlias, key: str) -> bool:
+    filter_item = _filter[key]
+    assert isinstance(filter_item, bool)
+    return filter_item
+
+
+def _get_filter_str_list(_filter: FilterTypeAlias, key: str) -> list[str]:
+    filter_item = _filter[key]
+    assert isinstance(filter_item, list)
+    return filter_item
+
+
+def _get_filter_optional_int(_filter: FilterTypeAlias, key: str) -> Optional[int]:
+    filter_item = _filter[key]
+    assert isinstance(filter_item, int) or filter_item is None
+    return filter_item
