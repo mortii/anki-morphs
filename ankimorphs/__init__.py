@@ -250,15 +250,17 @@ def create_test_action() -> QAction:
 
 def test_function() -> None:
     am_db = AnkiMorphsDB()
-    with am_db.con:
-        result = am_db.con.execute("SELECT count(*) FROM Card WHERE type=3")
-        print(f"morphs: {result.fetchall()}")
+    # am_db.print_table_info("Card_Morph_Map")
+    am_db.print_table("Morph")
+    # with am_db.con:
+    # result = am_db.con.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    # print(f"morphs: {result.fetchall()}")
 
-    with am_db.con:
-        result = am_db.con.execute(
-            "SELECT * FROM Card_Morph_Map WHERE card_id=1691325537329"
-        )
-        print(f"Card_Morph_Map: {result.fetchall()}")
+    # with am_db.con:
+    #     result = am_db.con.execute(
+    #         "SELECT * FROM Card_Morph_Map WHERE card_id=1691325537329"
+    #     )
+    #     print(f"Card_Morph_Map: {result.fetchall()}")
 
     am_db.con.close()
 

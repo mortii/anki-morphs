@@ -8,7 +8,7 @@
 6. Re-add highlighting feature
 7. Fix undo-review
 8. Implement spaCy
-9. Remove intrinsic macab and jieba
+9. Remove intrinsic mecab and jieba
 10. Release AnkiMorphs stable version?
 11. Re-add statistics page
 12. Re-add readability analyzer

@@ -114,6 +114,19 @@ class AnkiMorphsDB:
                 card_morph_list,
             )
 
-    def print_table(self) -> None:
-        for row in self.con.execute("SELECT * FROM Card_Morph_Map"):
+    def print_table(self, table: str) -> None:
+        """
+        tables: Card, Card_Morph_Map, Morph
+        """
+        # using f-string is terrible practice, but this is a trivial operation
+        for row in self.con.execute(f"SELECT * FROM {table}"):
             print(f"row: {row}")
+
+    def print_table_info(self, table: str) -> None:
+        """
+        tables: Card, Card_Morph_Map, Morph
+        """
+        with self.con:
+            # using f-string is terrible practice, but this is a trivial operation
+            result = self.con.execute(f"PRAGMA table_info('{table}')")
+            print(f"PRAGMA {table}: {result.fetchall()}")
