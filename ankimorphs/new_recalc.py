@@ -105,12 +105,14 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
             morph.sub_pos
             is_base
 
-        expression = strip_html(note.fields[field_index])
         _morphs = get_morphemes(morphemizer, expression)
     """
 
     assert mw
     am_db = AnkiMorphsDB()
+    am_db.drop_all_tables()
+    am_db.create_all_tables()
+
     config_filters_read: list[AnkiMorphsConfigFilter] = get_read_filters()
 
     card_table_data: Optional[list[dict]] = []
@@ -119,7 +121,22 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
 
     for config_filter_read in config_filters_read:
         note_ids, expressions = get_notes_to_update(am_db, config_filter_read)
-        cards: list[Card] = get_cards_to_update(am_db, config_filter_read, note_ids)
+        cards: list[Card] = get_cards_to_update(
+            am_db, am_config, config_filter_read, note_ids
+        )
+
+        # TODO check if stored cards match the fetched cards from anki....
+        # I now have a filtered list based on note type, so i also need to fetch cards that
+        # have that same note type
+        stored_card_ids = am_db.get_all_card_ids(cards[0].nid)
+
+        if len(stored_card_ids) == len(cards):
+            # hmmmm this will probably take longer than just storing the cache everytime....
+            print(f"naive cache hit")
+            continue
+
+        print(f"cards len: {len(cards)}")
+        print(f"stored_card_ids len: {len(stored_card_ids)}")
 
         card_amount = len(cards)
         for counter, card in enumerate(cards):
@@ -133,7 +150,12 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
                     )
                 )
 
-            card_dict = {"id": card.id, "type": card.type, "interval": card.ivl}
+            card_dict = {
+                "id": card.id,
+                "note_id": card.nid,
+                "queue": card.queue,
+                "interval": card.ivl,
+            }
             card_table_data.append(card_dict)
 
             morphemes = get_card_morphs(
@@ -166,7 +188,7 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
     am_db.insert_many_into_morph_table(morph_table_data)
     am_db.insert_many_into_card_table(card_table_data)
     am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
-    am_db.print_table()
+    # am_db.print_table()
     am_db.con.close()
 
 
@@ -184,8 +206,6 @@ def get_card_morphs(
 def get_notes_to_update(
     am_db: AnkiMorphsDB, config_filter_read: AnkiMorphsConfigFilter, full_rebuild=False
 ) -> tuple[set[int], dict[int, str]]:
-    # TODO SUSPENDED CARDS CONFIG
-
     assert mw.col.db
 
     model_id = config_filter_read.note_type_id
@@ -243,6 +263,7 @@ def get_notes_to_update(
 
 def get_cards_to_update(
     am_db: AnkiMorphsDB,
+    am_config: AnkiMorphsConfig,
     config_filter_read: AnkiMorphsConfigFilter,
     note_ids: set[int],
 ) -> list[Card]:
@@ -252,12 +273,18 @@ def get_cards_to_update(
     """
     assert mw.col.db
 
+    # TODO check if stored cards match the fetched cards from anki....
+
     cards: list[Card] = []
     for note_id in note_ids:
         query = f"nid:{note_id}"
         found_card_ids = mw.col.find_cards(query)
         for card_id in found_card_ids:
-            cards.append(mw.col.get_card(card_id))
+            card = mw.col.get_card(card_id)
+            if am_config.parse_ignore_suspended_cards_content:
+                if card.queue == -1:  # card is suspended
+                    continue
+            cards.append(card)
 
     return cards
 

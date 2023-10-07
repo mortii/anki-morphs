@@ -1,6 +1,9 @@
 import sqlite3
 from typing import Union
 
+from aqt import mw
+from aqt.qt import QMessageBox  # pylint:disable=no-name-in-module
+
 
 class AnkiMorphsDB:
     """
@@ -12,6 +15,9 @@ class AnkiMorphsDB:
 
     def __init__(self) -> None:
         self.con: sqlite3.Connection = sqlite3.connect("ankimorphs.db")
+        # self.create_all_tables()
+
+    def create_all_tables(self) -> None:
         self.create_morph_table()
         self.create_cards_table()
         self.create_card_morph_map_table()
@@ -23,7 +29,8 @@ class AnkiMorphsDB:
                     CREATE TABLE IF NOT EXISTS Card
                     (
                         id INTEGER PRIMARY KEY ASC,
-                        type INTEGER,
+                        note_id INTEGER,
+                        queue INTEGER,
                         interval INTEGER
                     )
                     """
@@ -71,7 +78,8 @@ class AnkiMorphsDB:
                     INSERT OR IGNORE INTO Card VALUES
                     (
                        :id,
-                       :type,
+                       :note_id,
+                       :queue,
                        :interval
                     )
                     """,
@@ -114,6 +122,19 @@ class AnkiMorphsDB:
                 card_morph_list,
             )
 
+    def get_all_card_ids(self, note_id: int) -> list[int]:
+        note_id_parameter = (note_id,)
+        result = self.con.execute(
+            """
+            SELECT id
+            FROM Card
+            Where note_id=?
+            """,
+            note_id_parameter,
+        )
+        tuple_list = result.fetchall()
+        return [item[0] for item in tuple_list]
+
     def print_table(self, table: str) -> None:
         """
         tables: Card, Card_Morph_Map, Morph
@@ -130,3 +151,28 @@ class AnkiMorphsDB:
             # using f-string is terrible practice, but this is a trivial operation
             result = self.con.execute(f"PRAGMA table_info('{table}')")
             print(f"PRAGMA {table}: {result.fetchall()}")
+
+    def drop_all_tables(self) -> None:
+        with self.con:
+            self.con.execute("DROP TABLE IF EXISTS Morph;")
+            self.con.execute("DROP TABLE IF EXISTS Card_Morph_Map;")
+            self.con.execute("DROP TABLE IF EXISTS Card;")
+
+    @staticmethod
+    def drop_all_tables_with_confirmation() -> None:
+        title = "Confirmation"
+        text = "Are you sure you want to delete the ankimorphs.db cache?"
+        warning_box = QMessageBox(mw)
+        warning_box.setWindowTitle(title)
+        warning_box.setIcon(QMessageBox.Icon.Warning)
+        warning_box.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        warning_box.setText(text)
+        answer = warning_box.exec()
+        if answer == QMessageBox.StandardButton.Yes:
+            am_db = AnkiMorphsDB()
+            with am_db.con:
+                am_db.con.execute("DROP TABLE IF EXISTS Morph;")
+                am_db.con.execute("DROP TABLE IF EXISTS Card_Morph_Map;")
+                am_db.con.execute("DROP TABLE IF EXISTS Card;")

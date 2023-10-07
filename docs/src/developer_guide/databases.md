@@ -117,24 +117,46 @@ notetypes table:
 cards table:
 
 ```
-[[0, 'id', 'INTEGER', 0, None, 1],
-[1, 'nid', 'INTEGER', 1, None, 0],
-[2, 'did', 'INTEGER', 1, None, 0],
-[3, 'ord', 'INTEGER', 1, None, 0],
-[4, 'mod', 'INTEGER', 1, None, 0],
-[5, 'usn', 'INTEGER', 1, None, 0],
-[6, 'type', 'INTEGER', 1, None, 0],
-[7, 'queue', 'INTEGER', 1, None, 0],
-[8, 'due', 'INTEGER', 1, None, 0],
-[9, 'ivl', 'INTEGER', 1, None, 0],
-[10, 'factor', 'INTEGER', 1, None, 0],
-[11, 'reps', 'INTEGER', 1, None, 0],
-[12, 'lapses', 'INTEGER', 1, None, 0],
-[13, 'left', 'INTEGER', 1, None, 0],
-[14, 'odue', 'INTEGER', 1, None, 0],
-[15, 'odid', 'INTEGER', 1, None, 0],
-[16, 'flags', 'INTEGER', 1, None, 0],
-[17, 'data', 'TEXT', 1, None, 0]]
+'id'     ID_FIELD_NUMBER: builtins.int
+'nid'    NOTE_ID_FIELD_NUMBER: builtins.int
+'did'    DECK_ID_FIELD_NUMBER: builtins.int
+'ord'    TEMPLATE_IDX_FIELD_NUMBER: builtins.int
+'mod'    MTIME_SECS_FIELD_NUMBER: builtins.int
+'usn'    USN_FIELD_NUMBER: builtins.int
+'type'   CTYPE_FIELD_NUMBER: builtins.int
+'queue'  QUEUE_FIELD_NUMBER: builtins.int
+'due'    DUE_FIELD_NUMBER: builtins.int
+'ivl'    INTERVAL_FIELD_NUMBER: builtins.int
+'factor' EASE_FACTOR_FIELD_NUMBER: builtins.int
+'reps'   REPS_FIELD_NUMBER: builtins.int
+'lapses' LAPSES_FIELD_NUMBER: builtins.int
+'left'   REMAINING_STEPS_FIELD_NUMBER: builtins.int
+'odue'   ORIGINAL_DUE_FIELD_NUMBER: builtins.int
+'odid'   ORIGINAL_DECK_ID_FIELD_NUMBER: builtins.int
+'flags'  FLAGS_FIELD_NUMBER: builtins.int
+'data'   custum_data builtins.str
 ```
 
+'type' is the learning stage type:
+```
+CardType = NewType("CardType", int)
+CARD_TYPE_NEW = CardType(0)
+CARD_TYPE_LRN = CardType(1)
+CARD_TYPE_REV = CardType(2)
+CARD_TYPE_RELEARNING = CardType(3)
+```
+
+
+'queue' types:
+```
+CardQueue = NewType("CardQueue", int)
+QUEUE_TYPE_MANUALLY_BURIED = CardQueue(-3)
+QUEUE_TYPE_SIBLING_BURIED = CardQueue(-2)
+QUEUE_TYPE_SUSPENDED = CardQueue(-1)
+QUEUE_TYPE_NEW = CardQueue(0)
+QUEUE_TYPE_LRN = CardQueue(1)
+QUEUE_TYPE_REV = CardQueue(2)
+QUEUE_TYPE_DAY_LEARN_RELEARN = CardQueue(3)
+QUEUE_TYPE_PREVIEW = CardQueue(4)
+```
 

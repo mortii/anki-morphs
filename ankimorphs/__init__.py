@@ -67,14 +67,16 @@ def init_tool_menu_and_actions() -> None:
 
     am_config = AnkiMorphsConfig()
 
+    settings_action = create_settings_action(am_config)
     recalc_action = create_recalc_action(am_config)
-    preferences_action = create_settings_action(am_config)
+    delete_cache_action = create_delete_cache_action()
     guide_action = create_guide_action()
     changelog_action = create_changelog_action()
 
     am_tool_menu = create_am_tool_menu()
+    am_tool_menu.addAction(settings_action)
     am_tool_menu.addAction(recalc_action)
-    am_tool_menu.addAction(preferences_action)
+    am_tool_menu.addAction(delete_cache_action)
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
 
@@ -240,6 +242,12 @@ def create_already_known_tagger_action(am_config: AnkiMorphsConfig) -> QAction:
     return action
 
 
+def create_delete_cache_action() -> QAction:
+    action = QAction("&Delete Cache", mw)
+    action.triggered.connect(AnkiMorphsDB.drop_all_tables_with_confirmation)
+    return action
+
+
 def create_test_action() -> QAction:
     keys = QKeySequence("Ctrl+T")
     action = QAction("&Test", mw)
@@ -249,18 +257,38 @@ def create_test_action() -> QAction:
 
 
 def test_function() -> None:
+    assert mw
+    assert mw.col.db
+
     am_db = AnkiMorphsDB()
     # am_db.print_table_info("Card_Morph_Map")
-    am_db.print_table("Morph")
+    # print(f"printing morph table")
+    # am_db.print_table("Card")
     # with am_db.con:
     # result = am_db.con.execute("SELECT name FROM sqlite_master WHERE type='table';")
     # print(f"morphs: {result.fetchall()}")
 
+    # am_db.drop_all_tables()
+    # print(f"dropped all tables morph table")
+
+    with am_db.con:
+        result = am_db.con.execute("SELECT count(*) FROM Card")
+        print(f"Card_Morph_Map count: {result.fetchall()}")
+    #
     # with am_db.con:
-    #     result = am_db.con.execute(
-    #         "SELECT * FROM Card_Morph_Map WHERE card_id=1691325537329"
-    #     )
-    #     print(f"Card_Morph_Map: {result.fetchall()}")
+    #     result = am_db.con.execute("SELECT * FROM Card_Morph_Map LIMIT 5")
+    #     for row in result:
+    #         print(f"Card_Morph_Map row: {row}")
+
+    card_row = mw.col.db.execute(
+        """
+        SELECT *
+        FROM cards
+        WHERE id=1608533847636
+        """
+    )
+
+    print(f"result: {card_row}")
 
     am_db.con.close()
 
