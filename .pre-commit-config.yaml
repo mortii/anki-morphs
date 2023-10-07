@@ -74,7 +74,6 @@ repos:
               ankimorphs/mecab_wrapper.py|
               ankimorphs/morph_stats.py|
               ankimorphs/morpheme.py|
-              ankimorphs/morphemes.py|
               ankimorphs/morphemizer.py|
               ankimorphs/new_recalc.py|
               ankimorphs/recalc.py|

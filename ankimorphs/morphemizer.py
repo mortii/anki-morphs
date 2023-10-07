@@ -2,10 +2,10 @@ import re
 from functools import lru_cache
 from typing import Optional
 
-from .deps.jieba import posseg
-from .deps.zhon.hanzi import characters
-from .mecab_wrapper import get_mecab_identity, get_morphemes_mecab
-from .morphemes import Morpheme
+from ankimorphs.deps.jieba import posseg
+from ankimorphs.deps.zhon.hanzi import characters
+from ankimorphs.mecab_wrapper import get_mecab_identity, get_morphemes_mecab
+from ankimorphs.morpheme import Morpheme
 
 ####################################################################################################
 # Base Class
@@ -17,7 +17,7 @@ class Morphemizer:
         pass
 
     @lru_cache(maxsize=131072)
-    def get_morphemes_from_expr(self, expression: str) -> [Morpheme]:
+    def get_morphemes_from_expr(self, expression: str) -> list[Morpheme]:
         morphs = self._get_morphemes_from_expr(expression)
         return morphs
 

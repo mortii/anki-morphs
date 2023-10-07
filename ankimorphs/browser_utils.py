@@ -7,7 +7,7 @@ from aqt.reviewer import RefreshNeeded
 from aqt.utils import showInfo, tooltip
 
 from ankimorphs.config import get_config
-from ankimorphs.morphemes import get_morphemes, ms2str
+from ankimorphs.morph_utils import get_morphemes
 from ankimorphs.morphemizer import get_morphemizer_by_name
 from ankimorphs.reviewing_utils import focus_query, try_to_get_focus_morphs
 
@@ -65,28 +65,29 @@ def run_learn_card_now() -> None:
     tooltip(f"Next new card(s) will be {selected_cards}")
 
 
-def run_view_morphs() -> None:
-    morph_dict = dict({"morphemes": []})
-
-    for cid in browser.selectedCards():
-        card = mw.col.get_card(cid)
-        note = card.note()
-
-        notecfg = util.get_filter(note)
-        if notecfg is None:
-            return None
-
-        morphemizer = get_morphemizer_by_name(notecfg["Morphemizer"])
-
-        for note_filter_field in notecfg["Fields"]:
-            morphemes = get_morphemes(
-                morphemizer, strip_html(note[note_filter_field]), note.tags
-            )
-            morph_dict["morphemes"] += morphemes
-
-        if len(morph_dict["morphemes"]) == 0:
-            showInfo("----- No morphemes, check your filters -----")
-        else:
-            morph_strings = ms2str([(m, []) for m in morph_dict["morphemes"]])
-            showInfo("----- All -----\n" + morph_strings)
-    return None
+#
+# def run_view_morphs() -> None:
+#     morph_dict = dict({"morphemes": []})
+#
+#     for cid in browser.selectedCards():
+#         card = mw.col.get_card(cid)
+#         note = card.note()
+#
+#         notecfg = util.get_filter(note)
+#         if notecfg is None:
+#             return None
+#
+#         morphemizer = get_morphemizer_by_name(notecfg["Morphemizer"])
+#
+#         for note_filter_field in notecfg["Fields"]:
+#             morphemes = get_morphemes(
+#                 morphemizer, strip_html(note[note_filter_field]), note.tags
+#             )
+#             morph_dict["morphemes"] += morphemes
+#
+#         if len(morph_dict["morphemes"]) == 0:
+#             showInfo("----- No morphemes, check your filters -----")
+#         else:
+#             morph_strings = ms2str([(m, []) for m in morph_dict["morphemes"]])
+#             showInfo("----- All -----\n" + morph_strings)
+#     return None

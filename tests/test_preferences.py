@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from ankimorphs import config, morphemes
+from ankimorphs import config, morph_utils
 
 
 @pytest.fixture(

@@ -85,7 +85,7 @@ def init_tool_menu_and_actions() -> None:
 def init_browser_menus_and_actions() -> None:
     am_config = AnkiMorphsConfig()
 
-    view_action = create_view_morphs_action(am_config)
+    # view_action = create_view_morphs_action(am_config)
     learn_now_action = create_learn_now_action(am_config)
     browse_morph_action = create_browse_morph_action(am_config)
     already_known_tagger_action = create_already_known_tagger_action(am_config)
@@ -103,7 +103,7 @@ def init_browser_menus_and_actions() -> None:
         )
         assert am_browse_menu_creation_action
         am_browse_menu_creation_action.setObjectName(BROWSE_MENU)
-        am_browse_menu.addAction(view_action)
+        # am_browse_menu.addAction(view_action)
         am_browse_menu.addAction(learn_now_action)
         am_browse_menu.addAction(browse_morph_action)
         am_browse_menu.addAction(already_known_tagger_action)
@@ -113,9 +113,9 @@ def init_browser_menus_and_actions() -> None:
             if action.objectName() == CONTEXT_MENU:
                 return  # prevents duplicate menus on profile-switch
 
-        context_menu_creation_action = context_menu.insertSeparator(view_action)
+        context_menu_creation_action = context_menu.insertSeparator(learn_now_action)
         assert context_menu_creation_action
-        context_menu.addAction(view_action)
+        # context_menu.addAction(view_action)
         context_menu.addAction(learn_now_action)
         context_menu.addAction(browse_morph_action)
         context_menu.addAction(already_known_tagger_action)
@@ -226,11 +226,11 @@ def create_browse_morph_action(am_config: AnkiMorphsConfig) -> QAction:
     return action
 
 
-def create_view_morphs_action(am_config: AnkiMorphsConfig) -> QAction:
-    action = QAction("&View Morphemes", mw)
-    action.setShortcut(am_config.shortcut_view_morphemes)
-    action.triggered.connect(browser_utils.run_view_morphs)
-    return action
+# def create_view_morphs_action(am_config: AnkiMorphsConfig) -> QAction:
+#     action = QAction("&View Morphemes", mw)
+#     action.setShortcut(am_config.shortcut_view_morphemes)
+#     action.triggered.connect(browser_utils.run_view_morphs)
+#     return action
 
 
 def create_already_known_tagger_action(am_config: AnkiMorphsConfig) -> QAction:

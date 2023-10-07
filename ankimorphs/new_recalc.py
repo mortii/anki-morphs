@@ -14,8 +14,8 @@ from aqt.utils import showCritical, tooltip
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.config import AnkiMorphsConfig, AnkiMorphsConfigFilter, get_read_filters
 from ankimorphs.exceptions import NoteFilterFieldsException
+from ankimorphs.morph_utils import get_morphemes
 from ankimorphs.morpheme import Morpheme
-from ankimorphs.morphemes import get_morphemes
 from ankimorphs.morphemizer import (
     get_all_morphemizers,
     get_morphemizer_by_name,
@@ -184,11 +184,6 @@ def get_card_morphs(
 def get_notes_to_update(
     am_db: AnkiMorphsDB, config_filter_read: AnkiMorphsConfigFilter, full_rebuild=False
 ) -> tuple[set[int], dict[int, str]]:
-    """
-    1. filter notes by tag first
-    2. retrieve fields from the remaining notes
-
-    """
     # TODO SUSPENDED CARDS CONFIG
 
     assert mw.col.db
