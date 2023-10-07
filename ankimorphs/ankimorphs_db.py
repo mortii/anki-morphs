@@ -122,19 +122,6 @@ class AnkiMorphsDB:
                 card_morph_list,
             )
 
-    def get_all_card_ids(self, note_id: int) -> list[int]:
-        note_id_parameter = (note_id,)
-        result = self.con.execute(
-            """
-            SELECT id
-            FROM Card
-            Where note_id=?
-            """,
-            note_id_parameter,
-        )
-        tuple_list = result.fetchall()
-        return [item[0] for item in tuple_list]
-
     def print_table(self, table: str) -> None:
         """
         tables: Card, Card_Morph_Map, Morph

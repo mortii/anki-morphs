@@ -38,7 +38,7 @@ FOREIGN KEY(morph_norm, morph_inflected) REFERENCES morph(norm, inflected)
 
 ### Morph table
 
-```roomsql
+```sql
 norm TEXT,
 base TEXT,
 inflected TEXT,
@@ -65,7 +65,7 @@ likelihood of collisions because of the following:
     # The chance of hash collision is 50% when sqrt(2^(n/2)) where n is bits of the hash
     # With 64 bits the prob of collision becomes sqrt(2^(64/2)) = 65,536
 
-So if we have over 65,536 morphs we will probably experience bugs that basically impossible to trace. 
+So if we have over 65,536 morphs we would likely experience bugs that are basically impossible to trace. 
 
 ## Anki dbs
 

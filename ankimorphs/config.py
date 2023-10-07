@@ -141,7 +141,7 @@ def update_configs(new_configs: dict[str, object]) -> None:
     mw.addonManager.writeConfig(__name__, config)
 
 
-def get_read_filters() -> list[AnkiMorphsConfigFilter]:
+def get_read_enabled_filters() -> list[AnkiMorphsConfigFilter]:
     config_filters = _get_filters_config()
     assert isinstance(config_filters, list)
     read_filters = []

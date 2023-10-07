@@ -181,7 +181,7 @@ def create_am_tool_menu() -> QMenu:
 def create_recalc_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Recalc", mw)
     action.setShortcut(am_config.shortcut_recalc)
-    action.triggered.connect(new_recalc.main)
+    action.triggered.connect(new_recalc.recalc)
     return action
 
 

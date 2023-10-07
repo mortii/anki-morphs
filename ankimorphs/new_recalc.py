@@ -1,40 +1,38 @@
-import pprint
 from collections.abc import Sequence
 from functools import partial
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from anki.cards import Card
 from anki.collection import Collection
-from anki.notes import Note
 from anki.utils import split_fields, strip_html
 from aqt import mw
 from aqt.operations import QueryOp
 from aqt.utils import showCritical, tooltip
 
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
-from ankimorphs.config import AnkiMorphsConfig, AnkiMorphsConfigFilter, get_read_filters
+from ankimorphs.config import (
+    AnkiMorphsConfig,
+    AnkiMorphsConfigFilter,
+    get_read_enabled_filters,
+)
 from ankimorphs.exceptions import NoteFilterFieldsException
 from ankimorphs.morph_utils import get_morphemes
 from ankimorphs.morpheme import Morpheme
-from ankimorphs.morphemizer import (
-    get_all_morphemizers,
-    get_morphemizer_by_name,
-    morphemizers_by_name,
-)
+from ankimorphs.morphemizer import get_morphemizer_by_name
 
 
-def main() -> None:
+def recalc() -> None:
     assert mw
     operation = QueryOp(
         parent=mw,
-        op=main_background_op,
+        op=recalc_background_op,
         success=lambda t: tooltip("Finished Recalc"),  # t = return value of the op
     )
     operation.with_progress().run_in_background()
     operation.failure(on_failure)
 
 
-def main_background_op(collection: Collection) -> None:
+def recalc_background_op(collection: Collection) -> None:
     assert mw
     assert mw.progress
     am_config = AnkiMorphsConfig()
@@ -44,13 +42,9 @@ def main_background_op(collection: Collection) -> None:
     #     partial(mw.progress.start, label="Recalculating...", immediate=True)
     # )
 
-    # mw.taskman.run_on_main(
-    #     lambda: mw.progress.start(label="Recalculating...", immediate=True)
-    # )
-
     mw.taskman.run_on_main(
         lambda: mw.progress.update(  # type: ignore
-            label=f"Recalculating...",
+            label="Recalculating...",
         )
     )
 
@@ -73,39 +67,12 @@ def main_background_op(collection: Collection) -> None:
 
 
 def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
-    # TODO create a separate tools menu option "Delete Cache".
-    # TODO reset cache after preferences changed
-    # TODO check make_all_db for any missing pieces (preference settings, etc)
-    # TODO check for added or removed cards
-
     """
     Extracting morphs from cards is expensive so caching them yields a significant
     performance gain.
 
-    When preferences are changed then we need a full rebuild.
-
-    Re-cache cards that have changed type (learning, suspended, etc.) or interval (ivl).
-
-    required variables:
-        note:
-            id: used to extract desired cards (nid)
-            fields: where we extract the desired text (cards don't have this data)
-
-        card:
-            card_id: needed for caching
-            card.type: needed for caching
-            card.ivl: needed for color-coding morphs
-
-        morphs:
-            morph.norm
-            morph.base
-            morph.inflected
-            morph.read
-            morph.pos
-            morph.sub_pos
-            is_base
-
-        _morphs = get_morphemes(morphemizer, expression)
+    Fetching the notes and cards from the anki db makes it so that checking
+    if they already are in cache is slower than just rebuilding.
     """
 
     assert mw
@@ -113,75 +80,38 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
     am_db.drop_all_tables()
     am_db.create_all_tables()
 
-    config_filters_read: list[AnkiMorphsConfigFilter] = get_read_filters()
+    read_config_filters: list[AnkiMorphsConfigFilter] = get_read_enabled_filters()
 
-    card_table_data: Optional[list[dict]] = []
-    morph_table_data: Optional[list[dict]] = []
-    card_morph_map_table_data: Optional[list[dict]] = []
+    card_table_data: list[dict[str, Any]] = []
+    morph_table_data: list[dict[str, Any]] = []
+    card_morph_map_table_data: list[dict[str, Any]] = []
 
-    for config_filter_read in config_filters_read:
-        note_ids, expressions = get_notes_to_update(am_db, config_filter_read)
-        cards: list[Card] = get_cards_to_update(
-            am_db, am_config, config_filter_read, note_ids
-        )
-
-        # TODO check if stored cards match the fetched cards from anki....
-        # I now have a filtered list based on note type, so i also need to fetch cards that
-        # have that same note type
-        stored_card_ids = am_db.get_all_card_ids(cards[0].nid)
-
-        if len(stored_card_ids) == len(cards):
-            # hmmmm this will probably take longer than just storing the cache everytime....
-            print(f"naive cache hit")
-            continue
-
-        print(f"cards len: {len(cards)}")
-        print(f"stored_card_ids len: {len(stored_card_ids)}")
-
+    for config_filter in read_config_filters:
+        note_ids, expressions = get_notes_to_update(config_filter)
+        cards: list[Card] = get_cards_to_update(am_config, note_ids)
         card_amount = len(cards)
+
         for counter, card in enumerate(cards):
             if counter % 1000 == 0:
                 mw.taskman.run_on_main(
                     partial(
                         mw.progress.update,
-                        label=f"Caching morphs on card {counter} of {card_amount}",
+                        label=f"Caching {config_filter.note_type} cards\n card: {counter} of {card_amount}",
                         value=counter,
                         max=card_amount,
                     )
                 )
 
-            card_dict = {
-                "id": card.id,
-                "note_id": card.nid,
-                "queue": card.queue,
-                "interval": card.ivl,
-            }
-            card_table_data.append(card_dict)
-
-            morphemes = get_card_morphs(
-                expressions[card.nid], am_config, config_filter_read
-            )
-            if morphemes is None:
+            card_table_data.append(create_card_dict(card))
+            morphs = get_card_morphs(expressions[card.nid], am_config, config_filter)
+            if morphs is None:
                 continue
 
-            for morph in morphemes:
-                morph_dict = {
-                    "norm": morph.norm,
-                    "base": morph.base,
-                    "inflected": morph.inflected,
-                    "read": morph.read,
-                    "pos": morph.pos,
-                    "sub_pos": morph.sub_pos,
-                    "is_base": True if morph.norm == morph.inflected else False,
-                }
-                morph_table_data.append(morph_dict)
-
-                card_morph_map = {
-                    "card_id": card.id,
-                    "morph_norm": morph.norm,
-                    "morph_inflected": morph.inflected,
-                }
-                card_morph_map_table_data.append(card_morph_map)
+            for morph in morphs:
+                morph_table_data.append(create_morph_dict(morph))
+                card_morph_map_table_data.append(
+                    create_card_morph_map_dict(card, morph)
+                )
 
     mw.taskman.run_on_main(partial(mw.progress.update, label="Saving to ankimorphs.db"))
 
@@ -192,68 +122,89 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
     am_db.con.close()
 
 
+def create_card_dict(card: Card) -> dict[str, int]:
+    return {
+        "id": card.id,
+        "note_id": card.nid,  # TODO is this still necessary??
+        "queue": card.queue,
+        "interval": card.ivl,
+    }
+
+
+def create_morph_dict(morph: Morpheme) -> dict[str, Union[bool, str]]:
+    return {
+        "norm": morph.norm,
+        "base": morph.base,
+        "inflected": morph.inflected,
+        "read": morph.read,
+        "pos": morph.pos,
+        "sub_pos": morph.sub_pos,
+        "is_base": morph.norm == morph.inflected,  # gives a bool
+    }
+
+
+def create_card_morph_map_dict(
+    card: Card, morph: Morpheme
+) -> dict[str, Union[int, str]]:
+    return {
+        "card_id": card.id,
+        "morph_norm": morph.norm,
+        "morph_inflected": morph.inflected,
+    }
+
+
 def get_card_morphs(
     expression: str, am_config: AnkiMorphsConfig, am_filter: AnkiMorphsConfigFilter
 ) -> Optional[set[Morpheme]]:
     try:
         morphemizer = get_morphemizer_by_name(am_filter.morphemizer_name)
-        _morphs = get_morphemes(morphemizer, expression, am_config)
-        return set(_morphs)
+        assert morphemizer
+        morphs = get_morphemes(morphemizer, expression, am_config)
+        return set(morphs)
     except KeyError:
         return None
 
 
 def get_notes_to_update(
-    am_db: AnkiMorphsDB, config_filter_read: AnkiMorphsConfigFilter, full_rebuild=False
+    config_filter_read: AnkiMorphsConfigFilter,
 ) -> tuple[set[int], dict[int, str]]:
+    assert mw
     assert mw.col.db
 
-    model_id = config_filter_read.note_type_id
-
-    print(f"config_filter_read['tags']: {config_filter_read.tags}")
-    print(f"model_id: {model_id}")
-
+    model_id: Optional[int] = config_filter_read.note_type_id
     expressions: dict[int, str] = {}
     note_ids: set[int] = set()
+
     for tag in config_filter_read.tags:
         notes_with_tag = set()
-        print(f"ran tag: {tag}")
 
-        if tag == "":
-            tag = "%"
-        else:
-            tag = f"% {tag} %"
+        for id_and_fields in get_notes_with_tags(model_id, tag):
+            note_id = id_and_fields[0]
+            fields = id_and_fields[1]
 
-        result = mw.col.db.all(
-            """
-            SELECT id, flds
-            FROM notes 
-            WHERE mid=? AND tags LIKE ?
-            """,
-            model_id,
-            tag,
-        )
-        # print(f"result: {result}")
+            notes_with_tag.add(note_id)
+            fields_split = split_fields(fields)
 
-        for item in result:
-            # print(f"item[0] id: {item[0]}")
-            # print(f"item[1] flds: {item[1]}")
-            notes_with_tag.add(item[0])
-            fields_split = split_fields(item[1])
-            desire_field = fields_split[config_filter_read.field_index]
-            expressions[item[0]] = desire_field
-            # print(f"fields_split field index: {strip_html(desire_field)}")
+            # todo what happens with default configs??
+            assert config_filter_read.field_index
 
+            field = fields_split[config_filter_read.field_index]
+
+            # store the field now, that way we don't have to re-query
+            expressions[note_id] = strip_html(field)
+
+        # only get the notes that intersect all the specified tags
+        # i.e. only get the subset of notes that have all the tags
         if len(note_ids) == 0:
             note_ids = notes_with_tag
         else:
             note_ids.intersection_update(notes_with_tag)
 
-        print(f"len all_notes : {len(note_ids)}")
-
+    # if the notes have not been reduced, simply return everything stored
     if len(note_ids) == len(expressions):
         return note_ids, expressions
 
+    # only return the expressions of the new subset of notes
     filtered_expressions = {}
     for note_id in note_ids:
         filtered_expressions[note_id] = expressions[note_id]
@@ -261,35 +212,52 @@ def get_notes_to_update(
     return note_ids, filtered_expressions
 
 
+def get_notes_with_tags(model_id: Optional[int], tag: str) -> list[Sequence[Any]]:
+    assert mw
+    assert mw.col.db
+
+    if tag == "":
+        tag = "%"
+    else:
+        tag = f"% {tag} %"
+
+    # This is a list of two item lists, [[id: int, flds: str]]
+    id_and_fields: list[Sequence[Any]] = mw.col.db.all(
+        """
+        SELECT id, flds
+        FROM notes 
+        WHERE mid=? AND tags LIKE ?
+        """,
+        model_id,
+        tag,
+    )
+    return id_and_fields
+
+
 def get_cards_to_update(
-    am_db: AnkiMorphsDB,
     am_config: AnkiMorphsConfig,
-    config_filter_read: AnkiMorphsConfigFilter,
     note_ids: set[int],
 ) -> list[Card]:
     """
-    We get to cards from note_types (models) via notes.
+    note_type -> note -> card
     Notes have mid (model_id/note_type_id) and cards have nid (note_id).
     """
+    assert mw
     assert mw.col.db
 
-    # TODO check if stored cards match the fetched cards from anki....
-
     cards: list[Card] = []
+
     for note_id in note_ids:
-        query = f"nid:{note_id}"
-        found_card_ids = mw.col.find_cards(query)
-        for card_id in found_card_ids:
+        for card_id in mw.col.find_cards(f"nid:{note_id}"):
             card = mw.col.get_card(card_id)
             if am_config.parse_ignore_suspended_cards_content:
                 if card.queue == -1:  # card is suspended
                     continue
             cards.append(card)
-
     return cards
 
 
-def on_failure(_exception: Union[Exception, NoteFilterFieldsException]):
+def on_failure(_exception: Union[Exception, NoteFilterFieldsException]) -> None:
     if isinstance(_exception, NoteFilterFieldsException):
         showCritical(
             f'Did not find a field called "{_exception.field_name}" in the Note Type "{_exception.note_type}"\n\n'
