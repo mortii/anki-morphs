@@ -15,7 +15,6 @@ from ankimorphs import (
     browser_utils,
     morph_stats,
     new_recalc,
-    recalc,
     reviewing_utils,
     settings_dialog,
 )

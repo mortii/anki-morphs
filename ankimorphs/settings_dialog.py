@@ -496,6 +496,7 @@ class PreferencesDialog(QDialog):
                 "note_type_id": self.models[note_type_cbox.currentIndex()].id,
                 "tags": tags,
                 "field": field_cbox.itemText(field_cbox.currentIndex()),
+                "field_index": field_cbox.currentIndex(),
                 "morphemizer_description": morphemizer_widget.itemText(
                     morphemizer_widget.currentIndex()
                 ),

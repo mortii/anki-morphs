@@ -16,6 +16,9 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
         )
         self.tags: list[str] = _get_filter_str_list(_filter, "tags")
         self.field: str = _get_filter_str(_filter, "field")
+        self.field_index: Optional[int] = _get_filter_optional_int(
+            _filter, "field_index"
+        )
         self.morphemizer_description: str = _get_filter_str(
             _filter, "morphemizer_description"
         )

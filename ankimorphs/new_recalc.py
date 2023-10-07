@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from functools import partial
 from typing import Optional, Union
 
+from anki.cards import Card
 from anki.collection import Collection
 from anki.notes import Note
 from anki.utils import split_fields, strip_html
@@ -88,7 +89,7 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
     required variables:
         note:
             id: used to extract desired cards (nid)
-            fields: where we extract the desired text
+            fields: where we extract the desired text (cards don't have this data)
 
         card:
             card_id: needed for caching
@@ -112,22 +113,16 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
     am_db = AnkiMorphsDB()
     config_filters_read: list[AnkiMorphsConfigFilter] = get_read_filters()
 
-    # card_table_data: Optional[list[dict]] = []
-    # morph_table_data: Optional[list[dict]] = []
-    # card_morph_map_table_data: Optional[list[dict]] = []
+    card_table_data: Optional[list[dict]] = []
+    morph_table_data: Optional[list[dict]] = []
+    card_morph_map_table_data: Optional[list[dict]] = []
 
     for config_filter_read in config_filters_read:
-        # I need nid and expression field
-        notes = get_notes_to_update(am_db, config_filter_read)
-        cards = get_cards_to_update(am_db, config_filter_read, note_ids)
+        note_ids, expressions = get_notes_to_update(am_db, config_filter_read)
+        cards: list[Card] = get_cards_to_update(am_db, config_filter_read, note_ids)
 
-        # note.fields[field_index] # this is the expression field
-        # expression
-        expression = strip_html(note.fields[field_index])
-        _morphs = get_morphemes(config_filter_read.morphemizer_name, expression)
-
-        card_amount = len(card_ids)
-        for counter, card_id in enumerate(card_ids):
+        card_amount = len(cards)
+        for counter, card in enumerate(cards):
             if counter % 1000 == 0:
                 mw.taskman.run_on_main(
                     partial(
@@ -138,13 +133,14 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
                     )
                 )
 
-            card = mw.col.get_card(card_id)  # TODO bulk get instead
-
-            card_dict = {"id": card_id, "type": card.type, "interval": card.ivl}
+            card_dict = {"id": card.id, "type": card.type, "interval": card.ivl}
             card_table_data.append(card_dict)
 
-            note = card.note()  # TODO bulk get instead
-            morphemes = get_card_morphs(note, note_filter, field_index)
+            morphemes = get_card_morphs(
+                expressions[card.nid], am_config, config_filter_read
+            )
+            if morphemes is None:
+                continue
 
             for morph in morphemes:
                 morph_dict = {
@@ -159,7 +155,7 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
                 morph_table_data.append(morph_dict)
 
                 card_morph_map = {
-                    "card_id": card_id,
+                    "card_id": card.id,
                     "morph_norm": morph.norm,
                     "morph_inflected": morph.inflected,
                 }
@@ -167,31 +163,33 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
 
     mw.taskman.run_on_main(partial(mw.progress.update, label="Saving to ankimorphs.db"))
 
-    # am_db.insert_many_into_morph_table(morph_table_data)
-    # am_db.insert_many_into_card_table(card_table_data)
-    # am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
-    # # am_db.print_table({})
-    # am_db.con.close()
+    am_db.insert_many_into_morph_table(morph_table_data)
+    am_db.insert_many_into_card_table(card_table_data)
+    am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
+    am_db.print_table()
+    am_db.con.close()
 
 
-def get_card_morphs(note: Note, note_filter, field_index) -> set[Morpheme]:
+def get_card_morphs(
+    expression: str, am_config: AnkiMorphsConfig, am_filter: AnkiMorphsConfigFilter
+) -> Optional[set[Morpheme]]:
     try:
-        morphemizer = get_morphemizer_by_name(note_filter["Morphemizer"])
-        expression = strip_html(note.fields[field_index])
-        _morphs = get_morphemes(morphemizer, expression)
-        # print(f"morphemizer: {morphemizer}")
-        # print(f"expression: {expression}")
-        # print(f"_morphs: {_morphs}")
+        morphemizer = get_morphemizer_by_name(am_filter.morphemizer_name)
+        _morphs = get_morphemes(morphemizer, expression, am_config)
         return set(_morphs)
     except KeyError:
-        return set()
+        return None
 
 
 def get_notes_to_update(
     am_db: AnkiMorphsDB, config_filter_read: AnkiMorphsConfigFilter, full_rebuild=False
-) -> set[int]:
+) -> tuple[set[int], dict[int, str]]:
+    """
+    1. filter notes by tag first
+    2. retrieve fields from the remaining notes
+
+    """
     # TODO SUSPENDED CARDS CONFIG
-    # I need nid and expression field, cards do not have field data
 
     assert mw.col.db
 
@@ -200,7 +198,8 @@ def get_notes_to_update(
     print(f"config_filter_read['tags']: {config_filter_read.tags}")
     print(f"model_id: {model_id}")
 
-    all_notes = set()
+    expressions: dict[int, str] = {}
+    note_ids: set[int] = set()
     for tag in config_filter_read.tags:
         notes_with_tag = set()
         print(f"ran tag: {tag}")
@@ -212,7 +211,7 @@ def get_notes_to_update(
 
         result = mw.col.db.all(
             """
-            SELECT id, flds, sfld, data
+            SELECT id, flds
             FROM notes 
             WHERE mid=? AND tags LIKE ?
             """,
@@ -222,100 +221,50 @@ def get_notes_to_update(
         # print(f"result: {result}")
 
         for item in result:
-            print(f"item[0]: {item[0]}")
-            print(f"item[1]: {item[1]}")
-            print(f"item[3]: {item[3]}")
+            # print(f"item[0] id: {item[0]}")
+            # print(f"item[1] flds: {item[1]}")
             notes_with_tag.add(item[0])
+            fields_split = split_fields(item[1])
+            desire_field = fields_split[config_filter_read.field_index]
+            expressions[item[0]] = desire_field
+            # print(f"fields_split field index: {strip_html(desire_field)}")
 
-        if len(all_notes) == 0:
-            all_notes = notes_with_tag
+        if len(note_ids) == 0:
+            note_ids = notes_with_tag
         else:
-            all_notes.intersection_update(notes_with_tag)
+            note_ids.intersection_update(notes_with_tag)
 
-        print(f"len all_notes : {len(all_notes)}")
+        print(f"len all_notes : {len(note_ids)}")
 
-        # split_fields(fields)
+    if len(note_ids) == len(expressions):
+        return note_ids, expressions
 
-    # return expression field
+    filtered_expressions = {}
+    for note_id in note_ids:
+        filtered_expressions[note_id] = expressions[note_id]
 
-    result = mw.col.db.all(
-        """
-        SELECT *
-        FROM cards 
-        WHERE nid=1608533845885
-        """,
-    )
-    print(f"card: {result}")
-
-    assert 1 == 2
-
-    return all_notes
+    return note_ids, filtered_expressions
 
 
 def get_cards_to_update(
-    am_db: AnkiMorphsDB, config_filter_read, full_rebuild=False
-) -> Sequence[int]:
+    am_db: AnkiMorphsDB,
+    config_filter_read: AnkiMorphsConfigFilter,
+    note_ids: set[int],
+) -> list[Card]:
     """
     We get to cards from note_types (models) via notes.
     Notes have mid (model_id/note_type_id) and cards have nid (note_id).
     """
     assert mw.col.db
 
-    card_ids = mw.col.find_cards(f"note:{config_filter_read['note_type']}")
+    cards: list[Card] = []
+    for note_id in note_ids:
+        query = f"nid:{note_id}"
+        found_card_ids = mw.col.find_cards(query)
+        for card_id in found_card_ids:
+            cards.append(mw.col.get_card(card_id))
 
-    if full_rebuild:
-        return card_ids
-
-    # all_cards = mw.col.db.all(
-    #     """
-    #     SELECT *
-    #     FROM notes
-    #     limit 1
-    #     """
-    # )
-    #
-    # all_cards = mw.col.db.all("SELECT name FROM sqlite_master WHERE type='table';")
-    # print(f"all_notes: {all_cards}")
-
-    # all_cards = mw.col.db.all("PRAGMA table_info('notes')")
-    # print(f"PRAGMA notes: {all_cards}")
-
-    all_cards = mw.col.db.all("PRAGMA table_info('cards')")
-    # print(f"PRAGMA cards: {all_cards}")
-
-    all_notes_with_note_type = mw.col.db.all(
-        """
-        SELECT *
-        FROM notes
-        WHERE mid=?
-        """,
-        config_filter_read["note_type_id"],
-    )
-
-    # print(
-    #     f"all_cards with {config_filter_read['note_type_id']} : {all_notes_with_note_type}"
-    # )
-
-    all_card_ids = []
-    for row in all_cards:
-        all_card_ids.append(row[0])
-
-    # print(f"all_cards: {all_card_ids}")
-
-    # cards_to_update = am_db.con.executemany(
-    #     """
-    #     SELECT id
-    #     FROM Card
-    #     WHERE NOT EXISTS (SELECT *
-    #               FROM positions
-    #               WHERE positions.position_id = employees.position_id);
-    #     """,
-    #     all_cards,
-    # )
-
-    # print(f"result1: {cards_to_update}")
-
-    return card_ids
+    return cards
 
 
 def on_failure(_exception: Union[Exception, NoteFilterFieldsException]):

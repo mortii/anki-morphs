@@ -30,6 +30,7 @@
       "note_type_id": null,
       "tags": [""],
       "field": "",
+      "field_index": null,
       "morphemizer_description": "",
       "morphemizer_name": "",
       "read": true,
