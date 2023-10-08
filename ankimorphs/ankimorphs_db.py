@@ -15,7 +15,6 @@ class AnkiMorphsDB:
 
     def __init__(self) -> None:
         self.con: sqlite3.Connection = sqlite3.connect("ankimorphs.db")
-        # self.create_all_tables()
 
     def create_all_tables(self) -> None:
         self.create_morph_table()
@@ -29,9 +28,10 @@ class AnkiMorphsDB:
                     CREATE TABLE IF NOT EXISTS Card
                     (
                         id INTEGER PRIMARY KEY ASC,
-                        type INTEGER,
-                        queue INTEGER,
-                        interval INTEGER
+                        learning_status INTEGER,
+                        queue_status INTEGER,
+                        note_type_id INTEGER,
+                        learning_interval INTEGER
                     )
                     """
             )
@@ -60,10 +60,8 @@ class AnkiMorphsDB:
                         norm TEXT,
                         base TEXT,
                         inflected TEXT,
-                        read TEXT,
-                        pos TEXT,
-                        sub_pos TEXT,
                         is_base INTEGER,
+                        highest_learning_interval INTEGER,
                         PRIMARY KEY (norm, inflected)
                     )
                     """
@@ -78,9 +76,10 @@ class AnkiMorphsDB:
                     INSERT OR IGNORE INTO Card VALUES
                     (
                        :id,
-                       :type,
-                       :queue,
-                       :interval
+                       :learning_status,
+                       :queue_status,
+                       :note_type_id,
+                       :learning_interval
                     )
                     """,
                 card_list,
@@ -92,17 +91,19 @@ class AnkiMorphsDB:
         with self.con:
             self.con.executemany(
                 """
-                    INSERT OR IGNORE INTO Morph VALUES
+                    INSERT INTO Morph 
+                    VALUES
                     (
                        :norm,
                        :base,
                        :inflected,
-                       :read,
-                       :pos,
-                       :sub_pos,
-                       :is_base
+                       :is_base,
+                       :highest_learning_interval
                     )
-                    """,
+                    ON CONFLICT(norm, inflected) DO UPDATE SET
+                        highest_learning_interval=:highest_learning_interval
+                    WHERE highest_learning_interval<:highest_learning_interval
+                """,
                 morph_list,
             )
 
@@ -141,9 +142,9 @@ class AnkiMorphsDB:
 
     def drop_all_tables(self) -> None:
         with self.con:
+            self.con.execute("DROP TABLE IF EXISTS Card;")
             self.con.execute("DROP TABLE IF EXISTS Morph;")
             self.con.execute("DROP TABLE IF EXISTS Card_Morph_Map;")
-            self.con.execute("DROP TABLE IF EXISTS Card;")
 
     @staticmethod
     def drop_all_tables_with_confirmation() -> None:
@@ -158,8 +159,4 @@ class AnkiMorphsDB:
         warning_box.setText(text)
         answer = warning_box.exec()
         if answer == QMessageBox.StandardButton.Yes:
-            am_db = AnkiMorphsDB()
-            with am_db.con:
-                am_db.con.execute("DROP TABLE IF EXISTS Morph;")
-                am_db.con.execute("DROP TABLE IF EXISTS Card_Morph_Map;")
-                am_db.con.execute("DROP TABLE IF EXISTS Card;")
+            AnkiMorphsDB().drop_all_tables()

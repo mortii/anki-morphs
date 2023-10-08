@@ -14,7 +14,7 @@ from aqt.toolbar import Toolbar
 from ankimorphs import (
     browser_utils,
     morph_stats,
-    new_recalc,
+    recalc,
     reviewing_utils,
     settings_dialog,
 )
@@ -181,7 +181,7 @@ def create_am_tool_menu() -> QMenu:
 def create_recalc_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Recalc", mw)
     action.setShortcut(am_config.shortcut_recalc)
-    action.triggered.connect(new_recalc.recalc)
+    action.triggered.connect(recalc.recalc)
     return action
 
 
@@ -263,13 +263,9 @@ def test_function() -> None:
     am_db = AnkiMorphsDB()
     # am_db.print_table_info("Card_Morph_Map")
     # print(f"printing morph table")
-    # am_db.print_table("Card")
     # with am_db.con:
     # result = am_db.con.execute("SELECT name FROM sqlite_master WHERE type='table';")
     # print(f"morphs: {result.fetchall()}")
-
-    # am_db.drop_all_tables()
-    # print(f"dropped all tables morph table")
 
     with am_db.con:
         result = am_db.con.execute("SELECT count(*) FROM Card")
@@ -280,15 +276,33 @@ def test_function() -> None:
     #     for row in result:
     #         print(f"Card_Morph_Map row: {row}")
 
-    card_row = mw.col.db.execute(
+    # card_row = mw.col.db.execute(
+    #     """
+    #     SELECT *
+    #     FROM cards
+    #     WHERE id=1608533847636
+    #     """
+    # )
+    #
+    # print(f"result: {card_row}")
+
+    result = am_db.con.execute(
         """
         SELECT *
-        FROM cards
-        WHERE id=1608533847636
-        """
+        FROM Card
+        LIMIT 3
+        """,
     )
 
-    print(f"result: {card_row}")
+    print(f"result: {result.fetchall()}")
+
+    # am_db.print_table_info("Note_Type_Morph_Map")
+    # am_db.print_table("Morph")
+
+    for row in am_db.con.execute(
+        "SELECT * FROM Morph ORDER BY highest_learning_interval DESC limit 100"
+    ):
+        print(f"row: {row}")
 
     am_db.con.close()
 

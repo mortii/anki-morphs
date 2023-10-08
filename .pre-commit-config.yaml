@@ -41,7 +41,7 @@ repos:
           (?x)^(
               ankimorphs/deps/.*|
               ankimorphs/ui/.*|
-              ankimorphs/recalc.py|
+              ankimorphs/old_recalc.py|
               ankimorphs/browser_utils.py|
               ankimorphs/reviewing_utils.py|
               tests/.*|
@@ -74,7 +74,7 @@ repos:
               ankimorphs/morph_stats.py|
               ankimorphs/morpheme.py|
               ankimorphs/morphemizer.py|
-              ankimorphs/recalc.py|
+              ankimorphs/old_recalc.py|
               ankimorphs/reviewing_utils.py|
               ankimorphs/text_utils.py|
               ankimorphs/util_external.py|
