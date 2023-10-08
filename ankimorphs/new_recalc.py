@@ -7,7 +7,8 @@ from anki.collection import Collection
 from anki.utils import split_fields, strip_html
 from aqt import mw
 from aqt.operations import QueryOp
-from aqt.utils import showCritical, tooltip
+from aqt.qt import QMessageBox  # pylint:disable=no-name-in-module
+from aqt.utils import tooltip
 
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.config import (
@@ -15,7 +16,7 @@ from ankimorphs.config import (
     AnkiMorphsConfigFilter,
     get_read_enabled_filters,
 )
-from ankimorphs.exceptions import NoteFilterFieldsException
+from ankimorphs.exceptions import DefaultSettingsException
 from ankimorphs.morph_utils import get_morphemes
 from ankimorphs.morpheme import Morpheme
 from ankimorphs.morphemizer import get_morphemizer_by_name
@@ -87,6 +88,9 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
     card_morph_map_table_data: list[dict[str, Any]] = []
 
     for config_filter in read_config_filters:
+        if config_filter.note_type == "":
+            raise DefaultSettingsException  # handled in on_failure()
+
         note_ids, expressions = get_notes_to_update(config_filter)
         cards: list[Card] = get_cards_to_update(am_config, note_ids)
         card_amount = len(cards)
@@ -125,7 +129,7 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
 def create_card_dict(card: Card) -> dict[str, int]:
     return {
         "id": card.id,
-        "note_id": card.nid,  # TODO is this still necessary??
+        "type": card.type,
         "queue": card.queue,
         "interval": card.ivl,
     }
@@ -185,9 +189,7 @@ def get_notes_to_update(
             notes_with_tag.add(note_id)
             fields_split = split_fields(fields)
 
-            # todo what happens with default configs??
             assert config_filter_read.field_index
-
             field = fields_split[config_filter_read.field_index]
 
             # store the field now, that way we don't have to re-query
@@ -257,13 +259,15 @@ def get_cards_to_update(
     return cards
 
 
-def on_failure(_exception: Union[Exception, NoteFilterFieldsException]) -> None:
-    if isinstance(_exception, NoteFilterFieldsException):
-        showCritical(
-            f'Did not find a field called "{_exception.field_name}" in the Note Type "{_exception.note_type}"\n\n'
-            f"Field names are case-sensitive!\n\n"
-            f"Read the guide for more info:\n"
-            f"https://mortii.github.io/MorphMan/user_guide/setup/preferences/note-filter.html "
-        )
+def on_failure(error: Union[Exception, DefaultSettingsException]) -> None:
+    if isinstance(error, DefaultSettingsException):
+        title = "AnkiMorphs Error"
+        text = "Save settings before using Recalc!"
+        critical_box = QMessageBox(mw)
+        critical_box.setWindowTitle(title)
+        critical_box.setIcon(QMessageBox.Icon.Critical)
+        critical_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        critical_box.setText(text)
+        critical_box.exec()
     else:
-        raise _exception
+        raise error

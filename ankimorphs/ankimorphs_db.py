@@ -29,7 +29,7 @@ class AnkiMorphsDB:
                     CREATE TABLE IF NOT EXISTS Card
                     (
                         id INTEGER PRIMARY KEY ASC,
-                        note_id INTEGER,
+                        type INTEGER,
                         queue INTEGER,
                         interval INTEGER
                     )
@@ -78,7 +78,7 @@ class AnkiMorphsDB:
                     INSERT OR IGNORE INTO Card VALUES
                     (
                        :id,
-                       :note_id,
+                       :type,
                        :queue,
                        :interval
                     )

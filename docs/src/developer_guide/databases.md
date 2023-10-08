@@ -28,7 +28,7 @@ interval INTEGER
 
 ### Card_Morph_Map table
 
-```roomsql
+```roomsql 
 card_id INTEGER,
 morph_norm TEXT,
 morph_inflected TEXT,
@@ -38,7 +38,7 @@ FOREIGN KEY(morph_norm, morph_inflected) REFERENCES morph(norm, inflected)
 
 ### Morph table
 
-```sql
+```SQL
 norm TEXT,
 base TEXT,
 inflected TEXT,
