@@ -22,7 +22,6 @@
   "parse_ignore_round_bracket_contents": true,
   "parse_ignore_slim_round_bracket_contents": true,
   "parse_ignore_suspended_cards_content": true,
-  "recalc_always_prioritize_frequency_morphs": false,
   "recalc_before_sync": false,
   "recalc_ignore_suspended_leeches": true,
   "recalc_preferred_sentence_length": 7,

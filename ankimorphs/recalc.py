@@ -1,3 +1,4 @@
+from collections import Counter
 from collections.abc import Sequence
 from functools import partial
 from typing import Any, Optional, Union
@@ -14,6 +15,7 @@ from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.config import (
     AnkiMorphsConfig,
     AnkiMorphsConfigFilter,
+    get_modify_enabled_filters,
     get_read_enabled_filters,
 )
 from ankimorphs.exceptions import DefaultSettingsException
@@ -23,7 +25,7 @@ from ankimorphs.morphemizer import get_morphemizer_by_name
 
 
 def recalc() -> None:
-    assert mw
+    assert mw is not None
     operation = QueryOp(
         parent=mw,
         op=recalc_background_op,
@@ -34,8 +36,9 @@ def recalc() -> None:
 
 
 def recalc_background_op(collection: Collection) -> None:
-    assert mw
-    assert mw.progress
+    assert mw is not None
+    assert mw.progress is not None
+
     am_config = AnkiMorphsConfig()
     print("running main")
 
@@ -50,7 +53,7 @@ def recalc_background_op(collection: Collection) -> None:
     )
 
     cache_card_morphemes(am_config)
-    update_cards()
+    update_cards(am_config)
 
     # # update stats and refresh display
     # stats.update_stats()
@@ -59,10 +62,311 @@ def recalc_background_op(collection: Collection) -> None:
     mw.taskman.run_on_main(mw.progress.finish)
 
 
-def update_cards() -> None:
+def get_am_db_cards_to_update(note_type_id: int) -> list[int]:
+    assert mw is not None
+    assert mw.col.db is not None
+
+    am_db = AnkiMorphsDB()
+
+    raw_card_ids = am_db.con.execute(
+        """
+        Select id
+        FROM Card
+        WHERE learning_status=0 AND note_type_id=?
+        """,
+        (note_type_id,),
+    ).fetchall()
+
+    am_db.con.close()
+
+    card_ids = [_tuple[0] for _tuple in raw_card_ids]
+
+    # cards: list[Card] = []
+    #
+    # for card_id in card_ids:
+    #     for card_id in mw.col.find_cards(f"nid:{note_id}"):
+    #         card = mw.col.get_card(card_id)
+    #         if am_config.parse_ignore_suspended_cards_content:
+    #             if card.queue == -1:  # card is suspended
+    #                 continue
+    #         cards.append(card)
+    # return cards
+
+    return card_ids
+
+
+def get_card_difficulty(
+    card_id: int,
+    card_morph_map_cache: dict[int, list[Any]],
+    morph_cache: dict[str, int],
+    morph_priority: dict[str, int],
+) -> int:
+    """
+    Set the difficulty (due) on all cards to max by default to prevent buggy cards to showing up first.
+    if a card already has this due it won't update, so this will not have a negative impact on syncing.
+    card.due is converted to a signed 32-bit integer on the backend, so max value is 2147483647 before overflow
+
+    In our algorithm we want the unknown status of the morph to have the most significance then
+    the priority status.
+
+    To have the least amount of loss in the algorithm we want to allow the value of unknown and priority
+    to be as high as possible, but the upper limit is 2,147,483,647 as described above.
+
+    Since priority is less significant than unknown, its max value must be <= unknown value
+
+    if max(priority) = max(unknown), then the max value a morph can have is 2 * unknown
+
+    Uknown = 1,000,000
+    2,147,483,647 ÷ (2 * Unknown) = 1073.7 morphs
+
+    We can have up to 1073 morphs on a card if we allow the unknown value to be 1 million, which is
+    well within reason.
+    """
+
+    default_difficulty = 2147483647
+    difficulty = 0
+
+    # for i, key in enumerate(card_morph_map_cache):
+    #     if i > 10:
+    #         break
+    #     print(f"card_morph_map_cache[{key}]: {card_morph_map_cache[key]}")
+    #
+    # for i, key in enumerate(morph_priority):
+    #     if i > 10:
+    #         break
+    #     print(f"morph_priority[{key}]: {morph_priority[key]}")
+
+    try:
+        card_morphs = card_morph_map_cache[card_id]
+    except KeyError:
+        # card does not have morphs or is buggy in some way
+        return default_difficulty
+
+    for morph in card_morphs:
+        highest_interval = morph_cache[morph]
+        is_unknown = highest_interval == 0  # gives a bool
+        difficulty += (1000000 * is_unknown) + morph_priority[morph]
+
+    return difficulty
+
+
+def get_morph_cache(am_db: AnkiMorphsDB) -> dict[str, int]:
+    morph_cache = {}
+
+    morphs_raw = am_db.con.execute(
+        """
+        SELECT norm, inflected, highest_learning_interval
+        FROM Morph
+        """,
+    ).fetchall()
+
+    for row in morphs_raw:
+        morph_key = row[0] + row[1]
+        morph_cache[morph_key] = row[2]
+
+    # for key in morph_cache:
+    #     print(f"morph_cache[{key}]: {morph_cache[key]}")
+
+    # print(f"morph_cache size: {sys.getsizeof(morph_cache)}")
+
+    return morph_cache
+
+
+def get_card_cache(am_db: AnkiMorphsDB) -> dict[int, dict[str, int]]:
+    """
+    learning interval of new cards (learning_status=0)
+    is always 0
+    """
+    card_cache: dict[int, dict[str, int]] = {}
+
+    cards_raw = am_db.con.execute(
+        """
+        SELECT *
+        FROM Card
+        WHERE learning_status=0
+        """,
+    ).fetchall()
+
+    for row in cards_raw:
+        # isinstance(row[0], int)
+        # isinstance(row[1], int)
+        # isinstance(row[2], int)
+        # isinstance(row[3], int)
+        # isinstance(row[4], int)
+
+        card_cache[row[0]] = {
+            "learning_status": row[1],
+            "queue_status": row[2],
+            "note_type_id": row[3],
+            "learning_interval": row[4],
+        }
+
+    # for key in card_cache:
+    #     print(f"card_cache[{key}]: {card_cache[key]}")
+
+    # print(f"morph_cache size: {sys.getsizeof(morph_cache)}")
+
+    return card_cache
+
+
+def get_card_morph_map_cache(am_db: AnkiMorphsDB) -> dict[int, list[str]]:
+    """
+    learning interval of new cards (learning_status=0)
+    is always 0
+    """
+    card_morph_map_cache: dict[int, list[str]] = {}
+
+    card_morph_map_cache_raw = am_db.con.execute(
+        """
+        SELECT card_id, morph_norm, morph_inflected
+        FROM Card_Morph_Map
+        """,
+    ).fetchall()
+
+    card_id_outer = None
+    for row in card_morph_map_cache_raw:
+        card_id_inner = row[0]
+
+        if card_id_inner != card_id_outer:
+            card_morph_map_cache[card_id_inner] = [row[1] + row[2]]
+            card_id_outer = card_id_inner
+        else:
+            card_morph_map_cache[card_id_inner].append(row[1] + row[2])
+
+    # for key in card_morph_map_cache:
+    #     print(f"card_morph_map_cache[{key}]: {card_morph_map_cache[key]}")
+
+    return card_morph_map_cache
+
+
+def get_morph_collection_priority(am_db: AnkiMorphsDB) -> dict[str, int]:
+    morph_priority = am_db.con.execute(
+        """
+        SELECT morph_norm, morph_inflected
+        FROM Card_Morph_Map
+        """,
+    ).fetchall()
+
+    temp_list = []
+    for row in morph_priority:
+        temp_list.append(row[0] + row[1])
+
+    card_morph_map_cache: dict[str, int] = Counter(temp_list)
+    card_morph_map_cache_sorted = dict(
+        sorted(card_morph_map_cache.items(), key=lambda item: item[1], reverse=True)
+    )
+
+    # for counter, key in enumerate(card_morph_map_cache_sorted):
+    #     if counter > 100:
+    #         break
+    #     print(f"pre morph_priority[{key}]: {card_morph_map_cache_sorted[key]}")
+
+    # inverse the values, the lower the priority number the more it is prioritized
+    for index, key in enumerate(card_morph_map_cache_sorted):
+        card_morph_map_cache_sorted[key] = index
+
+    # for counter, key in enumerate(card_morph_map_cache_sorted):
+    #     if counter > 100:
+    #         break
+    #     print(f"post morph_priority[{key}]: {card_morph_map_cache_sorted[key]}")
+
+    return card_morph_map_cache_sorted
+
+
+def get_morph_priority(
+    am_db: AnkiMorphsDB, am_config: AnkiMorphsConfig
+) -> dict[str, int]:
+    morph_priority: dict[str, int] = {}
+
+    if am_config.recalc_prioritize_collection:
+        print("prioritizing collection")
+        morph_priority = get_morph_collection_priority(am_db)
+
+    # TODO add text file branch
+
+    return morph_priority
+
+
+def update_cards(am_config: AnkiMorphsConfig) -> None:
     """
     get config filters that have 'modify' enabled
+
+    A single sqlite query is very fast, but looping queries is
+    incredibly slow because of the overhead, so instead we query
+    once and put the data in dicts which is much faster.
+
+    algorithm:
+        1. unknowns
+        2. priority of unknowns
+
+        unknown * 10000 + unknown_priority
     """
+
+    # for x in [1, 10, 100, 1000, 10000, 1000000]:
+    #     print(f"sigmoid of {x}: {sigmoid(x)}")
+    #
+    # return
+
+    assert mw is not None
+    assert mw.progress is not None
+
+    am_db = AnkiMorphsDB()
+
+    modify_config_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
+
+    morph_cache: dict[str, int] = get_morph_cache(am_db)
+    # card_cache: dict[int, dict[Any]] = get_card_cache(am_db)
+    card_morph_map_cache: dict[int, list[Any]] = get_card_morph_map_cache(am_db)
+    morph_priority: dict[str, int] = get_morph_priority(am_db, am_config)
+
+    for i, key in enumerate(morph_priority):
+        if i > 10:
+            break
+        print(f"morph_priority1[{key}]: {morph_priority[key]}")
+
+    for config_filter in modify_config_filters:
+        assert config_filter.note_type_id is not None
+        card_ids: list[int] = get_am_db_cards_to_update(config_filter.note_type_id)
+        card_amount = len(card_ids)
+
+        for counter, card_id in enumerate(card_ids):
+            if counter % 1000 == 0:
+                mw.taskman.run_on_main(
+                    partial(
+                        mw.progress.update,
+                        label=f"modifying {config_filter.note_type} cards\n card: {counter} of {card_amount}",
+                        value=counter,
+                        max=card_amount,
+                    )
+                )
+
+            card_difficulty = get_card_difficulty(
+                card_id, card_morph_map_cache, morph_cache, morph_priority
+            )
+
+            print(f" card {card_id} difficulty: {card_difficulty}")
+
+            # difficulty = 2147483647
+
+            # use a bad implementation first to find improvements
+
+            # morphs = am_db.con.execute(
+            #     """
+            #     SELECT Morph.highest_learning_interval
+            #     FROM Card_Morph_Map
+            #     INNER JOIN Morph
+            #         ON Card_Morph_Map.morph_norm = Morph.norm AND Card_Morph_Map.morph_inflected = Morph.inflected
+            #     WHERE card_id=?
+            #     """,
+            #     (card_id,),
+            # ).fetchall()
+            #
+            # print(f"morphs ivls: {morphs}")
+
+            # get difficulty of card expression (frequency list)
+            # update the due of the card
+
+    am_db.con.close()
 
 
 def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
@@ -73,6 +377,8 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
     Rebuilding the entire ankimorphs db every time is faster and much simpler than updating it since
     we can bulk queries to the anki db.
     """
+
+    print("caching cards")
 
     assert mw
     am_db = AnkiMorphsDB()
@@ -90,8 +396,12 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
             raise DefaultSettingsException  # handled in on_failure()
 
         note_ids, expressions = get_notes_to_update(config_filter)
+
+        print(f"notes amount: {len(note_ids)} in {config_filter.note_type}")
+
         cards: list[Card] = get_cards_to_update(am_config, note_ids)
         card_amount = len(cards)
+        print(f" card amount: {card_amount} in {config_filter.note_type}")
 
         for counter, card in enumerate(cards):
             if counter % 1000 == 0:
