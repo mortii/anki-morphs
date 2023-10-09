@@ -65,9 +65,6 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.recalc_ignore_suspended_leeches = _get_bool_config(
             "recalc_ignore_suspended_leeches", is_default
         )
-        self.recalc_always_prioritize_frequency_morphs: bool = _get_bool_config(
-            "recalc_always_prioritize_frequency_morphs", is_default
-        )
         self.recalc_preferred_sentence_length: int = _get_int_config(
             "recalc_preferred_sentence_length", is_default
         )
@@ -109,33 +106,33 @@ def get_config(  # TODO make private
     key: str,
 ) -> Union[str, int, bool, list[FilterTypeAlias], None]:
     config = get_configs()
-    assert config
+    assert config is not None
     item = config[key]
     assert isinstance(item, (str, bool, int, list))
     return item
 
 
 def get_configs() -> Optional[dict[str, Any]]:
-    assert mw
+    assert mw is not None
     return mw.addonManager.getConfig(__name__)
 
 
 def get_default_config(key: str) -> Any:
     config = get_all_default_configs()
-    assert config
+    assert config is not None
     return config[key]
 
 
 def get_all_default_configs() -> Optional[dict[str, Any]]:
-    assert mw
+    assert mw is not None
     addon = mw.addonManager.addonFromModule(__name__)  # necessary to prevent anki bug
     return mw.addonManager.addonConfigDefaults(addon)
 
 
 def update_configs(new_configs: dict[str, object]) -> None:
-    assert mw
+    assert mw is not None
     config = mw.addonManager.getConfig(__name__)
-    assert config
+    assert config is not None
     for key, value in new_configs.items():
         config[key] = value
     mw.addonManager.writeConfig(__name__, config)
@@ -149,6 +146,16 @@ def get_read_enabled_filters() -> list[AnkiMorphsConfigFilter]:
         if config_filter.read:
             read_filters.append(config_filter)
     return read_filters
+
+
+def get_modify_enabled_filters() -> list[AnkiMorphsConfigFilter]:
+    config_filters = _get_filters_config()
+    assert isinstance(config_filters, list)
+    modify_filters = []
+    for config_filter in config_filters:
+        if config_filter.modify:
+            modify_filters.append(config_filter)
+    return modify_filters
 
 
 def _get_filters_config(is_default: bool = False) -> list[AnkiMorphsConfigFilter]:
