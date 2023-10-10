@@ -6,7 +6,7 @@ from unittest import mock
 import pytest
 from aqt import setupLangAndBackend
 
-from ankimorphs import config, get_config, morph_db, morph_stats, old_recalc
+from ankimorphs import config, get_config, morph_db, old_morph_stats, old_recalc
 
 from anki.collection import Collection  # isort:skip pylint:disable=wrong-import-order
 

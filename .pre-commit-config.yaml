@@ -71,7 +71,6 @@ repos:
               ankimorphs/ui/.*|
               ankimorphs/browser_utils.py|
               ankimorphs/mecab_wrapper.py|
-              ankimorphs/morph_stats.py|
               ankimorphs/morpheme.py|
               ankimorphs/morphemizer.py|
               ankimorphs/old_recalc.py|

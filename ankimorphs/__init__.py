@@ -39,7 +39,7 @@ def main() -> None:
     # Hooks should be placed in the order they are executed!
 
     # Adds the 'U: A:' to the toolbar  # TODO add recalc
-    # gui_hooks.top_toolbar_did_init_links.append(add_morph_stats_to_toolbar)
+    gui_hooks.top_toolbar_did_init_links.append(add_morph_stats_to_toolbar)
 
     # Update the toolbar stats
     gui_hooks.profile_did_open.append(redraw_toolbar_wrapper)
