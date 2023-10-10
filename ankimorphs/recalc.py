@@ -5,7 +5,7 @@ from typing import Any, Optional, Union
 
 from anki.cards import Card
 from anki.collection import Collection
-from anki.utils import split_fields, strip_html
+from anki.utils import int_time, split_fields, strip_html
 from aqt import mw
 from aqt.operations import QueryOp
 from aqt.qt import QMessageBox  # pylint:disable=no-name-in-module
@@ -231,7 +231,9 @@ def get_morph_priority(
     return morph_priority
 
 
-def update_cards(am_config: AnkiMorphsConfig) -> None:
+def update_cards(  # pylint:disable=too-many-locals
+    am_config: AnkiMorphsConfig,
+) -> None:
     """
     get config filters that have 'modify' enabled
 
@@ -241,16 +243,20 @@ def update_cards(am_config: AnkiMorphsConfig) -> None:
     """
 
     assert mw is not None
+    assert mw.col.db is not None
     assert mw.progress is not None
 
     am_db = AnkiMorphsDB()
 
     modify_config_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
-
     morph_cache: dict[str, int] = get_morph_cache(am_db)
     # card_cache: dict[int, dict[Any]] = get_card_cache(am_db)
     card_morph_map_cache: dict[int, list[Any]] = get_card_morph_map_cache(am_db)
     morph_priority: dict[str, int] = get_morph_priority(am_db, am_config)
+    taken_positions: set[int] = get_already_taken_queue_positions()
+    positions_card: dict[int, int] = get_position_card_map()
+    cards_modified_data: list[list[int]] = []
+    modified_time = int_time()
 
     for config_filter in modify_config_filters:
         assert config_filter.note_type_id is not None
@@ -273,12 +279,68 @@ def update_cards(am_config: AnkiMorphsConfig) -> None:
             card_difficulty = get_card_difficulty(
                 card_id, card_morph_map_cache, morph_cache, morph_priority
             )
+            card_position = get_unique_card_position(
+                taken_positions, positions_card, card_id, card_difficulty
+            )
+            positions_card[card_position] = card_id
+            taken_positions.add(card_position)
+            cards_modified_data.append([card_position, modified_time, card_id])
 
-            print(f" card {card_id} difficulty: {card_difficulty}")
-
-    # TODO update the due of the cards in bulk
+    mw.col.db.executemany(
+        "update cards set due=?, mod=? where id=?",
+        cards_modified_data,
+    )
 
     am_db.con.close()
+
+
+def get_already_taken_queue_positions() -> set[int]:
+    assert mw is not None
+    assert mw.col.db is not None
+    return {
+        due_in_list[0] for due_in_list in mw.col.db.execute("select due from cards")
+    }
+
+
+def get_position_card_map() -> dict[int, int]:
+    assert mw is not None
+    assert mw.col.db is not None
+
+    ids_and_due = mw.col.db.all("select id, due from cards")
+    position_card_map = {}
+    for row in ids_and_due:
+        position_card_map[row[1]] = row[0]
+    return position_card_map
+
+
+def get_unique_card_position(
+    taken_positions: set[int],
+    position_card_map: dict[int, int],
+    card_id: int,
+    card_difficulty: int,
+) -> int:
+    """
+    If multiple cards have the same position (due) then only one is chosen for review by anki
+    and the others are ignored, so we need to make sure all cards have a unique due
+    """
+    max_position = 2147483647
+
+    if card_difficulty not in taken_positions:
+        return card_difficulty
+
+    try:
+        if position_card_map[card_difficulty] == card_id:
+            # the card already occupies the position, no problem
+            return card_difficulty
+    except KeyError:
+        # multiple cards have the same difficulty
+        pass
+
+    for position in range(card_difficulty, max_position):
+        if position not in taken_positions:
+            return position
+
+    return max_position
 
 
 def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:

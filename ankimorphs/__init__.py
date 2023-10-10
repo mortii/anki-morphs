@@ -261,20 +261,15 @@ def test_function() -> None:
     assert mw.col.db
 
     am_db = AnkiMorphsDB()
-    # am_db.print_table_info("Card_Morph_Map")
-    # print(f"printing morph table")
-    # with am_db.con:
-    # result = am_db.con.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    # print(f"morphs: {result.fetchall()}")
 
     with am_db.con:
-        result = am_db.con.execute("SELECT count(*) FROM Card")
-        print(f"Card_Morph_Map count: {result.fetchall()}")
-    #
+        result = mw.col.db.execute("PRAGMA table_info('deck_config');")
+        print(f"morphs: {result}")
+
     # with am_db.con:
-    #     result = am_db.con.execute("SELECT * FROM Card_Morph_Map LIMIT 5")
-    #     for row in result:
-    #         print(f"Card_Morph_Map row: {row}")
+    #     result = am_db.con.execute("SELECT count(*) FROM Card")
+    #     print(f"Card_Morph_Map count: {result.fetchall()}")
+    #
 
     # card_row = mw.col.db.execute(
     #     """
@@ -286,23 +281,13 @@ def test_function() -> None:
     #
     # print(f"result: {card_row}")
 
-    result = am_db.con.execute(
-        """
-        SELECT *
-        FROM Card
-        LIMIT 3
-        """,
-    )
-
-    print(f"result: {result.fetchall()}")
-
     # am_db.print_table_info("Note_Type_Morph_Map")
     # am_db.print_table("Morph")
 
-    for row in am_db.con.execute(
-        "SELECT * FROM Morph ORDER BY highest_learning_interval DESC limit 100"
-    ):
-        print(f"row: {row}")
+    # for row in am_db.con.execute(
+    #     "SELECT * FROM Morph ORDER BY highest_learning_interval DESC limit 100"
+    # ):
+    #     print(f"row: {row}")
 
     am_db.con.close()
 

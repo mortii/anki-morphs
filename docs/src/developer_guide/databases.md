@@ -69,6 +69,9 @@ So if we have over 65,536 morphs we would likely experience bugs that are basica
 
 ## Anki dbs
 
+        table_info = mw.col.db.execute("PRAGMA table_info('decks');")
+        print(f"table_info: {result}")
+
 Anki collection db tables:
 
 ```
@@ -121,7 +124,7 @@ cards table:
 'nid'    NOTE_ID_FIELD_NUMBER: builtins.int
 'did'    DECK_ID_FIELD_NUMBER: builtins.int
 'ord'    TEMPLATE_IDX_FIELD_NUMBER: builtins.int
-'mod'    MTIME_SECS_FIELD_NUMBER: builtins.int
+'mod'    MTIME_SECS_FIELD_NUMBER: builtins.int  # when card was modified
 'usn'    USN_FIELD_NUMBER: builtins.int
 'type'   CTYPE_FIELD_NUMBER: builtins.int
 'queue'  QUEUE_FIELD_NUMBER: builtins.int
