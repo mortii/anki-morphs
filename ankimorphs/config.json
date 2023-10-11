@@ -27,7 +27,6 @@
   "recalc_preferred_sentence_length": 7,
   "recalc_prioritize_collection": true,
   "recalc_prioritize_textfile": false,
-  "recalc_unknown_morphs_count": 3,
   "shortcut_browse_same_unknown_ripe": "L",
   "shortcut_browse_same_unknown_ripe_budding": "Shift+L",
   "shortcut_learn_now": "Ctrl+Alt+N",

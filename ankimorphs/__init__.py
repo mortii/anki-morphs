@@ -41,7 +41,7 @@ def main() -> None:
     # Support anki version 2.1.50 and above
     # Hooks should be placed in the order they are executed!
 
-    # Adds the 'U: A:' to the toolbar  # TODO add recalc
+    # Adds the 'U: A:' to the toolbar
     gui_hooks.top_toolbar_did_init_links.append(add_morph_stats_to_toolbar)
 
     # Update the toolbar stats
@@ -53,6 +53,8 @@ def main() -> None:
 
     # This stores the focus morphs seen today, necessary for the respective skipping option to work
     gui_hooks.reviewer_did_answer_card.append(mark_morph_seen_wrapper)
+
+    # TODO drop seen morphs table when exiting anki
 
 
 def redraw_toolbar_wrapper() -> None:
@@ -72,14 +74,12 @@ def init_tool_menu_and_actions() -> None:
 
     settings_action = create_settings_action(am_config)
     recalc_action = create_recalc_action(am_config)
-    delete_cache_action = create_delete_cache_action()
     guide_action = create_guide_action()
     changelog_action = create_changelog_action()
 
     am_tool_menu = create_am_tool_menu()
     am_tool_menu.addAction(settings_action)
     am_tool_menu.addAction(recalc_action)
-    am_tool_menu.addAction(delete_cache_action)
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
 
@@ -131,22 +131,21 @@ def init_browser_menus_and_actions() -> None:
 
 
 def mark_morph_seen_wrapper(reviewer: Reviewer, card: Card, ease: int) -> None:
-    reviewing_utils.mark_morph_seen(card.note())
+    reviewing_utils.mark_morph_seen(card.id)
 
 
 def replace_reviewer_functions() -> None:
-    pass
-    # # This skips the cards the user specified in preferences GUI
-    # Reviewer.nextCard = hooks.wrap(
-    #     Reviewer.nextCard, reviewing_utils.my_next_card, "around"
-    # )
-    #
-    # # Automatically highlights morphs on cards if the respective note stylings are present
-    # hooks.field_filter.append(reviewing_utils.highlight)
-    #
-    # Reviewer._shortcutKeys = hooks.wrap(
-    #     Reviewer._shortcutKeys, reviewing_utils.my_reviewer_shortcut_keys, "around"
-    # )
+    # This skips the cards the user specified in preferences GUI
+    Reviewer.nextCard = hooks.wrap(  # type: ignore[method-assign]
+        Reviewer.nextCard, reviewing_utils.am_next_card, "around"
+    )
+
+    # Automatically highlights morphs on cards if the respective note stylings are present
+    # hooks.field_filter.append(reviewing_utils.am_highlight)
+
+    Reviewer._shortcutKeys = hooks.wrap(  # type: ignore[method-assign]
+        Reviewer._shortcutKeys, reviewing_utils.am_reviewer_shortcut_keys, "around"
+    )
 
 
 def add_morph_stats_to_toolbar(links: list[str], toolbar: Toolbar) -> None:
@@ -251,12 +250,6 @@ def create_already_known_tagger_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Tag As Known", mw)
     action.setShortcut(am_config.shortcut_set_known_and_skip)
     action.triggered.connect(browser_utils.run_already_known_tagger)
-    return action
-
-
-def create_delete_cache_action() -> QAction:
-    action = QAction("&Delete Cache", mw)
-    action.triggered.connect(AnkiMorphsDB.drop_all_tables_with_confirmation)
     return action
 
 

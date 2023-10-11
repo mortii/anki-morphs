@@ -307,7 +307,14 @@ def get_cards_id_due_map() -> dict[int, int]:
     assert mw is not None
     assert mw.col.db is not None
 
-    ids_and_due = mw.col.db.all("select id, due from cards where ivl=0")
+    # Only get unsuspended new cards
+    ids_and_due = mw.col.db.all(
+        """
+        SELECT id, due 
+        FROM cards 
+        WHERE ivl=0 and queue!=-1
+        """
+    )
     card_id_due_map = {}
     for row in ids_and_due:
         card_id_due_map[row[0]] = row[1]

@@ -318,9 +318,6 @@ class PreferencesDialog(QDialog):
         self.ui.preferred_sentence_length_input.setValue(
             self.config.recalc_preferred_sentence_length
         )
-        self.ui.recalc_unknown_morphs_count_input.setValue(
-            self.config.recalc_unknown_morphs_count
-        )
         self.ui.recalc_before_sync_input.setChecked(self.config.recalc_before_sync)
         self.ui.recalc_prioritize_collection_input.setChecked(
             self.config.recalc_prioritize_collection
@@ -340,9 +337,6 @@ class PreferencesDialog(QDialog):
 
         self.ui.preferred_sentence_length_input.setValue(
             self._default_config.recalc_preferred_sentence_length
-        )
-        self.ui.recalc_unknown_morphs_count_input.setValue(
-            self._default_config.recalc_unknown_morphs_count
         )
         self.ui.recalc_before_sync_input.setChecked(
             self._default_config.recalc_before_sync
@@ -441,7 +435,6 @@ class PreferencesDialog(QDialog):
             "shortcut_learn_now": self.ui.shortcut_learn_now_input.keySequence().toString(),
             "shortcut_view_morphemes": self.ui.shortcut_view_morphs_input.keySequence().toString(),
             "recalc_preferred_sentence_length": self.ui.preferred_sentence_length_input.value(),
-            "recalc_unknown_morphs_count": self.ui.recalc_unknown_morphs_count_input.value(),
             "recalc_before_sync": self.ui.recalc_before_sync_input.isChecked(),
             "recalc_prioritize_collection": self.ui.recalc_prioritize_collection_input.isChecked(),
             "recalc_prioritize_textfile": self.ui.recalc_prioritize_textfile_input.isChecked(),

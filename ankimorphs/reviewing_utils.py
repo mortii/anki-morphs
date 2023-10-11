@@ -1,22 +1,30 @@
-import codecs
+# import codecs
 import re
-from typing import Optional
+from typing import Callable, Optional, Union
 
 from anki.consts import CARD_TYPE_NEW
 from anki.notes import Note
 from aqt import dialogs
+from aqt.qt import QKeySequence, Qt  # pylint:disable=no-name-in-module
 from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
 
-from ankimorphs import text_utils
-from ankimorphs.config import get_config
+from ankimorphs.ankimorphs_db import AnkiMorphsDB
+from ankimorphs.config import (
+    AnkiMorphsConfig,
+    AnkiMorphsConfigFilter,
+    get_matching_modify_filter,
+)
 
-seen_morphs = set()  # TODO: use the db instead
+# from ankimorphs import text_utils
+# from ankimorphs.config import get_config
 
 
-def try_to_get_focus_morphs(note: Note) -> Optional[list[str]]:
+def get_focus_morphs(
+    am_config_filter: AnkiMorphsConfigFilter, note: Note
+) -> Optional[list[str]]:
     try:
-        focus_value = note[get_config("Field_FocusMorph")].strip()
+        focus_value = note[am_config_filter.focus_morph].strip()
         if focus_value == "":
             return []
         return [f.strip() for f in focus_value.split(",")]
@@ -24,29 +32,37 @@ def try_to_get_focus_morphs(note: Note) -> Optional[list[str]]:
         return None
 
 
-def focus_query(field_name, focus_morphs, vocab_tag=False):
+def focus_query(
+    am_config: AnkiMorphsConfig,
+    am_filter: AnkiMorphsConfigFilter,
+    unknown_morphs: list[str],
+    vocab_tag: bool = False,
+) -> str:
+    field_name = am_filter.field
     query = " or ".join(
         [
             rf'"{field_name}:re:(^|,|\s){re.escape(morph)}($|,|\s)"'
-            for morph in focus_morphs
+            for morph in unknown_morphs
         ]
     )
-    if len(focus_morphs) > 0:
+    if len(unknown_morphs) > 0:
         query = f"{query}"
     if vocab_tag:
-        query += f"tag:{get_config('Tag_Vocab')}"
+        query += f"tag:{am_config.tag_ripe}"
     return query
 
 
-def mark_morph_seen(note: Note) -> None:
-    focus_morphs = try_to_get_focus_morphs(note)
+def mark_morph_seen(card_id: int) -> None:
+    am_db = AnkiMorphsDB()
+    am_db.insert_card_morphs_into_seen_table(card_id)
+    am_db.print_table("Seen_Morph")
+    am_db.con.close()
 
-    if focus_morphs is not None and len(focus_morphs) > 0:
-        seen_morphs.update(focus_morphs)
 
-
-def my_next_card(self: Reviewer, _old) -> None:
-    skipped_cards = SkippedCards()
+def am_next_card(self: Reviewer, _old: Callable[[], None]) -> None:
+    am_db = AnkiMorphsDB()
+    am_config = AnkiMorphsConfig()
+    skipped_cards = SkippedCards(am_config)
 
     print("entered my_next_card")
 
@@ -77,43 +93,39 @@ def my_next_card(self: Reviewer, _old) -> None:
             break  # ignore non-new cards
 
         note: Note = self.card.note()
-        note_filter = get_filter(note)  # Note filters from preferences GUI
 
-        if note_filter is None:
+        am_config_filter = get_matching_modify_filter(note)
+
+        if am_config_filter is None:
             break  # card did not match (note type and tags) set in preferences GUI
 
-        if not note_filter["Modify"]:
-            break  # modify is not set in preferences GUI
+        card_morphs: set[str] = am_db.get_card_morphs(self.card.id)
+        print(f"card_morphs: {card_morphs}")
 
-        focus_morphs = try_to_get_focus_morphs(note)
-
-        if focus_morphs is None:
-            tooltip(
-                "Encountered card without the 'focus morph' field configured in the preferences. Please check "
-                "your MorphMan settings and note models."
-            )
-            break
-
-        skipped_card = skipped_cards.process_skip_conditions_of_card(note, focus_morphs)
+        skipped_card = skipped_cards.process_skip_conditions_of_card(
+            am_db, note, card_morphs
+        )
 
         if not skipped_card:
             break  # card did not meet any skip criteria
 
         self.mw.col.sched.buryCards([self.card.id], manual=False)
 
+    am_db.con.close()
+
     if self._reps is None:
         self._initWeb()
 
     self._showQuestion()
 
-    # TODO: add option to preferences GUI
-    if skipped_cards.skipped_at_least_one_card() and get_config(
-        "print number of alternatives skipped"
+    if (
+        skipped_cards.skipped_at_least_one_card()
+        and am_config.skip_show_num_of_skipped_cards
     ):
         skipped_cards.show_tooltip_of_skipped_cards()
 
 
-def set_known_and_skip(self: Reviewer) -> None:
+def set_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> None:
     """Set card as alreadyKnown and skip along with all other cards with same focusMorph.
     Useful if you see a focusMorph you already know from external knowledge
     """
@@ -124,9 +136,10 @@ def set_known_and_skip(self: Reviewer) -> None:
 
     self.mw.checkpoint("Set already known focus morph")
     note = self.card.note()
-    note.add_tag(get_config("Tag_AlreadyKnown"))
+
+    note.add_tag(am_config.tag_stale)
     note.flush()
-    mark_morph_seen(note)
+    mark_morph_seen(self.card.id)
 
     # "new counter" might have been decreased (but "new card" was not answered
     # so it shouldn't) -> this function recomputes "new counter"
@@ -136,160 +149,167 @@ def set_known_and_skip(self: Reviewer) -> None:
     self.nextCard()
 
 
-def browse_same_focus(self, vocab_tag=False):  # 3
-    """Opens browser and displays all notes with the same focus morph.
-    Useful to quickly find alternative notes to learn focus from"""
+def browse_same_unknowns(
+    reviewer: Reviewer, am_config: AnkiMorphsConfig, vocab_tag: bool = False
+) -> None:
+    """
+    Opens browser and displays all notes with the same focus morph.
+    Useful to quickly find alternative notes to learn focus from
+    """
+    assert reviewer.card
 
-    note = self.card.note()
-    focus_morphs = try_to_get_focus_morphs(note)
+    am_db = AnkiMorphsDB()
+    note = reviewer.card.note()
+    am_filter = get_matching_modify_filter(note)
 
-    if focus_morphs is None:
-        tooltip("Found no focus morph field!")
+    if am_filter is None:
+        tooltip(
+            "Card's note type is either not configured in settings, or does not have 'Modify' checked"
+        )
         return
 
-    if len(focus_morphs) == 0:
-        tooltip("Focus morph field is empty!")
+    unknown_morphs = am_db.get_unknown_morphs_of_card(reviewer.card.id)
+    # print(f"unknown_morphs: {unknown_morphs}")
+
+    if unknown_morphs is None:
+        tooltip("no unknowns")
         return
 
-    query = focus_query(get_config("Field_FocusMorph"), focus_morphs, vocab_tag)
-    browser = dialogs.open("Browser", self.mw)
+    query = focus_query(am_config, am_filter, unknown_morphs, vocab_tag)
+    browser = dialogs.open("Browser", reviewer.mw)
     browser.form.searchEdit.lineEdit().setText(query)
     browser.onSearchActivated()
 
 
-def my_reviewer_shortcut_keys(self: Reviewer, _old):
-    key_browse = get_config("shortcut_browse_same_focus_morph")
-    key_browse_non_vocab = get_config("shortcut_browse_same_focus_morph_all")
-    key_skip = get_config("shortcut_set_known_and_skip")
+def am_reviewer_shortcut_keys(
+    self: Reviewer,
+    _old: Callable[
+        [Reviewer],
+        list[Union[tuple[str, Callable[[], None]], tuple[Qt.Key, Callable[[], None]]]],
+    ],
+) -> list[Union[tuple[str, Callable[[], None]], tuple[Qt.Key, Callable[[], None]]]]:
+    am_config = AnkiMorphsConfig()
+
+    key_browse: QKeySequence = am_config.shortcut_browse_same_unknown_ripe
+    key_browse_non_vocab: QKeySequence = (
+        am_config.shortcut_browse_same_unknown_ripe_budding
+    )
+    key_skip: QKeySequence = am_config.shortcut_set_known_and_skip
 
     keys = _old(self)
     keys.extend(
         [
-            (key_browse, lambda: browse_same_focus(self, vocab_tag=True)),
-            (key_browse_non_vocab, lambda: browse_same_focus(self, vocab_tag=False)),
-            (key_skip, lambda: set_known_and_skip(self)),
+            (
+                key_browse.toString(),
+                lambda: browse_same_unknowns(self, am_config, vocab_tag=True),
+            ),
+            (
+                key_browse_non_vocab.toString(),
+                lambda: browse_same_unknowns(self, am_config, vocab_tag=False),
+            ),
+            (key_skip.toString(), lambda: set_known_and_skip(self, am_config)),
         ]
     )
     return keys
 
 
-def highlight(  # pylint:disable=too-many-locals
-    txt: str, field, note_filter: str, ctx
-) -> str:
-    """When a field is marked with the 'focusMorph' command, we format it by
-    wrapping all the morphemes in <span>s with attributes set to its maturity"""
+# def am_highlight(  # pylint:disable=too-many-locals
+#     txt: str, field, note_filter: str, ctx
+# ) -> str:
+#     """When a field is marked with the 'focusMorph' command, we format it by
+#     wrapping all the morphemes in <span>s with attributes set to its maturity"""
 
-    # if note_filter != "morphHighlight":
-    #     return txt
-    #
-    # frequency_list_path = get_preference("path_frequency")
-    # try:
-    #     with codecs.open(frequency_list_path, encoding="utf-8") as file:
-    #         frequency_list = [line.strip().split("\t")[0] for line in file.readlines()]
-    # except FileNotFoundError:
-    #     frequency_list = []
-    #
-    # note = ctx.note()
-    # tags = note.string_tags()
-    #
-    # note_filter = get_filter(note)
-    # if note_filter is None:
-    #     return txt
-    #
-    # morphemizer = get_morphemizer_by_name(note_filter["Morphemizer"])
-    # if morphemizer is None:
-    #     return txt
-    #
-    # proper_nouns_known = get_preference("Option_ProperNounsAlreadyKnown")
-    #
-    # # TODO: store these somewhere fitting to avoid instantiating them every function call
-    # known_db = MorphDb(path=get_preference("path_known"))
-    # mature_db = MorphDb(path=get_preference("path_mature"))
-    # priority_db = MorphDb(get_preference("path_priority"), ignore_errors=True).db
-    #
-    # morphemes = get_morphemes(morphemizer, txt, tags)
-    #
-    # # Avoid formatting a smaller morph that is contained in a bigger morph, reverse sort fixes this
-    # sorted_morphs = sorted(morphemes, key=lambda x: len(x.inflected), reverse=True)
-    #
-    # for morph in sorted_morphs:
-    #     if proper_nouns_known and morph.is_proper_noun():
-    #         maturity = "none"
-    #     elif mature_db.matches(morph):
-    #         maturity = "mature"
-    #     elif known_db.matches(morph):  # TODO: fix knowndb...
-    #         maturity = "unmature"
-    #     else:
-    #         maturity = "unknown"
-    #
-    #     priority = "true" if morph in priority_db else "false"
-    #
-    #     focus_morph_string = morph.show().split()[0]
-    #     frequency = "true" if focus_morph_string in frequency_list else "false"
-    #
-    #     replacement = f'<span class="morphHighlight" mtype="{maturity}" priority="{priority}" frequency="{frequency}"">\\1</span>'
-    #     txt = text_utils.non_span_sub(f"({morph.inflected})", replacement, txt)
+# if note_filter != "morphHighlight":
+#     return txt
+#
+# frequency_list_path = get_preference("path_frequency")
+# try:
+#     with codecs.open(frequency_list_path, encoding="utf-8") as file:
+#         frequency_list = [line.strip().split("\t")[0] for line in file.readlines()]
+# except FileNotFoundError:
+#     frequency_list = []
+#
+# note = ctx.note()
+# tags = note.string_tags()
+#
+# note_filter = get_filter(note)
+# if note_filter is None:
+#     return txt
+#
+# morphemizer = get_morphemizer_by_name(note_filter["Morphemizer"])
+# if morphemizer is None:
+#     return txt
+#
+# proper_nouns_known = get_preference("Option_ProperNounsAlreadyKnown")
+#
+# # TODO: store these somewhere fitting to avoid instantiating them every function call
+# known_db = MorphDb(path=get_preference("path_known"))
+# mature_db = MorphDb(path=get_preference("path_mature"))
+# priority_db = MorphDb(get_preference("path_priority"), ignore_errors=True).db
+#
+# morphemes = get_morphemes(morphemizer, txt, tags)
+#
+# # Avoid formatting a smaller morph that is contained in a bigger morph, reverse sort fixes this
+# sorted_morphs = sorted(morphemes, key=lambda x: len(x.inflected), reverse=True)
+#
+# for morph in sorted_morphs:
+#     if proper_nouns_known and morph.is_proper_noun():
+#         maturity = "none"
+#     elif mature_db.matches(morph):
+#         maturity = "mature"
+#     elif known_db.matches(morph):  # TODO: fix knowndb...
+#         maturity = "unmature"
+#     else:
+#         maturity = "unknown"
+#
+#     priority = "true" if morph in priority_db else "false"
+#
+#     focus_morph_string = morph.show().split()[0]
+#     frequency = "true" if focus_morph_string in frequency_list else "false"
+#
+#     replacement = f'<span class="morphHighlight" mtype="{maturity}" priority="{priority}" frequency="{frequency}"">\\1</span>'
+#     txt = text_utils.non_span_sub(f"({morph.inflected})", replacement, txt)
 
-    return txt
+# return txt
 
 
 class SkippedCards:
-    def __init__(self):
+    def __init__(self, am_config: AnkiMorphsConfig) -> None:
+        self.am_config = am_config
         self.skipped_cards = {"comprehension": 0, "fresh": 0, "known": 0, "today": 0}
-        self.skip_comprehension = get_config("Option_SkipComprehensionCards")
-        self.skip_fresh = get_config("Option_SkipFreshVocabCards")
-        self.skip_focus_morph_seen_today = get_config("Option_SkipFocusMorphSeenToday")
+        self.skip_comprehension = am_config.skip_stale_cards
+        self.skip_focus_morph_seen_today = am_config.skip_unknown_morph_seen_today_cards
 
     def process_skip_conditions_of_card(
-        self, note: Note, focus_morphs: list[str]
+        self, am_db: AnkiMorphsDB, note: Note, card_morphs: set[str]
     ) -> bool:
-        # skip conditions set in preferences GUI
-        is_comprehension_card = note.has_tag(get_config("Tag_Comprehension"))
-        is_fresh_vocab = note.has_tag(get_config("Tag_Fresh"))
-        is_already_known = note.has_tag(get_config("Tag_AlreadyKnown"))
+        is_comprehension_card = note.has_tag(self.am_config.tag_stale)
+        morphs_already_seen_morphs_today = am_db.get_all_morphs_seen_today()
 
         if is_comprehension_card:
             if self.skip_comprehension:
                 self.skipped_cards["comprehension"] += 1
                 return True
-        elif is_fresh_vocab:
-            if self.skip_fresh:
-                self.skipped_cards["fresh"] += 1
-                return True
-        elif (
-            is_already_known
-        ):  # the user requested that the vocabulary does not have to be shown
-            self.skipped_cards["known"] += 1
-            return True
-        elif self.skip_focus_morph_seen_today and any(
-            focus in seen_morphs for focus in focus_morphs
-        ):
-            self.skipped_cards["today"] += 1
-            return True
 
+        if self.skip_focus_morph_seen_today:
+            if card_morphs.issubset(morphs_already_seen_morphs_today):
+                self.skipped_cards["today"] += 1
+                return True
         return False
 
-    def skipped_at_least_one_card(self):
+    def skipped_at_least_one_card(self) -> bool:
         for value in self.skipped_cards.values():
             if value > 0:
                 return True
         return False
 
-    def show_tooltip_of_skipped_cards(self):
+    def show_tooltip_of_skipped_cards(self) -> None:
         skipped_string = ""
 
         if self.skipped_cards["comprehension"] > 0:
-            skipped_string += f"Skipped <b>{self.skipped_cards['comprehension']}</b> comprehension cards"
-        if self.skipped_cards["fresh"] > 0:
-            if skipped_string != "":
-                skipped_string += "<br>"
             skipped_string += (
-                f"Skipped <b>{self.skipped_cards['fresh']}</b> fresh vocab cards"
+                f"Skipped <b>{self.skipped_cards['comprehension']}</b> stale cards"
             )
-        if self.skipped_cards["known"] > 0:
-            if skipped_string != "":
-                skipped_string += "<br>"
-            skipped_string += f"Skipped <b>{self.skipped_cards['known']}</b> already known vocab cards"
         if self.skipped_cards["today"] > 0:
             if skipped_string != "":
                 skipped_string += "<br>"

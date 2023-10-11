@@ -1,8 +1,5 @@
 import sqlite3
-from typing import Union
-
-from aqt import mw
-from aqt.qt import QMessageBox  # pylint:disable=no-name-in-module
+from typing import Optional, Union
 
 
 class AnkiMorphsDB:
@@ -20,6 +17,7 @@ class AnkiMorphsDB:
         self.create_morph_table()
         self.create_cards_table()
         self.create_card_morph_map_table()
+        self.create_seen_morph_table()
 
     def create_cards_table(self) -> None:
         with self.con:
@@ -62,6 +60,19 @@ class AnkiMorphsDB:
                         inflected TEXT,
                         is_base INTEGER,
                         highest_learning_interval INTEGER,
+                        PRIMARY KEY (norm, inflected)
+                    )
+                    """
+            )
+
+    def create_seen_morph_table(self) -> None:
+        with self.con:
+            self.con.execute(
+                """
+                    CREATE TABLE IF NOT EXISTS Seen_Morph
+                    (
+                        norm TEXT,
+                        inflected TEXT,
                         PRIMARY KEY (norm, inflected)
                     )
                     """
@@ -123,18 +134,82 @@ class AnkiMorphsDB:
                 card_morph_list,
             )
 
+    def get_card_morphs(self, card_id: int) -> set[str]:
+        card_morphs: set[str] = set("")
+
+        with self.con:
+            card_morphs_raw = self.con.execute(
+                """
+                    SELECT morph_norm, morph_inflected
+                    FROM Card_Morph_Map
+                    WHERE card_id=?
+                    """,
+                (card_id,),
+            ).fetchall()
+
+            for row in card_morphs_raw:
+                card_morphs.add(row[0] + row[1])
+
+        return card_morphs
+
+    def get_all_morphs_seen_today(self) -> set[str]:
+        self.create_seen_morph_table()
+        card_morphs: set[str] = set("")
+
+        with self.con:
+            card_morphs_raw = self.con.execute(
+                """
+                    SELECT norm, inflected
+                    FROM Seen_Morph
+                    """
+            ).fetchall()
+
+            for row in card_morphs_raw:
+                card_morphs.add(row[0] + row[1])
+
+        return card_morphs
+
+    def insert_card_morphs_into_seen_table(self, card_id: int) -> None:
+        with self.con:
+            self.con.execute(
+                """
+                    INSERT OR IGNORE INTO Seen_Morph (norm, inflected)
+                    SELECT morph_norm, morph_inflected
+                    FROM Card_Morph_Map
+                    WHERE card_id=?
+                    """,
+                (card_id,),
+            )
+
+    def get_unknown_morphs_of_card(self, card_id: int) -> Optional[list[str]]:
+        unknown_morphs: list[str] = []
+
+        with self.con:
+            unknown_morphs_raw = self.con.execute(
+                """
+                    SELECT morph_inflected
+                    FROM Card_Morph_Map
+                    INNER JOIN Morph On
+                        Card_Morph_Map.morph_norm = Morph.norm AND Card_Morph_Map.morph_inflected = Morph.inflected
+                    WHERE Card_Morph_Map.card_id=? AND Morph.highest_learning_interval = 0
+                    """,
+                (card_id,),
+            ).fetchall()
+
+            for row in unknown_morphs_raw:
+                unknown_morphs.append(row[0])
+
+        if len(unknown_morphs) == 0:
+            return None
+
+        return unknown_morphs
+
     def print_table(self, table: str) -> None:
-        """
-        tables: Card, Card_Morph_Map, Morph
-        """
         # using f-string is terrible practice, but this is a trivial operation
         for row in self.con.execute(f"SELECT * FROM {table}"):
             print(f"row: {row}")
 
     def print_table_info(self, table: str) -> None:
-        """
-        tables: Card, Card_Morph_Map, Morph
-        """
         with self.con:
             # using f-string is terrible practice, but this is a trivial operation
             result = self.con.execute(f"PRAGMA table_info('{table}')")
@@ -145,18 +220,4 @@ class AnkiMorphsDB:
             self.con.execute("DROP TABLE IF EXISTS Card;")
             self.con.execute("DROP TABLE IF EXISTS Morph;")
             self.con.execute("DROP TABLE IF EXISTS Card_Morph_Map;")
-
-    @staticmethod
-    def drop_all_tables_with_confirmation() -> None:
-        title = "Confirmation"
-        text = "Are you sure you want to delete the ankimorphs.db cache?"
-        warning_box = QMessageBox(mw)
-        warning_box.setWindowTitle(title)
-        warning_box.setIcon(QMessageBox.Icon.Warning)
-        warning_box.setStandardButtons(
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
-        warning_box.setText(text)
-        answer = warning_box.exec()
-        if answer == QMessageBox.StandardButton.Yes:
-            AnkiMorphsDB().drop_all_tables()
+            self.con.execute("DROP TABLE IF EXISTS Seen_Morph;")

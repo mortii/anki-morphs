@@ -45,10 +45,10 @@ def fake_environment():
     mock_mw.reviewer._showQuestion = lambda: None
 
     Reviewer.nextCard = hooks.wrap(
-        Reviewer.nextCard, reviewing_utils.my_next_card, "around"
+        Reviewer.nextCard, reviewing_utils.am_next_card, "around"
     )
     Reviewer._shortcutKeys = hooks.wrap(
-        Reviewer._shortcutKeys, reviewing_utils.my_reviewer_shortcut_keys, "around"
+        Reviewer._shortcutKeys, reviewing_utils.am_reviewer_shortcut_keys, "around"
     )
 
     mock_show_skipped_cards = mock.Mock(name="show_skipped_cards")

@@ -9,7 +9,9 @@ from aqt.utils import showInfo, tooltip
 from ankimorphs.config import get_config
 from ankimorphs.morph_utils import get_morphemes
 from ankimorphs.morphemizer import get_morphemizer_by_name
-from ankimorphs.reviewing_utils import focus_query, try_to_get_focus_morphs
+
+# from ankimorphs.reviewing_utils import focus_query, try_to_get_focus_morphs
+
 
 browser: Optional[Browser] = None
 

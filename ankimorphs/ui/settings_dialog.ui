@@ -22,7 +22,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>5</number>
        </property>
        <widget class="QWidget" name="note_filters_tab">
         <attribute name="title">
@@ -396,7 +396,24 @@
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_18">
          <item>
+          <layout class="QVBoxLayout" name="verticalLayout_17">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QCheckBox" name="recalc_before_sync_input">
+             <property name="text">
+              <string>Automatically Recalc before Sync</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
           <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <property name="topMargin">
+            <number>10</number>
+           </property>
            <item>
             <widget class="QLabel" name="label_6">
              <property name="text">
@@ -419,54 +436,6 @@
               </size>
              </property>
             </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <item>
-            <widget class="QLabel" name="label_7">
-             <property name="text">
-              <string>Only Recalc cards that have less than</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSpinBox" name="recalc_unknown_morphs_count_input"/>
-           </item>
-           <item>
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>unknown morphs</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_10">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_17">
-           <property name="topMargin">
-            <number>10</number>
-           </property>
-           <item>
-            <widget class="QCheckBox" name="recalc_before_sync_input">
-             <property name="text">
-              <string>Automatically Recalc before Sync</string>
-             </property>
-            </widget>
            </item>
           </layout>
          </item>

@@ -43,7 +43,6 @@ repos:
               ankimorphs/ui/.*|
               ankimorphs/old_recalc.py|
               ankimorphs/browser_utils.py|
-              ankimorphs/reviewing_utils.py|
               tests/.*|
           )$
       - id: black
@@ -74,7 +73,6 @@ repos:
               ankimorphs/morpheme.py|
               ankimorphs/morphemizer.py|
               ankimorphs/old_recalc.py|
-              ankimorphs/reviewing_utils.py|
               ankimorphs/text_utils.py|
               ankimorphs/util_external.py|
               tests/.*|

@@ -1,5 +1,6 @@
 from typing import Any, Optional, Union
 
+from anki.notes import Note
 from aqt import mw
 from aqt.qt import QKeySequence  # pylint:disable=no-name-in-module
 
@@ -67,9 +68,6 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         )
         self.recalc_preferred_sentence_length: int = _get_int_config(
             "recalc_preferred_sentence_length", is_default
-        )
-        self.recalc_unknown_morphs_count: int = _get_int_config(
-            "recalc_unknown_morphs_count", is_default
         )
         self.recalc_before_sync: bool = _get_bool_config(
             "recalc_before_sync", is_default
@@ -156,6 +154,14 @@ def get_modify_enabled_filters() -> list[AnkiMorphsConfigFilter]:
         if config_filter.modify:
             modify_filters.append(config_filter)
     return modify_filters
+
+
+def get_matching_modify_filter(note: Note) -> Optional[AnkiMorphsConfigFilter]:
+    modify_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
+    for am_filter in modify_filters:
+        if am_filter.note_type_id == note.mid:
+            return am_filter
+    return None
 
 
 def _get_filters_config(is_default: bool = False) -> list[AnkiMorphsConfigFilter]:
