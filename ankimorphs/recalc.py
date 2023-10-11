@@ -57,8 +57,8 @@ def recalc_background_op(collection: Collection) -> None:
 
     # # update stats and refresh display
     # stats.update_stats()
-
     mw.taskman.run_on_main(mw.toolbar.draw)
+
     mw.taskman.run_on_main(mw.progress.finish)
 
 
@@ -253,13 +253,11 @@ def update_cards(  # pylint:disable=too-many-locals
     # card_cache: dict[int, dict[Any]] = get_card_cache(am_db)
     card_morph_map_cache: dict[int, list[Any]] = get_card_morph_map_cache(am_db)
     morph_priority: dict[str, int] = get_morph_priority(am_db, am_config)
-    taken_positions: set[int] = get_already_taken_queue_positions()
-    positions_card: dict[int, int] = get_position_card_map()
-    cards_modified_data: list[list[int]] = []
-    modified_time = int_time()
+    cards_id_due_map: dict[int, int] = get_cards_id_due_map()
 
     for config_filter in modify_config_filters:
         assert config_filter.note_type_id is not None
+
         card_ids: list[int] = get_am_db_cards_to_update(
             am_db, config_filter.note_type_id
         )
@@ -275,16 +273,27 @@ def update_cards(  # pylint:disable=too-many-locals
                         max=card_amount,
                     )
                 )
-
             card_difficulty = get_card_difficulty(
                 card_id, card_morph_map_cache, morph_cache, morph_priority
             )
-            card_position = get_unique_card_position(
-                taken_positions, positions_card, card_id, card_difficulty
-            )
-            positions_card[card_position] = card_id
-            taken_positions.add(card_position)
-            cards_modified_data.append([card_position, modified_time, card_id])
+            cards_id_due_map[card_id] = card_difficulty
+
+    # When multiple cards have the same due (difficulty), then anki
+    # chooses one for review and ignores the others, therefore
+    # we need to make sure all cards have a unique due.
+    # To achieve this we sort the cards_id_due_map based on due,
+    # and then we replace the due with the position the card
+    # has in the dict, normalizing the due value in the process.
+
+    cards_id_due_map_sorted = dict(
+        sorted(cards_id_due_map.items(), key=lambda item: item[1])
+    )
+
+    modified_time = int_time()
+    cards_modified_data: list[list[int]] = []
+
+    for index, card_id in enumerate(cards_id_due_map_sorted, start=1):
+        cards_modified_data.append([index, modified_time, card_id])
 
     mw.col.db.executemany(
         "update cards set due=?, mod=? where id=?",
@@ -294,53 +303,15 @@ def update_cards(  # pylint:disable=too-many-locals
     am_db.con.close()
 
 
-def get_already_taken_queue_positions() -> set[int]:
-    assert mw is not None
-    assert mw.col.db is not None
-    return {
-        due_in_list[0] for due_in_list in mw.col.db.execute("select due from cards")
-    }
-
-
-def get_position_card_map() -> dict[int, int]:
+def get_cards_id_due_map() -> dict[int, int]:
     assert mw is not None
     assert mw.col.db is not None
 
-    ids_and_due = mw.col.db.all("select id, due from cards")
-    position_card_map = {}
+    ids_and_due = mw.col.db.all("select id, due from cards where ivl=0")
+    card_id_due_map = {}
     for row in ids_and_due:
-        position_card_map[row[1]] = row[0]
-    return position_card_map
-
-
-def get_unique_card_position(
-    taken_positions: set[int],
-    position_card_map: dict[int, int],
-    card_id: int,
-    card_difficulty: int,
-) -> int:
-    """
-    If multiple cards have the same position (due) then only one is chosen for review by anki
-    and the others are ignored, so we need to make sure all cards have a unique due
-    """
-    max_position = 2147483647
-
-    if card_difficulty not in taken_positions:
-        return card_difficulty
-
-    try:
-        if position_card_map[card_difficulty] == card_id:
-            # the card already occupies the position, no problem
-            return card_difficulty
-    except KeyError:
-        # multiple cards have the same difficulty or card has
-        pass
-
-    for position in range(card_difficulty, max_position):
-        if position not in taken_positions:
-            return position
-
-    return max_position
+        card_id_due_map[row[0]] = row[1]
+    return card_id_due_map
 
 
 def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
