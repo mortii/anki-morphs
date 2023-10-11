@@ -103,9 +103,15 @@ control_chars_re = re.compile("[\x00-\x1f\x7f-\x9f]")
 
 
 def get_morphemes_mecab(expression):
+    # HACK: mecab sometimes does not produce the right morphs if there are no extra characters in the expression,
+    # so we just add a whitespace and a japanese punctuation mark "。" the end to prevent the problem.
+    expression += " 。"
+
     # Remove Unicode control codes before sending to MeCab.
     expression = control_chars_re.sub("", expression)
+
     _morphs = [get_morpheme(m.split("\t")) for m in interact(expression).split("\r")]
+
     _morphs = [_morph for _morph in _morphs if _morph is not None]
     return _morphs
 
@@ -283,10 +289,6 @@ def interact(expr):  # Str -> IO Str
     info from its stdout."""
     mecab_process, _ = mecab()
     expr = expr.encode(mecab_encoding, "ignore")
-
-    # HACK: mecab sometimes does not produce the right morphs if there are no extra characters in the expression,
-    # so we just add a whitespace at the end to prevent the problem.
-    expr += b"&nbsp;"
 
     # The line terminator is always b'\n' for binary files: https://docs.python.org/3/library/io.html#io.IOBase
     mecab_process.stdin.write(expr + b"\n")

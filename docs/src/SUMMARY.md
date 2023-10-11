@@ -37,6 +37,7 @@
 - [Docs](developer_guide/docs.md)
 - [Qt Designer](developer_guide/qt-designer.md)
 - [Tests](developer_guide/tests.md)
+- [Performance](developer_guide/performance.md)
 - [Databases](developer_guide/databases.md)
 
 

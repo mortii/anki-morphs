@@ -1,4 +1,3 @@
-from anki.cards import Card
 from aqt import gui_hooks, mw
 from aqt.browser.browser import Browser
 from aqt.qt import (  # pylint:disable=no-name-in-module
@@ -20,13 +19,16 @@ from ankimorphs import (
 )
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.config import AnkiMorphsConfig, get_config
-from ankimorphs.mecab_wrapper import get_morphemes_mecab
+from ankimorphs.morph_stats import MorphToolbarStats
 
 # A bug in the anki module leads to cyclic imports if these are placed higher
 import anki.stats  # isort:skip pylint:disable=wrong-import-order
 from anki import hooks  # isort:skip pylint:disable=wrong-import-order
+from anki.cards import Card  # isort:skip pylint:disable=wrong-import-order
+
 
 # Semantic Versioning https://semver.org/
+# TODO store somewhere other than mw, makes testing problematic
 mw.ANKIMORPHS_VERSION = "0.1.0-alpha"  # type: ignore
 
 TOOL_MENU = "am_tool_menu"
@@ -147,23 +149,23 @@ def replace_reviewer_functions() -> None:
 
 
 def add_morph_stats_to_toolbar(links: list[str], toolbar: Toolbar) -> None:
-    unique_name, unique_details = morph_stats.get_unique_morph_toolbar_stats()
-    all_name, all_details = morph_stats.get_all_morph_toolbar_stats()
+    morph_toolbar_stats = MorphToolbarStats()
+
     links.append(
         toolbar.create_link(
             "morph",
-            unique_name,
+            morph_toolbar_stats.unique_morphs,
             morph_stats.on_morph_stats_clicked,
-            tip=unique_details,
+            tip=morph_toolbar_stats.unique_morphs_hover_details,
             id="morph",
         )
     )
     links.append(
         toolbar.create_link(
             "morph2",
-            all_name,
+            morph_toolbar_stats.all_morphs,
             morph_stats.on_morph_stats_clicked,
-            tip=all_details,
+            tip=morph_toolbar_stats.all_morphs_hover_details,
             id="morph2",
         )
     )

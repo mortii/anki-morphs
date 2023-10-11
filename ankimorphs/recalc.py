@@ -333,7 +333,7 @@ def get_unique_card_position(
             # the card already occupies the position, no problem
             return card_difficulty
     except KeyError:
-        # multiple cards have the same difficulty
+        # multiple cards have the same difficulty or card has
         pass
 
     for position in range(card_difficulty, max_position):
