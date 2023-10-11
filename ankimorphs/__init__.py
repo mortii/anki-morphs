@@ -9,6 +9,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.reviewer import Reviewer
 from aqt.toolbar import Toolbar
+from aqt.utils import tooltip
 
 from ankimorphs import (
     browser_utils,
@@ -153,20 +154,29 @@ def add_morph_stats_to_toolbar(links: list[str], toolbar: Toolbar) -> None:
 
     links.append(
         toolbar.create_link(
-            "morph",
-            morph_toolbar_stats.unique_morphs,
-            morph_stats.on_morph_stats_clicked,
-            tip=morph_toolbar_stats.unique_morphs_hover_details,
-            id="morph",
+            cmd="recalc_toolbar",
+            label="Recalc",
+            func=recalc.recalc,
+            tip="AnkiMorph Recalc",
+            id="recalc_toolbar",
         )
     )
     links.append(
         toolbar.create_link(
-            "morph2",
-            morph_toolbar_stats.all_morphs,
-            morph_stats.on_morph_stats_clicked,
-            tip=morph_toolbar_stats.all_morphs_hover_details,
-            id="morph2",
+            cmd="unique_morphs",
+            label=morph_toolbar_stats.unique_morphs,
+            func=lambda: tooltip("U = Known Unique Morphs<br>A = All Known Morphs"),
+            tip="U = Known Unique Morphs",
+            id="unique_morphs",
+        )
+    )
+    links.append(
+        toolbar.create_link(
+            cmd="all_morphs",
+            label=morph_toolbar_stats.all_morphs,
+            func=lambda: tooltip("U = Known Unique Morphs<br>A = All Known Morphs"),
+            tip="A = All Known Morphs",
+            id="all_morphs",
         )
     )
 
