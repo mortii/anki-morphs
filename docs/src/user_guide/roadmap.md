@@ -1,21 +1,23 @@
 # Roadmap
 
 1. Re-add browser actions
-2. Implement automatic recalc before sync
-3. Implement tags
-4. Release AnkiMorphs alpha-test version?
-5. Remake highlighting feature
-6. Fix undo-review
-7. Implement spaCy
-8. Remove intrinsic mecab and jieba
-9. Store morphs in separate containers based on language
-10. Implement a version of frequency.txt that supports multiple languages
-11. Remake tests
-12. Update guide
-13. Add [vulture](https://github.com/jendrikseipp/vulture)
-14. Release AnkiMorphs stable version?
-15. Remake statistics page
-16. Remake readability analyzer
+2. Implement optional automatic recalc before sync
+3. Implement automatic tagging of cards based on how many unknown morphs the card has
+4. Drop sqlite table of seen morphs during review on anki exit
+5. improve card difficulty algorithm (it is no longer constrained by card.due backend)
+   1. Sum the difficulty of the individual morphs in the field
+6. Release AnkiMorphs alpha-test version?
+7. Remake highlighting feature
+8. Fix undo-review
+9. Implement spaCy
+10. Remove intrinsic morphemizers (takes up unnecessary space)
+11. Allow for custom morph prioritization for specified lagnuages (e.g. jp-morph-priority.txt)
+12. Remake tests
+13. Add [vulture](https://github.com/jendrikseipp/vulture) to pre-commit
+14. Update guide
+15. Release AnkiMorphs stable version?
+16. Remake statistics page
+17. Remake readability analyzer
 
 
 
