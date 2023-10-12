@@ -25,6 +25,7 @@ from ankimorphs.morph_stats import MorphToolbarStats
 # A bug in the anki module leads to cyclic imports if these are placed higher
 import anki.stats  # isort:skip pylint:disable=wrong-import-order
 from anki import hooks  # isort:skip pylint:disable=wrong-import-order
+from anki.collection import Collection  # isort:skip pylint:disable=wrong-import-order
 from anki.cards import Card  # isort:skip pylint:disable=wrong-import-order
 
 
@@ -54,7 +55,11 @@ def main() -> None:
     # This stores the focus morphs seen today, necessary for the respective skipping option to work
     gui_hooks.reviewer_did_answer_card.append(mark_morph_seen_wrapper)
 
-    # TODO drop seen morphs table when exiting anki
+    gui_hooks.profile_will_close.append(reset_seen_morphs)
+
+
+def reset_seen_morphs() -> None:
+    AnkiMorphsDB.drop_seen_morph_table()
 
 
 def redraw_toolbar_wrapper() -> None:
@@ -267,9 +272,9 @@ def test_function() -> None:
 
     am_db = AnkiMorphsDB()
 
-    with am_db.con:
-        result = mw.col.db.execute("PRAGMA table_info('deck_config');")
-        print(f"morphs: {result}")
+    # with am_db.con:
+    #     result = mw.col.db.execute("PRAGMA table_info('deck_config');")
+    #     print(f"morphs: {result}")
 
     # with am_db.con:
     #     result = am_db.con.execute("SELECT count(*) FROM Card")

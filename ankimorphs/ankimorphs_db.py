@@ -221,3 +221,9 @@ class AnkiMorphsDB:
             self.con.execute("DROP TABLE IF EXISTS Morph;")
             self.con.execute("DROP TABLE IF EXISTS Card_Morph_Map;")
             self.con.execute("DROP TABLE IF EXISTS Seen_Morph;")
+
+    @staticmethod
+    def drop_seen_morph_table() -> None:
+        am_db = AnkiMorphsDB()
+        with am_db.con:
+            am_db.con.execute("DROP TABLE IF EXISTS Seen_Morph;")
