@@ -1,15 +1,14 @@
 # import codecs
-import re
 from typing import Callable, Optional, Union
 
 from anki.consts import CARD_TYPE_NEW
 from anki.notes import Note
-from aqt import dialogs
 from aqt.qt import QKeySequence, Qt  # pylint:disable=no-name-in-module
 from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
 
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
+from ankimorphs.browser_utils import browse_same_unknowns
 from ankimorphs.config import (
     AnkiMorphsConfig,
     AnkiMorphsConfigFilter,
@@ -30,26 +29,6 @@ def get_focus_morphs(
         return [f.strip() for f in focus_value.split(",")]
     except KeyError:
         return None
-
-
-def focus_query(
-    am_config: AnkiMorphsConfig,
-    am_filter: AnkiMorphsConfigFilter,
-    unknown_morphs: list[str],
-    vocab_tag: bool = False,
-) -> str:
-    field_name = am_filter.field
-    query = " or ".join(
-        [
-            rf'"{field_name}:re:(^|,|\s){re.escape(morph)}($|,|\s)"'
-            for morph in unknown_morphs
-        ]
-    )
-    if len(unknown_morphs) > 0:
-        query = f"{query}"
-    if vocab_tag:
-        query += f"tag:{am_config.tag_ripe}"
-    return query
 
 
 def mark_morph_seen(card_id: int) -> None:
@@ -126,6 +105,7 @@ def am_next_card(self: Reviewer, _old: Callable[[], None]) -> None:
 
 
 def set_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> None:
+    # TODO does not show "skipped x card" tooltip
     """Set card as alreadyKnown and skip along with all other cards with same focusMorph.
     Useful if you see a focusMorph you already know from external knowledge
     """
@@ -149,38 +129,6 @@ def set_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> None:
     self.nextCard()
 
 
-def browse_same_unknowns(
-    reviewer: Reviewer, am_config: AnkiMorphsConfig, vocab_tag: bool = False
-) -> None:
-    """
-    Opens browser and displays all notes with the same focus morph.
-    Useful to quickly find alternative notes to learn focus from
-    """
-    assert reviewer.card
-
-    am_db = AnkiMorphsDB()
-    note = reviewer.card.note()
-    am_filter = get_matching_modify_filter(note)
-
-    if am_filter is None:
-        tooltip(
-            "Card's note type is either not configured in settings, or does not have 'Modify' checked"
-        )
-        return
-
-    unknown_morphs = am_db.get_unknown_morphs_of_card(reviewer.card.id)
-    # print(f"unknown_morphs: {unknown_morphs}")
-
-    if unknown_morphs is None:
-        tooltip("no unknowns")
-        return
-
-    query = focus_query(am_config, am_filter, unknown_morphs, vocab_tag)
-    browser = dialogs.open("Browser", reviewer.mw)
-    browser.form.searchEdit.lineEdit().setText(query)
-    browser.onSearchActivated()
-
-
 def am_reviewer_shortcut_keys(
     self: Reviewer,
     _old: Callable[
@@ -188,6 +136,8 @@ def am_reviewer_shortcut_keys(
         list[Union[tuple[str, Callable[[], None]], tuple[Qt.Key, Callable[[], None]]]],
     ],
 ) -> list[Union[tuple[str, Callable[[], None]], tuple[Qt.Key, Callable[[], None]]]]:
+    assert self.card
+
     am_config = AnkiMorphsConfig()
 
     key_browse: QKeySequence = am_config.shortcut_browse_same_unknown_ripe
@@ -201,11 +151,15 @@ def am_reviewer_shortcut_keys(
         [
             (
                 key_browse.toString(),
-                lambda: browse_same_unknowns(self, am_config, vocab_tag=True),
+                lambda: browse_same_unknowns(
+                    self.card.id, self.card.note(), am_config, vocab_tag=True
+                ),
             ),
             (
                 key_browse_non_vocab.toString(),
-                lambda: browse_same_unknowns(self, am_config, vocab_tag=False),
+                lambda: browse_same_unknowns(
+                    self.card.id, self.card.note(), am_config, vocab_tag=False
+                ),
             ),
             (key_skip.toString(), lambda: set_known_and_skip(self, am_config)),
         ]

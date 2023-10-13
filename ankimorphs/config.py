@@ -164,6 +164,14 @@ def get_matching_modify_filter(note: Note) -> Optional[AnkiMorphsConfigFilter]:
     return None
 
 
+def get_matching_read_filter(note: Note) -> Optional[AnkiMorphsConfigFilter]:
+    read_filters: list[AnkiMorphsConfigFilter] = get_read_enabled_filters()
+    for am_filter in read_filters:
+        if am_filter.note_type_id == note.mid:
+            return am_filter
+    return None
+
+
 def _get_filters_config(is_default: bool = False) -> list[AnkiMorphsConfigFilter]:
     if is_default:
         filters_config = get_default_config("filters")

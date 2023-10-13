@@ -1,45 +1,102 @@
+import re
 from typing import Optional
 
-from anki.utils import strip_html
-from aqt import mw
-from aqt.browser import Browser
+from aqt import dialogs, mw
+from aqt.browser.browser import Browser
+from aqt.qt import QLineEdit, QMessageBox  # pylint:disable=no-name-in-module
 from aqt.reviewer import RefreshNeeded
-from aqt.utils import showInfo, tooltip
+from aqt.utils import tooltip
 
-from ankimorphs.config import get_config
-from ankimorphs.morph_utils import get_morphemes
-from ankimorphs.morphemizer import get_morphemizer_by_name
+from ankimorphs.ankimorphs_db import AnkiMorphsDB
+from ankimorphs.config import (
+    AnkiMorphsConfig,
+    AnkiMorphsConfigFilter,
+    get_matching_read_filter,
+)
 
-# from ankimorphs.reviewing_utils import focus_query, try_to_get_focus_morphs
+# A bug in the anki module leads to cyclic imports if this is placed higher
+from anki.notes import Note  # isort:skip pylint:disable=wrong-import-order
 
 
 browser: Optional[Browser] = None
 
 
 def run_browse_morph() -> None:
-    run_browse_morph_dict = dict({"focusMorphs": set()})
+    assert mw is not None
+    assert browser is not None
+
+    am_config = AnkiMorphsConfig()
 
     for cid in browser.selectedCards():
         card = mw.col.get_card(cid)
         note = card.note()
-
-        for focus_morph in try_to_get_focus_morphs(note):
-            run_browse_morph_dict["focusMorphs"].add(focus_morph)
-
-        focus_field = get_config("Field_FocusMorph")
-        focus_morphs = run_browse_morph_dict["focusMorphs"]
-
-        query = focus_query(focus_field, focus_morphs)
-        if query != "":
-            browser.form.searchEdit.lineEdit().setText(query)
-            browser.onSearchActivated()
-            tooltip(f"Browsing {(len(focus_morphs))} morphs")
-
+        browse_same_unknowns(cid, note, am_config)
         return  # Only use one card since note-types can be different
 
 
-def run_already_known_tagger():
-    known_tag = get_config("Tag_AlreadyKnown")
+def browse_same_unknowns(
+    card_id: int, note: Note, am_config: AnkiMorphsConfig, vocab_tag: bool = False
+) -> None:
+    """
+    Opens browser and displays all notes with the same focus morph.
+    Useful to quickly find alternative notes to learn focus from
+    """
+    global browser  # pylint:disable=global-statement
+
+    am_db = AnkiMorphsDB()
+    am_filter = get_matching_read_filter(note)
+
+    if am_filter is None:
+        tooltip(
+            "Card's note type is either not configured in settings, or does not have 'Modify' checked"
+        )
+        return
+
+    unknown_morphs = am_db.get_unknown_morphs_of_card(card_id)
+    # print(f"unknown_morphs: {unknown_morphs}")
+
+    if unknown_morphs is None:
+        tooltip("no unknowns")
+        return
+
+    query = focus_query(am_config, am_filter, unknown_morphs, vocab_tag)
+    browser = dialogs.open("Browser", mw)
+    assert browser is not None
+
+    search_edit: Optional[QLineEdit] = browser.form.searchEdit.lineEdit()
+    assert search_edit is not None
+
+    search_edit.setText(query)
+    browser.onSearchActivated()
+
+
+def focus_query(
+    am_config: AnkiMorphsConfig,
+    am_filter: AnkiMorphsConfigFilter,
+    unknown_morphs: list[str],
+    vocab_tag: bool = False,
+) -> str:
+    field_name = am_filter.field
+    query = " or ".join(
+        [
+            rf'"{field_name}:re:(^|,|\s){re.escape(morph)}($|,|\s)"'
+            for morph in unknown_morphs
+        ]
+    )
+    if len(unknown_morphs) > 0:
+        query = f"{query}"
+    if vocab_tag:
+        query += f"tag:{am_config.tag_ripe}"
+    return query
+
+
+def run_already_known_tagger() -> None:
+    assert mw is not None
+    assert browser is not None
+
+    am_config = AnkiMorphsConfig()
+
+    known_tag = am_config.tag_stale
     selected_cards = browser.selectedCards()
 
     for cid in selected_cards:
@@ -52,6 +109,9 @@ def run_already_known_tagger():
 
 
 def run_learn_card_now() -> None:
+    assert mw is not None
+    assert browser is not None
+
     selected_cards = browser.selectedCards()
 
     for cid in selected_cards:
@@ -67,29 +127,35 @@ def run_learn_card_now() -> None:
     tooltip(f"Next new card(s) will be {selected_cards}")
 
 
-#
-# def run_view_morphs() -> None:
-#     morph_dict = dict({"morphemes": []})
-#
-#     for cid in browser.selectedCards():
-#         card = mw.col.get_card(cid)
-#         note = card.note()
-#
-#         notecfg = util.get_filter(note)
-#         if notecfg is None:
-#             return None
-#
-#         morphemizer = get_morphemizer_by_name(notecfg["Morphemizer"])
-#
-#         for note_filter_field in notecfg["Fields"]:
-#             morphemes = get_morphemes(
-#                 morphemizer, strip_html(note[note_filter_field]), note.tags
-#             )
-#             morph_dict["morphemes"] += morphemes
-#
-#         if len(morph_dict["morphemes"]) == 0:
-#             showInfo("----- No morphemes, check your filters -----")
-#         else:
-#             morph_strings = ms2str([(m, []) for m in morph_dict["morphemes"]])
-#             showInfo("----- All -----\n" + morph_strings)
-#     return None
+def run_view_morphs() -> None:
+    assert mw is not None
+    assert browser is not None
+
+    am_db = AnkiMorphsDB()
+
+    for cid in browser.selectedCards():
+        card = mw.col.get_card(cid)
+        note = card.note()
+
+        am_config_filter: Optional[AnkiMorphsConfigFilter] = get_matching_read_filter(
+            note
+        )
+        if am_config_filter is None:
+            tooltip("Card does not match any 'Note Filters' that has 'Read' enabled")
+            return
+
+        morphs: list[tuple[str, str]] = am_db.get_readable_card_morphs(cid)
+
+        if len(morphs) == 0:
+            tooltip("No morphs found")
+        else:
+            title = "AnkiMorphs: Card Morphs"
+            text = "".join(
+                [f"inflection: {morph[1]}, base: {morph[0]} \n" for morph in morphs]
+            )
+            info_box = QMessageBox(browser)
+            info_box.setWindowTitle(title)
+            info_box.setIcon(QMessageBox.Icon.Information)
+            info_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+            info_box.setText(text)
+            info_box.exec()

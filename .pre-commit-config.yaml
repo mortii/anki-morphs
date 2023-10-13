@@ -14,12 +14,6 @@ repos:
         exclude: |
           (?x)^(
               ankimorphs/deps/.*|
-              ankimorphs/readability_settings_ui.py|
-              ankimorphs/adaptiveSubs.py|
-              ankimorphs/readability.py|
-              ankimorphs/readability_ui.py|
-              ankimorphs/preferencesDialog.py|
-              ankimorphs/config.py|
               tests/fake_preferences.py|
           )$
   - repo: https://github.com/pycqa/isort
@@ -42,7 +36,6 @@ repos:
               ankimorphs/deps/.*|
               ankimorphs/ui/.*|
               ankimorphs/old_recalc.py|
-              ankimorphs/browser_utils.py|
               tests/.*|
           )$
       - id: black
@@ -55,7 +48,6 @@ repos:
           (?x)^(
               ankimorphs/deps/.*|
               ankimorphs/ui/.*|
-              ankimorphs/recalc.py|
               tests/.*|
           )$
       - id: mypy
@@ -68,7 +60,6 @@ repos:
           (?x)^(
               ankimorphs/deps/.*|
               ankimorphs/ui/.*|
-              ankimorphs/browser_utils.py|
               ankimorphs/mecab_wrapper.py|
               ankimorphs/morpheme.py|
               ankimorphs/morphemizer.py|

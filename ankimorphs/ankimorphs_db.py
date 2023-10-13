@@ -152,6 +152,24 @@ class AnkiMorphsDB:
 
         return card_morphs
 
+    def get_readable_card_morphs(self, card_id: int) -> list[tuple[str, str]]:
+        card_morphs: list[tuple[str, str]] = []
+
+        with self.con:
+            card_morphs_raw = self.con.execute(
+                """
+                    SELECT morph_norm, morph_inflected
+                    FROM Card_Morph_Map
+                    WHERE card_id=?
+                    """,
+                (card_id,),
+            ).fetchall()
+
+            for row in card_morphs_raw:
+                card_morphs.append((row[0], row[1]))
+
+        return card_morphs
+
     def get_all_morphs_seen_today(self) -> set[str]:
         self.create_seen_morph_table()
         card_morphs: set[str] = set("")
