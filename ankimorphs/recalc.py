@@ -5,6 +5,7 @@ from typing import Any, Optional, Union
 
 from anki.cards import Card
 from anki.collection import Collection
+from anki.tags import TagManager
 from anki.utils import int_time, split_fields, strip_html
 from aqt import mw
 from aqt.operations import QueryOp
@@ -52,6 +53,7 @@ def recalc_background_op(collection: Collection) -> None:
         )
     )
 
+    # TODO try using inner join to speed up the caching
     cache_card_morphemes(am_config)
     update_cards(am_config)
 
@@ -79,12 +81,13 @@ def get_am_db_cards_to_update(am_db: AnkiMorphsDB, note_type_id: int) -> list[in
     return card_ids
 
 
-def get_card_difficulty(
+def get_card_difficulty_and_unknowns(
     card_id: int,
     card_morph_map_cache: dict[int, list[Any]],
     morph_cache: dict[str, int],
     morph_priority: dict[str, int],
-) -> int:
+) -> tuple[int, int]:
+    # TODO these constraints are outdated
     """
     Set the difficulty (due) on all cards to max by default to prevent buggy cards showing up first.
     card.due is converted to a signed 32-bit integer on the backend, so we get the constraint:
@@ -111,21 +114,24 @@ def get_card_difficulty(
 
     """
     default_difficulty = 2147483647
+    unknowns = 0
 
     try:
         card_morphs = card_morph_map_cache[card_id]
     except KeyError:
         # card does not have morphs or is buggy in some way
-        return default_difficulty
+        return default_difficulty, unknowns
 
     difficulty = 0
 
     for morph in card_morphs:
         highest_interval = morph_cache[morph]
         is_unknown = highest_interval == 0  # gives a bool
+        if is_unknown:
+            unknowns += 1
         difficulty += (1000000 * is_unknown) + morph_priority[morph]
 
-    return difficulty
+    return difficulty, unknowns
 
 
 def get_morph_cache(am_db: AnkiMorphsDB) -> dict[str, int]:
@@ -247,13 +253,19 @@ def update_cards(  # pylint:disable=too-many-locals
     assert mw.progress is not None
 
     am_db = AnkiMorphsDB()
+    tag_manager = TagManager(mw.col)
+
+    # these registers the tags in the browser if they don't already exist
+    tag_manager.set_collapsed(am_config.tag_ripe, collapsed=False)
+    tag_manager.set_collapsed(am_config.tag_budding, collapsed=False)
+    tag_manager.set_collapsed(am_config.tag_stale, collapsed=False)
 
     modify_config_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
     morph_cache: dict[str, int] = get_morph_cache(am_db)
     # card_cache: dict[int, dict[Any]] = get_card_cache(am_db)
     card_morph_map_cache: dict[int, list[Any]] = get_card_morph_map_cache(am_db)
     morph_priority: dict[str, int] = get_morph_priority(am_db, am_config)
-    cards_id_due_map: dict[int, int] = get_cards_id_due_map()
+    cards_data_map: dict[int, dict[str, Union[int, str]]] = get_cards_data_map()
 
     for config_filter in modify_config_filters:
         assert config_filter.note_type_id is not None
@@ -273,10 +285,21 @@ def update_cards(  # pylint:disable=too-many-locals
                         max=card_amount,
                     )
                 )
-            card_difficulty = get_card_difficulty(
+            card_difficulty, unknowns = get_card_difficulty_and_unknowns(
                 card_id, card_morph_map_cache, morph_cache, morph_priority
             )
-            cards_id_due_map[card_id] = card_difficulty
+            cards_data_map[card_id]["due"] = card_difficulty
+            cards_data_map[card_id]["unknowns"] = unknowns
+
+            tags = cards_data_map[card_id]["tags"]
+
+            assert isinstance(tags, str)
+
+            original_tags: set[str] = set(tag_manager.split(tags))
+
+            cards_data_map[card_id]["tags"] = get_new_tags(
+                am_config, unknowns, original_tags
+            )
 
     # When multiple cards have the same due (difficulty), then anki
     # chooses one for review and ignores the others, therefore
@@ -285,40 +308,76 @@ def update_cards(  # pylint:disable=too-many-locals
     # and then we replace the due with the position the card
     # has in the dict, normalizing the due value in the process.
 
-    cards_id_due_map_sorted = dict(
-        sorted(cards_id_due_map.items(), key=lambda item: item[1])
+    cards_data_map_sorted = dict(
+        sorted(cards_data_map.items(), key=lambda item: cards_data_map[item[0]]["due"])
     )
 
     modified_time = int_time()
     cards_modified_data: list[list[int]] = []
+    notes_modified_data: list[list[Union[str, int]]] = []
 
-    for index, card_id in enumerate(cards_id_due_map_sorted, start=1):
+    for index, card_id in enumerate(cards_data_map_sorted, start=1):
         cards_modified_data.append([index, modified_time, card_id])
+        notes_modified_data.append(
+            [
+                cards_data_map_sorted[card_id]["tags"],
+                modified_time,
+                cards_data_map_sorted[card_id]["note_id"],
+            ]
+        )
 
     mw.col.db.executemany(
         "update cards set due=?, mod=? where id=?",
         cards_modified_data,
     )
 
+    mw.col.db.executemany(
+        "update notes set tags=?, mod=? where id=?",
+        notes_modified_data,
+    )
+
     am_db.con.close()
 
 
-def get_cards_id_due_map() -> dict[int, int]:
+def get_new_tags(am_config: AnkiMorphsConfig, unknowns: int, tags: set[str]) -> str:
+    if unknowns == 0:
+        if am_config.tag_stale not in tags:
+            tags.add(am_config.tag_stale)
+        if am_config.tag_ripe in tags:
+            tags.remove(am_config.tag_ripe)
+    elif unknowns == 1:
+        if am_config.tag_ripe not in tags:
+            tags.add(am_config.tag_ripe)
+        if am_config.tag_budding in tags:
+            tags.remove(am_config.tag_budding)
+    else:
+        if am_config.tag_budding not in tags:
+            tags.add(am_config.tag_budding)
+
+    if not tags:
+        return ""
+    return f" {' '.join(list(tags))} "
+
+
+def get_cards_data_map() -> dict[int, dict[str, Union[int, str]]]:
     assert mw is not None
     assert mw.col.db is not None
 
     # Only get unsuspended new cards
     ids_and_due = mw.col.db.all(
         """
-        SELECT id, due 
-        FROM cards 
-        WHERE ivl=0 and queue!=-1
+        SELECT cards.id, cards.due, cards.nid, notes.tags
+        FROM cards
+        INNER JOIN notes ON
+            cards.nid = notes.id
+        WHERE cards.ivl = 0 and cards.queue != -1
         """
     )
-    card_id_due_map = {}
+    card_data_map = {}
     for row in ids_and_due:
-        card_id_due_map[row[0]] = row[1]
-    return card_id_due_map
+        # print(f"row: {row}")
+        card_data_map[row[0]] = {"due": row[1], "note_id": row[2], "tags": row[3]}
+    return card_data_map
 
 
 def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:

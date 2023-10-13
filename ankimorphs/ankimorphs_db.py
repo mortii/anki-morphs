@@ -189,7 +189,7 @@ class AnkiMorphsDB:
                 """
                     SELECT morph_inflected
                     FROM Card_Morph_Map
-                    INNER JOIN Morph On
+                    INNER JOIN Morph ON
                         Card_Morph_Map.morph_norm = Morph.norm AND Card_Morph_Map.morph_inflected = Morph.inflected
                     WHERE Card_Morph_Map.card_id=? AND Morph.highest_learning_interval = 0
                     """,
