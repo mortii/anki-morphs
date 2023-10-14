@@ -1,8 +1,11 @@
-# import codecs
-from typing import Callable, Union
+from functools import partial
+from typing import Callable, Optional, Union
 
+from anki.collection import Collection
 from anki.consts import CARD_TYPE_NEW
 from anki.notes import Note
+from aqt import mw
+from aqt.operations import QueryOp
 from aqt.qt import QKeySequence, Qt  # pylint:disable=no-name-in-module
 from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
@@ -11,38 +14,42 @@ from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.browser_utils import browse_same_morphs
 from ankimorphs.config import AnkiMorphsConfig, get_matching_modify_filter
 
-# from ankimorphs import text_utils
-
-
-# def get_focus_morphs(
-#     am_config_filter: AnkiMorphsConfigFilter, note: Note
-# ) -> Optional[list[str]]:
-#     try:
-#         focus_value = note[am_config_filter.focus_morph].strip()
-#         if focus_value == "":
-#             return []
-#         return [f.strip() for f in focus_value.split(",")]
-#     except KeyError:
-#         return None
-
 
 def mark_morph_seen(card_id: int) -> None:
     am_db = AnkiMorphsDB()
     am_db.insert_card_morphs_into_seen_table(card_id)
-    print("Seen_Morphss")
-    am_db.print_table("Seen_Morph")
+    # print("Seen_Morphs")
+    # am_db.print_table("Seen_Morph")
     am_db.con.close()
 
 
 def am_next_card(self: Reviewer, _old: Callable[[], None]) -> None:
-    am_db = AnkiMorphsDB()
+    operation = QueryOp(
+        parent=self.mw,
+        op=partial(next_card_background_op, self=self),
+        success=lambda t: None,  # t = return value of the op
+    )
+    operation.with_progress().run_in_background()
+
+
+def next_card_background_op(
+    collection: Collection,
+    self: Optional[Reviewer] = None,
+) -> None:
+    assert mw is not None
+    assert self is not None
+
     am_config = AnkiMorphsConfig()
     skipped_cards = SkippedCards(am_config)
-
-    print("entered my_next_card")
+    am_db = AnkiMorphsDB()
 
     while True:
-        print("while True")
+        mw.taskman.run_on_main(
+            partial(
+                mw.progress.update,
+                label=f"Skipping {skipped_cards.total_skipped_cards} cards",
+            )
+        )
 
         self.previous_card = self.card
         self.card = None
@@ -61,7 +68,7 @@ def am_next_card(self: Reviewer, _old: Callable[[], None]) -> None:
             self.mw.moveToState("overview")
             return
 
-        print(f"self.card.id: {self.card.id}, self.card.due: {self.card.due}")
+        # print(f"self.card.id: {self.card.id}, self.card.due: {self.card.due}")
         # pprint.pprint(vars(self.card))
 
         if self.card.type != CARD_TYPE_NEW:
@@ -74,7 +81,7 @@ def am_next_card(self: Reviewer, _old: Callable[[], None]) -> None:
             break  # card did not match (note type and tags) set in preferences GUI
 
         card_morphs: set[str] = am_db.get_card_morphs(self.card.id)
-        print(f"card_morphs: {card_morphs}")
+        # print(f"card_morphs: {card_morphs}")
 
         skipped_card = skipped_cards.process_skip_conditions_of_card(
             am_db, note, card_morphs
@@ -88,15 +95,15 @@ def am_next_card(self: Reviewer, _old: Callable[[], None]) -> None:
     am_db.con.close()
 
     if self._reps is None:
-        self._initWeb()
+        self.mw.taskman.run_on_main(self._initWeb)
 
-    self._showQuestion()
+    self.mw.taskman.run_on_main(self._showQuestion)
 
     if (
         skipped_cards.skipped_at_least_one_card()
         and am_config.skip_show_num_of_skipped_cards
     ):
-        skipped_cards.show_tooltip_of_skipped_cards()
+        self.mw.taskman.run_on_main(skipped_cards.show_tooltip_of_skipped_cards)
 
 
 def set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> None:
@@ -122,8 +129,6 @@ def am_reviewer_shortcut_keys(
         list[Union[tuple[str, Callable[[], None]], tuple[Qt.Key, Callable[[], None]]]],
     ],
 ) -> list[Union[tuple[str, Callable[[], None]], tuple[Qt.Key, Callable[[], None]]]]:
-    # assert self.card
-
     am_config = AnkiMorphsConfig()
 
     key_browse: QKeySequence = am_config.shortcut_browse_same_unknown_ripe
@@ -216,7 +221,8 @@ def am_reviewer_shortcut_keys(
 class SkippedCards:
     def __init__(self, am_config: AnkiMorphsConfig) -> None:
         self.am_config = am_config
-        self.skipped_cards = {"comprehension": 0, "today": 0}
+        self.skipped_cards_dict = {"comprehension": 0, "today": 0}
+        self.total_skipped_cards = 0
         self.skip_comprehension = am_config.skip_stale_cards
         self.skip_focus_morph_seen_today = am_config.skip_unknown_morph_seen_today_cards
 
@@ -228,17 +234,18 @@ class SkippedCards:
 
         if is_comprehension_card:
             if self.skip_comprehension:
-                self.skipped_cards["comprehension"] += 1
+                self.skipped_cards_dict["comprehension"] += 1
+                self.total_skipped_cards += 1
                 return True
-
-        if self.skip_focus_morph_seen_today:
+        elif self.skip_focus_morph_seen_today:
             if card_morphs.issubset(morphs_already_seen_morphs_today):
-                self.skipped_cards["today"] += 1
+                self.skipped_cards_dict["today"] += 1
+                self.total_skipped_cards += 1
                 return True
         return False
 
     def skipped_at_least_one_card(self) -> bool:
-        for value in self.skipped_cards.values():
+        for value in self.skipped_cards_dict.values():
             if value > 0:
                 return True
         return False
@@ -246,13 +253,13 @@ class SkippedCards:
     def show_tooltip_of_skipped_cards(self) -> None:
         skipped_string = ""
 
-        if self.skipped_cards["comprehension"] > 0:
+        if self.skipped_cards_dict["comprehension"] > 0:
             skipped_string += (
-                f"Skipped <b>{self.skipped_cards['comprehension']}</b> stale cards"
+                f"Skipped <b>{self.skipped_cards_dict['comprehension']}</b> stale cards"
             )
-        if self.skipped_cards["today"] > 0:
+        if self.skipped_cards_dict["today"] > 0:
             if skipped_string != "":
                 skipped_string += "<br>"
-            skipped_string += f"Skipped <b>{self.skipped_cards['today']}</b> morph already seen today cards"
+            skipped_string += f"Skipped <b>{self.skipped_cards_dict['today']}</b> cards with morphs already seen today"
 
-        tooltip(skipped_string)
+        tooltip(skipped_string, parent=mw)
