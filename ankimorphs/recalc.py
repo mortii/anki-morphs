@@ -41,11 +41,6 @@ def recalc_background_op(collection: Collection) -> None:
     assert mw.progress is not None
 
     am_config = AnkiMorphsConfig()
-    print("running main")
-
-    # mw.taskman.run_on_main(
-    #     partial(mw.progress.start, label="Recalculating...", immediate=True)
-    # )
 
     mw.taskman.run_on_main(
         lambda: mw.progress.update(  # type: ignore
@@ -57,10 +52,7 @@ def recalc_background_op(collection: Collection) -> None:
     cache_card_morphemes(am_config)
     update_cards(am_config)
 
-    # # update stats and refresh display
-    # stats.update_stats()
-    mw.taskman.run_on_main(mw.toolbar.draw)
-
+    mw.taskman.run_on_main(mw.toolbar.draw)  # update stats and refresh display
     mw.taskman.run_on_main(mw.progress.finish)
 
 
@@ -297,6 +289,7 @@ def update_cards(  # pylint:disable=too-many-locals
                 morph_cache,
                 morph_priority,
             )
+
             cards_data_map[card_id]["due"] = card_difficulty
             cards_data_map[card_id]["unknowns"] = unknowns
 
@@ -389,7 +382,9 @@ def get_cards_data_map() -> dict[int, dict[str, Union[int, str]]]:
     return card_data_map
 
 
-def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
+def cache_card_morphemes(  # pylint:disable=too-many-locals
+    am_config: AnkiMorphsConfig,
+) -> None:
     """
     Extracting morphs from cards is expensive so caching them yields a significant
     performance gain.
@@ -413,13 +408,16 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
         if config_filter.note_type == "":
             raise DefaultSettingsException  # handled in on_failure()
 
-        note_ids, expressions = get_notes_to_update(config_filter)
+        note_ids, expressions, note_tags_map = get_notes_to_update(config_filter)
 
         print(f"notes amount: {len(note_ids)} in {config_filter.note_type}")
 
         cards: list[Card] = get_cards_to_update(am_config, note_ids)
         card_amount = len(cards)
+
         print(f" card amount: {card_amount} in {config_filter.note_type}")
+
+        # print(f"note_tags_map: {pprint.pprint(note_tags_map)}")
 
         for counter, card in enumerate(cards):
             if counter % 1000 == 0:
@@ -432,13 +430,20 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
                     )
                 )
 
-            card_table_data.append(create_card_dict(card, config_filter))
+            if note_tags_map[card.nid] == am_config.tag_known:
+                highest_interval = am_config.recalc_interval_for_known
+            else:
+                highest_interval = card.ivl
+
+            card_table_data.append(
+                create_card_dict(card, config_filter, highest_interval)
+            )
             morphs = get_card_morphs(expressions[card.nid], am_config, config_filter)
             if morphs is None:
                 continue
 
             for morph in morphs:
-                morph_table_data.append(create_morph_dict(morph, card))
+                morph_table_data.append(create_morph_dict(morph, highest_interval))
                 card_morph_map_table_data.append(
                     create_card_morph_map_dict(card, morph)
                 )
@@ -453,25 +458,28 @@ def cache_card_morphemes(am_config: AnkiMorphsConfig) -> None:
 
 
 def create_card_dict(
-    card: Card, config_filter: AnkiMorphsConfigFilter
+    card: Card, config_filter: AnkiMorphsConfigFilter, highest_interval: int
 ) -> dict[str, int]:
     assert config_filter.note_type_id
     return {
         "id": card.id,
         "learning_status": card.type,
         "queue_status": card.queue,
-        "learning_interval": card.ivl,
+        "learning_interval": highest_interval,
         "note_type_id": config_filter.note_type_id,
     }
 
 
-def create_morph_dict(morph: Morpheme, card: Card) -> dict[str, Union[bool, str, int]]:
+def create_morph_dict(
+    morph: Morpheme,
+    highest_interval: int,
+) -> dict[str, Union[bool, str, int]]:
     return {
         "norm": morph.norm,
         "base": morph.base,
         "inflected": morph.inflected,
         "is_base": morph.norm == morph.inflected,  # gives a bool
-        "highest_learning_interval": card.ivl,  # this is updated later in update_morphs()
+        "highest_learning_interval": highest_interval,  # this is updated later in update_morphs()
     }
 
 
@@ -497,22 +505,26 @@ def get_card_morphs(
         return None
 
 
-def get_notes_to_update(
+def get_notes_to_update(  # pylint:disable=too-many-locals
     config_filter_read: AnkiMorphsConfigFilter,
-) -> tuple[set[int], dict[int, str]]:
+) -> tuple[set[int], dict[int, str], dict[int, str]]:
     assert mw
     assert mw.col.db
 
+    am_config = AnkiMorphsConfig()
+    tag_manager = TagManager(mw.col)
     model_id: Optional[int] = config_filter_read.note_type_id
     expressions: dict[int, str] = {}
     note_ids: set[int] = set()
+    note_id_tags_map: dict[int, str] = {}
 
     for tag in config_filter_read.tags:
         notes_with_tag = set()
 
-        for id_and_fields in get_notes_with_tags(model_id, tag):
-            note_id = id_and_fields[0]
-            fields = id_and_fields[1]
+        for id_fields_tags in get_notes_with_tags(model_id, tag):
+            note_id = id_fields_tags[0]
+            fields = id_fields_tags[1]
+            note_tags = id_fields_tags[2]
 
             notes_with_tag.add(note_id)
             fields_split = split_fields(fields)
@@ -523,6 +535,11 @@ def get_notes_to_update(
             # store the field now, that way we don't have to re-query
             expressions[note_id] = strip_html(field)
 
+            if am_config.tag_known in tag_manager.split(note_tags):
+                note_id_tags_map[note_id] = am_config.tag_known
+            else:
+                note_id_tags_map[note_id] = ""
+
         # only get the notes that intersect all the specified tags
         # i.e. only get the subset of notes that have all the tags
         if len(note_ids) == 0:
@@ -532,14 +549,14 @@ def get_notes_to_update(
 
     # if the notes have not been reduced, simply return everything stored
     if len(note_ids) == len(expressions):
-        return note_ids, expressions
+        return note_ids, expressions, note_id_tags_map
 
     # only return the expressions of the new subset of notes
     filtered_expressions = {}
     for note_id in note_ids:
         filtered_expressions[note_id] = expressions[note_id]
 
-    return note_ids, filtered_expressions
+    return note_ids, filtered_expressions, note_id_tags_map
 
 
 def get_notes_with_tags(model_id: Optional[int], tag: str) -> list[Sequence[Any]]:
@@ -554,7 +571,7 @@ def get_notes_with_tags(model_id: Optional[int], tag: str) -> list[Sequence[Any]
     # This is a list of two item lists, [[id: int, flds: str]]
     id_and_fields: list[Sequence[Any]] = mw.col.db.all(
         """
-        SELECT id, flds
+        SELECT id, flds, tags
         FROM notes 
         WHERE mid=? AND tags LIKE ?
         """,
