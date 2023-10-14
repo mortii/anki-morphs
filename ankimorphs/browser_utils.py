@@ -1,4 +1,3 @@
-import re
 from typing import Optional
 
 from aqt import dialogs, mw
@@ -21,7 +20,7 @@ from anki.notes import Note  # isort:skip pylint:disable=wrong-import-order
 browser: Optional[Browser] = None
 
 
-def run_browse_morph() -> None:
+def run_browse_morph(search_unknowns: bool = False) -> None:
     assert mw is not None
     assert browser is not None
 
@@ -30,12 +29,16 @@ def run_browse_morph() -> None:
     for cid in browser.selectedCards():
         card = mw.col.get_card(cid)
         note = card.note()
-        browse_same_unknowns(cid, note, am_config)
+        browse_same_morphs(cid, note, am_config, search_unknowns=search_unknowns)
         return  # Only use one card since note-types can be different
 
 
-def browse_same_unknowns(
-    card_id: int, note: Note, am_config: AnkiMorphsConfig, vocab_tag: bool = False
+def browse_same_morphs(
+    card_id: int,
+    note: Note,
+    am_config: AnkiMorphsConfig,
+    search_unknowns: bool = False,
+    search_ripe_tag: bool = False,
 ) -> None:
     """
     Opens browser and displays all notes with the same focus morph.
@@ -52,14 +55,18 @@ def browse_same_unknowns(
         )
         return
 
-    unknown_morphs = am_db.get_unknown_morphs_of_card(card_id)
-    # print(f"unknown_morphs: {unknown_morphs}")
+    if search_unknowns:
+        morphs = am_db.get_unknown_morphs_of_card(card_id)
+        error_text = "No unknown morphs"
+    else:
+        morphs = am_db.get_inflected_morphs_of_card(card_id)
+        error_text = "No morphs"
 
-    if unknown_morphs is None:
-        tooltip("no unknowns")
+    if morphs is None:
+        tooltip(error_text)
         return
 
-    query = focus_query(am_config, am_filter, unknown_morphs, vocab_tag)
+    query = focus_query(am_config, am_filter, morphs, search_ripe_tag)
     browser = dialogs.open("Browser", mw)
     assert browser is not None
 
@@ -73,20 +80,24 @@ def browse_same_unknowns(
 def focus_query(
     am_config: AnkiMorphsConfig,
     am_filter: AnkiMorphsConfigFilter,
-    unknown_morphs: list[str],
+    morphs: list[str],
     vocab_tag: bool = False,
-) -> str:
+) -> Optional[str]:
+    if len(morphs) == 0:
+        return None
+
     field_name = am_filter.field
-    query = " or ".join(
-        [
-            rf'"{field_name}:re:(^|,|\s){re.escape(morph)}($|,|\s)"'
-            for morph in unknown_morphs
-        ]
-    )
-    if len(unknown_morphs) > 0:
-        query = f"{query}"
+
+    query = f"{field_name}:re:("
+    morphs_to_query = [f"{morph}|" for morph in morphs]
+    query += "".join(morphs_to_query)
+    query = '"' + query[:-1] + ')"'  # query[:-1] removes the last pipe
+
     if vocab_tag:
-        query += f"tag:{am_config.tag_ripe}"
+        query += f" tag:{am_config.tag_ripe}"
+
+    print(rf"query: {query}")
+
     return query
 
 

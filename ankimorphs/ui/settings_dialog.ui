@@ -22,7 +22,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>5</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="note_filters_tab">
         <attribute name="title">
@@ -167,6 +167,13 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <widget class="QLabel" name="label_7">
+                 <property name="text">
+                  <string>Modify enabled</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </item>
              <item>
@@ -179,6 +186,9 @@
                </item>
                <item>
                 <widget class="QLineEdit" name="stale_tag_input"/>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="lineEdit_2"/>
                </item>
               </layout>
              </item>
@@ -404,6 +414,13 @@
             <widget class="QCheckBox" name="recalc_before_sync_input">
              <property name="text">
               <string>Automatically Recalc before Sync</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBox">
+             <property name="text">
+              <string>Automatically suspend stale cards on Recalc </string>
              </property>
             </widget>
            </item>

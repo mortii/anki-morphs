@@ -37,8 +37,9 @@
   "skip_show_num_of_skipped_cards": true,
   "skip_stale_cards": true,
   "skip_unknown_morph_seen_today_cards": true,
-  "tag_budding": "budding",
-  "tag_ripe": "ripe",
-  "tag_stale": "stale"
+  "tag_budding": "am-budding",
+  "tag_ripe": "am-ripe",
+  "tag_stale": "am-stale",
+  "tag_modify_enabled": "am-modify"
 }
 

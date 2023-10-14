@@ -199,6 +199,31 @@ class AnkiMorphsDB:
                 (card_id,),
             )
 
+    def get_inflected_morphs_of_card(self, card_id: int) -> Optional[list[str]]:
+        inflected_morphs: list[str] = []
+
+        with self.con:
+            inflected_morphs_raw = self.con.execute(
+                """
+                    SELECT morph_inflected
+                    FROM Card_Morph_Map
+                    INNER JOIN Morph ON
+                        Card_Morph_Map.morph_norm = Morph.norm AND Card_Morph_Map.morph_inflected = Morph.inflected
+                    WHERE Card_Morph_Map.card_id=?
+                    """,
+                (card_id,),
+            ).fetchall()
+
+            for row in inflected_morphs_raw:
+                print(f"unknown_morphs_raw row: {inflected_morphs_raw}")
+                inflected_morphs.append(row[0])
+
+        print(f"inflected_morphs in db: {inflected_morphs}")
+        if len(inflected_morphs) == 0:
+            return None
+
+        return inflected_morphs
+
     def get_unknown_morphs_of_card(self, card_id: int) -> Optional[list[str]]:
         unknown_morphs: list[str] = []
 
@@ -215,8 +240,10 @@ class AnkiMorphsDB:
             ).fetchall()
 
             for row in unknown_morphs_raw:
+                print(f"unknown_morphs_raw row: {unknown_morphs_raw}")
                 unknown_morphs.append(row[0])
 
+        print(f"unknown_morphs in db: {unknown_morphs}")
         if len(unknown_morphs) == 0:
             return None
 

@@ -72,7 +72,7 @@ def get_am_db_cards_to_update(am_db: AnkiMorphsDB, note_type_id: int) -> list[in
         """
         Select id
         FROM Card
-        WHERE learning_status=0 AND note_type_id=?
+        WHERE learning_status = 0 AND note_type_id = ?
         """,
         (note_type_id,),
     ).fetchall()
@@ -82,6 +82,7 @@ def get_am_db_cards_to_update(am_db: AnkiMorphsDB, note_type_id: int) -> list[in
 
 
 def get_card_difficulty_and_unknowns(
+    am_config: AnkiMorphsConfig,
     card_id: int,
     card_morph_map_cache: dict[int, list[Any]],
     morph_cache: dict[str, int],
@@ -130,6 +131,10 @@ def get_card_difficulty_and_unknowns(
         if is_unknown:
             unknowns += 1
         difficulty += (1000000 * is_unknown) + morph_priority[morph]
+
+    if unknowns == 0 and am_config.skip_stale_cards:
+        # Move stale cards to the end of the queue
+        return default_difficulty, unknowns
 
     return difficulty, unknowns
 
@@ -262,7 +267,7 @@ def update_cards(  # pylint:disable=too-many-locals
 
     modify_config_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
     morph_cache: dict[str, int] = get_morph_cache(am_db)
-    # card_cache: dict[int, dict[Any]] = get_card_cache(am_db)
+    # card_cache: dict[int, dict[str, int]] = get_card_cache(am_db)
     card_morph_map_cache: dict[int, list[Any]] = get_card_morph_map_cache(am_db)
     morph_priority: dict[str, int] = get_morph_priority(am_db, am_config)
     cards_data_map: dict[int, dict[str, Union[int, str]]] = get_cards_data_map()
@@ -286,7 +291,11 @@ def update_cards(  # pylint:disable=too-many-locals
                     )
                 )
             card_difficulty, unknowns = get_card_difficulty_and_unknowns(
-                card_id, card_morph_map_cache, morph_cache, morph_priority
+                am_config,
+                card_id,
+                card_morph_map_cache,
+                morph_cache,
+                morph_priority,
             )
             cards_data_map[card_id]["due"] = card_difficulty
             cards_data_map[card_id]["unknowns"] = unknowns
@@ -370,7 +379,7 @@ def get_cards_data_map() -> dict[int, dict[str, Union[int, str]]]:
         FROM cards
         INNER JOIN notes ON
             cards.nid = notes.id
-        WHERE cards.ivl = 0 and cards.queue != -1
+        WHERE cards.ivl = 0
         """
     )
     card_data_map = {}
@@ -571,9 +580,9 @@ def get_cards_to_update(
     for note_id in note_ids:
         for card_id in mw.col.find_cards(f"nid:{note_id}"):
             card = mw.col.get_card(card_id)
-            if am_config.parse_ignore_suspended_cards_content:
-                if card.queue == -1:  # card is suspended
-                    continue
+            # if am_config.parse_ignore_suspended_cards_content:
+            #     if card.queue == -1:  # card is suspended
+            #         continue
             cards.append(card)
     return cards
 

@@ -1,5 +1,5 @@
 # import codecs
-from typing import Callable, Optional, Union
+from typing import Callable, Union
 
 from anki.consts import CARD_TYPE_NEW
 from anki.notes import Note
@@ -8,32 +8,28 @@ from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
 
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
-from ankimorphs.browser_utils import browse_same_unknowns
-from ankimorphs.config import (
-    AnkiMorphsConfig,
-    AnkiMorphsConfigFilter,
-    get_matching_modify_filter,
-)
+from ankimorphs.browser_utils import browse_same_morphs
+from ankimorphs.config import AnkiMorphsConfig, get_matching_modify_filter
 
 # from ankimorphs import text_utils
-# from ankimorphs.config import get_config
 
 
-def get_focus_morphs(
-    am_config_filter: AnkiMorphsConfigFilter, note: Note
-) -> Optional[list[str]]:
-    try:
-        focus_value = note[am_config_filter.focus_morph].strip()
-        if focus_value == "":
-            return []
-        return [f.strip() for f in focus_value.split(",")]
-    except KeyError:
-        return None
+# def get_focus_morphs(
+#     am_config_filter: AnkiMorphsConfigFilter, note: Note
+# ) -> Optional[list[str]]:
+#     try:
+#         focus_value = note[am_config_filter.focus_morph].strip()
+#         if focus_value == "":
+#             return []
+#         return [f.strip() for f in focus_value.split(",")]
+#     except KeyError:
+#         return None
 
 
 def mark_morph_seen(card_id: int) -> None:
     am_db = AnkiMorphsDB()
     am_db.insert_card_morphs_into_seen_table(card_id)
+    print("Seen_Morphss")
     am_db.print_table("Seen_Morph")
     am_db.con.close()
 
@@ -136,7 +132,7 @@ def am_reviewer_shortcut_keys(
         list[Union[tuple[str, Callable[[], None]], tuple[Qt.Key, Callable[[], None]]]],
     ],
 ) -> list[Union[tuple[str, Callable[[], None]], tuple[Qt.Key, Callable[[], None]]]]:
-    assert self.card
+    # assert self.card
 
     am_config = AnkiMorphsConfig()
 
@@ -151,14 +147,14 @@ def am_reviewer_shortcut_keys(
         [
             (
                 key_browse.toString(),
-                lambda: browse_same_unknowns(
-                    self.card.id, self.card.note(), am_config, vocab_tag=True
+                lambda: browse_same_morphs(
+                    self.card.id, self.card.note(), am_config, search_unknowns=True, search_ripe_tag=True  # type: ignore[union-attr]
                 ),
             ),
             (
                 key_browse_non_vocab.toString(),
-                lambda: browse_same_unknowns(
-                    self.card.id, self.card.note(), am_config, vocab_tag=False
+                lambda: browse_same_morphs(
+                    self.card.id, self.card.note(), am_config, search_unknowns=True  # type: ignore[union-attr]
                 ),
             ),
             (key_skip.toString(), lambda: set_known_and_skip(self, am_config)),

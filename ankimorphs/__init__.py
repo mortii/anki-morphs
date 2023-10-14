@@ -1,3 +1,5 @@
+from functools import partial
+
 from aqt import gui_hooks, mw
 from aqt.browser.browser import Browser
 from aqt.qt import (  # pylint:disable=no-name-in-module
@@ -97,7 +99,8 @@ def init_browser_menus_and_actions() -> None:
 
     view_action = create_view_morphs_action(am_config)
     learn_now_action = create_learn_now_action(am_config)
-    browse_morph_action = create_browse_morph_action(am_config)
+    browse_morph_action = create_browse_same_morph_action(am_config)
+    browse_morph_unknowns_action = create_browse_same_morph_unknowns_action(am_config)
     already_known_tagger_action = create_already_known_tagger_action(am_config)
 
     def setup_browser_menu(_browser: Browser) -> None:
@@ -116,6 +119,7 @@ def init_browser_menus_and_actions() -> None:
         am_browse_menu.addAction(view_action)
         am_browse_menu.addAction(learn_now_action)
         am_browse_menu.addAction(browse_morph_action)
+        am_browse_menu.addAction(browse_morph_unknowns_action)
         am_browse_menu.addAction(already_known_tagger_action)
 
     def setup_context_menu(_browser: Browser, context_menu: QMenu) -> None:
@@ -128,6 +132,7 @@ def init_browser_menus_and_actions() -> None:
         context_menu.addAction(view_action)
         context_menu.addAction(learn_now_action)
         context_menu.addAction(browse_morph_action)
+        context_menu.addAction(browse_morph_unknowns_action)
         context_menu.addAction(already_known_tagger_action)
         context_menu_creation_action.setObjectName(CONTEXT_MENU)
 
@@ -241,10 +246,19 @@ def create_learn_now_action(am_config: AnkiMorphsConfig) -> QAction:
     return action
 
 
-def create_browse_morph_action(am_config: AnkiMorphsConfig) -> QAction:
+def create_browse_same_morph_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Browse Same Morphs", mw)
     action.setShortcut(am_config.shortcut_browse_same_unknown_ripe)
     action.triggered.connect(browser_utils.run_browse_morph)
+    return action
+
+
+def create_browse_same_morph_unknowns_action(am_config: AnkiMorphsConfig) -> QAction:
+    action = QAction("&Browse Same Unknown Morphs", mw)
+    # action.setShortcut(am_config.shortcut_browse_same_unknown_ripe)
+    action.triggered.connect(
+        partial(browser_utils.run_browse_morph, search_unknowns=True)
+    )
     return action
 
 
@@ -296,7 +310,7 @@ def test_function() -> None:
     # print(f"result: {card_row}")
 
     # am_db.print_table_info("Note_Type_Morph_Map")
-    # am_db.print_table("Morph")
+    am_db.print_table("Card_Morph_Map")
 
     # for row in am_db.con.execute(
     #     "SELECT * FROM Morph ORDER BY highest_learning_interval DESC limit 100"
