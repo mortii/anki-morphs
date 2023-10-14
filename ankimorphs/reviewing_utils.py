@@ -68,7 +68,6 @@ def am_next_card(self: Reviewer, _old: Callable[[], None]) -> None:
             break  # ignore non-new cards
 
         note: Note = self.card.note()
-
         am_config_filter = get_matching_modify_filter(note)
 
         if am_config_filter is None:
@@ -100,28 +99,19 @@ def am_next_card(self: Reviewer, _old: Callable[[], None]) -> None:
         skipped_cards.show_tooltip_of_skipped_cards()
 
 
-def set_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> None:
-    # TODO does not show "skipped x card" tooltip
-    """Set card as alreadyKnown and skip along with all other cards with same focusMorph.
-    Useful if you see a focusMorph you already know from external knowledge
-    """
-
-    print("entered set_known_and_skip")
-
+def set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> None:
     assert self.card is not None
 
     self.mw.checkpoint("Set already known focus morph")
     note = self.card.note()
-
     note.add_tag(am_config.tag_stale)
     note.flush()
     mark_morph_seen(self.card.id)
-
-    # "new counter" might have been decreased (but "new card" was not answered
-    # so it shouldn't) -> this function recomputes "new counter"
-    self.mw.col.reset()
-
     self.mw.col.sched.buryCards([self.card.id], manual=False)
+    self.mw.col.reset()  # recomputes the "new card"-queue
+
+    if am_config.skip_show_num_of_skipped_cards:
+        tooltip("Set card as known and skipped")
     self.nextCard()
 
 
@@ -157,7 +147,7 @@ def am_reviewer_shortcut_keys(
                     self.card.id, self.card.note(), am_config, search_unknowns=True  # type: ignore[union-attr]
                 ),
             ),
-            (key_skip.toString(), lambda: set_known_and_skip(self, am_config)),
+            (key_skip.toString(), lambda: set_card_as_known_and_skip(self, am_config)),
         ]
     )
     return keys
@@ -226,7 +216,7 @@ def am_reviewer_shortcut_keys(
 class SkippedCards:
     def __init__(self, am_config: AnkiMorphsConfig) -> None:
         self.am_config = am_config
-        self.skipped_cards = {"comprehension": 0, "fresh": 0, "known": 0, "today": 0}
+        self.skipped_cards = {"comprehension": 0, "today": 0}
         self.skip_comprehension = am_config.skip_stale_cards
         self.skip_focus_morph_seen_today = am_config.skip_unknown_morph_seen_today_cards
 

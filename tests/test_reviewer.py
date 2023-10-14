@@ -106,7 +106,7 @@ def test_set_known_and_skip(fake_environment):
 
     print(f"mock_mw.reviewer.card.id: {mock_mw.reviewer.card.id}")
 
-    reviewing_utils.set_known_and_skip(mock_mw.reviewer)
+    reviewing_utils.set_card_as_known_and_skip(mock_mw.reviewer)
 
     # mock_mw.col.sched.answerCard(mock_mw.reviewer.card, ease=3)
 

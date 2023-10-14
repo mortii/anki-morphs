@@ -1,11 +1,11 @@
 # Roadmap
 
 1. Make the am_next_card function a background op and display number of skipped card in a pop-up dialog
-2. Fix set_known_and_skip to show tooltip "skipped x cards"
-3. Implement optional automatic recalc before sync
-4. Improve card difficulty algorithm (it is no longer constrained by card.due backend)
+2. Set all morphs on stale cards to known
+3. Improve card difficulty algorithm (it is no longer constrained by card.due backend)
     1. Sum the difficulty of the individual morphs in the field
-5. Rename default ankimorphs tags?
+4. Rename default ankimorphs tags?
+5. Implement optional automatic recalc before sync
 6. Add conflicting add-ons to config
 7. Release AnkiMorphs alpha-test version?
 8. Try to improve caching by using inner join on notes and cards query
