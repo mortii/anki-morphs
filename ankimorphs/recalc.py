@@ -261,9 +261,9 @@ def update_cards(  # pylint:disable=too-many-locals
     tag_manager = TagManager(mw.col)
 
     # these registers the tags in the browser if they don't already exist
-    tag_manager.set_collapsed(am_config.tag_ripe, collapsed=False)
-    tag_manager.set_collapsed(am_config.tag_budding, collapsed=False)
-    tag_manager.set_collapsed(am_config.tag_stale, collapsed=False)
+    tag_manager.set_collapsed(am_config.tag_ready, collapsed=False)
+    tag_manager.set_collapsed(am_config.tag_not_ready, collapsed=False)
+    tag_manager.set_collapsed(am_config.tag_known, collapsed=False)
 
     modify_config_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
     morph_cache: dict[str, int] = get_morph_cache(am_db)
@@ -350,18 +350,18 @@ def update_cards(  # pylint:disable=too-many-locals
 
 def get_new_tags(am_config: AnkiMorphsConfig, unknowns: int, tags: set[str]) -> str:
     if unknowns == 0:
-        if am_config.tag_stale not in tags:
-            tags.add(am_config.tag_stale)
-        if am_config.tag_ripe in tags:
-            tags.remove(am_config.tag_ripe)
+        if am_config.tag_known not in tags:
+            tags.add(am_config.tag_known)
+        if am_config.tag_ready in tags:
+            tags.remove(am_config.tag_ready)
     elif unknowns == 1:
-        if am_config.tag_ripe not in tags:
-            tags.add(am_config.tag_ripe)
-        if am_config.tag_budding in tags:
-            tags.remove(am_config.tag_budding)
+        if am_config.tag_ready not in tags:
+            tags.add(am_config.tag_ready)
+        if am_config.tag_not_ready in tags:
+            tags.remove(am_config.tag_not_ready)
     else:
-        if am_config.tag_budding not in tags:
-            tags.add(am_config.tag_budding)
+        if am_config.tag_not_ready not in tags:
+            tags.add(am_config.tag_not_ready)
 
     if not tags:
         return ""

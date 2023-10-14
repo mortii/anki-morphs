@@ -24,7 +24,7 @@
   "parse_ignore_suspended_cards_content": true,
   "recalc_before_sync": false,
   "recalc_ignore_suspended_leeches": true,
-  "recalc_preferred_sentence_length": 7,
+  "recalc_interval_for_known": 21,
   "recalc_prioritize_collection": true,
   "recalc_prioritize_textfile": false,
   "shortcut_browse_same_unknown_ripe": "L",
@@ -37,9 +37,10 @@
   "skip_show_num_of_skipped_cards": true,
   "skip_stale_cards": true,
   "skip_unknown_morph_seen_today_cards": true,
-  "tag_budding": "am-budding",
-  "tag_ripe": "am-ripe",
-  "tag_stale": "am-stale",
-  "tag_modify_enabled": "am-modify"
+  "tag_not_ready": "am-not-ready",
+  "tag_ready": "am-ready",
+  "tag_known": "am-known",
+  "tag_learning": "am-learning",
+  "tag_modify": "am-modify"
 }
 

@@ -66,8 +66,8 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.recalc_ignore_suspended_leeches = _get_bool_config(
             "recalc_ignore_suspended_leeches", is_default
         )
-        self.recalc_preferred_sentence_length: int = _get_int_config(
-            "recalc_preferred_sentence_length", is_default
+        self.recalc_interval_for_known: int = _get_int_config(
+            "recalc_interval_for_known", is_default
         )
         self.recalc_before_sync: bool = _get_bool_config(
             "recalc_before_sync", is_default
@@ -93,9 +93,11 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.parse_ignore_suspended_cards_content: bool = _get_bool_config(
             "parse_ignore_suspended_cards_content", is_default
         )
-        self.tag_ripe: str = _get_string_config("tag_ripe", is_default)
-        self.tag_budding: str = _get_string_config("tag_budding", is_default)
-        self.tag_stale: str = _get_string_config("tag_stale", is_default)
+        self.tag_ready: str = _get_string_config("tag_ready", is_default)
+        self.tag_not_ready: str = _get_string_config("tag_not_ready", is_default)
+        self.tag_known: str = _get_string_config("tag_known", is_default)
+        self.tag_learning: str = _get_string_config("tag_learning", is_default)
+        self.tag_modify: str = _get_string_config("tag_modify", is_default)
 
         self.filters: list[AnkiMorphsConfigFilter] = _get_filters_config(is_default)
 

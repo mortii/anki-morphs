@@ -205,9 +205,11 @@ class PreferencesDialog(QDialog):
         self.ui.extra_fields_table.setCellWidget(row, 3, difficulty_cbox)
 
     def _populate_tags_tab(self) -> None:
-        self.ui.ripe_tag_input.setText(self.config.tag_ripe)
-        self.ui.budding_tag_input.setText(self.config.tag_budding)
-        self.ui.stale_tag_input.setText(self.config.tag_stale)
+        self.ui.ready_tag_input.setText(self.config.tag_ready)
+        self.ui.not_read_tag_input.setText(self.config.tag_not_ready)
+        self.ui.known_tag_input.setText(self.config.tag_known)
+        self.ui.learning_tag_input.setText(self.config.tag_learning)
+        self.ui.modify_tag_input.setText(self.config.tag_modify)
 
     def restore_tags_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -218,9 +220,11 @@ class PreferencesDialog(QDialog):
             if not confirmed:
                 return
 
-        self.ui.ripe_tag_input.setText(self._default_config.tag_ripe)
-        self.ui.budding_tag_input.setText(self._default_config.tag_budding)
-        self.ui.stale_tag_input.setText(self._default_config.tag_stale)
+        self.ui.ready_tag_input.setText(self._default_config.tag_ready)
+        self.ui.not_read_tag_input.setText(self._default_config.tag_not_ready)
+        self.ui.known_tag_input.setText(self._default_config.tag_known)
+        self.ui.learning_tag_input.setText(self._default_config.tag_learning)
+        self.ui.modify_tag_input.setText(self._default_config.tag_modify)
 
     def _populate_parse_tab(self) -> None:
         self.ui.parse_ignore_bracket_contents_input.setChecked(
@@ -315,10 +319,10 @@ class PreferencesDialog(QDialog):
         )
 
     def _populate_recalc_tab(self) -> None:
-        self.ui.preferred_sentence_length_input.setValue(
-            self.config.recalc_preferred_sentence_length
-        )
         self.ui.recalc_before_sync_input.setChecked(self.config.recalc_before_sync)
+        self.ui.recalc_interval_known_input.setValue(
+            self.config.recalc_interval_for_known
+        )
         self.ui.recalc_prioritize_collection_input.setChecked(
             self.config.recalc_prioritize_collection
         )
@@ -335,11 +339,11 @@ class PreferencesDialog(QDialog):
             if not confirmed:
                 return
 
-        self.ui.preferred_sentence_length_input.setValue(
-            self._default_config.recalc_preferred_sentence_length
-        )
         self.ui.recalc_before_sync_input.setChecked(
             self._default_config.recalc_before_sync
+        )
+        self.ui.recalc_interval_known_input.setValue(
+            self._default_config.recalc_interval_for_known
         )
         self.ui.recalc_prioritize_collection_input.setChecked(
             self._default_config.recalc_prioritize_collection
@@ -426,16 +430,18 @@ class PreferencesDialog(QDialog):
 
     def save_to_config(self) -> None:  # pylint:disable=too-many-locals
         new_config = {
-            "tag_ripe": self.ui.ripe_tag_input.text(),
-            "tag_budding": self.ui.budding_tag_input.text(),
-            "tag_stale": self.ui.stale_tag_input.text(),
+            "tag_ready": self.ui.ready_tag_input.text(),
+            "tag_not_ready": self.ui.not_read_tag_input.text(),
+            "tag_known": self.ui.known_tag_input.text(),
+            "tag_learning": self.ui.learning_tag_input.text(),
+            "tag_modify": self.ui.modify_tag_input.text(),
             "shortcut_browse_same_unknown_ripe": self.ui.shortcut_browse_same_ripe_input.keySequence().toString(),
             "shortcut_browse_same_unknown_ripe_budding": self.ui.shortcut_browse_same_ripe_budding_input.keySequence().toString(),
             "shortcut_set_known_and_skip": self.ui.shortcut_known_and_skip_input.keySequence().toString(),
             "shortcut_learn_now": self.ui.shortcut_learn_now_input.keySequence().toString(),
             "shortcut_view_morphemes": self.ui.shortcut_view_morphs_input.keySequence().toString(),
-            "recalc_preferred_sentence_length": self.ui.preferred_sentence_length_input.value(),
             "recalc_before_sync": self.ui.recalc_before_sync_input.isChecked(),
+            "recalc_interval_for_known": self.ui.recalc_interval_known_input.value(),
             "recalc_prioritize_collection": self.ui.recalc_prioritize_collection_input.isChecked(),
             "recalc_prioritize_textfile": self.ui.recalc_prioritize_textfile_input.isChecked(),
             "parse_ignore_bracket_contents": self.ui.parse_ignore_bracket_contents_input.isChecked(),

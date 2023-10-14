@@ -24,6 +24,12 @@ def mark_morph_seen(card_id: int) -> None:
 
 
 def am_next_card(self: Reviewer, _old: Callable[[], None]) -> None:
+    """
+    Since many cards can be skipped it's important to give feedback
+    to the user and not just have a frozen UI, therefore we run the function
+    as a QueryOp on a background thread and display a progress dialog.
+    """
+
     operation = QueryOp(
         parent=self.mw,
         op=partial(next_card_background_op, self=self),
@@ -91,6 +97,8 @@ def next_card_background_op(
             break  # card did not meet any skip criteria
 
         self.mw.col.sched.buryCards([self.card.id], manual=False)
+        note.add_tag(am_config.tag_known)
+        note.flush()
 
     am_db.con.close()
 
@@ -111,7 +119,7 @@ def set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> N
 
     self.mw.checkpoint("Set already known focus morph")
     note = self.card.note()
-    note.add_tag(am_config.tag_stale)
+    note.add_tag(am_config.tag_known)
     note.flush()
     mark_morph_seen(self.card.id)
     self.mw.col.sched.buryCards([self.card.id], manual=False)
@@ -229,7 +237,7 @@ class SkippedCards:
     def process_skip_conditions_of_card(
         self, am_db: AnkiMorphsDB, note: Note, card_morphs: set[str]
     ) -> bool:
-        is_comprehension_card = note.has_tag(self.am_config.tag_stale)
+        is_comprehension_card = note.has_tag(self.am_config.tag_known)
         morphs_already_seen_morphs_today = am_db.get_all_morphs_seen_today()
 
         if is_comprehension_card:

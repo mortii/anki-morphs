@@ -94,7 +94,7 @@ def focus_query(
     query = '"' + query[:-1] + ')"'  # query[:-1] removes the last pipe
 
     if vocab_tag:
-        query += f" tag:{am_config.tag_ripe}"
+        query += f" tag:{am_config.tag_ready}"
 
     print(rf"query: {query}")
 
@@ -107,7 +107,7 @@ def run_already_known_tagger() -> None:
 
     am_config = AnkiMorphsConfig()
 
-    known_tag = am_config.tag_stale
+    known_tag = am_config.tag_known
     selected_cards = browser.selectedCards()
 
     for cid in selected_cards:
