@@ -69,7 +69,7 @@ def get_am_db_cards_to_update(am_db: AnkiMorphsDB, note_type_id: int) -> list[in
         (note_type_id,),
     ).fetchall()
 
-    card_ids = [_tuple[0] for _tuple in raw_card_ids]
+    card_ids = [row[0] for row in raw_card_ids]
     return card_ids
 
 
@@ -158,7 +158,7 @@ def get_card_cache(am_db: AnkiMorphsDB) -> dict[int, dict[str, int]]:
         """
         SELECT *
         FROM Card
-        WHERE learning_status=0
+        WHERE learning_status = 0
         """,
     ).fetchall()
 
@@ -263,6 +263,7 @@ def update_cards(  # pylint:disable=too-many-locals
     card_morph_map_cache: dict[int, list[Any]] = get_card_morph_map_cache(am_db)
     morph_priority: dict[str, int] = get_morph_priority(am_db, am_config)
     cards_data_map: dict[int, dict[str, Union[int, str]]] = get_cards_data_map()
+    end_of_queue: int = mw.col.db.scalar("select count() from cards where ivl = 0")
 
     for config_filter in modify_config_filters:
         assert config_filter.note_type_id is not None
@@ -277,11 +278,15 @@ def update_cards(  # pylint:disable=too-many-locals
                 mw.taskman.run_on_main(
                     partial(
                         mw.progress.update,
-                        label=f"modifying {config_filter.note_type} cards\n card: {counter} of {card_amount}",
+                        label=f"Updating {config_filter.note_type} cards\n card: {counter} of {card_amount}",
                         value=counter,
                         max=card_amount,
                     )
                 )
+
+            if cards_data_map[card_id]["note_type_id"] != config_filter.note_type_id:
+                continue
+
             card_difficulty, unknowns = get_card_difficulty_and_unknowns(
                 am_config,
                 card_id,
@@ -290,7 +295,7 @@ def update_cards(  # pylint:disable=too-many-locals
                 morph_priority,
             )
 
-            cards_data_map[card_id]["due"] = card_difficulty
+            cards_data_map[card_id]["due"] = end_of_queue + card_difficulty
             cards_data_map[card_id]["unknowns"] = unknowns
 
             tags = cards_data_map[card_id]["tags"]
@@ -303,12 +308,11 @@ def update_cards(  # pylint:disable=too-many-locals
                 am_config, unknowns, original_tags
             )
 
-    # When multiple cards have the same due (difficulty), then anki
-    # chooses one for review and ignores the others, therefore
-    # we need to make sure all cards have a unique due.
-    # To achieve this we sort the cards_id_due_map based on due,
-    # and then we replace the due with the position the card
-    # has in the dict, normalizing the due value in the process.
+    # When multiple cards have the same due (difficulty), then anki chooses one
+    # for review and ignores the others, therefore we need to make sure all cards
+    # have a unique due. To achieve this we sort the cards_id_due_map based on due,
+    # and then we replace the due with the position the card has in the dict,
+    # normalizing the due value in the process.
 
     cards_data_map_sorted = dict(
         sorted(cards_data_map.items(), key=lambda item: cards_data_map[item[0]]["due"])
@@ -319,6 +323,7 @@ def update_cards(  # pylint:disable=too-many-locals
     notes_modified_data: list[list[Union[str, int]]] = []
 
     for index, card_id in enumerate(cards_data_map_sorted, start=1):
+        # print(f"card_id: {card_id}, index:{index}")
         cards_modified_data.append([index, modified_time, card_id])
         notes_modified_data.append(
             [
@@ -365,20 +370,25 @@ def get_cards_data_map() -> dict[int, dict[str, Union[int, str]]]:
     assert mw is not None
     assert mw.col.db is not None
 
-    # Only get unsuspended new cards
+    # Only get new cards
     ids_and_due = mw.col.db.all(
         """
-        SELECT cards.id, cards.due, cards.nid, notes.tags
+        SELECT cards.id, cards.due, cards.nid, notes.tags, notes.mid
         FROM cards
         INNER JOIN notes ON
             cards.nid = notes.id
-        WHERE cards.ivl = 0
+        WHERE cards.type = 0
         """
     )
     card_data_map = {}
     for row in ids_and_due:
         # print(f"row: {row}")
-        card_data_map[row[0]] = {"due": row[1], "note_id": row[2], "tags": row[3]}
+        card_data_map[row[0]] = {
+            "due": row[1],
+            "note_id": row[2],
+            "tags": row[3],
+            "note_type_id": row[4],
+        }
     return card_data_map
 
 

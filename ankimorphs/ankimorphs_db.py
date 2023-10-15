@@ -112,8 +112,8 @@ class AnkiMorphsDB:
                        :highest_learning_interval
                     )
                     ON CONFLICT(norm, inflected) DO UPDATE SET
-                        highest_learning_interval=:highest_learning_interval
-                    WHERE highest_learning_interval<:highest_learning_interval
+                        highest_learning_interval = :highest_learning_interval
+                    WHERE highest_learning_interval < :highest_learning_interval
                 """,
                 morph_list,
             )
@@ -142,7 +142,7 @@ class AnkiMorphsDB:
                 """
                     SELECT morph_norm, morph_inflected
                     FROM Card_Morph_Map
-                    WHERE card_id=?
+                    WHERE card_id = ?
                     """,
                 (card_id,),
             ).fetchall()
@@ -160,7 +160,7 @@ class AnkiMorphsDB:
                 """
                     SELECT morph_norm, morph_inflected
                     FROM Card_Morph_Map
-                    WHERE card_id=?
+                    WHERE card_id = ?
                     """,
                 (card_id,),
             ).fetchall()
@@ -194,7 +194,7 @@ class AnkiMorphsDB:
                     INSERT OR IGNORE INTO Seen_Morph (norm, inflected)
                     SELECT morph_norm, morph_inflected
                     FROM Card_Morph_Map
-                    WHERE card_id=?
+                    WHERE card_id = ?
                     """,
                 (card_id,),
             )
@@ -209,7 +209,7 @@ class AnkiMorphsDB:
                     FROM Card_Morph_Map
                     INNER JOIN Morph ON
                         Card_Morph_Map.morph_norm = Morph.norm AND Card_Morph_Map.morph_inflected = Morph.inflected
-                    WHERE Card_Morph_Map.card_id=?
+                    WHERE Card_Morph_Map.card_id = ?
                     """,
                 (card_id,),
             ).fetchall()
@@ -234,7 +234,7 @@ class AnkiMorphsDB:
                     FROM Card_Morph_Map
                     INNER JOIN Morph ON
                         Card_Morph_Map.morph_norm = Morph.norm AND Card_Morph_Map.morph_inflected = Morph.inflected
-                    WHERE Card_Morph_Map.card_id=? AND Morph.highest_learning_interval = 0
+                    WHERE Card_Morph_Map.card_id = ? AND Morph.highest_learning_interval = 0
                     """,
                 (card_id,),
             ).fetchall()

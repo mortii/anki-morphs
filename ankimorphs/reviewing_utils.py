@@ -45,6 +45,8 @@ def next_card_background_op(
     assert mw is not None
     assert self is not None
 
+    print("entered next_card_background_op")
+
     am_config = AnkiMorphsConfig()
     skipped_cards = SkippedCards(am_config)
     am_db = AnkiMorphsDB()
@@ -117,7 +119,7 @@ def next_card_background_op(
 def set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> None:
     assert self.card is not None
 
-    self.mw.checkpoint("Set already known focus morph")
+    # self.mw.checkpoint("Set already known focus morph")
     note = self.card.note()
     note.add_tag(am_config.tag_known)
     note.flush()
