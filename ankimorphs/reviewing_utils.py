@@ -111,7 +111,7 @@ def next_card_background_op(
     self.mw.taskman.run_on_main(self._showQuestion)
 
     if (
-        skipped_cards.skipped_at_least_one_card()
+        skipped_cards.total_skipped_cards > 0
         and am_config.skip_show_num_of_skipped_cards
     ):
         self.mw.taskman.run_on_main(skipped_cards.show_tooltip_of_skipped_cards)
@@ -254,12 +254,6 @@ class SkippedCards:
             ):
                 self.skipped_cards_dict["today"] += 1
                 self.total_skipped_cards += 1
-                return True
-        return False
-
-    def skipped_at_least_one_card(self) -> bool:
-        for value in self.skipped_cards_dict.values():
-            if value > 0:
                 return True
         return False
 

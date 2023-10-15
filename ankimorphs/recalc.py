@@ -48,7 +48,6 @@ def recalc_background_op(collection: Collection) -> None:
         )
     )
 
-    # TODO try using inner join to speed up the caching
     cache_card_morphemes(am_config)
     update_cards(am_config)
 
@@ -80,33 +79,25 @@ def get_card_difficulty_and_unknowns(
     morph_cache: dict[str, int],
     morph_priority: dict[str, int],
 ) -> tuple[int, int]:
-    # TODO these constraints are outdated
     """
-    Set the difficulty (due) on all cards to max by default to prevent buggy cards showing up first.
-    card.due is converted to a signed 32-bit integer on the backend, so we get the constraint:
-        max(difficulty) = 2147483647 before overflow  #(1.0)
-
     We want our algorithm to determine difficulty based on the following importance:
-        1. morphs is unknown (morph_unknown_penalty)
-        2. morphs priority (morph_priority_penalty)
+        1. if the card has unknown morphs (unknown_morph_penalty)
+        2. the priority of the card's morphs (morph_priority_penalty)
 
-    To achieve the behaviour described above we get the constraint:
-        morph_unknown_penalty >= morph_priority_penalty  #(1.1)
+    Stated a different way: one unknown morph must be more punishing than any amount
+    of known morphs with low priority. To achieve the behaviour we get the constraint:
+        unknown_morph_penalty > sum(morph_priority_penalty)  #(1.1)
 
-    To have the least amount of loss in the algorithm we want to allow the morph_priority_penalty
-    to be as high as possible, i.e. the algorithm produces better results if you can set the priority
-    of 10,000 morphs vs only 100 morphs.
+    We need to set some arbitrary limits to make the algorithm practical:
+        1. Assume max(morph_priority) = 50k (a frequency list of 50k morphs)  #(2.1)
+        2. Limit max(sum(morph_priority_penalty)) = max(morph_priority) * 10  #(2.2)
 
-    With the constraints #(1.0) and #(1.1) we now have the equation:
-        2,147,483,647 ÷ (2 * morph_unknown_penalty) = unknown_morphs_amount
-
-    If we let morph_unknown_penalty = 1,000,000 then unknown_morphs_amount ~= 1073,
-    This means we can set the priority of up to 1 million morphs, and it won't
-    be a problem unless we have over 1073 morphs on a single card. This is an acceptable
-    limit--if you have more than 1073 morphs on a single card then you are using anki wrong.
-
+    With the equations #(1.1), #(2.1), and #(2.2) we get:
+        morph_unknown_penalty = 500,000
     """
-    default_difficulty = 2147483647
+
+    default_difficulty = 2147483647  # arbitrary, max 32 bit int
+    morph_unknown_penalty = 500000
     unknowns = 0
 
     try:
@@ -122,7 +113,16 @@ def get_card_difficulty_and_unknowns(
         is_unknown = highest_interval == 0  # gives a bool
         if is_unknown:
             unknowns += 1
-        difficulty += (1000000 * is_unknown) + morph_priority[morph]
+        difficulty += morph_priority[morph]
+
+    if difficulty >= morph_unknown_penalty:
+        difficulty = morph_unknown_penalty - 1
+
+    # print(f"pre unknown difficulty: {difficulty}")
+
+    difficulty += unknowns * morph_unknown_penalty
+
+    # print(f"post unknown difficulty: {difficulty}")
 
     if unknowns == 0 and am_config.skip_stale_cards:
         # Move stale cards to the end of the queue
