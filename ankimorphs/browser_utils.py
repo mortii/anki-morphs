@@ -56,7 +56,7 @@ def browse_same_morphs(
         return
 
     if search_unknowns:
-        morphs = am_db.get_unknown_morphs_of_card(card_id)
+        morphs = am_db.get_unknown_inflected_morphs_of_card(card_id)
         error_text = "No unknown morphs"
     else:
         morphs = am_db.get_inflected_morphs_of_card(card_id)
