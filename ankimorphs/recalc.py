@@ -143,7 +143,7 @@ def get_notes_to_update(  # pylint:disable=too-many-locals
     for tag in config_filter_read.tags:
         notes_with_tag = set()
 
-        for id_fields_tags in get_notes_with_tags(model_id, tag):
+        for id_fields_tags in get_notes_with_tags(model_id, config_filter_read.tags):
             note_id = id_fields_tags[0]
             fields = id_fields_tags[1]
             note_tags = id_fields_tags[2]
@@ -181,25 +181,44 @@ def get_notes_to_update(  # pylint:disable=too-many-locals
     return note_ids, filtered_expressions, note_id_tags_map
 
 
-def get_notes_with_tags(model_id: Optional[int], tag: str) -> list[Sequence[Any]]:
+def get_notes_with_tags(
+    model_id: Optional[int], _tags: list[str]
+) -> list[Sequence[Any]]:
+    """
+    https://stackoverflow.com/questions/5766230/select-from-sqlite-table-where-rowid-in-list-using-python-sqlite3-db-api-2-0
+
+    """
     assert mw
     assert mw.col.db
 
-    if tag == "":
-        tag = "%"
-    else:
-        tag = f"% {tag} %"
+    print(f"_tags: {_tags}")
+
+    # if tag == "":
+    #     tag = "%"
+    # else:
+    #     tag = f"% {tag} %"
+
+    # tags = "".join(["demon_slayer", "test"])
+    tags = "".join([f"'% {item} %'" for item in _tags])
+
+    # print(rf"tags: {tags}")
+    #
+    # assert 1 == 2
 
     # This is a list of two item lists, [[id: int, flds: str]]
     id_and_fields: list[Sequence[Any]] = mw.col.db.all(
-        """
-        SELECT id, flds, tags
-        FROM notes 
-        WHERE mid=? AND tags LIKE ?
-        """,
-        model_id,
-        tag,
+        f"SELECT notes.id, notes.flds, notes.tags, cards.id "
+        f"FROM notes "
+        f"INNER JOIN cards ON "
+        f"notes.id = cards.nid "
+        f"WHERE notes.mid = {model_id} AND notes.tags LIKE '% demon %' AND notes.tags LIKE '% test %'",
+        # f"WHERE notes.mid = {model_id} AND notes.tags LIKE {tags}",
+        # model_id,
+        # tags,
     )
+    for row in id_and_fields:
+        print(f"row: {row}")
+
     return id_and_fields
 
 
