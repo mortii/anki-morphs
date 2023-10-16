@@ -308,7 +308,7 @@ def update_cards(  # pylint:disable=too-many-locals
             cards_data_map[card_id]["due"] = end_of_queue + card_difficulty
 
             cards_data_map[card_id]["fields"] = modify_card_fields(
-                cards_data_map, card_id, config_filter, unknowns
+                cards_data_map, card_id, config_filter, unknowns, card_difficulty
             )
 
             tags = cards_data_map[card_id]["tags"]
@@ -370,6 +370,7 @@ def modify_card_fields(
     card_id: int,
     config_filter: AnkiMorphsConfigFilter,
     unknowns: list[str],
+    difficulty: int,
 ) -> str:
     fields_any: Union[int, str] = cards_data_map[card_id]["fields"]
     assert isinstance(fields_any, str)
@@ -380,6 +381,10 @@ def modify_card_fields(
             focus_morph_string: str = "".join(f"{unknown}, " for unknown in unknowns)
             focus_morph_string = focus_morph_string[:-2]  # removes last comma
             fields_list[config_filter.focus_morph_field_index - 1] = focus_morph_string
+
+    if config_filter.difficulty_field_index is not None:
+        if config_filter.difficulty_field_index > 0:
+            fields_list[config_filter.difficulty_field_index - 1] = str(difficulty)
 
     return anki.utils.join_fields(fields_list)
 
