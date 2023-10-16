@@ -75,7 +75,7 @@ def get_am_db_cards_to_update(am_db: AnkiMorphsDB, note_type_id: int) -> list[in
 def get_card_difficulty_and_unknowns(
     am_config: AnkiMorphsConfig,
     card_id: int,
-    card_morph_map_cache: dict[int, list[Any]],
+    card_morph_map_cache: dict[int, list[dict[str, str]]],
     morph_cache: dict[str, int],
     morph_priority: dict[str, int],
 ) -> tuple[int, list[str]]:
@@ -101,7 +101,7 @@ def get_card_difficulty_and_unknowns(
     unknowns: list[str] = []
 
     try:
-        card_morphs = card_morph_map_cache[card_id]
+        card_morphs: list[dict[str, str]] = card_morph_map_cache[card_id]
     except KeyError:
         # card does not have morphs or is buggy in some way
         return default_difficulty, unknowns
@@ -109,20 +109,17 @@ def get_card_difficulty_and_unknowns(
     difficulty = 0
 
     for morph in card_morphs:
-        highest_interval = morph_cache[morph]
+        highest_interval = morph_cache[morph["entire_morph"]]
         is_unknown = highest_interval == 0  # gives a bool
         if is_unknown:
-            # TODO splice or something to get only get the inflected version
-            unknowns.append(morph)
-        difficulty += morph_priority[morph]
+            unknowns.append(morph["inflected_morph"])
+        difficulty += morph_priority[morph["entire_morph"]]
 
     if difficulty >= morph_unknown_penalty:
         difficulty = morph_unknown_penalty - 1
 
     # print(f"pre unknown difficulty: {difficulty}")
-
     difficulty += len(unknowns) * morph_unknown_penalty
-
     # print(f"post unknown difficulty: {difficulty}")
 
     if len(unknowns) == 0 and am_config.skip_stale_cards:
@@ -174,8 +171,8 @@ def get_card_cache(am_db: AnkiMorphsDB) -> dict[int, dict[str, int]]:
     return card_cache
 
 
-def get_card_morph_map_cache(am_db: AnkiMorphsDB) -> dict[int, list[str]]:
-    card_morph_map_cache: dict[int, list[str]] = {}
+def get_card_morph_map_cache(am_db: AnkiMorphsDB) -> dict[int, list[dict[str, str]]]:
+    card_morph_map_cache: dict[int, list[dict[str, str]]] = {}
 
     card_morph_map_cache_raw = am_db.con.execute(
         """
@@ -187,12 +184,24 @@ def get_card_morph_map_cache(am_db: AnkiMorphsDB) -> dict[int, list[str]]:
     card_id_outer = None
     for row in card_morph_map_cache_raw:
         card_id_inner = row[0]
+        morph_base = row[1]
+        morph_inflection = row[2]
 
         if card_id_inner != card_id_outer:
-            card_morph_map_cache[card_id_inner] = [row[1] + row[2]]
+            card_morph_map_cache[card_id_inner] = [
+                {
+                    "entire_morph": morph_base + morph_inflection,
+                    "inflected_morph": morph_inflection,
+                },
+            ]
             card_id_outer = card_id_inner
         else:
-            card_morph_map_cache[card_id_inner].append(row[1] + row[2])
+            card_morph_map_cache[card_id_inner].append(
+                {
+                    "entire_morph": morph_base + morph_inflection,
+                    "inflected_morph": morph_inflection,
+                }
+            )
 
     return card_morph_map_cache
 
@@ -259,10 +268,12 @@ def update_cards(  # pylint:disable=too-many-locals
     modify_config_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
     morph_cache: dict[str, int] = get_morph_cache(am_db)
     # card_cache: dict[int, dict[str, int]] = get_card_cache(am_db)
-    card_morph_map_cache: dict[int, list[Any]] = get_card_morph_map_cache(am_db)
+    card_morph_map_cache: dict[int, list[dict[str, str]]] = get_card_morph_map_cache(
+        am_db
+    )
     morph_priority: dict[str, int] = get_morph_priority(am_db, am_config)
     cards_data_map: dict[int, dict[str, Union[int, str]]] = get_cards_data_map()
-    end_of_queue: int = mw.col.db.scalar("select count() from cards where ivl = 0")
+    end_of_queue: int = mw.col.db.scalar("select count() from cards where type = 0")
 
     for config_filter in modify_config_filters:
         assert config_filter.note_type_id is not None
@@ -295,32 +306,10 @@ def update_cards(  # pylint:disable=too-many-locals
             )
 
             cards_data_map[card_id]["due"] = end_of_queue + card_difficulty
-            cards_data_map[card_id]["unknowns"] = len(unknowns)
 
-            # print(f"{card_id} fields: {cards_data_map[card_id]['fields']}")
-            # print(
-            #     f"{card_id} focus_morph field index: {config_filter.focus_morph_field_index}"
-            # )
-
-            fields_any: Union[int, str] = cards_data_map[card_id]["fields"]
-
-            assert isinstance(fields_any, str)
-
-            fields_list: list[str] = anki.utils.split_fields(fields_any)
-
-            if config_filter.focus_morph_field_index is not None:
-                if len(unknowns) > 0 and config_filter.focus_morph_field_index > 0:
-                    focus_morph_string: str = "".join(
-                        f"{unknown}, " for unknown in unknowns
-                    )
-
-                    fields_list[
-                        config_filter.focus_morph_field_index - 1
-                    ] = focus_morph_string
-
-                    cards_data_map[card_id]["fields"] = anki.utils.join_fields(
-                        fields_list
-                    )
+            cards_data_map[card_id]["fields"] = modify_card_fields(
+                cards_data_map, card_id, config_filter, unknowns
+            )
 
             tags = cards_data_map[card_id]["tags"]
 
@@ -374,6 +363,25 @@ def update_cards(  # pylint:disable=too-many-locals
     # )
 
     am_db.con.close()
+
+
+def modify_card_fields(
+    cards_data_map: dict[int, dict[str, Union[int, str]]],
+    card_id: int,
+    config_filter: AnkiMorphsConfigFilter,
+    unknowns: list[str],
+) -> str:
+    fields_any: Union[int, str] = cards_data_map[card_id]["fields"]
+    assert isinstance(fields_any, str)
+    fields_list: list[str] = anki.utils.split_fields(fields_any)
+
+    if config_filter.focus_morph_field_index is not None:
+        if len(unknowns) > 0 and config_filter.focus_morph_field_index > 0:
+            focus_morph_string: str = "".join(f"{unknown}, " for unknown in unknowns)
+            focus_morph_string = focus_morph_string[:-2]  # removes last comma
+            fields_list[config_filter.focus_morph_field_index - 1] = focus_morph_string
+
+    return anki.utils.join_fields(fields_list)
 
 
 def get_new_tags(am_config: AnkiMorphsConfig, unknowns: int, tags: set[str]) -> str:
@@ -451,14 +459,11 @@ def cache_card_morphemes(  # pylint:disable=too-many-locals
             raise DefaultSettingsException  # handled in on_failure()
 
         note_ids, expressions, note_tags_map = get_notes_to_update(config_filter)
-
-        print(f"notes amount: {len(note_ids)} in {config_filter.note_type}")
-
         cards: list[Card] = get_cards_to_update(am_config, note_ids)
         card_amount = len(cards)
 
+        print(f"notes amount: {len(note_ids)} in {config_filter.note_type}")
         print(f" card amount: {card_amount} in {config_filter.note_type}")
-
         # print(f"note_tags_map: {pprint.pprint(note_tags_map)}")
 
         for counter, card in enumerate(cards):
