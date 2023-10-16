@@ -99,7 +99,7 @@ def init_browser_menus_and_actions() -> None:
 
     view_action = create_view_morphs_action(am_config)
     learn_now_action = create_learn_now_action(am_config)
-    browse_morph_action = create_browse_same_morph_action(am_config)
+    browse_morph_action = create_browse_same_morph_action()
     browse_morph_unknowns_action = create_browse_same_morph_unknowns_action(am_config)
     already_known_tagger_action = create_already_known_tagger_action(am_config)
 
@@ -246,16 +246,15 @@ def create_learn_now_action(am_config: AnkiMorphsConfig) -> QAction:
     return action
 
 
-def create_browse_same_morph_action(am_config: AnkiMorphsConfig) -> QAction:
+def create_browse_same_morph_action() -> QAction:
     action = QAction("&Browse Same Morphs", mw)
-    action.setShortcut(am_config.shortcut_browse_same_unknown_ripe)
     action.triggered.connect(browser_utils.run_browse_morph)
     return action
 
 
 def create_browse_same_morph_unknowns_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Browse Same Unknown Morphs", mw)
-    # action.setShortcut(am_config.shortcut_browse_same_unknown_ripe)
+    action.setShortcut(am_config.shortcut_browse_ready_same_unknown)
     action.triggered.connect(
         partial(browser_utils.run_browse_morph, search_unknowns=True)
     )

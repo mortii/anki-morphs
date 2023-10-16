@@ -30,8 +30,8 @@
   "recalc_interval_for_known": 21,
   "recalc_prioritize_collection": true,
   "recalc_prioritize_textfile": false,
-  "shortcut_browse_same_unknown_ripe": "L",
-  "shortcut_browse_same_unknown_ripe_budding": "Shift+L",
+  "shortcut_browse_ready_same_unknown": "L",
+  "shortcut_browse_all_same_unknown": "Shift+L",
   "shortcut_learn_now": "Ctrl+Alt+N",
   "shortcut_recalc": "Ctrl+M",
   "shortcut_set_known_and_skip": "K",
@@ -43,7 +43,6 @@
   "tag_not_ready": "am-not-ready",
   "tag_ready": "am-ready",
   "tag_known": "am-known",
-  "tag_learning": "am-learning",
-  "tag_modify": "am-modify"
+  "tag_learning": "am-learning"
 }
 

@@ -48,13 +48,11 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.shortcut_settings: QKeySequence = _get_key_sequence_config(
             "shortcut_settings", is_default
         )
-        self.shortcut_browse_same_unknown_ripe: QKeySequence = _get_key_sequence_config(
-            "shortcut_browse_same_unknown_ripe", is_default
+        self.shortcut_browse_ready_same_unknown: QKeySequence = (
+            _get_key_sequence_config("shortcut_browse_ready_same_unknown", is_default)
         )
-        self.shortcut_browse_same_unknown_ripe_budding: QKeySequence = (
-            _get_key_sequence_config(
-                "shortcut_browse_same_unknown_ripe_budding", is_default
-            )
+        self.shortcut_browse_all_same_unknown: QKeySequence = _get_key_sequence_config(
+            "shortcut_browse_all_same_unknown", is_default
         )
         self.shortcut_set_known_and_skip: QKeySequence = _get_key_sequence_config(
             "shortcut_set_known_and_skip", is_default
@@ -105,8 +103,6 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.tag_ready: str = _get_string_config("tag_ready", is_default)
         self.tag_not_ready: str = _get_string_config("tag_not_ready", is_default)
         self.tag_known: str = _get_string_config("tag_known", is_default)
-        self.tag_learning: str = _get_string_config("tag_learning", is_default)
-        self.tag_modify: str = _get_string_config("tag_modify", is_default)
 
         self.filters: list[AnkiMorphsConfigFilter] = _get_filters_config(is_default)
 

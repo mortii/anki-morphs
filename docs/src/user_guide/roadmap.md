@@ -1,10 +1,10 @@
 # Roadmap
 
-1. implement new tags
-2. Implement optional automatic recalc before sync
-3. Add conflicting add-ons to config
-4. **Release AnkiMorphs alpha-test version**
-5. Try to improve caching by using inner join on notes and cards query
+1. Try to improve caching by using inner join on notes and cards query
+2. implement "ignore suspended cards"
+3. Implement optional automatic recalc before sync
+4. Add conflicting add-ons to config
+5. **Release AnkiMorphs alpha-test version**
 6. Remake highlighting feature
 7. Fix undo-review
 8. Implement spaCy

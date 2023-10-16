@@ -2,6 +2,7 @@ from ankimorphs.ankimorphs_db import AnkiMorphsDB
 
 
 class MorphToolbarStats:
+    # TODO: adjustable learning interval value?
     def __init__(self) -> None:
         self.unique_morphs = "U: ?"
         self.all_morphs = "A: ?"

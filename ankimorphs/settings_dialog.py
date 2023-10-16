@@ -208,8 +208,6 @@ class PreferencesDialog(QDialog):
         self.ui.ready_tag_input.setText(self.config.tag_ready)
         self.ui.not_read_tag_input.setText(self.config.tag_not_ready)
         self.ui.known_tag_input.setText(self.config.tag_known)
-        self.ui.learning_tag_input.setText(self.config.tag_learning)
-        self.ui.modify_tag_input.setText(self.config.tag_modify)
 
     def restore_tags_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -223,8 +221,6 @@ class PreferencesDialog(QDialog):
         self.ui.ready_tag_input.setText(self._default_config.tag_ready)
         self.ui.not_read_tag_input.setText(self._default_config.tag_not_ready)
         self.ui.known_tag_input.setText(self._default_config.tag_known)
-        self.ui.learning_tag_input.setText(self._default_config.tag_learning)
-        self.ui.modify_tag_input.setText(self._default_config.tag_modify)
 
     def _populate_parse_tab(self) -> None:
         self.ui.parse_ignore_bracket_contents_input.setChecked(
@@ -246,11 +242,11 @@ class PreferencesDialog(QDialog):
     def _populate_shortcuts_tab(self) -> None:
         self.ui.shortcut_recalc_input.setKeySequence(self.config.shortcut_recalc)
         self.ui.shortcut_settings_input.setKeySequence(self.config.shortcut_settings)
-        self.ui.shortcut_browse_same_ripe_input.setKeySequence(
-            self.config.shortcut_browse_same_unknown_ripe.toString()
+        self.ui.shortcut_browse_ready_same_unknown_input.setKeySequence(
+            self.config.shortcut_browse_ready_same_unknown.toString()
         )
-        self.ui.shortcut_browse_same_ripe_budding_input.setKeySequence(
-            self.config.shortcut_browse_same_unknown_ripe_budding.toString()
+        self.ui.shortcut_browse_all_same_unknown_input.setKeySequence(
+            self.config.shortcut_browse_all_same_unknown.toString()
         )
         self.ui.shortcut_known_and_skip_input.setKeySequence(
             self.config.shortcut_set_known_and_skip.toString()
@@ -302,11 +298,11 @@ class PreferencesDialog(QDialog):
         self.ui.shortcut_settings_input.setKeySequence(
             self._default_config.shortcut_settings
         )
-        self.ui.shortcut_browse_same_ripe_input.setKeySequence(
-            self._default_config.shortcut_browse_same_unknown_ripe
+        self.ui.shortcut_browse_ready_same_unknown_input.setKeySequence(
+            self._default_config.shortcut_browse_ready_same_unknown
         )
-        self.ui.shortcut_browse_same_ripe_budding_input.setKeySequence(
-            self._default_config.shortcut_browse_same_unknown_ripe_budding
+        self.ui.shortcut_browse_all_same_unknown_input.setKeySequence(
+            self._default_config.shortcut_browse_all_same_unknown
         )
         self.ui.shortcut_known_and_skip_input.setKeySequence(
             self._default_config.shortcut_set_known_and_skip
@@ -433,10 +429,8 @@ class PreferencesDialog(QDialog):
             "tag_ready": self.ui.ready_tag_input.text(),
             "tag_not_ready": self.ui.not_read_tag_input.text(),
             "tag_known": self.ui.known_tag_input.text(),
-            "tag_learning": self.ui.learning_tag_input.text(),
-            "tag_modify": self.ui.modify_tag_input.text(),
-            "shortcut_browse_same_unknown_ripe": self.ui.shortcut_browse_same_ripe_input.keySequence().toString(),
-            "shortcut_browse_same_unknown_ripe_budding": self.ui.shortcut_browse_same_ripe_budding_input.keySequence().toString(),
+            "shortcut_browse_ready_same_unknown": self.ui.shortcut_browse_ready_same_unknown_input.keySequence().toString(),
+            "shortcut_browse_all_same_unknown": self.ui.shortcut_browse_all_same_unknown_input.keySequence().toString(),
             "shortcut_set_known_and_skip": self.ui.shortcut_known_and_skip_input.keySequence().toString(),
             "shortcut_learn_now": self.ui.shortcut_learn_now_input.keySequence().toString(),
             "shortcut_view_morphemes": self.ui.shortcut_view_morphs_input.keySequence().toString(),

@@ -167,20 +167,6 @@
                  </property>
                 </widget>
                </item>
-               <item>
-                <widget class="QLabel" name="label">
-                 <property name="text">
-                  <string>Morph seen but not yet known</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="label_7">
-                 <property name="text">
-                  <string>Modify enabled</string>
-                 </property>
-                </widget>
-               </item>
               </layout>
              </item>
              <item>
@@ -193,12 +179,6 @@
                </item>
                <item>
                 <widget class="QLineEdit" name="known_tag_input"/>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="learning_tag_input"/>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="modify_tag_input"/>
                </item>
               </layout>
              </item>
@@ -268,21 +248,21 @@
            <item>
             <widget class="QCheckBox" name="parse_ignore_bracket_contents_input">
              <property name="text">
-              <string>ignore content in brackets</string>
+              <string>ignore content in square brackets []</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QCheckBox" name="parse_ignore_round_bracket_contents_input">
              <property name="text">
-              <string>ignore content in round brackets</string>
+              <string>ignore content in round brackets（）</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QCheckBox" name="parse_ignore_slim_round_bracket_contents_input">
              <property name="text">
-              <string>ignore content in slim round brackets</string>
+              <string>ignore content in slim round brackets ()</string>
              </property>
             </widget>
            </item>
@@ -599,10 +579,10 @@
               <widget class="QKeySequenceEdit" name="shortcut_settings_input"/>
              </item>
              <item>
-              <widget class="QKeySequenceEdit" name="shortcut_browse_same_ripe_input"/>
+              <widget class="QKeySequenceEdit" name="shortcut_browse_ready_same_unknown_input"/>
              </item>
              <item>
-              <widget class="QKeySequenceEdit" name="shortcut_browse_same_ripe_budding_input"/>
+              <widget class="QKeySequenceEdit" name="shortcut_browse_all_same_unknown_input"/>
              </item>
              <item>
               <widget class="QKeySequenceEdit" name="shortcut_known_and_skip_input"/>

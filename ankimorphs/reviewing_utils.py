@@ -142,10 +142,8 @@ def am_reviewer_shortcut_keys(
 ) -> list[Union[tuple[str, Callable[[], None]], tuple[Qt.Key, Callable[[], None]]]]:
     am_config = AnkiMorphsConfig()
 
-    key_browse: QKeySequence = am_config.shortcut_browse_same_unknown_ripe
-    key_browse_non_vocab: QKeySequence = (
-        am_config.shortcut_browse_same_unknown_ripe_budding
-    )
+    key_browse: QKeySequence = am_config.shortcut_browse_ready_same_unknown
+    key_browse_non_vocab: QKeySequence = am_config.shortcut_browse_all_same_unknown
     key_skip: QKeySequence = am_config.shortcut_set_known_and_skip
 
     keys = _old(self)
