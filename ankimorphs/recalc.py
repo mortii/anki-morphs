@@ -3,10 +3,10 @@ from collections.abc import Sequence
 from functools import partial
 from typing import Any, Optional, Union
 
+import anki.utils
 from anki.cards import Card
 from anki.collection import Collection
 from anki.tags import TagManager
-from anki.utils import int_time, split_fields, strip_html
 from aqt import mw
 from aqt.operations import QueryOp
 from aqt.qt import QMessageBox  # pylint:disable=no-name-in-module
@@ -78,7 +78,7 @@ def get_card_difficulty_and_unknowns(
     card_morph_map_cache: dict[int, list[Any]],
     morph_cache: dict[str, int],
     morph_priority: dict[str, int],
-) -> tuple[int, int]:
+) -> tuple[int, list[str]]:
     """
     We want our algorithm to determine difficulty based on the following importance:
         1. if the card has unknown morphs (unknown_morph_penalty)
@@ -96,9 +96,9 @@ def get_card_difficulty_and_unknowns(
         morph_unknown_penalty = 500,000
     """
 
-    default_difficulty = 2147483647  # arbitrary, max 32 bit int
+    default_difficulty = 2147483647  # arbitrary, 32 bit int max
     morph_unknown_penalty = 500000
-    unknowns = 0
+    unknowns: list[str] = []
 
     try:
         card_morphs = card_morph_map_cache[card_id]
@@ -112,7 +112,8 @@ def get_card_difficulty_and_unknowns(
         highest_interval = morph_cache[morph]
         is_unknown = highest_interval == 0  # gives a bool
         if is_unknown:
-            unknowns += 1
+            # TODO splice or something to get only get the inflected version
+            unknowns.append(morph)
         difficulty += morph_priority[morph]
 
     if difficulty >= morph_unknown_penalty:
@@ -120,11 +121,11 @@ def get_card_difficulty_and_unknowns(
 
     # print(f"pre unknown difficulty: {difficulty}")
 
-    difficulty += unknowns * morph_unknown_penalty
+    difficulty += len(unknowns) * morph_unknown_penalty
 
     # print(f"post unknown difficulty: {difficulty}")
 
-    if unknowns == 0 and am_config.skip_stale_cards:
+    if len(unknowns) == 0 and am_config.skip_stale_cards:
         # Move stale cards to the end of the queue
         return default_difficulty, unknowns
 
@@ -238,8 +239,6 @@ def update_cards(  # pylint:disable=too-many-locals
     am_config: AnkiMorphsConfig,
 ) -> None:
     """
-    get config filters that have 'modify' enabled
-
     A single sqlite query is very fast, but looping queries is
     incredibly slow because of the overhead, so instead we query
     once and put the data in dicts which are much faster to lookup.
@@ -296,7 +295,32 @@ def update_cards(  # pylint:disable=too-many-locals
             )
 
             cards_data_map[card_id]["due"] = end_of_queue + card_difficulty
-            cards_data_map[card_id]["unknowns"] = unknowns
+            cards_data_map[card_id]["unknowns"] = len(unknowns)
+
+            # print(f"{card_id} fields: {cards_data_map[card_id]['fields']}")
+            # print(
+            #     f"{card_id} focus_morph field index: {config_filter.focus_morph_field_index}"
+            # )
+
+            fields_any: Union[int, str] = cards_data_map[card_id]["fields"]
+
+            assert isinstance(fields_any, str)
+
+            fields_list: list[str] = anki.utils.split_fields(fields_any)
+
+            if config_filter.focus_morph_field_index is not None:
+                if len(unknowns) > 0 and config_filter.focus_morph_field_index > 0:
+                    focus_morph_string: str = "".join(
+                        f"{unknown}, " for unknown in unknowns
+                    )
+
+                    fields_list[
+                        config_filter.focus_morph_field_index - 1
+                    ] = focus_morph_string
+
+                    cards_data_map[card_id]["fields"] = anki.utils.join_fields(
+                        fields_list
+                    )
 
             tags = cards_data_map[card_id]["tags"]
 
@@ -305,7 +329,7 @@ def update_cards(  # pylint:disable=too-many-locals
             original_tags: set[str] = set(tag_manager.split(tags))
 
             cards_data_map[card_id]["tags"] = get_new_tags(
-                am_config, unknowns, original_tags
+                am_config, len(unknowns), original_tags
             )
 
     # When multiple cards have the same due (difficulty), then anki chooses one
@@ -318,7 +342,7 @@ def update_cards(  # pylint:disable=too-many-locals
         sorted(cards_data_map.items(), key=lambda item: cards_data_map[item[0]]["due"])
     )
 
-    modified_time = int_time()
+    modified_time = anki.utils.int_time()
     cards_modified_data: list[list[int]] = []
     notes_modified_data: list[list[Union[str, int]]] = []
 
@@ -328,6 +352,7 @@ def update_cards(  # pylint:disable=too-many-locals
         notes_modified_data.append(
             [
                 cards_data_map_sorted[card_id]["tags"],
+                cards_data_map_sorted[card_id]["fields"],
                 modified_time,
                 cards_data_map_sorted[card_id]["note_id"],
             ]
@@ -339,14 +364,20 @@ def update_cards(  # pylint:disable=too-many-locals
     )
 
     mw.col.db.executemany(
-        "update notes set tags=?, mod=? where id=?",
+        "update notes set tags=?, flds=?, mod=? where id=?",
         notes_modified_data,
     )
+
+    # mw.col.db.executemany(
+    #     "update notes set tags=?, flds=?, sfld=?, csum=?, mod=?, usn=? where id=?",
+    #     _notes_to_update,
+    # )
 
     am_db.con.close()
 
 
 def get_new_tags(am_config: AnkiMorphsConfig, unknowns: int, tags: set[str]) -> str:
+    # TODO add the new tags added to config
     if unknowns == 0:
         if am_config.tag_known not in tags:
             tags.add(am_config.tag_known)
@@ -373,7 +404,7 @@ def get_cards_data_map() -> dict[int, dict[str, Union[int, str]]]:
     # Only get new cards
     ids_and_due = mw.col.db.all(
         """
-        SELECT cards.id, cards.due, cards.nid, notes.tags, notes.mid
+        SELECT cards.id, cards.due, cards.nid, notes.tags, notes.mid, notes.flds
         FROM cards
         INNER JOIN notes ON
             cards.nid = notes.id
@@ -388,6 +419,7 @@ def get_cards_data_map() -> dict[int, dict[str, Union[int, str]]]:
             "note_id": row[2],
             "tags": row[3],
             "note_type_id": row[4],
+            "fields": row[5],
         }
     return card_data_map
 
@@ -537,13 +569,13 @@ def get_notes_to_update(  # pylint:disable=too-many-locals
             note_tags = id_fields_tags[2]
 
             notes_with_tag.add(note_id)
-            fields_split = split_fields(fields)
+            fields_split = anki.utils.split_fields(fields)
 
             assert config_filter_read.field_index is not None
             field = fields_split[config_filter_read.field_index]
 
             # store the field now, that way we don't have to re-query
-            expressions[note_id] = strip_html(field)
+            expressions[note_id] = anki.utils.strip_html(field)
 
             if am_config.tag_known in tag_manager.split(note_tags):
                 note_id_tags_map[note_id] = am_config.tag_known

@@ -15,14 +15,14 @@ from aqt.utils import tooltip
 
 from ankimorphs import (
     browser_utils,
-    morph_stats,
     recalc,
     reviewing_utils,
     settings_dialog,
+    toolbar_stats,
 )
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.config import AnkiMorphsConfig, get_config
-from ankimorphs.morph_stats import MorphToolbarStats
+from ankimorphs.toolbar_stats import MorphToolbarStats
 
 # A bug in the anki module leads to cyclic imports if these are placed higher
 import anki.stats  # isort:skip pylint:disable=wrong-import-order

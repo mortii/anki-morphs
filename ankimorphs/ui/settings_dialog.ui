@@ -22,7 +22,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>5</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="note_filters_tab">
         <attribute name="title">
@@ -168,13 +168,6 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_15">
-                 <property name="text">
-                  <string>Min. interval for known morphs</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QLabel" name="label">
                  <property name="text">
                   <string>Morph seen but not yet known</string>
@@ -200,33 +193,6 @@
                </item>
                <item>
                 <widget class="QLineEdit" name="known_tag_input"/>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_3">
-                 <item>
-                  <widget class="QSpinBox" name="spinBox"/>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="label_6">
-                   <property name="text">
-                    <string>days</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacer_10">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
                </item>
                <item>
                 <widget class="QLineEdit" name="learning_tag_input"/>
@@ -385,7 +351,7 @@
            <item>
             <widget class="QCheckBox" name="skip_stale_cards_input">
              <property name="text">
-              <string>Skip stale cards</string>
+              <string>Skip cards with only known morphs</string>
              </property>
             </widget>
            </item>
@@ -590,14 +556,14 @@
              <item>
               <widget class="QLabel" name="label_8">
                <property name="text">
-                <string>Browse ripe cards with same unknown morph</string>
+                <string>Browse ready cards with same unknown morph</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="label_9">
                <property name="text">
-                <string>Browse ripe and budding cards with same unknown morph</string>
+                <string>Browse all cards with same unknown morph</string>
                </property>
               </widget>
              </item>

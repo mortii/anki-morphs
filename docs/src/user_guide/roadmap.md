@@ -1,6 +1,8 @@
 # Roadmap
 
-1. Implement optional automatic recalc before sync
+1. implement focus morph extra field
+1. implement difficulty extra field
+2. Implement optional automatic recalc before sync
 2. Add conflicting add-ons to config
 3. **Release AnkiMorphs alpha-test version**
 4. Try to improve caching by using inner join on notes and cards query

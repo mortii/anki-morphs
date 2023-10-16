@@ -169,7 +169,7 @@ class PreferencesDialog(QDialog):
 
         if matching_filter is not None:
             focus_morph_cbox_index = _get_cbox_index(
-                fields, matching_filter.focus_morph
+                fields, matching_filter.focus_morph_field
             )
             if focus_morph_cbox_index is not None:
                 focus_morph_cbox_index += 1  # to offset the added (none) item
@@ -181,7 +181,7 @@ class PreferencesDialog(QDialog):
 
         if matching_filter is not None:
             highlighted_cbox_cbox_index = _get_cbox_index(
-                fields, matching_filter.highlighted
+                fields, matching_filter.highlighted_field
             )
             if highlighted_cbox_cbox_index is not None:
                 highlighted_cbox_cbox_index += 1  # to offset the added (none) item
@@ -193,7 +193,7 @@ class PreferencesDialog(QDialog):
 
         if matching_filter is not None:
             difficulty_cbox_cbox_index = _get_cbox_index(
-                fields, matching_filter.difficulty
+                fields, matching_filter.difficulty_field
             )
             if difficulty_cbox_cbox_index is not None:
                 difficulty_cbox_cbox_index += 1  # to offset the added (none) item
@@ -504,15 +504,18 @@ class PreferencesDialog(QDialog):
                 ].get_name(),
                 "read": read_widget.isChecked(),
                 "modify": modify_widget.isChecked(),
-                "focus_morph": focus_morph_widget.itemText(
+                "focus_morph_field": focus_morph_widget.itemText(
                     focus_morph_widget.currentIndex()
                 ),
-                "highlighted": highlighted_widget.itemText(
+                "focus_morph_field_index": focus_morph_widget.currentIndex(),
+                "highlighted_field": highlighted_widget.itemText(
                     highlighted_widget.currentIndex()
                 ),
-                "difficulty": difficulty_widget.itemText(
+                "highlighted_field_index": highlighted_widget.currentIndex(),
+                "difficulty_field": difficulty_widget.itemText(
                     difficulty_widget.currentIndex()
                 ),
+                "difficulty_field_index": difficulty_widget.currentIndex(),
             }
             filters.append(_filter)
         new_config["filters"] = filters
