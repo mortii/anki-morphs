@@ -114,7 +114,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals
                     "card_id": card_id,
                     "note_id": card_data.note_id,
                     "note_type_id": config_filter.note_type_id,
-                    "learning_status": card_data.type,
+                    "card_type": card_data.type,
                     "fields": card_data.fields,
                     "tags": card_data.tags,
                 }
@@ -439,9 +439,9 @@ def get_am_cards_data_dict(
 
     result = am_db.con.execute(
         """
-        SELECT card_id, note_id, note_type_id, learning_status, fields, tags
+        SELECT card_id, note_id, note_type_id, card_type, fields, tags
         FROM Cards
-        WHERE note_type_id = ?
+        WHERE note_type_id = ? AND card_type = 0
         """,
         (note_type_id,),
     ).fetchall()
@@ -460,7 +460,7 @@ def get_am_db_cards_to_update(am_db: AnkiMorphsDB, note_type_id: int) -> list[in
         """
         Select id
         FROM Cards
-        WHERE learning_status = 0 AND note_type_id = ?
+        WHERE card_type = 0 AND note_type_id = ?
         """,
         (note_type_id,),
     ).fetchall()

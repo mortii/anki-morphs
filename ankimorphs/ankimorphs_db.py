@@ -19,11 +19,7 @@ class AnkiMorphsDB:
         self.create_card_morph_map_table()
         self.create_seen_morph_table()
 
-    # TODO rename tables to plural
     def create_cards_table(self) -> None:
-        """
-        learning_status = card type (new, learning, reviewing, relearning
-        """
         with self.con:
             self.con.execute(
                 """
@@ -32,7 +28,7 @@ class AnkiMorphsDB:
                         card_id INTEGER PRIMARY KEY ASC,
                         note_id INTEGER,
                         note_type_id INTEGER,
-                        learning_status INTEGER,
+                        card_type INTEGER,
                         fields TEXT,
                         tags TEXT
                     )
@@ -94,7 +90,7 @@ class AnkiMorphsDB:
                        :card_id,
                        :note_id,
                        :note_type_id,
-                       :learning_status,
+                       :card_type,
                        :fields,
                        :tags
                     )
@@ -221,7 +217,7 @@ class AnkiMorphsDB:
             ).fetchall()
 
             for row in inflected_morphs_raw:
-                print(f"unknown_morphs_raw row: {inflected_morphs_raw}")
+                # print(f"unknown_morphs_raw row: {inflected_morphs_raw}")
                 inflected_morphs.append(row[0])
 
         print(f"inflected_morphs in db: {inflected_morphs}")
@@ -246,7 +242,7 @@ class AnkiMorphsDB:
             ).fetchall()
 
             for row in unknown_morphs_raw:
-                print(f"unknown_morphs_raw row: {unknown_morphs_raw}")
+                # print(f"unknown_morphs_raw row: {unknown_morphs_raw}")
                 unknown_morphs.append(row[0])
 
         print(f"unknown_morphs in db: {unknown_morphs}")
@@ -271,7 +267,7 @@ class AnkiMorphsDB:
             ).fetchall()
 
             for row in unknown_morphs_raw:
-                print(f"unknown_morphs_raw row: {unknown_morphs_raw}")
+                # print(f"unknown_morphs_raw row: {unknown_morphs_raw}")
                 unknown_morphs.add(row[0] + row[1])
 
         print(f"unknown_morphs in db: {unknown_morphs}")

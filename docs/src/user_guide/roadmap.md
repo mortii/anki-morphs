@@ -1,8 +1,8 @@
 # Roadmap
 
-1. Implement optional "automatic recalc before sync"
-2. Add conflicting add-ons to config
-3. **Release AnkiMorphs alpha-test version**
+1. Add conflicting add-ons to config
+2. **Release AnkiMorphs alpha-test version**
+3. Implement optional "automatic recalc before sync"
 4. Remake highlighting feature
 5. Fix undo-review
 6. Implement spaCy

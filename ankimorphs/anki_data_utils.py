@@ -95,7 +95,7 @@ class AnkiMorphsCardData:
         "card_id",
         "note_id",
         "note_type_id",
-        "learning_status",
+        "card_type",
         "fields",
         "tags",
     )
@@ -111,7 +111,7 @@ class AnkiMorphsCardData:
         self.note_type_id: int = data_row[2]
 
         assert isinstance(data_row[3], int)
-        self.learning_status: int = data_row[3]
+        self.card_type: int = data_row[3]
 
         assert isinstance(data_row[4], str)
         self.fields: str = data_row[4]
