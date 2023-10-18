@@ -26,7 +26,6 @@
   "parse_ignore_slim_round_bracket_contents": true,
   "parse_ignore_suspended_cards_content": true,
   "recalc_before_sync": false,
-  "recalc_ignore_suspended_leeches": true,
   "recalc_interval_for_known": 21,
   "recalc_prioritize_collection": true,
   "recalc_prioritize_textfile": false,

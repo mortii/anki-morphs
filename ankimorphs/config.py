@@ -70,9 +70,6 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.skip_show_num_of_skipped_cards: bool = _get_bool_config(
             "skip_show_num_of_skipped_cards", is_default
         )
-        self.recalc_ignore_suspended_leeches = _get_bool_config(
-            "recalc_ignore_suspended_leeches", is_default
-        )
         self.recalc_interval_for_known: int = _get_int_config(
             "recalc_interval_for_known", is_default
         )

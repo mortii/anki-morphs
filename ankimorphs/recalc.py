@@ -73,6 +73,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals
     am_db.create_all_tables()
 
     read_config_filters: list[AnkiMorphsConfigFilter] = get_read_enabled_filters()
+    ignore_suspended: bool = am_config.parse_ignore_suspended_cards_content
 
     card_table_data: list[dict[str, Any]] = []
     morph_table_data: list[dict[str, Any]] = []
@@ -83,7 +84,10 @@ def cache_anki_data(  # pylint:disable=too-many-locals
             raise DefaultSettingsException  # handled in on_failure()
 
         card_data_dict: dict[int, AnkiCardData] = create_card_data_dict(
-            config_filter, config_filter.note_type_id, config_filter.tags
+            config_filter,
+            config_filter.note_type_id,
+            config_filter.tags,
+            ignore_suspended,
         )
         card_amount = len(card_data_dict)
 
@@ -148,7 +152,10 @@ def cache_anki_data(  # pylint:disable=too-many-locals
 
 
 def create_card_data_dict(
-    config_filter: AnkiMorphsConfigFilter, model_id: Optional[int], tags: list[str]
+    config_filter: AnkiMorphsConfigFilter,
+    model_id: Optional[int],
+    tags: list[str],
+    ignore_suspended: bool,
 ) -> dict[int, AnkiCardData]:
     assert mw is not None
 
@@ -156,14 +163,16 @@ def create_card_data_dict(
     am_config = AnkiMorphsConfig()
     tag_manager = TagManager(mw.col)
 
-    for anki_row_data in get_anki_data(model_id, tags).values():
+    for anki_row_data in get_anki_data(model_id, tags, ignore_suspended).values():
         cards_data_dict[anki_row_data.card_id] = AnkiCardData(
             am_config, config_filter, tag_manager, anki_row_data
         )
     return cards_data_dict
 
 
-def get_anki_data(model_id: Optional[int], tags: list[str]) -> dict[int, AnkiDBRowData]:
+def get_anki_data(
+    model_id: Optional[int], tags: list[str], ignore_suspended: bool
+) -> dict[int, AnkiDBRowData]:
     """
     This query is hacky because of the limitation in sqlite where you can't
     really build a query with variable parameter length (tags in this case)
@@ -173,13 +182,20 @@ def get_anki_data(model_id: Optional[int], tags: list[str]) -> dict[int, AnkiDBR
     assert mw
     assert mw.col.db
 
+    if ignore_suspended:
+        ignore_suspended_string = " AND cards.queue != -1"
+    else:
+        ignore_suspended_string = ""
+
     if len(tags) == 1 and tags[0] == "":
-        where_clause_string = f"WHERE notes.mid = {model_id}"
+        where_clause_string = f"WHERE notes.mid = {model_id}{ignore_suspended_string}"
     else:
         tags_search_string = "".join(
-            [f"AND notes.tags LIKE '% {tag} %' " for tag in tags]
+            [f" AND notes.tags LIKE '% {tag} %'" for tag in tags]
         )
-        where_clause_string = f"WHERE notes.mid = {model_id} {tags_search_string}"
+        where_clause_string = (
+            f"WHERE notes.mid = {model_id}{ignore_suspended_string}{tags_search_string}"
+        )
 
     result: list[Sequence[Any]] = mw.col.db.all(
         """
