@@ -4,7 +4,6 @@ from functools import partial
 from typing import Any, Optional, Union
 
 import anki.utils
-from anki.cards import Card
 from anki.collection import Collection
 from anki.tags import TagManager
 from aqt import mw
@@ -12,6 +11,7 @@ from aqt.operations import QueryOp
 from aqt.qt import QMessageBox  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
+from ankimorphs.anki_data_utils import AnkiCardData, AnkiDBRowData, AnkiMorphsCardData
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.config import (
     AnkiMorphsConfig,
@@ -48,14 +48,14 @@ def recalc_background_op(collection: Collection) -> None:
         )
     )
 
-    cache_card_morphemes(am_config)
+    cache_anki_data(am_config)
     update_cards(am_config)
 
-    mw.taskman.run_on_main(mw.toolbar.draw)  # update stats and refresh display
+    mw.taskman.run_on_main(mw.toolbar.draw)  # updates stats
     mw.taskman.run_on_main(mw.progress.finish)
 
 
-def cache_card_morphemes(  # pylint:disable=too-many-locals
+def cache_anki_data(  # pylint:disable=too-many-locals
     am_config: AnkiMorphsConfig,
 ) -> None:
     """
@@ -67,6 +67,7 @@ def cache_card_morphemes(  # pylint:disable=too-many-locals
     """
 
     assert mw
+
     am_db = AnkiMorphsDB()
     am_db.drop_all_tables()
     am_db.create_all_tables()
@@ -81,15 +82,12 @@ def cache_card_morphemes(  # pylint:disable=too-many-locals
         if config_filter.note_type == "":
             raise DefaultSettingsException  # handled in on_failure()
 
-        note_ids, expressions, note_tags_map = get_notes_to_update(config_filter)
-        cards: list[Card] = get_cards_to_update(am_config, note_ids)
-        card_amount = len(cards)
+        card_data_dict: dict[int, AnkiCardData] = create_card_data_dict(
+            config_filter, config_filter.note_type_id, config_filter.tags
+        )
+        card_amount = len(card_data_dict)
 
-        print(f"notes amount: {len(note_ids)} in {config_filter.note_type}")
-        print(f" card amount: {card_amount} in {config_filter.note_type}")
-        # print(f"note_tags_map: {pprint.pprint(note_tags_map)}")
-
-        for counter, card in enumerate(cards):
+        for counter, card_id in enumerate(card_data_dict):
             if counter % 1000 == 0:
                 mw.taskman.run_on_main(
                     partial(
@@ -100,22 +98,44 @@ def cache_card_morphemes(  # pylint:disable=too-many-locals
                     )
                 )
 
-            if note_tags_map[card.nid] == am_config.tag_known:
+            card_data: AnkiCardData = card_data_dict[card_id]
+
+            if card_data.known_tag:
                 highest_interval = am_config.recalc_interval_for_known
             else:
-                highest_interval = card.ivl
+                highest_interval = card_data.interval
 
             card_table_data.append(
-                create_card_dict(card, config_filter, highest_interval)
+                {
+                    "card_id": card_id,
+                    "note_id": card_data.note_id,
+                    "note_type_id": config_filter.note_type_id,
+                    "learning_status": card_data.type,
+                    "fields": card_data.fields,
+                    "tags": card_data.tags,
+                }
             )
-            morphs = get_card_morphs(expressions[card.nid], am_config, config_filter)
+
+            morphs = get_card_morphs(card_data.expression, am_config, config_filter)
             if morphs is None:
                 continue
 
             for morph in morphs:
-                morph_table_data.append(create_morph_dict(morph, highest_interval))
+                morph_table_data.append(
+                    {
+                        "norm": morph.norm,
+                        "base": morph.base,
+                        "inflected": morph.inflected,
+                        "is_base": morph.norm == morph.inflected,  # gives a bool
+                        "highest_learning_interval": highest_interval,
+                    }
+                )
                 card_morph_map_table_data.append(
-                    create_card_morph_map_dict(card, morph)
+                    {
+                        "card_id": card_id,
+                        "morph_norm": morph.norm,
+                        "morph_inflected": morph.inflected,
+                    }
                 )
 
     mw.taskman.run_on_main(partial(mw.progress.update, label="Saving to ankimorphs.db"))
@@ -127,158 +147,54 @@ def cache_card_morphemes(  # pylint:disable=too-many-locals
     am_db.con.close()
 
 
-def get_notes_to_update(  # pylint:disable=too-many-locals
-    config_filter_read: AnkiMorphsConfigFilter,
-) -> tuple[set[int], dict[int, str], dict[int, str]]:
-    assert mw
-    assert mw.col.db
+def create_card_data_dict(
+    config_filter: AnkiMorphsConfigFilter, model_id: Optional[int], tags: list[str]
+) -> dict[int, AnkiCardData]:
+    assert mw is not None
 
+    cards_data_dict: dict[int, AnkiCardData] = {}
     am_config = AnkiMorphsConfig()
     tag_manager = TagManager(mw.col)
-    model_id: Optional[int] = config_filter_read.note_type_id
-    expressions: dict[int, str] = {}
-    note_ids: set[int] = set()
-    note_id_tags_map: dict[int, str] = {}
 
-    for tag in config_filter_read.tags:
-        notes_with_tag = set()
-
-        for id_fields_tags in get_notes_with_tags(model_id, config_filter_read.tags):
-            note_id = id_fields_tags[0]
-            fields = id_fields_tags[1]
-            note_tags = id_fields_tags[2]
-
-            notes_with_tag.add(note_id)
-            fields_split = anki.utils.split_fields(fields)
-
-            assert config_filter_read.field_index is not None
-            field = fields_split[config_filter_read.field_index]
-
-            # store the field now, that way we don't have to re-query
-            expressions[note_id] = anki.utils.strip_html(field)
-
-            if am_config.tag_known in tag_manager.split(note_tags):
-                note_id_tags_map[note_id] = am_config.tag_known
-            else:
-                note_id_tags_map[note_id] = ""
-
-        # only get the notes that intersect all the specified tags
-        # i.e. only get the subset of notes that have all the tags
-        if len(note_ids) == 0:
-            note_ids = notes_with_tag
-        else:
-            note_ids.intersection_update(notes_with_tag)
-
-    # if the notes have not been reduced, simply return everything stored
-    if len(note_ids) == len(expressions):
-        return note_ids, expressions, note_id_tags_map
-
-    # only return the expressions of the new subset of notes
-    filtered_expressions = {}
-    for note_id in note_ids:
-        filtered_expressions[note_id] = expressions[note_id]
-
-    return note_ids, filtered_expressions, note_id_tags_map
+    for anki_row_data in get_anki_data(model_id, tags).values():
+        cards_data_dict[anki_row_data.card_id] = AnkiCardData(
+            am_config, config_filter, tag_manager, anki_row_data
+        )
+    return cards_data_dict
 
 
-def get_notes_with_tags(
-    model_id: Optional[int], _tags: list[str]
-) -> list[Sequence[Any]]:
+def get_anki_data(model_id: Optional[int], tags: list[str]) -> dict[int, AnkiDBRowData]:
     """
+    This query is hacky because of the limitation in sqlite where you can't
+    really build a query with variable parameter length (tags in this case)
+    More info:
     https://stackoverflow.com/questions/5766230/select-from-sqlite-table-where-rowid-in-list-using-python-sqlite3-db-api-2-0
-
     """
     assert mw
     assert mw.col.db
 
-    print(f"_tags: {_tags}")
+    if len(tags) == 1 and tags[0] == "":
+        where_clause_string = f"WHERE notes.mid = {model_id}"
+    else:
+        tags_search_string = "".join(
+            [f"AND notes.tags LIKE '% {tag} %' " for tag in tags]
+        )
+        where_clause_string = f"WHERE notes.mid = {model_id} {tags_search_string}"
 
-    # if tag == "":
-    #     tag = "%"
-    # else:
-    #     tag = f"% {tag} %"
-
-    # tags = "".join(["demon_slayer", "test"])
-    tags = "".join([f"'% {item} %'" for item in _tags])
-
-    # print(rf"tags: {tags}")
-    #
-    # assert 1 == 2
-
-    # This is a list of two item lists, [[id: int, flds: str]]
-    id_and_fields: list[Sequence[Any]] = mw.col.db.all(
-        f"SELECT notes.id, notes.flds, notes.tags, cards.id "
-        f"FROM notes "
-        f"INNER JOIN cards ON "
-        f"notes.id = cards.nid "
-        f"WHERE notes.mid = {model_id} AND notes.tags LIKE '% demon %' AND notes.tags LIKE '% test %'",
-        # f"WHERE notes.mid = {model_id} AND notes.tags LIKE {tags}",
-        # model_id,
-        # tags,
+    result: list[Sequence[Any]] = mw.col.db.all(
+        """
+        SELECT cards.id, cards.ivl, cards.type, cards.queue, notes.id, notes.flds, notes.tags
+        FROM cards
+        INNER JOIN notes ON
+            cards.nid = notes.id
+        """
+        + where_clause_string,
     )
-    for row in id_and_fields:
-        print(f"row: {row}")
 
-    return id_and_fields
-
-
-def get_cards_to_update(
-    am_config: AnkiMorphsConfig,
-    note_ids: set[int],
-) -> list[Card]:
-    """
-    note_type -> note -> card
-    Notes have mid (model_id/note_type_id) and cards have nid (note_id).
-    """
-    assert mw
-    assert mw.col.db
-
-    cards: list[Card] = []
-
-    for note_id in note_ids:
-        for card_id in mw.col.find_cards(f"nid:{note_id}"):
-            card = mw.col.get_card(card_id)
-            # if am_config.parse_ignore_suspended_cards_content:
-            #     if card.queue == -1:  # card is suspended
-            #         continue
-            cards.append(card)
-    return cards
-
-
-def create_card_dict(
-    card: Card, config_filter: AnkiMorphsConfigFilter, highest_interval: int
-) -> dict[str, int]:
-    assert config_filter.note_type_id
-    return {
-        "id": card.id,
-        "learning_status": card.type,
-        "queue_status": card.queue,
-        "learning_interval": highest_interval,
-        "note_type_id": config_filter.note_type_id,
-    }
-
-
-def create_morph_dict(
-    morph: Morpheme,
-    highest_interval: int,
-) -> dict[str, Union[bool, str, int]]:
-    return {
-        "norm": morph.norm,
-        "base": morph.base,
-        "inflected": morph.inflected,
-        "is_base": morph.norm == morph.inflected,  # gives a bool
-        "highest_learning_interval": highest_interval,  # this is updated later in update_morphs()
-    }
-
-
-def create_card_morph_map_dict(
-    card: Card, morph: Morpheme
-) -> dict[str, Union[int, str]]:
-    return {
-        "card_id": card.id,
-        "morph_norm": morph.norm,
-        "morph_inflected": morph.inflected,
-    }
+    anki_db_row_data_dict = {}
+    for anki_data in map(AnkiDBRowData, result):
+        anki_db_row_data_dict[anki_data.card_id] = anki_data
+    return anki_db_row_data_dict
 
 
 def get_card_morphs(
@@ -299,7 +215,7 @@ def update_cards(  # pylint:disable=too-many-locals
     """
     A single sqlite query is very fast, but looping queries is
     incredibly slow because of the overhead, so instead we query
-    once and put the data in dicts which are much faster to lookup.
+    once and store the data.
     """
 
     assert mw is not None
@@ -320,18 +236,22 @@ def update_cards(  # pylint:disable=too-many-locals
         am_db
     )
     morph_priority: dict[str, int] = get_morph_priority(am_db, am_config)
-    cards_data_map: dict[int, dict[str, Union[int, str]]] = get_cards_data_map()
     end_of_queue: int = mw.col.db.scalar("select count() from cards where type = 0")
+
+    cards_modified_data: list[list[int]] = []
+    notes_modified_data: list[list[Union[str, int]]] = []
+
+    modified_time = anki.utils.int_time()
 
     for config_filter in modify_config_filters:
         assert config_filter.note_type_id is not None
 
-        card_ids: list[int] = get_am_db_cards_to_update(
+        cards_data_map: dict[int, AnkiMorphsCardData] = get_am_cards_data_dict(
             am_db, config_filter.note_type_id
         )
-        card_amount = len(card_ids)
+        card_amount = len(cards_data_map)
 
-        for counter, card_id in enumerate(card_ids):
+        for counter, card_id in enumerate(cards_data_map):
             if counter % 1000 == 0:
                 mw.taskman.run_on_main(
                     partial(
@@ -342,9 +262,6 @@ def update_cards(  # pylint:disable=too-many-locals
                     )
                 )
 
-            if cards_data_map[card_id]["note_type_id"] != config_filter.note_type_id:
-                continue
-
             card_difficulty, unknowns = get_card_difficulty_and_unknowns(
                 am_config,
                 card_id,
@@ -353,15 +270,32 @@ def update_cards(  # pylint:disable=too-many-locals
                 morph_priority,
             )
 
-            cards_data_map[card_id]["due"] = end_of_queue + card_difficulty
+            due = end_of_queue + card_difficulty
 
-            cards_data_map[card_id]["fields"] = modify_card_fields(
-                cards_data_map, card_id, config_filter, unknowns, card_difficulty
+            fields = modify_card_fields(
+                cards_data_map[card_id].fields, config_filter, unknowns, card_difficulty
             )
 
-            cards_data_map[card_id]["tags"] = modify_card_tags(
-                am_config, tag_manager, cards_data_map, card_id, len(unknowns)
+            tags = modify_card_tags(
+                am_config, tag_manager, cards_data_map[card_id].tags, len(unknowns)
             )
+
+            cards_modified_data.append([due, modified_time, card_id])
+            notes_modified_data.append(
+                [
+                    tags,
+                    fields,
+                    modified_time,
+                    cards_data_map[card_id].note_id,
+                ]
+            )
+
+    mw.taskman.run_on_main(
+        partial(
+            mw.progress.update,
+            label="Inserting into Anki collection...",
+        )
+    )
 
     # When multiple cards have the same due (difficulty), then anki chooses one
     # for review and ignores the others, therefore we need to make sure all cards
@@ -369,25 +303,7 @@ def update_cards(  # pylint:disable=too-many-locals
     # and then we replace the due with the position the card has in the dict,
     # normalizing the due value in the process.
 
-    cards_data_map_sorted = dict(
-        sorted(cards_data_map.items(), key=lambda item: cards_data_map[item[0]]["due"])
-    )
-
-    modified_time = anki.utils.int_time()
-    cards_modified_data: list[list[int]] = []
-    notes_modified_data: list[list[Union[str, int]]] = []
-
-    for index, card_id in enumerate(cards_data_map_sorted, start=1):
-        # print(f"card_id: {card_id}, index:{index}")
-        cards_modified_data.append([index, modified_time, card_id])
-        notes_modified_data.append(
-            [
-                cards_data_map_sorted[card_id]["tags"],
-                cards_data_map_sorted[card_id]["fields"],
-                modified_time,
-                cards_data_map_sorted[card_id]["note_id"],
-            ]
-        )
+    cards_modified_data = sorted(cards_modified_data, key=lambda x: x[0])
 
     mw.col.db.executemany(
         "update cards set due=?, mod=? where id=?",
@@ -497,31 +413,25 @@ def get_morph_collection_priority(am_db: AnkiMorphsDB) -> dict[str, int]:
     return card_morph_map_cache_sorted
 
 
-def get_cards_data_map() -> dict[int, dict[str, Union[int, str]]]:
+def get_am_cards_data_dict(
+    am_db: AnkiMorphsDB, note_type_id: int
+) -> dict[int, AnkiMorphsCardData]:
     assert mw is not None
     assert mw.col.db is not None
 
-    # Only get new cards
-    ids_and_due = mw.col.db.all(
+    result = am_db.con.execute(
         """
-        SELECT cards.id, cards.due, cards.nid, notes.tags, notes.mid, notes.flds
-        FROM cards
-        INNER JOIN notes ON
-            cards.nid = notes.id
-        WHERE cards.type = 0
-        """
-    )
-    card_data_map = {}
-    for row in ids_and_due:
-        # print(f"row: {row}")
-        card_data_map[row[0]] = {
-            "due": row[1],
-            "note_id": row[2],
-            "tags": row[3],
-            "note_type_id": row[4],
-            "fields": row[5],
-        }
-    return card_data_map
+        SELECT card_id, note_id, note_type_id, learning_status, fields, tags
+        FROM Card
+        WHERE note_type_id = ?
+        """,
+        (note_type_id,),
+    ).fetchall()
+
+    am_db_row_data_dict: dict[int, AnkiMorphsCardData] = {}
+    for am_data in map(AnkiMorphsCardData, result):
+        am_db_row_data_dict[am_data.card_id] = am_data
+    return am_db_row_data_dict
 
 
 def get_am_db_cards_to_update(am_db: AnkiMorphsDB, note_type_id: int) -> list[int]:
@@ -599,15 +509,12 @@ def get_card_difficulty_and_unknowns(
 
 
 def modify_card_fields(
-    cards_data_map: dict[int, dict[str, Union[int, str]]],
-    card_id: int,
+    fields: str,
     config_filter: AnkiMorphsConfigFilter,
     unknowns: list[str],
     difficulty: int,
 ) -> str:
-    fields_any: Union[int, str] = cards_data_map[card_id]["fields"]
-    assert isinstance(fields_any, str)
-    fields_list: list[str] = anki.utils.split_fields(fields_any)
+    fields_list: list[str] = anki.utils.split_fields(fields)
 
     if config_filter.focus_morph_field_index is not None:
         if len(unknowns) > 0 and config_filter.focus_morph_field_index > 0:
@@ -625,13 +532,10 @@ def modify_card_fields(
 def modify_card_tags(
     am_config: AnkiMorphsConfig,
     tag_manager: TagManager,
-    cards_data_map: dict[int, dict[str, Union[int, str]]],
-    card_id: int,
+    original_tags: str,
     unknowns: int,
 ) -> str:
-    tags_any: Union[int, str] = cards_data_map[card_id]["tags"]
-    assert isinstance(tags_any, str)
-    tags: set[str] = set(tag_manager.split(tags_any))
+    tags: set[str] = set(tag_manager.split(original_tags))
 
     if unknowns == 0:
         if am_config.tag_known not in tags:

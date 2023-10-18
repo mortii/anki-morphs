@@ -269,14 +269,14 @@
            <item>
             <widget class="QCheckBox" name="parse_ignore_proper_nouns_input">
              <property name="text">
-              <string>Ignore proper nouns</string>
+              <string>Ignore proper nouns (names)</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QCheckBox" name="parse_ignore_suspended_cards_content_input">
              <property name="text">
-              <string>Ignore content in suspended cards</string>
+              <string>Ignore suspended cards</string>
              </property>
             </widget>
            </item>

@@ -19,17 +19,22 @@ class AnkiMorphsDB:
         self.create_card_morph_map_table()
         self.create_seen_morph_table()
 
+    # TODO rename tables to plural
     def create_cards_table(self) -> None:
+        """
+        learning_status = card type (new, learning, reviewing, relearning
+        """
         with self.con:
             self.con.execute(
                 """
                     CREATE TABLE IF NOT EXISTS Card
                     (
-                        id INTEGER PRIMARY KEY ASC,
-                        learning_status INTEGER,
-                        queue_status INTEGER,
+                        card_id INTEGER PRIMARY KEY ASC,
+                        note_id INTEGER,
                         note_type_id INTEGER,
-                        learning_interval INTEGER
+                        learning_status INTEGER,
+                        fields TEXT,
+                        tags TEXT
                     )
                     """
             )
@@ -86,11 +91,12 @@ class AnkiMorphsDB:
                 """
                     INSERT OR IGNORE INTO Card VALUES
                     (
-                       :id,
-                       :learning_status,
-                       :queue_status,
+                       :card_id,
+                       :note_id,
                        :note_type_id,
-                       :learning_interval
+                       :learning_status,
+                       :fields,
+                       :tags
                     )
                     """,
                 card_list,
