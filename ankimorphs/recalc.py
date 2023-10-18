@@ -143,7 +143,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals
     am_db.insert_many_into_morph_table(morph_table_data)
     am_db.insert_many_into_card_table(card_table_data)
     am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
-    # am_db.print_table("Card")
+    # am_db.print_table("Cards")
     am_db.con.close()
 
 
@@ -329,7 +329,7 @@ def get_morph_cache(am_db: AnkiMorphsDB) -> dict[str, int]:
     morphs_raw = am_db.con.execute(
         """
         SELECT norm, inflected, highest_learning_interval
-        FROM Morph
+        FROM Morphs
         """,
     ).fetchall()
 
@@ -422,7 +422,7 @@ def get_am_cards_data_dict(
     result = am_db.con.execute(
         """
         SELECT card_id, note_id, note_type_id, learning_status, fields, tags
-        FROM Card
+        FROM Cards
         WHERE note_type_id = ?
         """,
         (note_type_id,),
@@ -441,7 +441,7 @@ def get_am_db_cards_to_update(am_db: AnkiMorphsDB, note_type_id: int) -> list[in
     raw_card_ids = am_db.con.execute(
         """
         Select id
-        FROM Card
+        FROM Cards
         WHERE learning_status = 0 AND note_type_id = ?
         """,
         (note_type_id,),

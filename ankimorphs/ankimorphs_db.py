@@ -7,7 +7,7 @@ class AnkiMorphsDB:
     A card can have many morphs
     morphs can be on many cards
     so we need a many-to-many db structure:
-    Card -> Card_Morph_Map <- Morph
+    Cards -> Card_Morph_Map <- Morphs
     """
 
     def __init__(self) -> None:
@@ -27,7 +27,7 @@ class AnkiMorphsDB:
         with self.con:
             self.con.execute(
                 """
-                    CREATE TABLE IF NOT EXISTS Card
+                    CREATE TABLE IF NOT EXISTS Cards
                     (
                         card_id INTEGER PRIMARY KEY ASC,
                         note_id INTEGER,
@@ -58,7 +58,7 @@ class AnkiMorphsDB:
         with self.con:
             self.con.execute(
                 """
-                    CREATE TABLE IF NOT EXISTS Morph
+                    CREATE TABLE IF NOT EXISTS Morphs
                     (
                         norm TEXT,
                         base TEXT,
@@ -74,7 +74,7 @@ class AnkiMorphsDB:
         with self.con:
             self.con.execute(
                 """
-                    CREATE TABLE IF NOT EXISTS Seen_Morph
+                    CREATE TABLE IF NOT EXISTS Seen_Morphs
                     (
                         norm TEXT,
                         inflected TEXT,
@@ -89,7 +89,7 @@ class AnkiMorphsDB:
         with self.con:
             self.con.executemany(
                 """
-                    INSERT OR IGNORE INTO Card VALUES
+                    INSERT OR IGNORE INTO Cards VALUES
                     (
                        :card_id,
                        :note_id,
@@ -108,7 +108,7 @@ class AnkiMorphsDB:
         with self.con:
             self.con.executemany(
                 """
-                    INSERT INTO Morph 
+                    INSERT INTO Morphs 
                     VALUES
                     (
                        :norm,
@@ -184,7 +184,7 @@ class AnkiMorphsDB:
             card_morphs_raw = self.con.execute(
                 """
                     SELECT norm, inflected
-                    FROM Seen_Morph
+                    FROM Seen_Morphs
                     """
             ).fetchall()
 
@@ -197,7 +197,7 @@ class AnkiMorphsDB:
         with self.con:
             self.con.execute(
                 """
-                    INSERT OR IGNORE INTO Seen_Morph (norm, inflected)
+                    INSERT OR IGNORE INTO Seen_Morphs (norm, inflected)
                     SELECT morph_norm, morph_inflected
                     FROM Card_Morph_Map
                     WHERE card_id = ?
@@ -213,8 +213,8 @@ class AnkiMorphsDB:
                 """
                     SELECT morph_inflected
                     FROM Card_Morph_Map
-                    INNER JOIN Morph ON
-                        Card_Morph_Map.morph_norm = Morph.norm AND Card_Morph_Map.morph_inflected = Morph.inflected
+                    INNER JOIN Morphs ON
+                        Card_Morph_Map.morph_norm = Morphs.norm AND Card_Morph_Map.morph_inflected = Morphs.inflected
                     WHERE Card_Morph_Map.card_id = ?
                     """,
                 (card_id,),
@@ -238,9 +238,9 @@ class AnkiMorphsDB:
                 """
                     SELECT morph_inflected
                     FROM Card_Morph_Map
-                    INNER JOIN Morph ON
-                        Card_Morph_Map.morph_norm = Morph.norm AND Card_Morph_Map.morph_inflected = Morph.inflected
-                    WHERE Card_Morph_Map.card_id = ? AND Morph.highest_learning_interval = 0
+                    INNER JOIN Morphs ON
+                        Card_Morph_Map.morph_norm = Morphs.norm AND Card_Morph_Map.morph_inflected = Morphs.inflected
+                    WHERE Card_Morph_Map.card_id = ? AND Morphs.highest_learning_interval = 0
                     """,
                 (card_id,),
             ).fetchall()
@@ -263,9 +263,9 @@ class AnkiMorphsDB:
                 """
                     SELECT morph_norm, morph_inflected
                     FROM Card_Morph_Map
-                    INNER JOIN Morph ON
-                        Card_Morph_Map.morph_norm = Morph.norm AND Card_Morph_Map.morph_inflected = Morph.inflected
-                    WHERE Card_Morph_Map.card_id = ? AND Morph.highest_learning_interval = 0
+                    INNER JOIN Morphs ON
+                        Card_Morph_Map.morph_norm = Morphs.norm AND Card_Morph_Map.morph_inflected = Morphs.inflected
+                    WHERE Card_Morph_Map.card_id = ? AND Morphs.highest_learning_interval = 0
                     """,
                 (card_id,),
             ).fetchall()
@@ -293,13 +293,13 @@ class AnkiMorphsDB:
 
     def drop_all_tables(self) -> None:
         with self.con:
-            self.con.execute("DROP TABLE IF EXISTS Card;")
-            self.con.execute("DROP TABLE IF EXISTS Morph;")
+            self.con.execute("DROP TABLE IF EXISTS Cards;")
+            self.con.execute("DROP TABLE IF EXISTS Morphs;")
             self.con.execute("DROP TABLE IF EXISTS Card_Morph_Map;")
-            self.con.execute("DROP TABLE IF EXISTS Seen_Morph;")
+            self.con.execute("DROP TABLE IF EXISTS Seen_Morphs;")
 
     @staticmethod
     def drop_seen_morph_table() -> None:
         am_db = AnkiMorphsDB()
         with am_db.con:
-            am_db.con.execute("DROP TABLE IF EXISTS Seen_Morph;")
+            am_db.con.execute("DROP TABLE IF EXISTS Seen_Morphs;")

@@ -5,9 +5,9 @@
 This is an sqlite database with 3 tables:
 
 ```
-'Card'
+'Cards'
 'Card_Morph_Map'
-'Morph'
+'Morphs'
 ```
 
 A card can have many morphs,
@@ -15,7 +15,7 @@ morphs can be on many cards,
 so we need a many-to-many db structure:
 
 ```
-Card -> Card_Morph_Map <- Morph
+Cards -> Card_Morph_Map <- Morphs
 ```
 
 ### Card table

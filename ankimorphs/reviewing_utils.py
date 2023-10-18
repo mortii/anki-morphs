@@ -19,7 +19,7 @@ def mark_morph_seen(card_id: int) -> None:
     am_db = AnkiMorphsDB()
     am_db.insert_card_morphs_into_seen_table(card_id)
     # print("Seen_Morphs")
-    # am_db.print_table("Seen_Morph")
+    # am_db.print_table("Seen_Morphs")
     am_db.con.close()
 
 

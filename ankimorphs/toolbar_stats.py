@@ -15,7 +15,7 @@ class MorphToolbarStats:
         all_unique_morphs = am_db.con.execute(
             """
             SELECT COUNT(*)
-            FROM Morph
+            FROM Morphs
             WHERE highest_learning_interval > 1 AND is_base
             """
         ).fetchone()[0]
@@ -23,7 +23,7 @@ class MorphToolbarStats:
         all_morphs = am_db.con.execute(
             """
             SELECT COUNT(*)
-            FROM Morph
+            FROM Morphs
             WHERE highest_learning_interval > 1
             """
         ).fetchone()[0]

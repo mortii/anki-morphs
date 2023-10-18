@@ -309,7 +309,7 @@ def test_function() -> None:
     # print(f"result: {card_row}")
 
     # am_db.print_table_info("Note_Type_Morph_Map")
-    am_db.print_table("Seen_Morph")
+    am_db.print_table("Seen_Morphs")
 
     # for row in am_db.con.execute(
     #     "SELECT * FROM Morph ORDER BY highest_learning_interval DESC limit 100"
