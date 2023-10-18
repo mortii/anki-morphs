@@ -270,7 +270,7 @@ def update_cards(  # pylint:disable=too-many-locals
                 morph_priority,
             )
 
-            due = end_of_queue + card_difficulty
+            due = card_difficulty
 
             fields = modify_card_fields(
                 cards_data_map[card_id].fields, config_filter, unknowns, card_difficulty
@@ -299,11 +299,13 @@ def update_cards(  # pylint:disable=too-many-locals
 
     # When multiple cards have the same due (difficulty), then anki chooses one
     # for review and ignores the others, therefore we need to make sure all cards
-    # have a unique due. To achieve this we sort the cards_id_due_map based on due,
-    # and then we replace the due with the position the card has in the dict,
+    # have a unique due. To achieve this we sort cards_modified_data based on due,
+    # and then we replace the due with the index the card has in the list,
     # normalizing the due value in the process.
 
     cards_modified_data = sorted(cards_modified_data, key=lambda x: x[0])
+    for index, card_data in enumerate(cards_modified_data, start=end_of_queue):
+        card_data[0] = index
 
     mw.col.db.executemany(
         "update cards set due=?, mod=? where id=?",
