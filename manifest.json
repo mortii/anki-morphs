@@ -1,0 +1,5 @@
+{
+  "package": "AnkiMorphs",
+  "name": "AnkiMorphs",
+  "conflicts": "MorphMan"
+}

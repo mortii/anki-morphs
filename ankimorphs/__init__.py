@@ -90,8 +90,8 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
 
-    test_action = create_test_action()
-    am_tool_menu.addAction(test_action)
+    # test_action = create_test_action()
+    # am_tool_menu.addAction(test_action)
 
 
 def init_browser_menus_and_actions() -> None:
@@ -275,48 +275,48 @@ def create_already_known_tagger_action(am_config: AnkiMorphsConfig) -> QAction:
     return action
 
 
-def create_test_action() -> QAction:
-    keys = QKeySequence("Ctrl+T")
-    action = QAction("&Test", mw)
-    action.setShortcut(keys)
-    action.triggered.connect(test_function)
-    return action
-
-
-def test_function() -> None:
-    assert mw
-    assert mw.col.db
-
-    am_db = AnkiMorphsDB()
-
-    # with am_db.con:
-    #     result = mw.col.db.execute("PRAGMA table_info('deck_config');")
-    #     print(f"morphs: {result}")
-
-    # with am_db.con:
-    #     result = am_db.con.execute("SELECT count(*) FROM Card")
-    #     print(f"Card_Morph_Map count: {result.fetchall()}")
-    #
-
-    # card_row = mw.col.db.execute(
-    #     """
-    #     SELECT *
-    #     FROM cards
-    #     WHERE id=1608533847636
-    #     """
-    # )
-    #
-    # print(f"result: {card_row}")
-
-    # am_db.print_table_info("Note_Type_Morph_Map")
-    am_db.print_table("Seen_Morphs")
-
-    # for row in am_db.con.execute(
-    #     "SELECT * FROM Morph ORDER BY highest_learning_interval DESC limit 100"
-    # ):
-    #     print(f"row: {row}")
-
-    am_db.con.close()
+# def create_test_action() -> QAction:
+#     keys = QKeySequence("Ctrl+T")
+#     action = QAction("&Test", mw)
+#     action.setShortcut(keys)
+#     action.triggered.connect(test_function)
+#     return action
+#
+#
+# def test_function() -> None:
+#     assert mw
+#     assert mw.col.db
+#
+#     am_db = AnkiMorphsDB()
+#
+#     # with am_db.con:
+#     #     result = mw.col.db.execute("PRAGMA table_info('deck_config');")
+#     #     print(f"morphs: {result}")
+#
+#     # with am_db.con:
+#     #     result = am_db.con.execute("SELECT count(*) FROM Card")
+#     #     print(f"Card_Morph_Map count: {result.fetchall()}")
+#     #
+#
+#     # card_row = mw.col.db.execute(
+#     #     """
+#     #     SELECT *
+#     #     FROM cards
+#     #     WHERE id=1608533847636
+#     #     """
+#     # )
+#     #
+#     # print(f"result: {card_row}")
+#
+#     # am_db.print_table_info("Note_Type_Morph_Map")
+#     am_db.print_table("Seen_Morphs")
+#
+#     # for row in am_db.con.execute(
+#     #     "SELECT * FROM Morph ORDER BY highest_learning_interval DESC limit 100"
+#     # ):
+#     #     print(f"row: {row}")
+#
+#     am_db.con.close()
 
 
 main()
