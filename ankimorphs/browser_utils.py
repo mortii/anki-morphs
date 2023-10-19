@@ -38,12 +38,17 @@ def browse_same_morphs(
     note: Note,
     am_config: AnkiMorphsConfig,
     search_unknowns: bool = False,
-    search_ripe_tag: bool = False,
+    search_ready_tag: bool = False,
 ) -> None:
     """
     Opens browser and displays all notes with the same focus morph.
-    Useful to quickly find alternative notes to learn focus from
+    Useful to quickly find alternative notes to learn focus from.
+
+    The query is a list of card ids. This might seem unnecessarily complicated, but
+    if we were to only query the text on the cards themselves we can get false positives
+    because inflected morphs with different bases can be identical to each-other.
     """
+
     global browser  # pylint:disable=global-statement
 
     am_db = AnkiMorphsDB()
@@ -55,18 +60,19 @@ def browse_same_morphs(
         )
         return
 
+    card_ids: Optional[set[int]]
     if search_unknowns:
-        morphs = am_db.get_unknown_inflected_morphs_of_card(card_id)
+        card_ids = am_db.get_ids_of_cards_with_same_morphs(card_id, search_unknowns)
         error_text = "No unknown morphs"
     else:
-        morphs = am_db.get_inflected_morphs_of_card(card_id)
+        card_ids = am_db.get_ids_of_cards_with_same_morphs(card_id)
         error_text = "No morphs"
 
-    if morphs is None:
+    if card_ids is None:
         tooltip(error_text)
         return
 
-    query = focus_query(am_config, am_filter, morphs, search_ripe_tag)
+    query = focus_query(am_config, card_ids, search_ready_tag)
     browser = dialogs.open("Browser", mw)
     assert browser is not None
 
@@ -79,24 +85,17 @@ def browse_same_morphs(
 
 def focus_query(
     am_config: AnkiMorphsConfig,
-    am_filter: AnkiMorphsConfigFilter,
-    morphs: list[str],
-    vocab_tag: bool = False,
+    card_ids: set[int],
+    ready_tag: bool = False,
 ) -> Optional[str]:
-    if len(morphs) == 0:
+    if len(card_ids) == 0:
         return None
 
-    field_name = am_filter.field
+    query = "cid:" + "".join([f"{card_id}," for card_id in card_ids])
+    query = query[:-1]  # query[:-1] removes the last comma
 
-    query = f"{field_name}:re:("
-    morphs_to_query = [f"{morph}|" for morph in morphs]
-    query += "".join(morphs_to_query)
-    query = '"' + query[:-1] + ')"'  # query[:-1] removes the last pipe
-
-    if vocab_tag:
+    if ready_tag:
         query += f" tag:{am_config.tag_ready}"
-
-    print(rf"query: {query}")
 
     return query
 

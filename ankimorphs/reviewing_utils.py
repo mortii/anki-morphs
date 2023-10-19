@@ -45,8 +45,6 @@ def next_card_background_op(
     assert mw is not None
     assert self is not None
 
-    print("entered next_card_background_op")
-
     am_config = AnkiMorphsConfig()
     skipped_cards = SkippedCards(am_config)
     am_db = AnkiMorphsDB()
@@ -76,9 +74,6 @@ def next_card_background_op(
             self.mw.moveToState("overview")
             return
 
-        # print(f"self.card.id: {self.card.id}, self.card.due: {self.card.due}")
-        # pprint.pprint(vars(self.card))
-
         if self.card.type != CARD_TYPE_NEW:
             break  # ignore non-new cards
 
@@ -86,14 +81,17 @@ def next_card_background_op(
         am_config_filter = get_matching_modify_filter(note)
 
         if am_config_filter is None:
-            break  # card did not match (note type and tags) set in preferences GUI
+            break  # card did not match note type and tags set in preferences GUI
 
-        unknown_card_morphs: Optional[set[str]] = am_db.get_unknown_morphs_of_card(
-            self.card.id
+        card_unknown_morphs: Optional[set[tuple[str, str]]] = am_db.get_morphs_of_card(
+            self.card.id, search_unknowns=True
         )
 
+        if card_unknown_morphs is None:
+            break
+
         skipped_card = skipped_cards.process_skip_conditions_of_card(
-            am_db, note, unknown_card_morphs
+            am_db, note, card_unknown_morphs
         )
 
         if not skipped_card:
@@ -152,7 +150,7 @@ def am_reviewer_shortcut_keys(
             (
                 key_browse.toString(),
                 lambda: browse_same_morphs(
-                    self.card.id, self.card.note(), am_config, search_unknowns=True, search_ripe_tag=True  # type: ignore[union-attr]
+                    self.card.id, self.card.note(), am_config, search_unknowns=True, search_ready_tag=True  # type: ignore[union-attr]
                 ),
             ),
             (
@@ -236,10 +234,17 @@ class SkippedCards:
         self.skip_focus_morph_seen_today = am_config.skip_unknown_morph_seen_today_cards
 
     def process_skip_conditions_of_card(
-        self, am_db: AnkiMorphsDB, note: Note, unknown_card_morphs: Optional[set[str]]
+        self,
+        am_db: AnkiMorphsDB,
+        note: Note,
+        card_unknown_morphs: set[tuple[str, str]],
     ) -> bool:
         is_comprehension_card = note.has_tag(self.am_config.tag_known)
         morphs_already_seen_morphs_today = am_db.get_all_morphs_seen_today()
+
+        unknown_card_morphs_combined: set[str] = {
+            morph[0] + morph[1] for morph in card_unknown_morphs
+        }
 
         if is_comprehension_card:
             if self.skip_comprehension:
@@ -247,9 +252,7 @@ class SkippedCards:
                 self.total_skipped_cards += 1
                 return True
         elif self.skip_focus_morph_seen_today:
-            if unknown_card_morphs is None or unknown_card_morphs.issubset(
-                morphs_already_seen_morphs_today
-            ):
+            if unknown_card_morphs_combined.issubset(morphs_already_seen_morphs_today):
                 self.skipped_cards_dict["today"] += 1
                 self.total_skipped_cards += 1
                 return True

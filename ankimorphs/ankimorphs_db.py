@@ -136,24 +136,6 @@ class AnkiMorphsDB:
                 card_morph_list,
             )
 
-    def get_card_morphs(self, card_id: int) -> set[str]:
-        card_morphs: set[str] = set("")
-
-        with self.con:
-            card_morphs_raw = self.con.execute(
-                """
-                    SELECT morph_norm, morph_inflected
-                    FROM Card_Morph_Map
-                    WHERE card_id = ?
-                    """,
-                (card_id,),
-            ).fetchall()
-
-            for row in card_morphs_raw:
-                card_morphs.add(row[0] + row[1])
-
-        return card_morphs
-
     def get_readable_card_morphs(self, card_id: int) -> list[tuple[str, str]]:
         card_morphs: list[tuple[str, str]] = []
 
@@ -201,80 +183,76 @@ class AnkiMorphsDB:
                 (card_id,),
             )
 
-    def get_inflected_morphs_of_card(self, card_id: int) -> Optional[list[str]]:
-        inflected_morphs: list[str] = []
+    def get_morphs_of_card(
+        self, card_id: int, search_unknowns: bool = False
+    ) -> Optional[set[tuple[str, str]]]:
+        morphs: set[tuple[str, str]] = set()
+
+        if search_unknowns:
+            where_query_string = "WHERE Card_Morph_Map.card_id = ? AND Morphs.highest_learning_interval = 0"
+        else:
+            where_query_string = "WHERE Card_Morph_Map.card_id = ?"
 
         with self.con:
-            inflected_morphs_raw = self.con.execute(
+            card_morphs = self.con.execute(
                 """
-                    SELECT morph_inflected
+                    SELECT DISTINCT morph_norm, morph_inflected
                     FROM Card_Morph_Map
                     INNER JOIN Morphs ON
                         Card_Morph_Map.morph_norm = Morphs.norm AND Card_Morph_Map.morph_inflected = Morphs.inflected
-                    WHERE Card_Morph_Map.card_id = ?
-                    """,
+                    """
+                + where_query_string,
                 (card_id,),
             ).fetchall()
 
-            for row in inflected_morphs_raw:
-                # print(f"unknown_morphs_raw row: {inflected_morphs_raw}")
-                inflected_morphs.append(row[0])
+            for card_morph in card_morphs:
+                morphs.add((card_morph[0], card_morph[1]))
 
-        print(f"inflected_morphs in db: {inflected_morphs}")
-        if len(inflected_morphs) == 0:
+        if len(morphs) == 0:
             return None
 
-        return inflected_morphs
+        return morphs
 
-    def get_unknown_inflected_morphs_of_card(self, card_id: int) -> Optional[list[str]]:
-        unknown_morphs: list[str] = []
+    def get_ids_of_cards_with_same_morphs(
+        self, card_id: int, search_unknowns: bool = False
+    ) -> Optional[set[int]]:
+        """
+        The where_query_string is a necessary hack to overcome the sqlite problem
+        of not allowing variable length parameters
+        """
+
+        card_ids: set[int] = set()
+        card_morphs: Optional[set[tuple[str, str]]] = self.get_morphs_of_card(
+            card_id, search_unknowns
+        )
+
+        if card_morphs is None:
+            return None
+
+        where_query_string = "WHERE" + "".join(
+            [
+                f" (morph_norm = '{morph[0]}' AND morph_inflected = '{morph[1]}') OR"
+                for morph in card_morphs
+            ]
+        )
+        where_query_string = where_query_string[:-3]  # removes last ' OR'
 
         with self.con:
-            unknown_morphs_raw = self.con.execute(
+            raw_card_ids = self.con.execute(
                 """
-                    SELECT morph_inflected
-                    FROM Card_Morph_Map
-                    INNER JOIN Morphs ON
-                        Card_Morph_Map.morph_norm = Morphs.norm AND Card_Morph_Map.morph_inflected = Morphs.inflected
-                    WHERE Card_Morph_Map.card_id = ? AND Morphs.highest_learning_interval = 0
-                    """,
-                (card_id,),
+                SELECT DISTINCT card_id
+                FROM Card_Morph_Map
+                """
+                + where_query_string,
             ).fetchall()
 
-            for row in unknown_morphs_raw:
-                # print(f"unknown_morphs_raw row: {unknown_morphs_raw}")
-                unknown_morphs.append(row[0])
+            for card_id_raw in raw_card_ids:
+                card_ids.add(card_id_raw[0])
 
-        print(f"unknown_morphs in db: {unknown_morphs}")
-        if len(unknown_morphs) == 0:
+        if len(card_ids) == 0:
             return None
 
-        return unknown_morphs
-
-    def get_unknown_morphs_of_card(self, card_id: int) -> Optional[set[str]]:
-        unknown_morphs: set[str] = set()
-
-        with self.con:
-            unknown_morphs_raw = self.con.execute(
-                """
-                    SELECT morph_norm, morph_inflected
-                    FROM Card_Morph_Map
-                    INNER JOIN Morphs ON
-                        Card_Morph_Map.morph_norm = Morphs.norm AND Card_Morph_Map.morph_inflected = Morphs.inflected
-                    WHERE Card_Morph_Map.card_id = ? AND Morphs.highest_learning_interval = 0
-                    """,
-                (card_id,),
-            ).fetchall()
-
-            for row in unknown_morphs_raw:
-                # print(f"unknown_morphs_raw row: {unknown_morphs_raw}")
-                unknown_morphs.add(row[0] + row[1])
-
-        print(f"unknown_morphs in db: {unknown_morphs}")
-        if len(unknown_morphs) == 0:
-            return None
-
-        return unknown_morphs
+        return card_ids
 
     def print_table(self, table: str) -> None:
         # using f-string is terrible practice, but this is a trivial operation
