@@ -15,9 +15,9 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from ankimorphs.config import AnkiMorphsConfig, AnkiMorphsConfigFilter, update_configs
-from ankimorphs.morphemizer import get_all_morphemizers
-from ankimorphs.ui.settings_dialog_ui import Ui_SettingsDialog
+from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter, update_configs
+from .morphemizer import get_all_morphemizers
+from .ui.settings_dialog_ui import Ui_SettingsDialog
 
 
 def main() -> None:

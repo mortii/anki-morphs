@@ -2,10 +2,10 @@ import re
 from functools import lru_cache
 from typing import Optional
 
-from ankimorphs.deps.jieba import posseg
-from ankimorphs.deps.zhon.hanzi import characters
-from ankimorphs.mecab_wrapper import get_mecab_identity, get_morphemes_mecab
-from ankimorphs.morpheme import Morpheme
+from .deps.jieba import posseg
+from .deps.zhon.hanzi import characters
+from .mecab_wrapper import get_mecab_identity, get_morphemes_mecab
+from .morpheme import Morpheme
 
 ####################################################################################################
 # Base Class

@@ -1,8 +1,8 @@
 import re
 
-from ankimorphs.config import AnkiMorphsConfig
-from ankimorphs.morpheme import Morpheme
-from ankimorphs.morphemizer import Morphemizer
+from .config import AnkiMorphsConfig
+from .morpheme import Morpheme
+from .morphemizer import Morphemizer
 
 
 def get_morphemes(

@@ -11,18 +11,18 @@ from aqt.operations import QueryOp
 from aqt.qt import QMessageBox  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
-from ankimorphs.anki_data_utils import AnkiCardData, AnkiDBRowData, AnkiMorphsCardData
-from ankimorphs.ankimorphs_db import AnkiMorphsDB
-from ankimorphs.config import (
+from .anki_data_utils import AnkiCardData, AnkiDBRowData, AnkiMorphsCardData
+from .ankimorphs_db import AnkiMorphsDB
+from .config import (
     AnkiMorphsConfig,
     AnkiMorphsConfigFilter,
     get_modify_enabled_filters,
     get_read_enabled_filters,
 )
-from ankimorphs.exceptions import DefaultSettingsException
-from ankimorphs.morph_utils import get_morphemes
-from ankimorphs.morpheme import Morpheme
-from ankimorphs.morphemizer import get_morphemizer_by_name
+from .exceptions import DefaultSettingsException
+from .morph_utils import get_morphemes
+from .morpheme import Morpheme
+from .morphemizer import get_morphemizer_by_name
 
 
 def recalc() -> None:

@@ -5,8 +5,8 @@ import subprocess
 import sys
 from typing import Optional
 
-from ankimorphs.morpheme import Morpheme
-from ankimorphs.util_external import Memoize
+from .morpheme import Morpheme
+from .util_external import Memoize
 
 ####################################################################################################
 # Mecab Morphemizer

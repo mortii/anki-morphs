@@ -10,7 +10,7 @@ from typing import Any, Union
 import anki.utils
 from anki.tags import TagManager
 
-from ankimorphs.config import AnkiMorphsConfig, AnkiMorphsConfigFilter
+from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 
 
 class AnkiDBRowData:

@@ -1,3 +1,15 @@
+"""
+We have to use implicit imports from ankimorphs because ankiweb
+changes the directory name to a number instead of 'ankimorphs'
+
+Correct:
+from . import browser_utils
+
+Incorrect:
+from ankimorphs import browser_utils
+"""
+
+
 from functools import partial
 
 from aqt import gui_hooks, mw
@@ -13,16 +25,10 @@ from aqt.reviewer import Reviewer
 from aqt.toolbar import Toolbar
 from aqt.utils import tooltip
 
-from ankimorphs import (
-    browser_utils,
-    recalc,
-    reviewing_utils,
-    settings_dialog,
-    toolbar_stats,
-)
-from ankimorphs.ankimorphs_db import AnkiMorphsDB
-from ankimorphs.config import AnkiMorphsConfig, get_config
-from ankimorphs.toolbar_stats import MorphToolbarStats
+from . import browser_utils, recalc, reviewing_utils, settings_dialog, toolbar_stats
+from .ankimorphs_db import AnkiMorphsDB
+from .config import AnkiMorphsConfig, get_config
+from .toolbar_stats import MorphToolbarStats
 
 # A bug in the anki module leads to cyclic imports if these are placed higher
 import anki.stats  # isort:skip pylint:disable=wrong-import-order

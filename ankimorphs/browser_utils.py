@@ -6,12 +6,8 @@ from aqt.qt import QLineEdit, QMessageBox  # pylint:disable=no-name-in-module
 from aqt.reviewer import RefreshNeeded
 from aqt.utils import tooltip
 
-from ankimorphs.ankimorphs_db import AnkiMorphsDB
-from ankimorphs.config import (
-    AnkiMorphsConfig,
-    AnkiMorphsConfigFilter,
-    get_matching_read_filter,
-)
+from .ankimorphs_db import AnkiMorphsDB
+from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter, get_matching_read_filter
 
 # A bug in the anki module leads to cyclic imports if this is placed higher
 from anki.notes import Note  # isort:skip pylint:disable=wrong-import-order

@@ -10,9 +10,9 @@ from aqt.qt import QKeySequence, Qt  # pylint:disable=no-name-in-module
 from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
 
-from ankimorphs.ankimorphs_db import AnkiMorphsDB
-from ankimorphs.browser_utils import browse_same_morphs
-from ankimorphs.config import AnkiMorphsConfig, get_matching_modify_filter
+from .ankimorphs_db import AnkiMorphsDB
+from .browser_utils import browse_same_morphs
+from .config import AnkiMorphsConfig, get_matching_modify_filter
 
 
 def mark_morph_seen(card_id: int) -> None:

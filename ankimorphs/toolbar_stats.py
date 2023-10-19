@@ -1,4 +1,4 @@
-from ankimorphs.ankimorphs_db import AnkiMorphsDB
+from .ankimorphs_db import AnkiMorphsDB
 
 
 class MorphToolbarStats:
