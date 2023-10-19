@@ -1,17 +1,22 @@
+import os
 import sqlite3
 from typing import Optional, Union
+
+from aqt import mw
 
 
 class AnkiMorphsDB:
     """
-    A card can have many morphs
-    morphs can be on many cards
-    so we need a many-to-many db structure:
+    A card can have many morphs, morphs can be on many cards
+    therefore we need a many-to-many db structure:
     Cards -> Card_Morph_Map <- Morphs
     """
 
     def __init__(self) -> None:
-        self.con: sqlite3.Connection = sqlite3.connect("ankimorphs.db")
+        assert mw is not None
+        assert mw.pm is not None
+        path: str = os.path.join(mw.pm.profileFolder(), "ankimorphs.db")
+        self.con: sqlite3.Connection = sqlite3.connect(path)
 
     def create_all_tables(self) -> None:
         self.create_morph_table()

@@ -9,7 +9,14 @@ class MorphToolbarStats:
         self.update_stats()
 
     def update_stats(self) -> None:
-        am_db = AnkiMorphsDB()
+        try:
+            am_db = AnkiMorphsDB()
+        except TypeError:
+            # The toolbar initiates before the profile
+            # when this happens the path to the db can't
+            # be found, and we get a type error
+            return
+
         am_db.create_morph_table()
 
         all_unique_morphs = am_db.con.execute(

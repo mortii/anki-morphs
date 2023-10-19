@@ -1,5 +1,5 @@
 {
   "package": "ankimorphs-alpha",
   "name": "ankimorphs-alpha",
-  "conflicts": "MorphMan"
+  "conflicts": ["MorphMan"]
 }
