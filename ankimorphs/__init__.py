@@ -53,6 +53,8 @@ def main() -> None:
     # Adds the 'U: A:' to the toolbar
     gui_hooks.top_toolbar_did_init_links.append(add_morph_stats_to_toolbar)
 
+    gui_hooks.profile_did_open.append(init_db)
+
     # Update the toolbar stats
     gui_hooks.profile_did_open.append(redraw_toolbar_wrapper)
 
@@ -64,6 +66,12 @@ def main() -> None:
     gui_hooks.reviewer_did_answer_card.append(mark_morph_seen_wrapper)
 
     gui_hooks.profile_will_close.append(reset_seen_morphs)
+
+
+def init_db() -> None:
+    am_db = AnkiMorphsDB()
+    am_db.create_all_tables()
+    am_db.con.close()
 
 
 def reset_seen_morphs() -> None:
@@ -151,10 +159,6 @@ def mark_morph_seen_wrapper(reviewer: Reviewer, card: Card, ease: int) -> None:
 
 
 def replace_reviewer_functions() -> None:
-    am_db = AnkiMorphsDB()
-    am_db.create_seen_morph_table()
-    am_db.con.close()
-
     # This skips the cards the user specified in preferences GUI
     Reviewer.nextCard = hooks.wrap(  # type: ignore[method-assign]
         Reviewer.nextCard, reviewing_utils.am_next_card, "around"
