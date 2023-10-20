@@ -1,5 +1,6 @@
 import importlib
 import importlib.util
+import os
 import re
 import subprocess
 import sys
@@ -248,35 +249,31 @@ def mecab():  # pylint: disable=too-many-branches,too-many-statements
             pass
 
     # 5th priority - From Morphman
-    if (
-        (not reading)
-        and importlib.util.find_spec("ankimorphs")
-        and importlib.util.find_spec("ankimorphs.deps.mecab.reading")
-    ):
-        try:
-            reading = importlib.import_module("ankimorphs.deps.mecab.reading")
-            mecab_source = "MorphMan"
-        except ModuleNotFoundError:
-            pass
+    if not reading:
+        file_path = os.path.realpath(__file__)
+        am_dir = file_path.split(os.sep)[-2]
+        mecab_dir = am_dir + ".deps.mecab.reading"
+        reading = importlib.import_module(mecab_dir)
+        mecab_source = "ankimorphs"
 
     # 6th priority - system mecab
-    if not reading:
-        try:
-            return spawn_mecab(["mecab"], startup_info), "System"
-        except Exception as error:
-            raise OSError(
-                """
-            Mecab Japanese analyzer could not be found.
-            Please install one of the following Anki add-ons:
-                 https://ankiweb.net/shared/info/3918629684
-                 https://ankiweb.net/shared/info/13462835
-                 https://ankiweb.net/shared/info/278530045"""
-            ) from error
+    # if not reading:
+    #     try:
+    #         return spawn_mecab(["mecab"], startup_info), "System"
+    #     except Exception as error:
+    #         raise OSError(
+    #             """
+    #         Mecab Japanese analyzer could not be found.
+    #         Please install one of the following Anki add-ons:
+    #              https://ankiweb.net/shared/info/3918629684
+    #              https://ankiweb.net/shared/info/13462835
+    #              https://ankiweb.net/shared/info/278530045"""
+    #         ) from error
 
     _mecab = reading.MecabController()
     _mecab.setup()
     # m.mecabCmd[1:4] are assumed to be the format arguments.
-    print(f"Using morphman: {mecab_source} with command line {_mecab.mecabCmd}")
+    print(f"Using ankimorphs: {mecab_source} with command line {_mecab.mecabCmd}")
 
     return (
         spawn_mecab(_mecab.mecabCmd[:1] + _mecab.mecabCmd[4:], startup_info),
