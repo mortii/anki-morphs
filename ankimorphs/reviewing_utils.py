@@ -1,11 +1,8 @@
-from functools import partial
 from typing import Callable, Optional, Union
 
-from anki.collection import Collection
 from anki.consts import CARD_TYPE_NEW
 from anki.notes import Note
 from aqt import mw
-from aqt.operations import QueryOp
 from aqt.qt import QKeySequence, Qt  # pylint:disable=no-name-in-module
 from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
@@ -23,25 +20,19 @@ def mark_morph_seen(card_id: int) -> None:
     am_db.con.close()
 
 
-def am_next_card(self: Reviewer, _old: Callable[[], None]) -> None:
+def am_next_card(self: Reviewer, _old: Callable[[Reviewer], None]) -> None:
     """
-    Since many cards can be skipped it's important to give feedback
-    to the user and not just have a frozen UI, therefore we run the function
-    as a QueryOp on a background thread and display a progress dialog.
+    Any "next card" function run on a background thread will
+    cause Anki to crash upon review completion because the
+    expected data is not available to the reviewer.
+
+    Anki also does not support async operations (e.g. asyncio).
+
+    Therefore, it is unavoidable that the UI freezes if many cards
+    are skipped, the only thing we can do to alleviate the problem
+    is to make the algorithm more efficient.
     """
 
-    operation = QueryOp(
-        parent=self.mw,
-        op=partial(next_card_background_op, self=self),
-        success=lambda t: None,  # t = return value of the op
-    )
-    operation.with_progress().run_in_background()
-
-
-def next_card_background_op(
-    collection: Collection,
-    self: Optional[Reviewer] = None,
-) -> None:
     assert mw is not None
     assert self is not None
 
@@ -50,13 +41,6 @@ def next_card_background_op(
     am_db = AnkiMorphsDB()
 
     while True:
-        mw.taskman.run_on_main(
-            partial(
-                mw.progress.update,
-                label=f"Skipping {skipped_cards.total_skipped_cards} cards",
-            )
-        )
-
         self.previous_card = self.card
         self.card = None
         self._v3 = None
@@ -104,15 +88,15 @@ def next_card_background_op(
     am_db.con.close()
 
     if self._reps is None:
-        self.mw.taskman.run_on_main(self._initWeb)
+        self._initWeb()
 
-    self.mw.taskman.run_on_main(self._showQuestion)
+    self._showQuestion()
 
     if (
         skipped_cards.total_skipped_cards > 0
         and am_config.skip_show_num_of_skipped_cards
     ):
-        self.mw.taskman.run_on_main(skipped_cards.show_tooltip_of_skipped_cards)
+        skipped_cards.show_tooltip_of_skipped_cards()
 
 
 def set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> None:
