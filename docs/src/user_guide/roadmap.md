@@ -1,6 +1,5 @@
 # Roadmap
 
-
 1. Stop QueryOp actions by clicking 'x'-button
 2. Fix undo-review
 3. Remake highlighting feature
