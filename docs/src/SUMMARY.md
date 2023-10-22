@@ -28,7 +28,6 @@
   - [Reviewing Cards](user_guide/usage/reviewing-cards.md)
   - [Browser](user_guide/usage/browser.md)
   - [Statistics](user_guide/usage/statistics.md)
-- [Changelog](user_guide/changelog.md)
 - [Known Problems](user_guide/known-problems.md)
 - [Roadmap](user_guide/roadmap.md)
 - [FAQ](user_guide/faq.md)

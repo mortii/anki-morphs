@@ -243,7 +243,7 @@ def create_changelog_action() -> QAction:
     action = QAction("&Changelog (web)", mw)
     action.triggered.connect(
         lambda: desktop_service.openUrl(
-            QUrl("https://mortii.github.io/anki-morphs/user_guide/changelog.html")
+            QUrl("https://github.com/mortii/anki-morphs/releases")
         )
     )
     return action
