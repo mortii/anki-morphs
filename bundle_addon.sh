@@ -1,2 +1,4 @@
-rm -rf ./.pytest_cache/ ./.mypy_cache/ ankimorphs/meta.json
-cd ankimorphs && zip -r ../ankimorphs.ankiaddon ./*
+cd ankimorphs || { echo "cd failed"; exit 1; }
+find . -regex '^.*\(__pycache__\|\.py[co]\)$' -delete
+rm meta.json
+zip -r ../ankimorphs.ankiaddon ./*
