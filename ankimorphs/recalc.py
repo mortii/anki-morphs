@@ -48,8 +48,9 @@ def recalc_background_op(collection: Collection) -> None:
         )
     )
 
-    cache_anki_data(am_config)
-    update_cards(am_config)
+    cancelled = cache_anki_data(am_config)
+    if not cancelled:
+        update_cards(am_config)
 
     mw.taskman.run_on_main(mw.toolbar.draw)  # updates stats
     mw.taskman.run_on_main(mw.progress.finish)
@@ -57,7 +58,7 @@ def recalc_background_op(collection: Collection) -> None:
 
 def cache_anki_data(  # pylint:disable=too-many-locals
     am_config: AnkiMorphsConfig,
-) -> None:
+) -> bool:
     """
     Extracting morphs from cards is expensive so caching them yields a significant
     performance gain.
@@ -93,6 +94,9 @@ def cache_anki_data(  # pylint:disable=too-many-locals
 
         for counter, card_id in enumerate(card_data_dict):
             if counter % 1000 == 0:
+                if mw.progress.want_cancel():  # user clicked 'x'
+                    return True
+
                 mw.taskman.run_on_main(
                     partial(
                         mw.progress.update,
@@ -149,6 +153,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals
     am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
     # am_db.print_table("Cards")
     am_db.con.close()
+    return False
 
 
 def create_card_data_dict(
@@ -269,6 +274,9 @@ def update_cards(  # pylint:disable=too-many-locals
 
         for counter, card_id in enumerate(cards_data_map):
             if counter % 1000 == 0:
+                if mw.progress.want_cancel():  # user clicked 'x'
+                    return
+
                 mw.taskman.run_on_main(
                     partial(
                         mw.progress.update,
