@@ -22,7 +22,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>5</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="note_filters_tab">
         <attribute name="title">
@@ -246,6 +246,13 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_9">
            <item>
+            <widget class="QCheckBox" name="parse_ignore_quotation_marks_input">
+             <property name="text">
+              <string>ignore quotation marks (&quot;&quot;, »«)</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QCheckBox" name="parse_ignore_bracket_contents_input">
              <property name="text">
               <string>ignore content in square brackets []</string>
@@ -397,13 +404,6 @@
         <layout class="QVBoxLayout" name="verticalLayout_18">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_17">
-           <item>
-            <widget class="QCheckBox" name="recalc_before_sync_input">
-             <property name="text">
-              <string>Automatically Recalc before Sync</string>
-             </property>
-            </widget>
-           </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_6">
              <property name="topMargin">

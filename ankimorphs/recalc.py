@@ -543,7 +543,7 @@ def modify_card_fields(
     fields_list: list[str] = anki.utils.split_fields(fields)
 
     if config_filter.focus_morph_field_index is not None:
-        if len(unknowns) > 0 and config_filter.focus_morph_field_index > 0:
+        if config_filter.focus_morph_field_index > 0:
             focus_morph_string: str = "".join(f"{unknown}, " for unknown in unknowns)
             focus_morph_string = focus_morph_string[:-2]  # removes last comma
             fields_list[config_filter.focus_morph_field_index - 1] = focus_morph_string

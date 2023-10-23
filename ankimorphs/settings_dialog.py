@@ -223,6 +223,9 @@ class PreferencesDialog(QDialog):
         self.ui.known_tag_input.setText(self._default_config.tag_known)
 
     def _populate_parse_tab(self) -> None:
+        self.ui.parse_ignore_quotation_marks_input.setChecked(
+            self.config.parse_ignore_quotation_marks
+        )
         self.ui.parse_ignore_bracket_contents_input.setChecked(
             self.config.parse_ignore_bracket_contents
         )
@@ -267,6 +270,9 @@ class PreferencesDialog(QDialog):
             if not confirmed:
                 return
 
+        self.ui.parse_ignore_quotation_marks_input.setChecked(
+            self._default_config.parse_ignore_quotation_marks
+        )
         self.ui.parse_ignore_bracket_contents_input.setChecked(
             self._default_config.parse_ignore_bracket_contents
         )
@@ -315,7 +321,7 @@ class PreferencesDialog(QDialog):
         )
 
     def _populate_recalc_tab(self) -> None:
-        self.ui.recalc_before_sync_input.setChecked(self.config.recalc_before_sync)
+        # self.ui.recalc_before_sync_input.setChecked(self.config.recalc_before_sync)
         self.ui.recalc_interval_known_input.setValue(
             self.config.recalc_interval_for_known
         )
@@ -335,9 +341,9 @@ class PreferencesDialog(QDialog):
             if not confirmed:
                 return
 
-        self.ui.recalc_before_sync_input.setChecked(
-            self._default_config.recalc_before_sync
-        )
+        # self.ui.recalc_before_sync_input.setChecked(
+        #     self._default_config.recalc_before_sync
+        # )
         self.ui.recalc_interval_known_input.setValue(
             self._default_config.recalc_interval_for_known
         )
@@ -434,10 +440,11 @@ class PreferencesDialog(QDialog):
             "shortcut_set_known_and_skip": self.ui.shortcut_known_and_skip_input.keySequence().toString(),
             "shortcut_learn_now": self.ui.shortcut_learn_now_input.keySequence().toString(),
             "shortcut_view_morphemes": self.ui.shortcut_view_morphs_input.keySequence().toString(),
-            "recalc_before_sync": self.ui.recalc_before_sync_input.isChecked(),
+            # "recalc_before_sync": self.ui.recalc_before_sync_input.isChecked(),
             "recalc_interval_for_known": self.ui.recalc_interval_known_input.value(),
             "recalc_prioritize_collection": self.ui.recalc_prioritize_collection_input.isChecked(),
             # "recalc_prioritize_textfile": self.ui.recalc_prioritize_textfile_input.isChecked(),
+            "parse_ignore_quotation_marks": self.ui.parse_ignore_quotation_marks_input.isChecked(),
             "parse_ignore_bracket_contents": self.ui.parse_ignore_bracket_contents_input.isChecked(),
             "parse_ignore_round_bracket_contents": self.ui.parse_ignore_round_bracket_contents_input.isChecked(),
             "parse_ignore_slim_round_bracket_contents": self.ui.parse_ignore_slim_round_bracket_contents_input.isChecked(),

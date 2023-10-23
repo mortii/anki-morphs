@@ -39,7 +39,7 @@ from anki.cards import Card  # isort:skip pylint:disable=wrong-import-order
 
 # Semantic Versioning https://semver.org/
 # TODO store somewhere other than mw, makes testing problematic
-mw.ANKIMORPHS_VERSION = "0.1.1-alpha"  # type: ignore
+mw.ANKIMORPHS_VERSION = "0.1.2-alpha"  # type: ignore
 
 TOOL_MENU = "am_tool_menu"
 BROWSE_MENU = "am_browse_menu"
