@@ -31,6 +31,11 @@
    ``` bash
    pre-commit run --a
    ```
+   If you want to make an intermediate commit without caring about pre-commit running successfully you can use the
+   `--no-verify` flag, e.g.
+   ``` bash
+   git commit -am "fixed abc" --no-verify
+   ```
 
    **Optional:** if you use gitkraken you have to adjust the pre-commit script (`anki-morphs/.git/hooks/pre-commit`) to
    activate the virtual environment first:

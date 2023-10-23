@@ -322,9 +322,9 @@ class PreferencesDialog(QDialog):
         self.ui.recalc_prioritize_collection_input.setChecked(
             self.config.recalc_prioritize_collection
         )
-        self.ui.recalc_prioritize_textfile_input.setChecked(
-            self.config.recalc_prioritize_textfile
-        )
+        # self.ui.recalc_prioritize_textfile_input.setChecked(
+        #     self.config.recalc_prioritize_textfile
+        # )
 
     def restore_recalc_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -344,9 +344,9 @@ class PreferencesDialog(QDialog):
         self.ui.recalc_prioritize_collection_input.setChecked(
             self._default_config.recalc_prioritize_collection
         )
-        self.ui.recalc_prioritize_textfile_input.setChecked(
-            self._default_config.recalc_prioritize_textfile
-        )
+        # self.ui.recalc_prioritize_textfile_input.setChecked(
+        #     self._default_config.recalc_prioritize_textfile
+        # )
 
     def _populate_skip_tab(self) -> None:
         self.ui.skip_stale_cards_input.setChecked(self.config.skip_stale_cards)
@@ -437,7 +437,7 @@ class PreferencesDialog(QDialog):
             "recalc_before_sync": self.ui.recalc_before_sync_input.isChecked(),
             "recalc_interval_for_known": self.ui.recalc_interval_known_input.value(),
             "recalc_prioritize_collection": self.ui.recalc_prioritize_collection_input.isChecked(),
-            "recalc_prioritize_textfile": self.ui.recalc_prioritize_textfile_input.isChecked(),
+            # "recalc_prioritize_textfile": self.ui.recalc_prioritize_textfile_input.isChecked(),
             "parse_ignore_bracket_contents": self.ui.parse_ignore_bracket_contents_input.isChecked(),
             "parse_ignore_round_bracket_contents": self.ui.parse_ignore_round_bracket_contents_input.isChecked(),
             "parse_ignore_slim_round_bracket_contents": self.ui.parse_ignore_slim_round_bracket_contents_input.isChecked(),

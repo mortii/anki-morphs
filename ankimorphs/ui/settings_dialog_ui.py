@@ -217,9 +217,6 @@ class Ui_SettingsDialog:
         self.recalc_prioritize_collection_input = QtWidgets.QRadioButton(parent=self.recalc_tab)
         self.recalc_prioritize_collection_input.setObjectName("recalc_prioritize_collection_input")
         self.verticalLayout_14.addWidget(self.recalc_prioritize_collection_input)
-        self.recalc_prioritize_textfile_input = QtWidgets.QRadioButton(parent=self.recalc_tab)
-        self.recalc_prioritize_textfile_input.setObjectName("recalc_prioritize_textfile_input")
-        self.verticalLayout_14.addWidget(self.recalc_prioritize_textfile_input)
         self.verticalLayout_17.addLayout(self.verticalLayout_14)
         spacerItem9 = QtWidgets.QSpacerItem(17, 37, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout_17.addItem(spacerItem9)
@@ -324,7 +321,7 @@ class Ui_SettingsDialog:
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         self.retranslateUi(SettingsDialog)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(5)
         QtCore.QMetaObject.connectSlotsByName(SettingsDialog)
 
     def retranslateUi(self, SettingsDialog):
@@ -376,7 +373,6 @@ class Ui_SettingsDialog:
         self.label_17.setText(_translate("SettingsDialog", "days"))
         self.label_5.setText(_translate("SettingsDialog", "Prioritize morphs based on:"))
         self.recalc_prioritize_collection_input.setText(_translate("SettingsDialog", "Frequency in card collection"))
-        self.recalc_prioritize_textfile_input.setText(_translate("SettingsDialog", "frequency.txt"))
         self.restore_recalc_defaults_button.setText(_translate("SettingsDialog", "Restore Default Recalc Settings"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.recalc_tab), _translate("SettingsDialog", "Recalc"))
         self.label_14.setText(_translate("SettingsDialog", "Run recalc"))

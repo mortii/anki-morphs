@@ -22,7 +22,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>5</number>
        </property>
        <widget class="QWidget" name="note_filters_tab">
         <attribute name="title">
@@ -457,13 +457,6 @@
               <widget class="QRadioButton" name="recalc_prioritize_collection_input">
                <property name="text">
                 <string>Frequency in card collection</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QRadioButton" name="recalc_prioritize_textfile_input">
-               <property name="text">
-                <string>frequency.txt</string>
                </property>
               </widget>
              </item>
