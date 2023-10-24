@@ -21,8 +21,8 @@ from .ui.settings_dialog_ui import Ui_SettingsDialog
 
 
 def main() -> None:
-    mw.ankimorphs_preferences_dialog = PreferencesDialog(mw)  # type: ignore
-    mw.ankimorphs_preferences_dialog.exec()  # type: ignore
+    mw.ankimorphs_preferences_dialog = PreferencesDialog(mw)  # type: ignore[union-attr]
+    mw.ankimorphs_preferences_dialog.exec()  # type: ignore[union-attr]
 
 
 class PreferencesDialog(QDialog):
@@ -41,7 +41,7 @@ class PreferencesDialog(QDialog):
         self.mw = parent  # pylint:disable=invalid-name
         self.models: Sequence[NotetypeNameId] = mw.col.models.all_names_and_ids()
         self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
-        self.ui.setupUi(self)  # type: ignore
+        self.ui.setupUi(self)  # type: ignore[no-untyped-call]
         self.config = AnkiMorphsConfig()
         self._morphemizers = get_all_morphemizers()
         self._default_config = AnkiMorphsConfig(is_default=True)
@@ -55,7 +55,7 @@ class PreferencesDialog(QDialog):
         self._setup_buttons()
         self.ui.tabWidget.currentChanged.connect(self.tab_change)
         self.ui.ankimorphs_version_label.setText(
-            f"AnkiMorphs version: {mw.ANKIMORPHS_VERSION}"  # type: ignore
+            f"AnkiMorphs version: {mw.ANKIMORPHS_VERSION}"  # type: ignore[attr-defined]
         )
 
     def _setup_note_filters_table(

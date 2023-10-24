@@ -43,7 +43,7 @@ def recalc_background_op(collection: Collection) -> None:
     am_config = AnkiMorphsConfig()
 
     mw.taskman.run_on_main(
-        lambda: mw.progress.update(  # type: ignore
+        lambda: mw.progress.update(  # type: ignore[union-attr]
             label="Recalculating...",
         )
     )

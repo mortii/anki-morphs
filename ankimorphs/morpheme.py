@@ -33,7 +33,7 @@ class Morpheme:
         self.base = base
         self.inflected = inflected
         self.read = read
-        self.pos = pos  # type of morpheme determined by mecab tool. for example: u'動詞' or u'助動詞', u'形容詞'
+        self.pos = pos  # determined by mecab tool. for example: u'動詞' or u'助動詞', u'形容詞'
         self.sub_pos = sub_pos
 
     def __setstate__(self, data):
