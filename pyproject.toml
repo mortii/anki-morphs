@@ -30,7 +30,7 @@ disable = """
 # testpaths: directories that should be searched when no specific directories, files or test ids are given
 testpaths = "tests"
 # python_files: determining which python files are considered as test modules.
-python_files = "test_*.py"
+python_files = "*_test.py"
 # python_functions: which test functions and methods are considered tests
 python_functions = "test_*"
 # required_plugins: plugins that must be present for pytest to run

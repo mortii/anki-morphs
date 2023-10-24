@@ -7,5 +7,5 @@ you can then upload and view on [speedcode](https://www.speedscope.app/).
 
 ```bash
 export PYTHONPATH=.
-py-spy record -f speedscope -o profile.svg -- python3.9 tests/test_recalc.py
+py-spy record -f speedscope -o profile.svg -- python3.9 tests/recalc_test.py
 ```
