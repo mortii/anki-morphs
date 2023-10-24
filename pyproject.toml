@@ -1,9 +1,16 @@
+[tool.isort]
+profile = "black"
+skip_gitignore = "True"
+line_length = "88"
+
 [tool.mypy]
 warn_return_any = "True"
 warn_unused_configs = "True"
 ignore_missing_imports = "True"
-follow_imports = "silent"  # TODO change this eventually
+follow_imports = "silent" # TODO change this eventually
 strict = "True"
+
+[tool.pylint]
 
 [tool.pylint."MESSAGES CONTROL"]
 disable = """
@@ -18,40 +25,28 @@ disable = """
     fixme
 """
 
-[tool.isort]
-profile = "black"
-skip_gitignore = "True"
-line_length = "88"
-
+# Docs: https://docs.pytest.org/en/7.1.x/reference/reference.html#ini-options-ref
 [tool.pytest.ini_options]
-#  Docs: https://docs.pytest.org/en/7.1.x/reference/reference.html#ini-options-ref
-
-testpaths = "tests"
 # testpaths: directories that should be searched when no specific directories, files or test ids are given
-
-python_files = "test_*.py"
+testpaths = "tests"
 # python_files: determining which python files are considered as test modules.
-
-python_functions = "test_*"
+python_files = "test_*.py"
 # python_functions: which test functions and methods are considered tests
-
-required_plugins = "pytest-qt pytest-xvfb"
+python_functions = "test_*"
 # required_plugins: plugins that must be present for pytest to run
 # pytest-qt: allows for writing tests for PyQt5, PyQt6, PySide2 and PySide6 applications.
 # pytest-xvfb: allows tests to be run without windows popping up during GUI tests or on systems without a display (like a CI).
-
-xfail_strict = "True"
+required_plugins = "pytest-qt pytest-xvfb"
 # xfail_strict = True: tests marked with @pytest.mark.xfail that actually succeed will by default fail the test suite
-
-addopts = "--strict-markers --durations=5 --maxfail=1"
+xfail_strict = "True"
 # addopts: set of command line arguments as if they had been specified by the user
 # --strict-markers: markers not registered in the `markers` section of the configuration file raise errors.
 # --durations=5: show N slowest setup/test durations (N=0 for all)
 # --maxfail=1: exit after first num failures or errors.
-
-markers = [
-    "slow",
-    "recalc"
-]
+addopts = "--strict-markers --durations=5 --maxfail=1"
 # markers: whitelist custom markers
 # example with: pytest -m slow
+markers = [
+  "slow",
+  "recalc"
+]
