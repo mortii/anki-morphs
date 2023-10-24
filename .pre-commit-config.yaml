@@ -4,7 +4,38 @@ repos:
     hooks:
       - id: check-yaml
       - id: check-added-large-files
+      - id: check-case-conflict
       - id: check-json
+      - id: pretty-format-json
+        args: [--autofix]
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+        exclude: |
+          (?x)^(
+              ankimorphs/deps/jieba/analyse/textrank.py|
+          )$
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: debug-statements
+      - id: name-tests-test
+        files: '^tests/'
+        exclude: |
+          (?x)^(
+              tests/data/.*|
+              tests/fake_config.py|
+              tests/fake_preferences.py|
+          )$
+      - id: requirements-txt-fixer
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: python-check-blanket-type-ignore
+      - id: python-use-type-annotations
+      - id: python-check-mock-methods
+  - repo: https://github.com/pappasam/toml-sort
+    rev: v0.23.1
+    hooks:
+      - id: toml-sort-fix
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.15.0
     hooks:
