@@ -53,6 +53,10 @@ repos:
       - id: isort
         name: isort (python)
         files: 'ankimorphs/|^tests/'
+  - repo: https://github.com/jendrikseipp/vulture
+    rev: v2.10
+    hooks:
+      - id: vulture
   - repo: local
     hooks:
       - id: pylint

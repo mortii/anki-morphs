@@ -18,7 +18,6 @@ disable = """
     missing-function-docstring,
     missing-class-docstring,
     protected-access,
-    unused-argument,
     redefined-outer-name,
     line-too-long,
     too-few-public-methods,
@@ -50,3 +49,10 @@ markers = [
   "slow",
   "recalc"
 ]
+
+[tool.vulture]
+paths = ["ankimorphs"]
+exclude = ["ankimorphs/deps/", "ankimorphs/ui/", "ankimorphs/util_external.py"]
+min_confidence = 80
+sort_by_size = true
+verbose = false

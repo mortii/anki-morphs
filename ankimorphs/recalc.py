@@ -30,13 +30,14 @@ def recalc() -> None:
     operation = QueryOp(
         parent=mw,
         op=recalc_background_op,
-        success=lambda t: tooltip("Finished Recalc"),  # t = return value of the op
+        success=lambda _result_value: tooltip("Finished Recalc"),
     )
     operation.with_progress().run_in_background()
     operation.failure(on_failure)
 
 
 def recalc_background_op(collection: Collection) -> None:
+    del collection  # unused
     assert mw is not None
     assert mw.progress is not None
 
@@ -48,6 +49,7 @@ def recalc_background_op(collection: Collection) -> None:
         )
     )
 
+    # TODO raise an exception instead
     cancelled = cache_anki_data(am_config)
     if not cancelled:
         update_cards(am_config)

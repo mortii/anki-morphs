@@ -7,12 +7,9 @@
 5. Allow for custom morph prioritization for specified languages (e.g. jp-morph-priority.txt)
 6. Allow for a custom list of proper nouns that Anki-Morphs will automatically skip
 7. Remake tests
-8. Add [vulture](https://github.com/jendrikseipp/vulture) to pre-commit
-9. Update guide
-10. **Release AnkiMorphs stable version**
-11. Implement optional "automatic recalc before sync"
-12. Remake statistics page
-13. Remake readability analyzer
-
-
+8. Update guide
+9. **Release AnkiMorphs stable version**
+10. Implement optional "automatic recalc before sync"
+11. Remake statistics page
+12. Remake readability analyzer
 

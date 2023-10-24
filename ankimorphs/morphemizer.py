@@ -21,7 +21,9 @@ class Morphemizer:
         morphs = self._get_morphemes_from_expr(expression)
         return morphs
 
-    def _get_morphemes_from_expr(self, expression: str) -> [Morpheme]:
+    def _get_morphemes_from_expr(  # pylint:disable=unused-argument
+        self, expression: str
+    ) -> [Morpheme]:
         """
         The heart of this plugin: convert an expression to a list of its morphemes.
         """

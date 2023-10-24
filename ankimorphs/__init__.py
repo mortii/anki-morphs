@@ -155,6 +155,7 @@ def init_browser_menus_and_actions() -> None:
 
 
 def mark_morph_seen_wrapper(reviewer: Reviewer, card: Card, ease: int) -> None:
+    del ease, reviewer  # unused
     reviewing_utils.mark_morph_seen(card.id)
 
 
