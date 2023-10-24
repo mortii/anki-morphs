@@ -19,7 +19,7 @@ from .config import (
     get_modify_enabled_filters,
     get_read_enabled_filters,
 )
-from .exceptions import DefaultSettingsException
+from .exceptions import CancelledRecalcException, DefaultSettingsException
 from .morph_utils import get_morphemes
 from .morpheme import Morpheme
 from .morphemizer import get_morphemizer_by_name
@@ -49,10 +49,8 @@ def recalc_background_op(collection: Collection) -> None:
         )
     )
 
-    # TODO raise an exception instead
-    cancelled = cache_anki_data(am_config)
-    if not cancelled:
-        update_cards(am_config)
+    cache_anki_data(am_config)
+    update_cards(am_config)
 
     mw.taskman.run_on_main(mw.toolbar.draw)  # updates stats
     mw.taskman.run_on_main(mw.progress.finish)
@@ -60,7 +58,7 @@ def recalc_background_op(collection: Collection) -> None:
 
 def cache_anki_data(  # pylint:disable=too-many-locals
     am_config: AnkiMorphsConfig,
-) -> bool:
+) -> None:
     """
     Extracting morphs from cards is expensive so caching them yields a significant
     performance gain.
@@ -97,7 +95,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals
         for counter, card_id in enumerate(card_data_dict):
             if counter % 1000 == 0:
                 if mw.progress.want_cancel():  # user clicked 'x'
-                    return True
+                    raise CancelledRecalcException
 
                 mw.taskman.run_on_main(
                     partial(
@@ -155,7 +153,6 @@ def cache_anki_data(  # pylint:disable=too-many-locals
     am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
     # am_db.print_table("Cards")
     am_db.con.close()
-    return False
 
 
 def create_card_data_dict(
@@ -225,7 +222,7 @@ def get_card_morphs(
 ) -> Optional[set[Morpheme]]:
     try:
         morphemizer = get_morphemizer_by_name(am_filter.morphemizer_name)
-        assert morphemizer
+        assert morphemizer is not None
         morphs = get_morphemes(morphemizer, expression, am_config)
         return set(morphs)
     except KeyError:
@@ -248,7 +245,7 @@ def update_cards(  # pylint:disable=too-many-locals
     am_db = AnkiMorphsDB()
     tag_manager = TagManager(mw.col)
 
-    # these registers the tags in the browser if they don't already exist
+    # set_collapsed registers the tags in the browser if they don't already exist
     tag_manager.set_collapsed(am_config.tag_ready, collapsed=False)
     tag_manager.set_collapsed(am_config.tag_not_ready, collapsed=False)
     tag_manager.set_collapsed(am_config.tag_known, collapsed=False)
@@ -277,7 +274,7 @@ def update_cards(  # pylint:disable=too-many-locals
         for counter, card_id in enumerate(cards_data_map):
             if counter % 1000 == 0:
                 if mw.progress.want_cancel():  # user clicked 'x'
-                    return
+                    raise CancelledRecalcException
 
                 mw.taskman.run_on_main(
                     partial(
@@ -584,7 +581,9 @@ def modify_card_tags(
     return f" {' '.join(list(tags))} "
 
 
-def on_failure(error: Union[Exception, DefaultSettingsException]) -> None:
+def on_failure(
+    error: Union[Exception, DefaultSettingsException, CancelledRecalcException]
+) -> None:
     if isinstance(error, DefaultSettingsException):
         title = "AnkiMorphs Error"
         text = "Save settings before using Recalc!"
@@ -594,5 +593,10 @@ def on_failure(error: Union[Exception, DefaultSettingsException]) -> None:
         critical_box.setStandardButtons(QMessageBox.StandardButton.Ok)
         critical_box.setText(text)
         critical_box.exec()
+    elif isinstance(error, CancelledRecalcException):
+        assert mw is not None
+        assert mw.progress is not None
+        mw.taskman.run_on_main(mw.progress.finish)
+        tooltip("Cancelled Recalc")
     else:
         raise error
