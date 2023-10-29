@@ -4,7 +4,7 @@ from anki.collection import UndoStatus
 from anki.consts import CARD_TYPE_NEW
 from anki.notes import Note
 from aqt import mw
-from aqt.qt import QKeySequence, Qt  # pylint:disable=no-name-in-module
+from aqt.qt import QKeySequence, QMessageBox, Qt  # pylint:disable=no-name-in-module
 from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
 
@@ -50,6 +50,11 @@ def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
     assert mw is not None
     assert self is not None
 
+    if self.mw.col.sched.version < 3:
+        show_scheduler_version_error()
+        self.mw.moveToState("overview")
+        return
+
     undo_status = self.mw.col.undo_status()
     if undo_status.undo == "":
         # No undo entries exist, so we have to create one
@@ -77,12 +82,7 @@ def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
         self.card = None
         self._v3 = None
 
-        if self.mw.col.sched.version < 3:
-            # TODO: stop supporting, display error instead
-            self.mw.col.reset()  # rebuilds the queue
-            self._get_next_v1_v2_card()
-        else:
-            self._get_next_v3_card()
+        self._get_next_v3_card()
 
         self._previous_card_info.set_card(self.previous_card)
         self._card_info.set_card(self.card)
@@ -241,6 +241,24 @@ def am_reviewer_shortcut_keys(
         ]
     )
     return keys
+
+
+def show_scheduler_version_error() -> None:
+    assert mw is not None
+
+    title = "AnkiMorphs Error"
+    text = (
+        f"You are currently using the <b>V{mw.col.sched_ver()}</b> scheduler.<br>"
+        f"AnkiMorphs only works on the V3 scheduler.<br>"
+        f"To start using the V3 scheduler go to:<br>"
+        f" Tools -> Preferences -> 'Review' tab -> Check 'V3 scheduler'"
+    )
+    critical_box = QMessageBox(mw)
+    critical_box.setWindowTitle(title)
+    critical_box.setIcon(QMessageBox.Icon.Critical)
+    critical_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+    critical_box.setText(text)
+    critical_box.exec()
 
 
 class SkippedCards:
