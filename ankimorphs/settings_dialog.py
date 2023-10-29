@@ -54,9 +54,9 @@ class PreferencesDialog(QDialog):
         self._populate_recalc_tab()
         self._setup_buttons()
         self.ui.tabWidget.currentChanged.connect(self.tab_change)
-        self.ui.ankimorphs_version_label.setText(
-            f"AnkiMorphs version: {mw.ANKIMORPHS_VERSION}"  # type: ignore[attr-defined]
-        )
+
+        # Semantic Versioning https://semver.org/
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.1.3-alpha")
 
     def _setup_note_filters_table(
         self, config_filters: list[AnkiMorphsConfigFilter]

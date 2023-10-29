@@ -330,6 +330,11 @@ def update_cards(  # pylint:disable=too-many-locals
     for index, card_data in enumerate(cards_modified_data, start=end_of_queue):
         card_data[0] = index
 
+    # TODO: col.update_cards() and col.update_notes() provide
+    # undoable operations unlike col.db.executemany, maybe
+    # it also maintains sync? Try implementing them and see
+    # if they are viable alternatives.
+
     mw.col.db.executemany(
         "update cards set due=?, mod=? where id=?",
         cards_modified_data,
@@ -339,11 +344,6 @@ def update_cards(  # pylint:disable=too-many-locals
         "update notes set tags=?, flds=?, mod=? where id=?",
         notes_modified_data,
     )
-
-    # mw.col.db.executemany(
-    #     "update notes set tags=?, flds=?, sfld=?, csum=?, mod=?, usn=? where id=?",
-    #     _notes_to_update,
-    # )
 
     am_db.con.close()
 
@@ -584,6 +584,7 @@ def modify_card_tags(
 def on_failure(
     error: Union[Exception, DefaultSettingsException, CancelledRecalcException]
 ) -> None:
+    # TODO: check which thread this runs on (print_thread_name debug_utils)
     if isinstance(error, DefaultSettingsException):
         title = "AnkiMorphs Error"
         text = "Save settings before using Recalc!"

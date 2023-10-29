@@ -1,8 +1,12 @@
 import os
 import sqlite3
+from collections.abc import Sequence
 from typing import Optional, Union
 
+from anki.collection import SearchNode
 from aqt import mw
+
+from .config import AnkiMorphsConfig
 
 
 class AnkiMorphsDB:
@@ -188,6 +192,32 @@ class AnkiMorphsDB:
                 (card_id,),
             )
 
+    def update_seen_morphs(self) -> None:
+        cards_studied_today: Sequence[int] = get_cards_seen_today()
+
+        where_query_string = "WHERE" + "".join(
+            [f" card_id = {card_id} OR" for card_id in cards_studied_today]
+        )
+        where_query_string = where_query_string[:-3]  # removes the last " OR"
+
+        # print(f"where_query_string: {where_query_string}")
+
+        self.drop_seen_morph_table()
+        self.create_seen_morph_table()
+
+        with self.con:
+            self.con.execute(
+                """
+                    INSERT OR IGNORE INTO Seen_Morphs (norm, inflected)
+                    SELECT morph_norm, morph_inflected
+                    FROM Card_Morph_Map
+                    """
+                + where_query_string
+            )
+
+        # print("Seen_Morphs: ")
+        # self.print_table("Seen_Morphs")
+
     def get_morphs_of_card(
         self, card_id: int, search_unknowns: bool = False
     ) -> Optional[set[tuple[str, str]]]:
@@ -282,3 +312,26 @@ class AnkiMorphsDB:
         am_db = AnkiMorphsDB()
         with am_db.con:
             am_db.con.execute("DROP TABLE IF EXISTS Seen_Morphs;")
+
+
+def get_cards_seen_today() -> Sequence[int]:
+    assert mw is not None
+
+    am_config = AnkiMorphsConfig()
+    known_tag = am_config.tag_known
+
+    studied_today_search_string = mw.col.build_search_string(
+        SearchNode(rated=SearchNode.Rated(days=1, rating=SearchNode.RATING_ANY))
+    )
+
+    known_and_skipped_search_string = mw.col.build_search_string(
+        SearchNode(card_state=SearchNode.CARD_STATE_BURIED),
+        SearchNode(tag=known_tag),
+    )
+
+    total_search_string = (
+        studied_today_search_string + " OR " + known_and_skipped_search_string
+    )
+
+    known_and_skipped_cards: Sequence[int] = mw.col.find_cards(total_search_string)
+    return known_and_skipped_cards

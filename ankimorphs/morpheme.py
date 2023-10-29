@@ -1,6 +1,3 @@
-from .config import get_config as cfg
-
-
 def char_set(start: str, end: str) -> set:
     return {chr(_char) for _char in range(ord(start), ord(end) + 1)}
 
@@ -66,23 +63,3 @@ class Morpheme:
     def base_kanji(self) -> set:
         # todo: profile and maybe cache
         return set(self.base) & kanji_chars
-
-    def get_group_key(self) -> str:
-        if cfg("Option_IgnoreGrammarPosition"):
-            return f"{self.norm}\t{self.read}"
-        return f"{self.norm}\t{self.read}\t{self.pos}\t"
-
-    def is_proper_noun(self):
-        return self.sub_pos == "固有名詞" or self.pos == "PROPN"
-
-    def show(self):  # str
-        return "\t".join(
-            [self.norm, self.base, self.inflected, self.read, self.pos, self.sub_pos]
-        )
-
-    def deinflected(self):
-        if self.inflected == self.base:
-            return self
-        return Morpheme(
-            self.norm, self.base, self.base, self.read, self.pos, self.sub_pos
-        )

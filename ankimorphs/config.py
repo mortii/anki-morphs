@@ -107,7 +107,7 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.filters: list[AnkiMorphsConfigFilter] = _get_filters_config(is_default)
 
 
-def get_config(  # TODO make private
+def _get_config(
     key: str,
 ) -> Union[str, int, bool, list[FilterTypeAlias], None]:
     config = get_configs()
@@ -183,7 +183,7 @@ def _get_filters_config(is_default: bool = False) -> list[AnkiMorphsConfigFilter
     if is_default:
         filters_config = get_default_config("filters")
     else:
-        filters_config = get_config("filters")
+        filters_config = _get_config("filters")
     assert isinstance(filters_config, list)
 
     filters = []
@@ -196,7 +196,7 @@ def _get_key_sequence_config(key: str, is_default: bool = False) -> QKeySequence
     if is_default:
         config_item = get_default_config(key)
     else:
-        config_item = get_config(key)
+        config_item = _get_config(key)
     assert isinstance(config_item, str)
     return QKeySequence(config_item)
 
@@ -205,7 +205,7 @@ def _get_int_config(key: str, is_default: bool = False) -> int:
     if is_default:
         config_item = get_default_config(key)
     else:
-        config_item = get_config(key)
+        config_item = _get_config(key)
     assert isinstance(config_item, int)
     return config_item
 
@@ -214,7 +214,7 @@ def _get_string_config(key: str, is_default: bool = False) -> str:
     if is_default:
         config_item = get_default_config(key)
     else:
-        config_item = get_config(key)
+        config_item = _get_config(key)
     assert isinstance(config_item, str)
     return config_item
 
@@ -223,7 +223,7 @@ def _get_bool_config(key: str, is_default: bool = False) -> bool:
     if is_default:
         config_item = get_default_config(key)
     else:
-        config_item = get_config(key)
+        config_item = _get_config(key)
     assert isinstance(config_item, bool)
     return config_item
 

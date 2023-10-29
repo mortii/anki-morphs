@@ -88,7 +88,7 @@ def focus_query(
         return None
 
     query = "cid:" + "".join([f"{card_id}," for card_id in card_ids])
-    query = query[:-1]  # query[:-1] removes the last comma
+    query = query[:-1]  # removes the last comma
 
     if ready_tag:
         query += f" tag:{am_config.tag_ready}"

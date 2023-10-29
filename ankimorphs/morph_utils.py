@@ -31,6 +31,7 @@ def _get_parsed_expression(expression: str, am_config: AnkiMorphsConfig) -> str:
             expression = slim_round_brackets_regexp.sub("", expression)
 
     if am_config.parse_ignore_quotation_marks:
+        # TODO: use re.sub instead?
         expression = expression.replace('"', " ")
         expression = expression.replace("«", " ")
         expression = expression.replace("»", " ")

@@ -1,5 +1,6 @@
 from typing import Callable, Optional, Union
 
+from anki.collection import UndoStatus
 from anki.consts import CARD_TYPE_NEW
 from anki.notes import Note
 from aqt import mw
@@ -11,41 +12,73 @@ from .ankimorphs_db import AnkiMorphsDB
 from .browser_utils import browse_same_morphs
 from .config import AnkiMorphsConfig, get_matching_modify_filter
 
-
-def mark_morph_seen(card_id: int) -> None:
-    am_db = AnkiMorphsDB()
-    am_db.insert_card_morphs_into_seen_table(card_id)
-    # print("Seen_Morphs")
-    # am_db.print_table("Seen_Morphs")
-    am_db.con.close()
+SET_KNOWN_AND_SKIP_STRING = "Set known and skip"
+FIRST_UNDO_STRING = "ankimorphs_first_undo"
+set_known_and_skip_undo: Optional[UndoStatus] = None
 
 
-def am_next_card(self: Reviewer, _old: Callable[[Reviewer], None]) -> None:
-    """
-    Any "next card" function run on a background thread will
-    cause Anki to crash upon review completion because the
-    expected data is not available to the reviewer.
-
-    Anki also does not support async operations (e.g. asyncio).
-
-    Therefore, it is unavoidable that the UI freezes if many cards
-    are skipped, the only thing we can do to alleviate the problem
-    is to make the algorithm more efficient.
-    """
+def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
+    self: Reviewer, _old: Callable[[Reviewer], None]
+) -> None:
+    ################################################################
+    #                          FREEZING
+    ################################################################
+    # We cannot run this on a background thread because it will
+    # cause Anki to crash upon review completion. Anki also does
+    # not support async operations (e.g. asyncio), therefore it is
+    # unavoidable that the UI freezes if many cards are skipped.
+    # The only thing we can do to alleviate the problem is to make
+    # the algorithm more efficient.
+    ################################################################
+    ################################################################
+    #                          UNDO/REDO
+    ################################################################
+    # We are making changes (burying, tagging) BEFORE the next card
+    # is shown, that means the changes have to be merged into the
+    # previous undo entry.
+    #
+    # If the current undo status has a 'redo' value it means the
+    # user undid the previous operation and the undo stack is now
+    # 'dirty', which means we cannot merge undo entries--you get
+    # an error if you try.
+    #
+    # The new anki undo system only works on the v3 scheduler which
+    # means we can stop supporting the v2 scheduler and just display
+    # an error message if it is used.
+    ################################################################
 
     assert mw is not None
     assert self is not None
 
+    undo_status = self.mw.col.undo_status()
+    if undo_status.undo == "":
+        # No undo entries exist, so we have to create one
+        # that can be merged into.
+        mw.col.add_custom_undo_entry("AnkiMorphs hello world")
+        undo_status = self.mw.col.undo_status()
+    elif undo_status.undo == SET_KNOWN_AND_SKIP_STRING:
+        # The undo stack has been altered, so we cannot use
+        # the normal 'last_step' as a merge point, we have
+        # to use set_known_and_skip_undo last_step instead.
+        # See comment in set_card_as_known_and_skip for more info
+        assert set_known_and_skip_undo is not None
+        undo_status = set_known_and_skip_undo
+
     am_config = AnkiMorphsConfig()
     skipped_cards = SkippedCards(am_config)
     am_db = AnkiMorphsDB()
+    am_db.update_seen_morphs()
 
     while True:
+        # If a break occurs in this loop it means 'show the card'
+        # If a card makes it to the end it is buried and tagged as 'known'
+
         self.previous_card = self.card
         self.card = None
         self._v3 = None
 
         if self.mw.col.sched.version < 3:
+            # TODO: stop supporting, display error instead
             self.mw.col.reset()  # rebuilds the queue
             self._get_next_v1_v2_card()
         else:
@@ -58,8 +91,11 @@ def am_next_card(self: Reviewer, _old: Callable[[Reviewer], None]) -> None:
             self.mw.moveToState("overview")
             return
 
+        if undo_status.redo != "":
+            break  # The undo stack is dirty, we cannot merge undo entries.
+
         if self.card.type != CARD_TYPE_NEW:
-            break  # ignore non-new cards
+            break
 
         note: Note = self.card.note()
         am_config_filter = get_matching_modify_filter(note)
@@ -74,16 +110,17 @@ def am_next_card(self: Reviewer, _old: Callable[[Reviewer], None]) -> None:
         if card_unknown_morphs is None:
             break
 
-        skipped_card = skipped_cards.process_skip_conditions_of_card(
+        skip_card = skipped_cards.process_skip_conditions_of_card(
             am_db, note, card_unknown_morphs
         )
 
-        if not skipped_card:
-            break  # card did not meet any skip criteria
+        if not skip_card:
+            break
 
         self.mw.col.sched.buryCards([self.card.id], manual=False)
         note.add_tag(am_config.tag_known)
-        note.flush()
+        self.mw.col.update_note(note)
+        self.mw.col.merge_undo_entries(undo_status.last_step)
 
     am_db.con.close()
 
@@ -100,18 +137,75 @@ def am_next_card(self: Reviewer, _old: Callable[[Reviewer], None]) -> None:
 
 
 def set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> None:
-    assert self.card is not None
+    ################################################################
+    #                          KNOWN BUG
+    ################################################################
+    # When the 'set known and skip' is the only operation that
+    # has taken place the user cannot undo it. If any manual
+    # operation takes place before or after, e.g. answering a card,
+    # THEN you can undo it...
+    #
+    # So for example if you start reviewing a deck, and you press
+    # 'K' on the first card you see, it gets set as known and is
+    # skipped. At that point you cannot undo. If you answer the
+    # next card that is shown (or bury it or change it in any way)
+    # you can now undo twice and the previous 'set known and skip'
+    # will be undone.
+    #
+    # This is a weird bug, but I suspect it is due to some guards
+    # Anki has about not being able to undo something until the user
+    # has made a change manually first.
+    ################################################################
+    ################################################################
+    #                     MERGING UNDO ENTRIES
+    ################################################################
+    # Every undo entry/undo status has a 'last_step' value. This
+    # is an incremented value assigned when the operation is created.
+    # When merging undo entries this is the value that is used as
+    # a pointer/id to the undo entry.
+    #
+    # Let's say we have 3 undo entries:
+    # first_entry: UndoState(undo='answered card', redo='', last_step=1)
+    # second_entry: UndoState(undo='answered card', redo='', last_step=2)
+    # third_entry: UndoState(undo='answered card', redo='', last_step=3)
+    #
+    # If we now merged the second and third entries into the first
+    # entry, e.g. col.merge_undo_entries(1), we cannot later merge
+    # entries into 2 or 3, because they don't 'exist' anymore. If we
+    # want to merge into those then we need to merge into 1 instead.
+    # This is why we need to store set_known_and_skip_undo as a global
+    # variable--to keep track of where the entries were merged into,
+    # so we can merge into this point later in am_next_card.
+    ################################################################
 
-    # self.mw.checkpoint("Set already known focus morph")
+    assert self.card is not None
+    global set_known_and_skip_undo  # pylint:disable=global-statement
+
+    note: Note = self.card.note()
+    am_config_filter = get_matching_modify_filter(note)
+
+    if am_config_filter is None:
+        tooltip("Card does not match any note filter...")
+        return
+
+    if self.card.type != CARD_TYPE_NEW:
+        tooltip("Card is not in the 'new'-queue")
+        return
+
+    self.mw.col.add_custom_undo_entry(SET_KNOWN_AND_SKIP_STRING)
+    set_known_and_skip_undo = self.mw.col.undo_status()
+
+    self.mw.col.sched.buryCards([self.card.id], manual=False)
+
     note = self.card.note()
     note.add_tag(am_config.tag_known)
-    note.flush()
-    mark_morph_seen(self.card.id)
-    self.mw.col.sched.buryCards([self.card.id], manual=False)
-    self.mw.col.reset()  # recomputes the "new card"-queue
+    self.mw.col.update_note(note)
+
+    self.mw.col.merge_undo_entries(set_known_and_skip_undo.last_step)
 
     if am_config.skip_show_num_of_skipped_cards:
         tooltip("Set card as known and skipped")
+
     self.nextCard()
 
 
@@ -147,66 +241,6 @@ def am_reviewer_shortcut_keys(
         ]
     )
     return keys
-
-
-# def am_highlight(  # pylint:disable=too-many-locals
-#     txt: str, field, note_filter: str, ctx
-# ) -> str:
-#     """When a field is marked with the 'focusMorph' command, we format it by
-#     wrapping all the morphemes in <span>s with attributes set to its maturity"""
-
-# if note_filter != "morphHighlight":
-#     return txt
-#
-# frequency_list_path = get_preference("path_frequency")
-# try:
-#     with codecs.open(frequency_list_path, encoding="utf-8") as file:
-#         frequency_list = [line.strip().split("\t")[0] for line in file.readlines()]
-# except FileNotFoundError:
-#     frequency_list = []
-#
-# note = ctx.note()
-# tags = note.string_tags()
-#
-# note_filter = get_filter(note)
-# if note_filter is None:
-#     return txt
-#
-# morphemizer = get_morphemizer_by_name(note_filter["Morphemizer"])
-# if morphemizer is None:
-#     return txt
-#
-# proper_nouns_known = get_preference("Option_ProperNounsAlreadyKnown")
-#
-# # TODO: store these somewhere fitting to avoid instantiating them every function call
-# known_db = MorphDb(path=get_preference("path_known"))
-# mature_db = MorphDb(path=get_preference("path_mature"))
-# priority_db = MorphDb(get_preference("path_priority"), ignore_errors=True).db
-#
-# morphemes = get_morphemes(morphemizer, txt, tags)
-#
-# # Avoid formatting a smaller morph that is contained in a bigger morph, reverse sort fixes this
-# sorted_morphs = sorted(morphemes, key=lambda x: len(x.inflected), reverse=True)
-#
-# for morph in sorted_morphs:
-#     if proper_nouns_known and morph.is_proper_noun():
-#         maturity = "none"
-#     elif mature_db.matches(morph):
-#         maturity = "mature"
-#     elif known_db.matches(morph):  # TODO: fix knowndb...
-#         maturity = "unmature"
-#     else:
-#         maturity = "unknown"
-#
-#     priority = "true" if morph in priority_db else "false"
-#
-#     focus_morph_string = morph.show().split()[0]
-#     frequency = "true" if focus_morph_string in frequency_list else "false"
-#
-#     replacement = f'<span class="morphHighlight" mtype="{maturity}" priority="{priority}" frequency="{frequency}"">\\1</span>'
-#     txt = text_utils.non_span_sub(f"({morph.inflected})", replacement, txt)
-
-# return txt
 
 
 class SkippedCards:
