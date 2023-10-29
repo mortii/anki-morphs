@@ -27,13 +27,16 @@ from .morphemizer import get_morphemizer_by_name
 
 def recalc() -> None:
     assert mw is not None
+
+    mw.progress.start(label="Recalculating...")
+
     operation = QueryOp(
         parent=mw,
         op=recalc_background_op,
-        success=lambda _result_value: tooltip("Finished Recalc"),
+        success=on_success,
     )
-    operation.with_progress().run_in_background()
     operation.failure(on_failure)
+    operation.with_progress().run_in_background()
 
 
 def recalc_background_op(collection: Collection) -> None:
@@ -42,30 +45,18 @@ def recalc_background_op(collection: Collection) -> None:
     assert mw.progress is not None
 
     am_config = AnkiMorphsConfig()
-
-    mw.taskman.run_on_main(
-        lambda: mw.progress.update(  # type: ignore[union-attr]
-            label="Recalculating...",
-        )
-    )
-
     cache_anki_data(am_config)
     update_cards(am_config)
-
-    mw.taskman.run_on_main(mw.toolbar.draw)  # updates stats
-    mw.taskman.run_on_main(mw.progress.finish)
 
 
 def cache_anki_data(  # pylint:disable=too-many-locals
     am_config: AnkiMorphsConfig,
 ) -> None:
-    """
-    Extracting morphs from cards is expensive so caching them yields a significant
-    performance gain.
-
-    Rebuilding the entire ankimorphs db every time is faster and much simpler than updating it since
-    we can bulk queries to the anki db.
-    """
+    # Extracting morphs from cards is expensive so caching them yields a significant
+    # performance gain.
+    #
+    # Rebuilding the entire ankimorphs db every time is faster and much simpler than
+    # updating it since we can bulk queries to the anki db.
 
     assert mw
 
@@ -177,12 +168,11 @@ def create_card_data_dict(
 def get_anki_data(
     model_id: Optional[int], tags: list[str], ignore_suspended: bool
 ) -> dict[int, AnkiDBRowData]:
-    """
-    This query is hacky because of the limitation in sqlite where you can't
-    really build a query with variable parameter length (tags in this case)
-    More info:
-    https://stackoverflow.com/questions/5766230/select-from-sqlite-table-where-rowid-in-list-using-python-sqlite3-db-api-2-0
-    """
+    # This query is hacky because of the limitation in sqlite where you can't
+    # really build a query with variable parameter length (tags in this case)
+    # More info:
+    # https://stackoverflow.com/questions/5766230/select-from-sqlite-table-where-rowid-in-list-using-python-sqlite3-db-api-2-0
+
     assert mw
     assert mw.col.db
 
@@ -232,11 +222,9 @@ def get_card_morphs(
 def update_cards(  # pylint:disable=too-many-locals
     am_config: AnkiMorphsConfig,
 ) -> None:
-    """
-    A single sqlite query is very fast, but looping queries is
-    incredibly slow because of the overhead, so instead we query
-    once and store the data.
-    """
+    # A single sqlite query is very fast, but looping queries is
+    # incredibly slow because of the overhead, so instead we query
+    # once and store the data.
 
     assert mw is not None
     assert mw.col.db is not None
@@ -320,20 +308,30 @@ def update_cards(  # pylint:disable=too-many-locals
         )
     )
 
-    # When multiple cards have the same due (difficulty), then anki chooses one
-    # for review and ignores the others, therefore we need to make sure all cards
-    # have a unique due. To achieve this we sort cards_modified_data based on due,
-    # and then we replace the due with the index the card has in the list,
-    # normalizing the due value in the process.
+    ################################################################
+    #                          UNIQUE DUE
+    ################################################################
+    # When multiple cards have the same due (difficulty), then anki
+    # chooses one for review and ignores the others, therefore we
+    # need to make sure all cards have a unique due. To achieve this
+    # we sort cards_modified_data based on due, and then we replace
+    # the due with the index the card has in the list, normalizing
+    # the due value in the process.
+    ################################################################
 
     cards_modified_data = sorted(cards_modified_data, key=lambda x: x[0])
     for index, card_data in enumerate(cards_modified_data, start=end_of_queue):
         card_data[0] = index
 
-    # TODO: col.update_cards() and col.update_notes() provide
-    # undoable operations unlike col.db.executemany, maybe
-    # it also maintains sync? Try implementing them and see
-    # if they are viable alternatives.
+    ################################################################
+    #                          EXECUTEMANY
+    ################################################################
+    # TODO:
+    #  using col.update_cards() and col.update_notes()
+    #  maintains sync as opposed to using col.db.executemany.
+    #  It might be worth it to try implementing them instead.
+    #  Performance will suffer, but it might be negligible.
+    ################################################################
 
     mw.col.db.executemany(
         "update cards set due=?, mod=? where id=?",
@@ -483,22 +481,24 @@ def get_card_difficulty_and_unknowns(
     morph_cache: dict[str, int],
     morph_priority: dict[str, int],
 ) -> tuple[int, list[str]]:
-    """
-    We want our algorithm to determine difficulty based on the following importance:
-        1. if the card has unknown morphs (unknown_morph_penalty)
-        2. the priority of the card's morphs (morph_priority_penalty)
-
-    Stated a different way: one unknown morph must be more punishing than any amount
-    of known morphs with low priority. To achieve the behaviour we get the constraint:
-        unknown_morph_penalty > sum(morph_priority_penalty)  #(1.1)
-
-    We need to set some arbitrary limits to make the algorithm practical:
-        1. Assume max(morph_priority) = 50k (a frequency list of 50k morphs)  #(2.1)
-        2. Limit max(sum(morph_priority_penalty)) = max(morph_priority) * 10  #(2.2)
-
-    With the equations #(1.1), #(2.1), and #(2.2) we get:
-        morph_unknown_penalty = 500,000
-    """
+    ####################################################################################
+    #                                      ALGORITHM
+    ####################################################################################
+    # We want our algorithm to determine difficulty based on the following importance:
+    #     1. if the card has unknown morphs (unknown_morph_penalty)
+    #     2. the priority of the card's morphs (morph_priority_penalty)
+    #
+    # Stated a different way: one unknown morph must be more punishing than any amount
+    # of known morphs with low priority. To achieve the behaviour we get the constraint:
+    #     unknown_morph_penalty > sum(morph_priority_penalty)  #(1.1)
+    #
+    # We need to set some arbitrary limits to make the algorithm practical:
+    #     1. Assume max(morph_priority) = 50k (a frequency list of 50k morphs)  #(2.1)
+    #     2. Limit max(sum(morph_priority_penalty)) = max(morph_priority) * 10  #(2.2)
+    #
+    # With the equations #(1.1), #(2.1), and #(2.2) we get:
+    #     morph_unknown_penalty = 500,000
+    ####################################################################################
 
     default_difficulty = 2147483647  # arbitrary, 32 bit int max
     morph_unknown_penalty = 500000
@@ -581,10 +581,24 @@ def modify_card_tags(
     return f" {' '.join(list(tags))} "
 
 
+def on_success(result: Any) -> None:
+    # This function runs on the main thread.
+    del result  # unused
+    assert mw is not None
+    assert mw.progress is not None
+    mw.toolbar.draw()  # updates stats
+    mw.progress.finish()
+    tooltip("Finished Recalc")
+
+
 def on_failure(
     error: Union[Exception, DefaultSettingsException, CancelledRecalcException]
 ) -> None:
-    # TODO: check which thread this runs on (print_thread_name debug_utils)
+    # This function runs on the main thread.
+    assert mw is not None
+    assert mw.progress is not None
+    mw.progress.finish()
+
     if isinstance(error, DefaultSettingsException):
         title = "AnkiMorphs Error"
         text = "Save settings before using Recalc!"
@@ -595,9 +609,6 @@ def on_failure(
         critical_box.setText(text)
         critical_box.exec()
     elif isinstance(error, CancelledRecalcException):
-        assert mw is not None
-        assert mw.progress is not None
-        mw.taskman.run_on_main(mw.progress.finish)
         tooltip("Cancelled Recalc")
     else:
         raise error

@@ -127,8 +127,8 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
 
-    test_action = create_test_action()
-    am_tool_menu.addAction(test_action)
+    # test_action = create_test_action()
+    # am_tool_menu.addAction(test_action)
 
 
 def init_browser_menus_and_actions() -> None:
