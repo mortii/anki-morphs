@@ -1,13 +1,12 @@
 # Roadmap
 
 1. Fix undo-review
-   1. Remove calls to mw.checkpoint() and mw.reset()
    2. migrate away from col.db.execute to col.update_notes / col.update_cards
-   3. migrate from card.flush / note.flush to col.update_notes / col.update_cards
    4. on finish recalc function for query op (fsrs4sanki style)
    5. check if fsrs4anki concflicts with reviewing
    6. SearchNode brower utils
 2. check thread on_failure
+3. escape tags in browser utils
 3. use re.sub for quotation marks
 4. Try to made recalc undoable?
 5. Remake highlighting feature

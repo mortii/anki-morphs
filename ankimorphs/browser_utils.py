@@ -109,7 +109,7 @@ def run_already_known_tagger() -> None:
         card = mw.col.get_card(cid)
         note = card.note()
         note.add_tag(known_tag)
-        note.flush()
+        mw.col.update_note(note)
 
     tooltip(f"{len(selected_cards)} notes given the {known_tag} tag")
 
