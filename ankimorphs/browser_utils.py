@@ -9,8 +9,9 @@ from aqt.utils import tooltip
 from .ankimorphs_db import AnkiMorphsDB
 from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter, get_matching_read_filter
 
-# A bug in the anki module leads to cyclic imports if this is placed higher
+# A bug in the anki module leads to cyclic imports if these are placed higher
 from anki.notes import Note  # isort:skip pylint:disable=wrong-import-order
+from anki.collection import SearchNode  # isort:skip pylint:disable=wrong-import-order
 
 
 browser: Optional[Browser] = None
@@ -36,14 +37,12 @@ def browse_same_morphs(
     search_unknowns: bool = False,
     search_ready_tag: bool = False,
 ) -> None:
-    """
-    Opens browser and displays all notes with the same focus morph.
-    Useful to quickly find alternative notes to learn focus from.
-
-    The query is a list of card ids. This might seem unnecessarily complicated, but
-    if we were to only query the text on the cards themselves we can get false positives
-    because inflected morphs with different bases can be identical to each-other.
-    """
+    # Opens browser and displays all notes with the same focus morph.
+    # Useful to quickly find alternative notes to learn focus from.
+    #
+    # The query is a list of card ids. This might seem unnecessarily complicated, but
+    # if we were to only query the text on the cards themselves we can get false positives
+    # because inflected morphs with different bases can be identical to each-other.
 
     global browser  # pylint:disable=global-statement
 
@@ -84,6 +83,8 @@ def focus_query(
     card_ids: set[int],
     ready_tag: bool = False,
 ) -> Optional[str]:
+    assert mw is not None
+
     if len(card_ids) == 0:
         return None
 
@@ -91,7 +92,8 @@ def focus_query(
     query = query[:-1]  # removes the last comma
 
     if ready_tag:
-        query += f" tag:{am_config.tag_ready}"
+        # we can escape characters like underscore in tags by using SearchNode
+        query += " " + mw.col.build_search_string(SearchNode(tag=am_config.tag_ready))
 
     return query
 

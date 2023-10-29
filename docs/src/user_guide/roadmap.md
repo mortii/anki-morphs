@@ -1,16 +1,15 @@
 # Roadmap
 
-1. escape tags in browser utils (SearchNode)
-2. use re.sub for quotation marks
-3. Remake highlighting feature
-4. Implement spaCy
-5. Remove old morphemizers
-6. Remake readability analyzer
-7. Allow for custom morph prioritization for specified languages (e.g. jp-morph-priority.txt)
-8. Allow for a custom list of proper nouns that Anki-Morphs will automatically skip
-9. Remake tests
-10. Update guide
-11. **Release AnkiMorphs stable version**
-12. Implement optional "automatic recalc before sync"
-13. Remake statistics page
-14. Implement "cloze"-option [(#12)](https://github.com/mortii/anki-morphs/discussions/12)
+1. use re.sub for quotation marks
+2. Remake highlighting feature
+3. Implement spaCy
+4. Remove old morphemizers
+5. Remake readability analyzer
+6. Allow for custom morph prioritization for specified languages (e.g. jp-morph-priority.txt)
+7. Allow for a custom list of proper nouns that Anki-Morphs will automatically skip
+8. Remake tests
+9. Update guide
+10. **Release AnkiMorphs stable version**
+11. Implement optional "automatic recalc before sync"
+12. Remake statistics page
+13. Implement "cloze"-option [(#12)](https://github.com/mortii/anki-morphs/discussions/12)
