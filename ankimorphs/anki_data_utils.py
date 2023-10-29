@@ -18,7 +18,6 @@ class AnkiDBRowData:
         "card_id",
         "card_interval",
         "card_type",
-        "card_queue_status",
         "note_id",
         "note_fields",
         "note_tags",
@@ -33,9 +32,6 @@ class AnkiDBRowData:
 
         assert isinstance(data_row[2], int)
         self.card_type: int = data_row[2]
-
-        assert isinstance(data_row[3], int)
-        self.card_queue_status: int = data_row[3]
 
         assert isinstance(data_row[4], int)
         self.note_id: int = data_row[4]

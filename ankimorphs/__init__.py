@@ -272,56 +272,56 @@ def create_already_known_tagger_action(am_config: AnkiMorphsConfig) -> QAction:
     return action
 
 
-def create_test_action() -> QAction:
-    keys = QKeySequence("Ctrl+T")
-    action = QAction("&Test", mw)
-    action.setShortcut(keys)
-    action.triggered.connect(test_function)
-    return action
+# def create_test_action() -> QAction:
+#     keys = QKeySequence("Ctrl+T")
+#     action = QAction("&Test", mw)
+#     action.setShortcut(keys)
+#     action.triggered.connect(test_function)
+#     return action
+#
+#
+# def test_function() -> None:
+#     assert mw is not None
+#     assert mw.col.db is not None
 
+# table_info = mw.col.db.execute("PRAGMA table_info('decks');")
+# print(f"table_info: {table_info}")
 
-def test_function() -> None:
-    assert mw is not None
-    assert mw.col.db is not None
+# due_cards = mw.col.find_cards("is:due")
+# rated_ids = mw.col.find_cards("rated:1")  # all studied today
+# rated_ids = mw.col.find_cards("introduced:1")  # first reviewed today
+#
+# # print(f"due_cards: {due_cards}")
+# print(f"rated_ids: {rated_ids}")
 
-    # table_info = mw.col.db.execute("PRAGMA table_info('decks');")
-    # print(f"table_info: {table_info}")
+# am_db = AnkiMorphsDB()
+#
+# with am_db.con:
+#     result = am_db.con.execute(
+#         """
+#             SELECT morph_norm, morph_inflected
+#             FROM Card_Morph_Map
+#             WHERE card_id = 1691325536242
+#             """
+#     ).fetchall()
+# print(f"result?: {result}")
+#
+# with am_db.con:
+#     am_db.con.execute(
+#         """
+#             INSERT OR IGNORE INTO Seen_Morphs (norm, inflected)
+#             SELECT morph_norm, morph_inflected
+#             FROM Card_Morph_Map
+#             WHERE card_id = 1691325536242
+#             """
+#     )
+#
+# # WHERE card_id = 1673815531636 AND card_id = 1673815532356
+#
+# print("Seen_Morphs: ")
+# am_db.print_table("Seen_Morphs")
 
-    # due_cards = mw.col.find_cards("is:due")
-    # rated_ids = mw.col.find_cards("rated:1")  # all studied today
-    # rated_ids = mw.col.find_cards("introduced:1")  # first reviewed today
-    #
-    # # print(f"due_cards: {due_cards}")
-    # print(f"rated_ids: {rated_ids}")
-
-    # am_db = AnkiMorphsDB()
-    #
-    # with am_db.con:
-    #     result = am_db.con.execute(
-    #         """
-    #             SELECT morph_norm, morph_inflected
-    #             FROM Card_Morph_Map
-    #             WHERE card_id = 1691325536242
-    #             """
-    #     ).fetchall()
-    # print(f"result?: {result}")
-    #
-    # with am_db.con:
-    #     am_db.con.execute(
-    #         """
-    #             INSERT OR IGNORE INTO Seen_Morphs (norm, inflected)
-    #             SELECT morph_norm, morph_inflected
-    #             FROM Card_Morph_Map
-    #             WHERE card_id = 1691325536242
-    #             """
-    #     )
-    #
-    # # WHERE card_id = 1673815531636 AND card_id = 1673815532356
-    #
-    # print("Seen_Morphs: ")
-    # am_db.print_table("Seen_Morphs")
-
-    # am_db.con.close()
+# am_db.con.close()
 
 
 main()

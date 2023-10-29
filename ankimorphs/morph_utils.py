@@ -35,9 +35,3 @@ def _get_parsed_expression(expression: str, am_config: AnkiMorphsConfig) -> str:
         expression = re.sub('["«»]', " ", expression)
 
     return expression
-
-
-def alt_includes_morpheme(morph: Morpheme, alt: Morpheme) -> bool:
-    return morph.norm == alt.norm and (
-        morph.base == alt.base or morph.base_kanji() <= alt.base_kanji()
-    )

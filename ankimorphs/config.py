@@ -31,9 +31,9 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
             _filter, "focus_morph_field_index"
         )
         self.highlighted_field: str = _get_filter_str(_filter, "highlighted_field")
-        self.highlighted_field_index: Optional[int] = _get_filter_optional_int(
-            _filter, "highlighted_field_index"
-        )
+        # self.highlighted_field_index: Optional[int] = _get_filter_optional_int(
+        #     _filter, "highlighted_field_index"
+        # )
         self.difficulty_field: str = _get_filter_str(_filter, "difficulty_field")
         self.difficulty_field_index: Optional[int] = _get_filter_optional_int(
             _filter, "difficulty_field_index"
@@ -73,15 +73,15 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.recalc_interval_for_known: int = _get_int_config(
             "recalc_interval_for_known", is_default
         )
-        self.recalc_before_sync: bool = _get_bool_config(
-            "recalc_before_sync", is_default
-        )
+        # self.recalc_before_sync: bool = _get_bool_config(
+        #     "recalc_before_sync", is_default
+        # )
         self.recalc_prioritize_collection: bool = _get_bool_config(
             "recalc_prioritize_collection", is_default
         )
-        self.recalc_prioritize_textfile: bool = _get_bool_config(
-            "recalc_prioritize_textfile", is_default
-        )
+        # self.recalc_prioritize_textfile: bool = _get_bool_config(
+        #     "recalc_prioritize_textfile", is_default
+        # )
         self.parse_ignore_quotation_marks: bool = _get_bool_config(
             "parse_ignore_quotation_marks", is_default
         )

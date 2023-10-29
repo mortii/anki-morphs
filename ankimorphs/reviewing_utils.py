@@ -13,7 +13,6 @@ from .browser_utils import browse_same_morphs
 from .config import AnkiMorphsConfig, get_matching_modify_filter
 
 SET_KNOWN_AND_SKIP_STRING = "Set known and skip"
-FIRST_UNDO_STRING = "ankimorphs_first_undo"
 set_known_and_skip_undo: Optional[UndoStatus] = None
 
 

@@ -180,18 +180,6 @@ class AnkiMorphsDB:
 
         return card_morphs
 
-    def insert_card_morphs_into_seen_table(self, card_id: int) -> None:
-        with self.con:
-            self.con.execute(
-                """
-                    INSERT OR IGNORE INTO Seen_Morphs (norm, inflected)
-                    SELECT morph_norm, morph_inflected
-                    FROM Card_Morph_Map
-                    WHERE card_id = ?
-                    """,
-                (card_id,),
-            )
-
     def update_seen_morphs(self) -> None:
         cards_studied_today: Sequence[int] = get_cards_seen_today()
 

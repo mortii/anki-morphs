@@ -36,17 +36,9 @@ MECAB_SUBPOS_BLACKLIST = [
 
 is_unidic = True  # pylint:disable=invalid-name
 
-KANJI = r"[㐀-䶵一-鿋豈-頻]"
 wide_alpha_num_rx = re.compile(r"[０-９Ａ-Ｚａ-ｚ]")
 
 mecab_source = ""  # pylint:disable=invalid-name
-
-
-def extract_unicode_block(unicode_block, string):
-    """extracts and returns all texts from a unicode block from string argument.
-    Note that you must use the unicode blocks defined above, or patterns of similar form
-    """
-    return re.findall(unicode_block, string)
 
 
 def get_mecab_identity():

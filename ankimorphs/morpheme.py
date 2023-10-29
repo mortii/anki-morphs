@@ -1,10 +1,3 @@
-def char_set(start: str, end: str) -> set:
-    return {chr(_char) for _char in range(ord(start), ord(end) + 1)}
-
-
-kanji_chars = char_set("㐀", "䶵") | char_set("一", "鿋") | char_set("豈", "頻")
-
-
 class Morpheme:
     def __init__(  # pylint:disable=too-many-arguments
         self, norm, base, inflected, read, pos, sub_pos
@@ -59,7 +52,3 @@ class Morpheme:
         return hash(
             (self.norm, self.base, self.inflected, self.read, self.pos, self.sub_pos)
         )
-
-    def base_kanji(self) -> set:
-        # todo: profile and maybe cache
-        return set(self.base) & kanji_chars

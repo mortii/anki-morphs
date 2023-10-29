@@ -52,7 +52,14 @@ markers = [
 
 [tool.vulture]
 paths = ["ankimorphs"]
-exclude = ["ankimorphs/deps/", "ankimorphs/ui/", "ankimorphs/util_external.py"]
-min_confidence = 80
+exclude = [
+  "ankimorphs/deps/",
+  "ankimorphs/ui/",
+  "ankimorphs/util_external.py",
+  "ankimorphs/debug_utils.py",
+  "ankimorphs/mecab_wrapper.py"
+]
+ignore_names = ["print_*", "_refresh_needed", "_v3"]
+min_confidence = 60
 sort_by_size = true
 verbose = false

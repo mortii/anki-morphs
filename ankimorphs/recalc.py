@@ -457,23 +457,6 @@ def get_am_cards_data_dict(
     return am_db_row_data_dict
 
 
-def get_am_db_cards_to_update(am_db: AnkiMorphsDB, note_type_id: int) -> list[int]:
-    assert mw is not None
-    assert mw.col.db is not None
-
-    raw_card_ids = am_db.con.execute(
-        """
-        Select id
-        FROM Cards
-        WHERE card_type = 0 AND note_type_id = ?
-        """,
-        (note_type_id,),
-    ).fetchall()
-
-    card_ids = [row[0] for row in raw_card_ids]
-    return card_ids
-
-
 def get_card_difficulty_and_unknowns(
     am_config: AnkiMorphsConfig,
     card_id: int,
