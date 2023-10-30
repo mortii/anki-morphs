@@ -332,16 +332,35 @@ def update_cards(  # pylint:disable=too-many-locals
     #  It might be worth it to try implementing them instead.
     #  Performance will suffer, but it might be negligible.
     ################################################################
+    col = mw.col
+    cards = []
+    for card_data in cards_modified_data:
+        card = col.get_card(card_data[2])
+        card.due = card_data[0]
+        cards.append(card)
+    col.update_cards(cards)
 
-    mw.col.db.executemany(
-        "update cards set due=?, mod=? where id=?",
-        cards_modified_data,
-    )
+    # mw.col.db.executemany(
+    #     "update cards set due=?, mod=? where id=?",
+    #     cards_modified_data,
+    # )
+    notes = []
+    for note_data in notes_modified_data:
+        note = col.get_note(note_data[3])
+        note.set_tags_from_str(note_data[0])
+        new_fields = note_data[1].split("\x1f")
+        i = 0
+        for [field, _value] in note.items():
+            note[field] = new_fields[i]
+            i+=1
+        notes.append(note)
+    col.update_notes(notes)
+        
 
-    mw.col.db.executemany(
-        "update notes set tags=?, flds=?, mod=? where id=?",
-        notes_modified_data,
-    )
+    # mw.col.db.executemany(
+    #     "update notes set tags=?, flds=?, mod=? where id=?",
+    #     notes_modified_data,
+    # )
 
     am_db.con.close()
 
