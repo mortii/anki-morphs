@@ -13,7 +13,16 @@ from .browser_utils import browse_same_morphs
 from .config import AnkiMorphsConfig, get_matching_modify_filter
 
 SET_KNOWN_AND_SKIP_STRING = "Set known and skip"
+ANKIMORPHS_UNDO_TARGET = "AnkiMorphs custom undo target"
 set_known_and_skip_undo: Optional[UndoStatus] = None
+valid_undo_merge_targets: set[str] = {  # a set has faster lookup than a list
+    "Answer Card",
+    "Bury",
+    "Suspend",
+    "Forget Card",
+    "Set Due Date",
+    "Delete Note",
+}
 
 
 def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
@@ -55,18 +64,18 @@ def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
         return
 
     undo_status = self.mw.col.undo_status()
-    if undo_status.undo == "":
-        # No undo entries exist, so we have to create one
-        # that can be merged into.
-        mw.col.add_custom_undo_entry("AnkiMorphs hello world")
-        undo_status = self.mw.col.undo_status()
-    elif undo_status.undo == SET_KNOWN_AND_SKIP_STRING:
+
+    if undo_status.undo == SET_KNOWN_AND_SKIP_STRING:
         # The undo stack has been altered, so we cannot use
         # the normal 'last_step' as a merge point, we have
         # to use set_known_and_skip_undo last_step instead.
         # See comment in set_card_as_known_and_skip for more info
         assert set_known_and_skip_undo is not None
         undo_status = set_known_and_skip_undo
+    elif undo_status.undo not in valid_undo_merge_targets:
+        # We have to create a custom undo_targets that can be merged into.
+        mw.col.add_custom_undo_entry(ANKIMORPHS_UNDO_TARGET)
+        undo_status = self.mw.col.undo_status()
 
     am_config = AnkiMorphsConfig()
     skipped_cards = SkippedCards(am_config)
