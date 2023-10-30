@@ -23,9 +23,9 @@ context-dependent therefore isolated morphs might get the wrong highlighting.
 Then add the following to the "Styling" section (choose any color you want):
 
 ``` css
-[mtype=unknown] { color: #f75464; } /* red */
-[mtype=unmature] { color: #8bb33d; } /* light-green */
-[mtype=mature] { color: green; }
+[morph-status=unknown] { color: #f75464; } /* red */
+[morph-status=learning] { color: #8bb33d; } /* light-green */
+[morph-status=known] { color: green; }
 ```
 
 ![styling.png](../../img/styling.png)
@@ -33,9 +33,9 @@ Then add the following to the "Styling" section (choose any color you want):
 It’s also possible to use “background-color” instead of “color”:
 
 ``` css
-[mtype=unknown] { background-color: #ffff99; } /* yellow */
-[mtype=unmature] { background-color: #f2f2f2; } /* gray */
-[mtype=mature] { background-color: #b3e6cc; } /* green */
+[morph-status=unknown] { background-color: #ffff99; } /* yellow */
+[morph-status=learning] { background-color: #f2f2f2; } /* gray */
+[morph-status=known] { background-color: #b3e6cc; } /* green */
 ``` 
 
 In order for the color-coding to take effect, you first need to run [Recalc](../usage/recalc.md), which will and have

@@ -126,8 +126,6 @@ def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
             break
 
         self.mw.col.sched.buryCards([self.card.id], manual=False)
-        note.add_tag(am_config.tag_known)
-        self.mw.col.update_note(note)
         self.mw.col.merge_undo_entries(undo_status.last_step)
 
     am_db.con.close()

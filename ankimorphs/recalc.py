@@ -1,11 +1,13 @@
+import re
 from collections import Counter
 from collections.abc import Sequence
 from functools import partial
 from typing import Any, Optional, Union
 
-import anki.utils
+from anki.cards import Card
 from anki.collection import Collection
-from anki.notes import NoteId
+from anki.consts import CARD_TYPE_NEW
+from anki.notes import Note
 from anki.tags import TagManager
 from aqt import mw
 from aqt.operations import QueryOp
@@ -247,10 +249,8 @@ def update_cards(  # pylint:disable=too-many-locals,too-many-statements
     morph_priority: dict[str, int] = get_morph_priority(am_db, am_config)
     end_of_queue: int = mw.col.db.scalar("select count() from cards where type = 0")
 
-    cards_modified_data: list[list[int]] = []
-    notes_modified_data: list[list[Union[str, int]]] = []
-
-    modified_time = anki.utils.int_time()
+    modified_cards: list[Card] = []
+    modified_notes: list[Note] = []
 
     for config_filter in modify_config_filters:
         assert config_filter.note_type_id is not None
@@ -274,33 +274,36 @@ def update_cards(  # pylint:disable=too-many-locals,too-many-statements
                     )
                 )
 
-            card_difficulty, unknowns = get_card_difficulty_and_unknowns(
+            card = mw.col.get_card(card_id)
+            note = card.note()
+
+            if card.type == CARD_TYPE_NEW:
+                card_difficulty, unknowns = get_card_difficulty_and_unknowns(
+                    am_config,
+                    card_id,
+                    card_morph_map_cache,
+                    morph_cache,
+                    morph_priority,
+                )
+
+                card.due = card_difficulty
+                update_focus_morph_field(config_filter, note, unknowns)
+                update_difficulty_field(config_filter, note, card_difficulty)
+                update_tags(am_config, note, len(unknowns))
+
+            update_highlighted_field(
                 am_config,
-                card_id,
+                config_filter,
                 card_morph_map_cache,
                 morph_cache,
-                morph_priority,
+                card.id,
+                note,
             )
 
-            due = card_difficulty
+            modified_cards.append(card)
+            modified_notes.append(note)
 
-            fields = modify_card_fields(
-                cards_data_map[card_id].fields, config_filter, unknowns, card_difficulty
-            )
-
-            tags = modify_card_tags(
-                am_config, tag_manager, cards_data_map[card_id].tags, len(unknowns)
-            )
-
-            cards_modified_data.append([due, modified_time, card_id])
-            notes_modified_data.append(
-                [
-                    tags,
-                    fields,
-                    modified_time,
-                    cards_data_map[card_id].note_id,
-                ]
-            )
+    am_db.con.close()
 
     mw.taskman.run_on_main(
         partial(
@@ -315,56 +318,18 @@ def update_cards(  # pylint:disable=too-many-locals,too-many-statements
     # When multiple cards have the same due (difficulty), then anki
     # chooses one for review and ignores the others, therefore we
     # need to make sure all cards have a unique due. To achieve this
-    # we sort cards_modified_data based on due, and then we replace
-    # the due with the index the card has in the list, normalizing
-    # the due value in the process.
+    # we sort modified_cards based on due, and then we replace
+    # the due with the index the card has in the list.
     ################################################################
 
-    cards_modified_data = sorted(cards_modified_data, key=lambda x: x[0])
-    for index, card_data in enumerate(cards_modified_data, start=end_of_queue):
-        card_data[0] = index
+    modified_cards.sort(key=lambda _card: _card.due)
 
-    ################################################################
-    #                          EXECUTEMANY
-    ################################################################
-    # TODO:
-    #  using col.update_cards() and col.update_notes()
-    #  maintains sync as opposed to using col.db.executemany.
-    #  It might be worth it to try implementing them instead.
-    #  Performance will suffer, but it might be negligible.
-    ################################################################
-    col = mw.col
-    cards = []
-    for card_data in cards_modified_data:
-        card = col.get_card(card_data[2])
-        card.due = card_data[0]
-        cards.append(card)
-    col.update_cards(cards)
+    for index, card in enumerate(modified_cards, start=end_of_queue):
+        if card.type == CARD_TYPE_NEW:
+            card.due = index
 
-    # mw.col.db.executemany(
-    #     "update cards set due=?, mod=? where id=?",
-    #     cards_modified_data,
-    # )
-    notes = []
-    for note_data in notes_modified_data:
-        note_id = NoteId(int(note_data[3]))
-        note = col.get_note(note_id)
-        note.set_tags_from_str(str(note_data[0]))
-        fields = str(note_data[1])
-        new_fields = fields.split("\x1f")
-        i = 0
-        for [field, _value] in note.items():
-            note[field] = new_fields[i]
-            i += 1
-        notes.append(note)
-    col.update_notes(notes)
-
-    # mw.col.db.executemany(
-    #     "update notes set tags=?, flds=?, mod=? where id=?",
-    #     notes_modified_data,
-    # )
-
-    am_db.con.close()
+    mw.col.update_cards(modified_cards)
+    mw.col.update_notes(modified_notes)
 
 
 def get_morph_cache(am_db: AnkiMorphsDB) -> dict[str, int]:
@@ -467,7 +432,7 @@ def get_am_cards_data_dict(
         """
         SELECT card_id, note_id, note_type_id, card_type, fields, tags
         FROM Cards
-        WHERE note_type_id = ? AND card_type = 0
+        WHERE note_type_id = ?
         """,
         (note_type_id,),
     ).fetchall()
@@ -537,52 +502,111 @@ def get_card_difficulty_and_unknowns(
     return difficulty, unknowns
 
 
-def modify_card_fields(
-    fields: str,
-    config_filter: AnkiMorphsConfigFilter,
-    unknowns: list[str],
-    difficulty: int,
-) -> str:
-    fields_list: list[str] = anki.utils.split_fields(fields)
-
+def update_focus_morph_field(
+    config_filter: AnkiMorphsConfigFilter, note: Note, unknowns: list[str]
+) -> None:
     if config_filter.focus_morph_field_index is not None:
         if config_filter.focus_morph_field_index > 0:
             focus_morph_string: str = "".join(f"{unknown}, " for unknown in unknowns)
             focus_morph_string = focus_morph_string[:-2]  # removes last comma
-            fields_list[config_filter.focus_morph_field_index - 1] = focus_morph_string
+            note.fields[config_filter.focus_morph_field_index - 1] = focus_morph_string
 
+
+def update_difficulty_field(
+    config_filter: AnkiMorphsConfigFilter, note: Note, difficulty: int
+) -> None:
     if config_filter.difficulty_field_index is not None:
         if config_filter.difficulty_field_index > 0:
-            fields_list[config_filter.difficulty_field_index - 1] = str(difficulty)
-
-    return anki.utils.join_fields(fields_list)
+            note.fields[config_filter.difficulty_field_index - 1] = str(difficulty)
 
 
-def modify_card_tags(
+def update_highlighted_field(  # pylint:disable=too-many-arguments
     am_config: AnkiMorphsConfig,
-    tag_manager: TagManager,
-    original_tags: str,
-    unknowns: int,
-) -> str:
-    tags: set[str] = set(tag_manager.split(original_tags))
+    config_filter: AnkiMorphsConfigFilter,
+    card_morph_map_cache: dict[int, list[dict[str, str]]],
+    morph_cache: dict[str, int],
+    card_id: int,
+    note: Note,
+) -> None:
+    try:
+        card_morphs: list[dict[str, str]] = card_morph_map_cache[card_id]
+    except KeyError:
+        # card does not have morphs or is buggy in some way
+        return
 
+    if config_filter.highlighted_field_index is not None:
+        assert config_filter.field_index is not None
+        if config_filter.highlighted_field_index > 0:
+            text_to_highlight = note.fields[config_filter.field_index]
+            highlighted_text = highlight_text(
+                am_config,
+                card_morphs,
+                morph_cache,
+                text_to_highlight,
+            )
+            note.fields[config_filter.highlighted_field_index - 1] = highlighted_text
+
+
+def update_tags(am_config: AnkiMorphsConfig, note: Note, unknowns: int) -> None:
     if unknowns == 0:
-        if am_config.tag_known not in tags:
-            tags.add(am_config.tag_known)
-        if am_config.tag_ready in tags:
-            tags.remove(am_config.tag_ready)
+        if am_config.tag_known not in note.tags:
+            note.tags.append(am_config.tag_known)
+        if am_config.tag_ready in note.tags:
+            note.tags.remove(am_config.tag_ready)
     elif unknowns == 1:
-        if am_config.tag_ready not in tags:
-            tags.add(am_config.tag_ready)
-        if am_config.tag_not_ready in tags:
-            tags.remove(am_config.tag_not_ready)
+        if am_config.tag_ready not in note.tags:
+            note.tags.append(am_config.tag_ready)
+        if am_config.tag_not_ready in note.tags:
+            note.tags.remove(am_config.tag_not_ready)
     else:
-        if am_config.tag_not_ready not in tags:
-            tags.add(am_config.tag_not_ready)
+        if am_config.tag_not_ready not in note.tags:
+            note.tags.append(am_config.tag_not_ready)
 
-    if not tags:
-        return ""
-    return f" {' '.join(list(tags))} "
+
+def highlight_text(
+    am_config: AnkiMorphsConfig,
+    card_morphs: list[dict[str, str]],
+    morph_cache: dict[str, int],
+    text_to_highlight: str,
+) -> str:
+    highlighted_text = text_to_highlight
+
+    # TODO: create a dataclass for morph
+    # Avoid formatting a smaller morph that is contained in a bigger morph, reverse sort fixes this
+    sorted_morphs = sorted(
+        card_morphs, key=lambda x: len(x["inflected_morph"]), reverse=True
+    )
+
+    for morph in sorted_morphs:
+        highest_interval = morph_cache[morph["entire_morph"]]
+        if highest_interval == 0:
+            morph_status = "unknown"
+        elif highest_interval < am_config.recalc_interval_for_known:
+            morph_status = "learning"
+        else:
+            morph_status = "known"
+
+        # print(f"morph: {morph}")
+        # print(f"maturity: {morph_status}")
+        replacement = f'<span morph-status="{morph_status}">\\1</span>'
+        highlighted_text = non_span_sub(
+            f"({morph['inflected_morph']})", replacement, highlighted_text
+        )
+
+    # print(f"highlighted_text: {highlighted_text}")
+    return highlighted_text
+
+
+def non_span_sub(sub: str, repl: str, string: str) -> str:
+    txt = ""
+    for span in re.split("(<span.*?</span>)", string):
+        if span.startswith("<span"):
+            txt += span
+        else:
+            txt += "".join(re.sub(sub, repl, span, flags=re.IGNORECASE))
+
+    # print(f"non_span_sub: {txt}")
+    return txt
 
 
 def on_success(result: Any) -> None:

@@ -10,11 +10,9 @@ from .config import AnkiMorphsConfig
 
 
 class AnkiMorphsDB:
-    """
-    A card can have many morphs, morphs can be on many cards
-    therefore we need a many-to-many db structure:
-    Cards -> Card_Morph_Map <- Morphs
-    """
+    # A card can have many morphs, morphs can be on many cards
+    # therefore we need a many-to-many db structure:
+    # Cards -> Card_Morph_Map <- Morphs
 
     def __init__(self) -> None:
         assert mw is not None

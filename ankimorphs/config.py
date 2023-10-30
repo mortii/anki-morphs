@@ -31,9 +31,9 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
             _filter, "focus_morph_field_index"
         )
         self.highlighted_field: str = _get_filter_str(_filter, "highlighted_field")
-        # self.highlighted_field_index: Optional[int] = _get_filter_optional_int(
-        #     _filter, "highlighted_field_index"
-        # )
+        self.highlighted_field_index: Optional[int] = _get_filter_optional_int(
+            _filter, "highlighted_field_index"
+        )
         self.difficulty_field: str = _get_filter_str(_filter, "difficulty_field")
         self.difficulty_field_index: Optional[int] = _get_filter_optional_int(
             _filter, "difficulty_field_index"
