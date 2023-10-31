@@ -5,6 +5,7 @@ from typing import Any, Optional, Union
 
 import anki.utils
 from anki.collection import Collection
+from anki.notes import NoteId
 from anki.tags import TagManager
 from aqt import mw
 from aqt.operations import QueryOp
@@ -332,16 +333,36 @@ def update_cards(  # pylint:disable=too-many-locals
     #  It might be worth it to try implementing them instead.
     #  Performance will suffer, but it might be negligible.
     ################################################################
+    col = mw.col
+    cards = []
+    for card_data in cards_modified_data:
+        card = col.get_card(card_data[2])
+        card.due = card_data[0]
+        cards.append(card)
+    col.update_cards(cards)
 
-    mw.col.db.executemany(
-        "update cards set due=?, mod=? where id=?",
-        cards_modified_data,
-    )
+    # mw.col.db.executemany(
+    #     "update cards set due=?, mod=? where id=?",
+    #     cards_modified_data,
+    # )
+    notes = []
+    for note_data in notes_modified_data:
+        note_id = NoteId(int(note_data[3]))
+        note = col.get_note(note_id)
+        note.set_tags_from_str(str(note_data[0]))
+        fields = str(note_data[1])
+        new_fields = fields.split("\x1f")
+        i = 0
+        for [field, _value] in note.items():
+            note[field] = new_fields[i]
+            i+=1
+        notes.append(note)
+    col.update_notes(notes)
 
-    mw.col.db.executemany(
-        "update notes set tags=?, flds=?, mod=? where id=?",
-        notes_modified_data,
-    )
+    # mw.col.db.executemany(
+    #     "update notes set tags=?, flds=?, mod=? where id=?",
+    #     notes_modified_data,
+    # )
 
     am_db.con.close()
 
