@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Constants for processing Pinyin strings."""
 
 
@@ -36,7 +35,7 @@ uppercase = _uppercase_consonants + _uppercase_vowels
 marks = "·012345:-'"
 
 #: A string containing valid punctuation marks that are not stops.
-non_stops = """"#$%&'()*+,-/:;<=>@[\]^_`{|}~"""
+non_stops = r""""#$%&'()*+,-/:;<=>@[\]^_`{|}~"""
 
 #: A string containing valid stop punctuation marks.
 stops = ".!?"
@@ -71,14 +70,14 @@ def _build_syl(vowels, tone_numbers=False):
 
     """
     # This is the end-of-syllable-consonant lookahead assertion.
-    consonant_end = "(?![%(a)s%(e)s%(i)s%(o)s%(u)s%(v)s]|u:)" % {
-        "a": _a,
-        "e": _e,
-        "i": _i,
-        "o": _o,
-        "u": _u,
-        "v": _v,
-    }
+    consonant_end = "(?![{a}{e}{i}{o}{u}{v}]|u:)".format(
+        a=_a,
+        e=_e,
+        i=_i,
+        o=_o,
+        u=_u,
+        v=_v,
+    )
     _vowels = vowels.copy()
     for v, s in list(_vowels.items()):
         if len(s) > 1:
@@ -161,8 +160,8 @@ def _build_sentence(word):
     """
     return (
         """(?:%(word)s|[%(non_stops)s]|(?<![%(stops)s ]) )+"""
-        """[%(stops)s]['"\]\}\)]*"""
-    ) % {"word": word, "non_stops": non_stops.replace("-", "\-"), "stops": stops}
+        r"""[%(stops)s]['"\]\}\)]*"""
+    ) % {"word": word, "non_stops": non_stops.replace("-", r"\-"), "stops": stops}
 
 
 #: A regular expression pattern for a valid accented Pinyin syllable.

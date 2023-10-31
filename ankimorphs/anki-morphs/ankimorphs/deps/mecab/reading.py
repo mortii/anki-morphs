@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 import platform
 import re
@@ -65,7 +63,7 @@ def mungeForPlatform(popen):
     return popen
 
 
-class MecabController(object):
+class MecabController:
     def __init__(self):
         self.mecab = None
 
@@ -130,7 +128,7 @@ class MecabController(object):
         for node in expr.split(" "):
             if not node:
                 break
-            (kanji, reading) = re.match("(.+)\[(.*)\]", node).groups()
+            (kanji, reading) = re.match(r"(.+)\[(.*)\]", node).groups()
             if kanji == reading or not reading:
                 out.append(kanji)
                 continue
@@ -156,7 +154,7 @@ class MecabController(object):
                 placeL = i + 1
             if placeL == 0:
                 if placeR == 0:
-                    out.append(" %s[%s]" % (kanji, reading))
+                    out.append(" {}[{}]".format(kanji, reading))
                 else:
                     out.append(
                         " %s[%s]%s"
@@ -190,7 +188,7 @@ class MecabController(object):
         return fin.strip().replace("< br>", "<br>").replace("& nbsp;", " ")
 
 
-class KakasiController(object):
+class KakasiController:
     def __init__(self):
         self.kakasi = None
 

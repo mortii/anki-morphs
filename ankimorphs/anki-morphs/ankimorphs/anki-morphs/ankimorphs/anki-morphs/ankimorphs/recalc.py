@@ -5,6 +5,7 @@ from typing import Any, Optional, Union
 
 import anki.utils
 from anki.collection import Collection
+from anki.notes import NoteId
 from anki.tags import TagManager
 from aqt import mw
 from aqt.operations import QueryOp
@@ -23,7 +24,6 @@ from .exceptions import CancelledRecalcException, DefaultSettingsException
 from .morph_utils import get_morphemes
 from .morpheme import Morpheme
 from .morphemizer import get_morphemizer_by_name
-from anki.notes import NoteId
 
 
 def recalc() -> None:
