@@ -23,7 +23,9 @@ from .exceptions import CancelledRecalcException, DefaultSettingsException
 from .morph_utils import get_morphemes
 from .morpheme import Morpheme
 from .morphemizer import get_morphemizer_by_name
+from typing import NewType
 
+NoteId = NewType("NoteId", int)
 
 def recalc() -> None:
     assert mw is not None
@@ -346,9 +348,11 @@ def update_cards(  # pylint:disable=too-many-locals
     # )
     notes = []
     for note_data in notes_modified_data:
-        note = col.get_note(note_data[3])
-        note.set_tags_from_str(note_data[0])
-        new_fields = note_data[1].split("\x1f")
+        note_id = NoteId(int(note_data[3]))
+        note = col.get_note(note_id)
+        note.set_tags_from_str(str(note_data[0]))
+        fields = str(note_data[1])
+        new_fields = fields.split("\x1f")
         i = 0
         for [field, _value] in note.items():
             note[field] = new_fields[i]

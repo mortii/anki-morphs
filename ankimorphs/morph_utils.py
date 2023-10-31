@@ -44,7 +44,12 @@ def _get_parsed_expression(expression: str, am_config: AnkiMorphsConfig) -> str:
 
 @functools.cache
 def create_hash_set_out_of_names() -> set[str]:
-    path: str = os.path.join(mw.pm.profileFolder(), "names.txt")
+    profile_path = ""
+    if mw is not None:
+        profile_path = mw.pm.profileFolder()
+    else:
+        return set([])
+    path: str = os.path.join(profile_path, "names.txt")
     f = open(path)
     lines_lower_case = map(lambda x: x.lower(),f.read().splitlines())
     hashset = set(lines_lower_case)
