@@ -81,7 +81,7 @@ else:
 delim = text_type(args.delimiter)
 cutall = args.cutall
 hmm = args.hmm
-fp = open(args.filename, "r") if args.filename else sys.stdin
+fp = open(args.filename) if args.filename else sys.stdin
 
 if args.dict:
     jieba.initialize(args.dict)

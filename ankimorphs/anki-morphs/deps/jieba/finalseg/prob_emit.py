@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 P = {
     "B": {
         "\u4e00": -3.6544978750449433,
