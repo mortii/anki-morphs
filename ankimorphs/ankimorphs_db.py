@@ -181,7 +181,7 @@ class AnkiMorphsDB:
         return card_morphs
 
     def update_seen_morphs(self) -> None:
-        cards_studied_today: Sequence[int] = get_cards_seen_today()
+        cards_studied_today: Sequence[int] = get_new_cards_seen_today()
 
         where_query_string = "WHERE" + "".join(
             [f" card_id = {card_id} OR" for card_id in cards_studied_today]
@@ -302,7 +302,31 @@ class AnkiMorphsDB:
             am_db.con.execute("DROP TABLE IF EXISTS Seen_Morphs;")
 
 
-def get_cards_seen_today() -> Sequence[int]:
+def get_new_cards_seen_today() -> Sequence[int]:
+    assert mw is not None
+
+    am_config = AnkiMorphsConfig()
+    known_tag = am_config.tag_known
+
+    studied_today_search_string = mw.col.build_search_string(
+        SearchNode(rated=SearchNode.Rated(days=1, rating=SearchNode.RATING_ANY))
+    )
+
+    note_type_search_string = build_note_type_search_string()
+
+    known_and_skipped_search_string = mw.col.build_search_string(
+        SearchNode(card_state=SearchNode.CARD_STATE_BURIED),
+        SearchNode(tag=known_tag),
+    )
+
+    total_search_string = (
+ "is:new " + note_type_search_string+ " "   + studied_today_search_string + " OR " + known_and_skipped_search_string
+    )
+
+    known_and_skipped_cards: Sequence[int] = mw.col.find_cards(total_search_string)
+    return known_and_skipped_cards
+
+def get_new_cards_seen_today() -> Sequence[int]:
     assert mw is not None
 
     am_config = AnkiMorphsConfig()
