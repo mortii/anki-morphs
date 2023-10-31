@@ -1,5 +1,3 @@
-from __future__ import absolute_import, unicode_literals
-
 import os
 import pickle
 import re
@@ -15,12 +13,12 @@ PROB_EMIT_P = "prob_emit.p"
 CHAR_STATE_TAB_P = "char_state_tab.p"
 
 re_han_detail = re.compile("([\u4E00-\u9FD5]+)")
-re_skip_detail = re.compile("([\.0-9]+|[a-zA-Z0-9]+)")
-re_han_internal = re.compile("([\u4E00-\u9FD5a-zA-Z0-9+#&\._]+)")
-re_skip_internal = re.compile("(\r\n|\s)")
+re_skip_detail = re.compile(r"([\.0-9]+|[a-zA-Z0-9]+)")
+re_han_internal = re.compile("([\u4E00-\u9FD5a-zA-Z0-9+#&\\._]+)")
+re_skip_internal = re.compile("(\r\n|\\s)")
 
 re_eng = re.compile("[a-zA-Z0-9]+")
-re_num = re.compile("[\.0-9]+")
+re_num = re.compile(r"[\.0-9]+")
 
 re_eng1 = re.compile("^[a-zA-Z0-9]$", re.U)
 
@@ -43,16 +41,16 @@ else:
     from .prob_trans import P as trans_P
 
 
-class pair(object):
+class pair:
     def __init__(self, word, flag):
         self.word = word
         self.flag = flag
 
     def __unicode__(self):
-        return "%s/%s" % (self.word, self.flag)
+        return "{}/{}".format(self.word, self.flag)
 
     def __repr__(self):
-        return "pair(%r, %r)" % (self.word, self.flag)
+        return "pair({!r}, {!r})".format(self.word, self.flag)
 
     def __str__(self):
         if PY2:
@@ -80,7 +78,7 @@ class pair(object):
         return self.__unicode__().encode(arg)
 
 
-class POSTokenizer(object):
+class POSTokenizer:
     def __init__(self, tokenizer=None):
         self.tokenizer = tokenizer or jieba.Tokenizer()
         self.load_word_tag(self.tokenizer.get_dict_file())
@@ -141,8 +139,7 @@ class POSTokenizer(object):
         blocks = re_han_detail.split(sentence)
         for blk in blocks:
             if re_han_detail.match(blk):
-                for word in self.__cut(blk):
-                    yield word
+                yield from self.__cut(blk)
             else:
                 tmp = re_skip_detail.split(blk)
                 for x in tmp:
@@ -197,8 +194,7 @@ class POSTokenizer(object):
                         yield pair(buf, self.word_tag_tab.get(buf, "x"))
                     elif not self.tokenizer.FREQ.get(buf):
                         recognized = self.__cut_detail(buf)
-                        for t in recognized:
-                            yield t
+                        yield from recognized
                     else:
                         for elem in buf:
                             yield pair(elem, self.word_tag_tab.get(elem, "x"))
@@ -211,8 +207,7 @@ class POSTokenizer(object):
                 yield pair(buf, self.word_tag_tab.get(buf, "x"))
             elif not self.tokenizer.FREQ.get(buf):
                 recognized = self.__cut_detail(buf)
-                for t in recognized:
-                    yield t
+                yield from recognized
             else:
                 for elem in buf:
                     yield pair(elem, self.word_tag_tab.get(elem, "x"))
@@ -228,8 +223,7 @@ class POSTokenizer(object):
 
         for blk in blocks:
             if re_han_internal.match(blk):
-                for word in cut_blk(blk):
-                    yield word
+                yield from cut_blk(blk)
             else:
                 tmp = re_skip_internal.split(blk)
                 for x in tmp:
@@ -251,8 +245,7 @@ class POSTokenizer(object):
         return list(self.__cut_internal(sentence, False))
 
     def cut(self, sentence, HMM=True):
-        for w in self.__cut_internal(sentence, HMM=HMM):
-            yield w
+        yield from self.__cut_internal(sentence, HMM=HMM)
 
     def lcut(self, *args, **kwargs):
         return list(self.cut(*args, **kwargs))
@@ -284,8 +277,7 @@ def cut(sentence, HMM=True):
     """
     global dt
     if jieba.pool is None:
-        for w in dt.cut(sentence, HMM=HMM):
-            yield w
+        yield from dt.cut(sentence, HMM=HMM)
     else:
         parts = strdecode(sentence).splitlines(True)
         if HMM:
@@ -293,8 +285,7 @@ def cut(sentence, HMM=True):
         else:
             result = jieba.pool.map(_lcut_internal_no_hmm, parts)
         for r in result:
-            for w in r:
-                yield w
+            yield from r
 
 
 def lcut(sentence, HMM=True):

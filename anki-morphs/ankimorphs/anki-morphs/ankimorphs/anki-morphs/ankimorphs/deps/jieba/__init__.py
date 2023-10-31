@@ -1,5 +1,3 @@
-from __future__ import absolute_import, unicode_literals
-
 __version__ = "0.39"
 __license__ = "MIT"
 
@@ -44,9 +42,9 @@ re_eng = re.compile("[a-zA-Z0-9]", re.U)
 # \r\n|\s : whitespace characters. Will not be handled.
 # re_han_default = re.compile("([\u4E00-\u9FD5a-zA-Z0-9+#&\._%]+)", re.U)
 # Adding "-" symbol in re_han_default
-re_han_default = re.compile("([\u4E00-\u9FD5a-zA-Z0-9+#&\._%\-]+)", re.U)
+re_han_default = re.compile("([\u4E00-\u9FD5a-zA-Z0-9+#&\\._%\\-]+)", re.U)
 
-re_skip_default = re.compile("(\r\n|\s)", re.U)
+re_skip_default = re.compile("(\r\n|\\s)", re.U)
 re_han_cut_all = re.compile("([\u4E00-\u9FD5]+)", re.U)
 re_skip_cut_all = re.compile("[^a-zA-Z0-9+#\n]", re.U)
 
@@ -56,7 +54,7 @@ def setLogLevel(log_level):
     default_logger.setLevel(log_level)
 
 
-class Tokenizer(object):
+class Tokenizer:
     def __init__(self, dictionary=DEFAULT_DICT):
         self.lock = threading.RLock()
         if dictionary == DEFAULT_DICT:
@@ -266,11 +264,9 @@ class Tokenizer(object):
                     else:
                         if not self.FREQ.get(buf):
                             recognized = finalseg.cut(buf)
-                            for t in recognized:
-                                yield t
+                            yield from recognized
                         else:
-                            for elem in buf:
-                                yield elem
+                            yield from buf
                         buf = ""
                 yield l_word
             x = y
@@ -280,11 +276,9 @@ class Tokenizer(object):
                 yield buf
             elif not self.FREQ.get(buf):
                 recognized = finalseg.cut(buf)
-                for t in recognized:
-                    yield t
+                yield from recognized
             else:
-                for elem in buf:
-                    yield elem
+                yield from buf
 
     def cut(self, sentence, cut_all=False, HMM=True):
         """
@@ -315,16 +309,14 @@ class Tokenizer(object):
             if not blk:
                 continue
             if re_han.match(blk):
-                for word in cut_block(blk):
-                    yield word
+                yield from cut_block(blk)
             else:
                 tmp = re_skip.split(blk)
                 for x in tmp:
                     if re_skip.match(x):
                         yield x
                     elif not cut_all:
-                        for xx in x:
-                            yield xx
+                        yield from x
                     else:
                         yield x
 
@@ -565,8 +557,7 @@ def _pcut(sentence, cut_all=False, HMM=True):
     else:
         result = pool.map(_lcut_no_hmm, parts)
     for r in result:
-        for w in r:
-            yield w
+        yield from r
 
 
 def _pcut_for_search(sentence, HMM=True):
@@ -576,8 +567,7 @@ def _pcut_for_search(sentence, HMM=True):
     else:
         result = pool.map(_lcut_for_search_no_hmm, parts)
     for r in result:
-        for w in r:
-            yield w
+        yield from r
 
 
 def enable_parallel(processnum=None):

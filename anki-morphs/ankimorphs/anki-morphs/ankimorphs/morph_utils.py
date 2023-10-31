@@ -2,8 +2,8 @@ import functools
 import os
 import re
 
-
 from aqt import mw
+
 from .config import AnkiMorphsConfig
 from .morpheme import Morpheme
 from .morphemizer import Morphemizer

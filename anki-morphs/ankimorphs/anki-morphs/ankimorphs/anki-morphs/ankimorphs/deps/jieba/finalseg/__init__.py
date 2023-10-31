@@ -1,5 +1,3 @@
-from __future__ import absolute_import, unicode_literals
-
 import os
 import pickle
 import re
@@ -16,7 +14,7 @@ PROB_EMIT_P = "prob_emit.p"
 
 PrevStatus = {"B": "ES", "M": "MB", "S": "SE", "E": "BM"}
 
-Force_Split_Words = set([])
+Force_Split_Words = set()
 
 
 def load_model():
@@ -80,7 +78,7 @@ def __cut(sentence):
 
 
 re_han = re.compile("([\u4E00-\u9FD5]+)")
-re_skip = re.compile("([a-zA-Z0-9]+(?:\.\d+)?%?)")
+re_skip = re.compile(r"([a-zA-Z0-9]+(?:\.\d+)?%?)")
 
 
 def add_force_split(word):
@@ -97,8 +95,7 @@ def cut(sentence):
                 if word not in Force_Split_Words:
                     yield word
                 else:
-                    for c in word:
-                        yield c
+                    yield from word
         else:
             tmp = re_skip.split(blk)
             for x in tmp:

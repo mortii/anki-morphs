@@ -1,6 +1,3 @@
-# encoding=utf-8
-from __future__ import absolute_import
-
 import os
 from operator import itemgetter
 
@@ -15,9 +12,8 @@ _get_abs_path = jieba._get_abs_path
 DEFAULT_IDF = _get_module_path("idf.txt")
 
 
-class KeywordExtractor(object):
-    STOP_WORDS = set(
-        (
+class KeywordExtractor:
+    STOP_WORDS = {
             "the",
             "of",
             "is",
@@ -50,8 +46,7 @@ class KeywordExtractor(object):
             "has",
             "or",
             "that",
-        )
-    )
+    }
 
     def set_stop_words(self, stop_words_path):
         abs_path = _get_abs_path(stop_words_path)
@@ -65,7 +60,7 @@ class KeywordExtractor(object):
         raise NotImplementedError
 
 
-class IDFLoader(object):
+class IDFLoader:
     def __init__(self, idf_path=None):
         self.path = ""
         self.idf_freq = {}

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Provides a string of characters used by CC-CEDICT."""
 
 
