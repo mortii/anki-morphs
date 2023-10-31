@@ -180,7 +180,7 @@ class AnkiMorphsDB:
 
         return card_morphs
 
-    def update_seen_morphs(self) -> None:
+    def update_seen_unknown_morphs(self) -> None:
         cards_studied_today: Sequence[int] = get_new_cards_seen_today()
 
         where_query_string = "WHERE" + "".join(
@@ -332,10 +332,6 @@ def get_new_cards_seen_today() -> Sequence[int]:
     am_config = AnkiMorphsConfig()
     known_tag = am_config.tag_known
 
-    studied_today_search_string = mw.col.build_search_string(
-        SearchNode(rated=SearchNode.Rated(days=1, rating=SearchNode.RATING_ANY))
-    )
-
     note_type_search_string = build_note_type_search_string()
 
     known_and_skipped_search_string = mw.col.build_search_string(
@@ -344,7 +340,7 @@ def get_new_cards_seen_today() -> Sequence[int]:
     )
 
     total_search_string = (
- note_type_search_string+ " "   + studied_today_search_string + " OR " + known_and_skipped_search_string
+ "introduced:1 "+ note_type_search_string+ " "   + " OR (" + known_and_skipped_search_string + ")"
     )
 
     known_and_skipped_cards: Sequence[int] = mw.col.find_cards(total_search_string)
