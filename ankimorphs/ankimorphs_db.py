@@ -303,39 +303,33 @@ class AnkiMorphsDB:
 
 
 def get_new_cards_seen_today() -> Sequence[int]:
+    # SearchNode handles escaping characters for us (e.g. 'am_known' -> 'am\_known')
+    # it is also more robust to api changes than hardcoded strings.
+    # An example of the resulting total_search_string is:
+    #   "(introduced:1 note:ankimorphs\_sub2srs OR introduced:1 note:Basic) OR is:buried tag:am-known"
+    #
+    # TODO: this string is fairly static, maybe just generate it once
+    #  every time anki goes to the 'review' state?
+
     assert mw is not None
 
     am_config = AnkiMorphsConfig()
-    known_tag = am_config.tag_known
 
-    note_type_search_string = build_note_type_search_string()
+    total_search_string = "("
+    for _filter in am_config.filters:
+        if _filter.read:
+            search_string = mw.col.build_search_string(
+                SearchNode(introduced_in_days=1), SearchNode(note=_filter.note_type)
+            )
+            total_search_string += search_string + " OR "
 
     known_and_skipped_search_string = mw.col.build_search_string(
         SearchNode(card_state=SearchNode.CARD_STATE_BURIED),
-        SearchNode(tag=known_tag),
+        SearchNode(tag=am_config.tag_known),
     )
 
-    total_search_string = (
-        "introduced:1 "
-        + note_type_search_string
-        + " "
-        + " OR ("
-        + known_and_skipped_search_string
-        + ")"
-    )
+    total_search_string = total_search_string[:-4]  # remove last " OR "
+    total_search_string += ") OR " + known_and_skipped_search_string
 
     known_and_skipped_cards: Sequence[int] = mw.col.find_cards(total_search_string)
     return known_and_skipped_cards
-
-
-def build_note_type_search_string() -> str:
-    am_config = AnkiMorphsConfig()
-    i = 0
-    string = "("
-    for _filter in am_config.filters:
-        if i != 0:
-            string += " OR "
-        string += f'"note:{_filter.note_type}"'
-        i += 1
-    string += ")"
-    return string
