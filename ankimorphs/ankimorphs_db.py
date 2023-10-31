@@ -312,14 +312,30 @@ def get_cards_seen_today() -> Sequence[int]:
         SearchNode(rated=SearchNode.Rated(days=1, rating=SearchNode.RATING_ANY))
     )
 
+    note_type_search_string = build_note_type_search_string()
+
     known_and_skipped_search_string = mw.col.build_search_string(
         SearchNode(card_state=SearchNode.CARD_STATE_BURIED),
         SearchNode(tag=known_tag),
     )
 
     total_search_string = (
-        studied_today_search_string + " OR " + known_and_skipped_search_string
+ note_type_search_string+ " "   + studied_today_search_string + " OR " + known_and_skipped_search_string
     )
 
     known_and_skipped_cards: Sequence[int] = mw.col.find_cards(total_search_string)
     return known_and_skipped_cards
+
+def build_note_type_search_string():
+    am_config = AnkiMorphsConfig()
+    i = 0
+    string = "("
+    for filter in am_config.filters:
+        if i != 0:
+            string += " OR "
+        string += f'"note:{filter.note_type}"'
+        i += 1
+    string += ")"
+    return string
+        
+    
