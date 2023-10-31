@@ -4,7 +4,7 @@ If you have contributed, but you are not on the list, create an issue on github 
 
 
 ### Code contribution
-mortii.
+mortii, Vilhelm-Ian.
 
 ### Docs contribution
 Matt Vs Japan, mortii.
