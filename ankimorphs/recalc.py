@@ -1,7 +1,7 @@
 from collections import Counter
 from collections.abc import Sequence
 from functools import partial
-from typing import Any, NewType, Optional, Union
+from typing import Any, Optional, Union
 
 import anki.utils
 from anki.collection import Collection
@@ -358,7 +358,6 @@ def update_cards(  # pylint:disable=too-many-locals
             i+=1
         notes.append(note)
     col.update_notes(notes)
-        
 
     # mw.col.db.executemany(
     #     "update notes set tags=?, flds=?, mod=? where id=?",
