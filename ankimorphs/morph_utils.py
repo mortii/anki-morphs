@@ -48,7 +48,7 @@ def create_hash_set_out_of_names() -> set[str]:
     if mw is not None:
         profile_path = mw.pm.profileFolder()
     else:
-        return set([])
+        return set()
     path: str = os.path.join(profile_path, "names.txt")
     f = open(path)
     lines_lower_case = map(lambda x: x.lower(),f.read().splitlines())

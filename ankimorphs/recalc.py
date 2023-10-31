@@ -1,7 +1,7 @@
 from collections import Counter
 from collections.abc import Sequence
 from functools import partial
-from typing import Any, Optional, Union
+from typing import Any, NewType, Optional, Union
 
 import anki.utils
 from anki.collection import Collection
@@ -23,7 +23,6 @@ from .exceptions import CancelledRecalcException, DefaultSettingsException
 from .morph_utils import get_morphemes
 from .morpheme import Morpheme
 from .morphemizer import get_morphemizer_by_name
-from typing import NewType
 
 NoteId = NewType("NoteId", int)
 
