@@ -71,7 +71,7 @@ def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
     am_config = AnkiMorphsConfig()
     skipped_cards = SkippedCards(am_config)
     am_db = AnkiMorphsDB()
-    am_db.update_seen_morphs()
+    am_db.update_seen_unknown_morphs()
 
     while True:
         # If a break occurs in this loop it means 'show the card'
