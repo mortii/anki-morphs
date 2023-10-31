@@ -1,4 +1,8 @@
+import functools
+import os
 import re
+
+from aqt import mw
 
 from .config import AnkiMorphsConfig
 from .morpheme import Morpheme
@@ -14,6 +18,8 @@ def get_morphemes(
 ) -> list[Morpheme]:
     expression = _get_parsed_expression(expression, am_config)
     morphs = morphemizer.get_morphemes_from_expr(expression)
+    names_set = create_hash_set_out_of_names()
+    morphs = list(filter(lambda x: (x.inflected not in names_set) ,morphs))
     return morphs
 
 
@@ -35,3 +41,17 @@ def _get_parsed_expression(expression: str, am_config: AnkiMorphsConfig) -> str:
         expression = re.sub('["«»]', " ", expression)
 
     return expression
+
+@functools.cache
+def create_hash_set_out_of_names() -> set[str]:
+    profile_path = ""
+    if mw is not None:
+        profile_path = mw.pm.profileFolder()
+    else:
+        return set()
+    path: str = os.path.join(profile_path, "names.txt")
+    with open(path, "rb") as names_file:
+        lines_lower_case = map(lambda x: x.lower(),names_file.read().splitlines())
+        hashset = set(lines_lower_case)
+        return hashset
+    return set()
