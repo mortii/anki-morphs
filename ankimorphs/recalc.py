@@ -220,7 +220,7 @@ def get_card_morphs(
         return None
 
 
-def update_cards(  # pylint:disable=too-many-locals
+def update_cards(  # pylint:disable=too-many-locals,too-many-statements
     am_config: AnkiMorphsConfig,
 ) -> None:
     # A single sqlite query is very fast, but looping queries is
@@ -355,7 +355,7 @@ def update_cards(  # pylint:disable=too-many-locals
         i = 0
         for [field, _value] in note.items():
             note[field] = new_fields[i]
-            i+=1
+            i += 1
         notes.append(note)
     col.update_notes(notes)
 

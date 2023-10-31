@@ -302,7 +302,6 @@ class AnkiMorphsDB:
             am_db.con.execute("DROP TABLE IF EXISTS Seen_Morphs;")
 
 
-
 def get_new_cards_seen_today() -> Sequence[int]:
     assert mw is not None
 
@@ -317,11 +316,17 @@ def get_new_cards_seen_today() -> Sequence[int]:
     )
 
     total_search_string = (
- "introduced:1 "+ note_type_search_string+ " "   + " OR (" + known_and_skipped_search_string + ")"
+        "introduced:1 "
+        + note_type_search_string
+        + " "
+        + " OR ("
+        + known_and_skipped_search_string
+        + ")"
     )
 
     known_and_skipped_cards: Sequence[int] = mw.col.find_cards(total_search_string)
     return known_and_skipped_cards
+
 
 def build_note_type_search_string() -> str:
     am_config = AnkiMorphsConfig()
