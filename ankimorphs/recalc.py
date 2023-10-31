@@ -23,9 +23,8 @@ from .exceptions import CancelledRecalcException, DefaultSettingsException
 from .morph_utils import get_morphemes
 from .morpheme import Morpheme
 from .morphemizer import get_morphemizer_by_name
-from typing import NewType
+from anki.notes import NoteId
 
-NoteId = NewType("NoteId", int)
 
 def recalc() -> None:
     assert mw is not None
