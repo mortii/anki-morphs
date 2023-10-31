@@ -330,7 +330,7 @@ def build_note_type_search_string() -> str:
     for _filter in am_config.filters:
         if i != 0:
             string += " OR "
-        string += f'"note:{filter.note_type}"'
+        string += f'"note:{_filter.note_type}"'
         i += 1
     string += ")"
     return string
