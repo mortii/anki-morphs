@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Provides a string of characters considered to be simplified by CC-CEDICT."""
 
 

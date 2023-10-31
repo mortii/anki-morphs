@@ -25,9 +25,9 @@ def viterbi(obs, states, start_p, trans_p, emit_p):
         # prev_states = get_top_states(V[t-1])
         prev_states = [x for x in mem_path[t - 1].keys() if len(trans_p[x]) > 0]
 
-        prev_states_expect_next = set(
-            (y for x in prev_states for y in trans_p[x].keys())
-        )
+        prev_states_expect_next = {
+            y for x in prev_states for y in trans_p[x].keys()
+        }
         obs_states = set(states.get(obs[t], all_states)) & prev_states_expect_next
 
         if not obs_states:

@@ -47,10 +47,10 @@ class pair:
         self.flag = flag
 
     def __unicode__(self):
-        return "{}/{}".format(self.word, self.flag)
+        return f"{self.word}/{self.flag}"
 
     def __repr__(self):
-        return "pair({!r}, {!r})".format(self.word, self.flag)
+        return f"pair({self.word!r}, {self.flag!r})"
 
     def __str__(self):
         if PY2:

@@ -66,7 +66,7 @@ punctuation = non_stops + stops
 
 # A sentence end is defined by a stop followed by zero or more
 # container-closing marks (e.g. quotation or brackets).
-_sentence_end = "[{stops}][」﹂”』’》）］｝〕〗〙〛〉】]*".format(stops=stops)
+_sentence_end = f"[{stops}][」﹂”』’》）］｝〕〗〙〛〉】]*"
 
 #: A regular expression pattern for a Chinese sentence. A sentence is defined
 #: as a series of characters and non-stop punctuation marks followed by a stop
