@@ -50,7 +50,7 @@ def create_hash_set_out_of_names() -> set[str]:
     else:
         return set()
     path: str = os.path.join(profile_path, "names.txt")
-    with names_file = open(path, "rb"):
+    with open(path, "rb") as names_file:
         lines_lower_case = map(lambda x: x.lower(),names_file.read().splitlines())
         hashset = set(lines_lower_case)
         return hashset
