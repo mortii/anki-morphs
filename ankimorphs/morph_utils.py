@@ -2,8 +2,8 @@ import functools
 import os
 import re
 
-from aqt import mw
 
+from aqt import mw
 from .config import AnkiMorphsConfig
 from .morpheme import Morpheme
 from .morphemizer import Morphemizer
@@ -43,7 +43,7 @@ def _get_parsed_expression(expression: str, am_config: AnkiMorphsConfig) -> str:
     return expression
 
 @functools.cache
-def create_hash_set_out_of_names() -> set:
+def create_hash_set_out_of_names() -> Set[str]:
     path: str = os.path.join(mw.pm.profileFolder(), "names.txt")
     f = open(path)
     lines_lower_case = map(lambda x: x.lower(),f.read().splitlines())
