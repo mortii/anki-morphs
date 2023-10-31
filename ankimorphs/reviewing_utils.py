@@ -84,7 +84,7 @@ def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
 
     while True:
         # If a break occurs in this loop it means 'show the card'
-        # If a card makes it to the end it is buried and tagged as 'known'
+        # If a card makes it to the end it is buried/skipped
 
         self.previous_card = self.card
         self.card = None
