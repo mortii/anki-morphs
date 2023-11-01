@@ -186,9 +186,7 @@ class AnkiMorphsDB:
         )
         where_query_string = where_query_string[:-3]  # removes the last " OR"
 
-        # print(f"where_query_string: {where_query_string}")
-
-        self.drop_seen_morph_table()
+        self.drop_seen_morphs_table()
         self.create_seen_morph_table()
 
         with self.con:
@@ -201,8 +199,17 @@ class AnkiMorphsDB:
                 + where_query_string
             )
 
-        # print("Seen_Morphs: ")
-        # self.print_table("Seen_Morphs")
+    def update_seen_unknown_morph_single_card(self, card_id: int) -> None:
+        with self.con:
+            self.con.execute(
+                """
+                    INSERT OR IGNORE INTO Seen_Morphs (norm, inflected)
+                    SELECT morph_norm, morph_inflected
+                    FROM Card_Morph_Map
+                    WHERE card_id = ?
+                    """,
+                (card_id,),
+            )
 
     def get_morphs_of_card(
         self, card_id: int, search_unknowns: bool = False
@@ -294,7 +301,7 @@ class AnkiMorphsDB:
             self.con.execute("DROP TABLE IF EXISTS Seen_Morphs;")
 
     @staticmethod
-    def drop_seen_morph_table() -> None:
+    def drop_seen_morphs_table() -> None:
         am_db = AnkiMorphsDB()
         with am_db.con:
             am_db.con.execute("DROP TABLE IF EXISTS Seen_Morphs;")

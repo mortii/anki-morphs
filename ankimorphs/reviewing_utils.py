@@ -26,7 +26,7 @@ valid_undo_merge_targets: set[str] = {  # a set has faster lookup than a list
 
 
 def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
-    self: Reviewer, _old: Callable[[Reviewer], None]
+    self: Reviewer,
 ) -> None:
     ################################################################
     #                          FREEZING
@@ -80,7 +80,6 @@ def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
     am_config = AnkiMorphsConfig()
     skipped_cards = SkippedCards(am_config)
     am_db = AnkiMorphsDB()
-    am_db.update_seen_unknown_morphs()
 
     while True:
         # If a break occurs in this loop it means 'show the card'
@@ -208,6 +207,13 @@ def set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> N
     self.mw.col.update_note(note)
 
     self.mw.col.merge_undo_entries(set_known_and_skip_undo.last_step)
+
+    # update seen morphs table with this card's morphs
+    am_db = AnkiMorphsDB()
+    am_db.update_seen_unknown_morph_single_card(self.card.id)
+    print("Seen_Morphs SKIPPED FUNCTION: ")
+    am_db.print_table("Seen_Morphs")
+    am_db.con.close()
 
     if am_config.skip_show_num_of_skipped_cards:
         tooltip("Set card as known and skipped")

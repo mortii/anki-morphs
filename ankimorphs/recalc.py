@@ -61,7 +61,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals
     # Rebuilding the entire ankimorphs db every time is faster and much simpler than
     # updating it since we can bulk queries to the anki db.
 
-    assert mw
+    assert mw is not None
 
     am_db = AnkiMorphsDB()
     am_db.drop_all_tables()
