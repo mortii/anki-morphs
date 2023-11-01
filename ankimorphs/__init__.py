@@ -178,16 +178,14 @@ def init_browser_menus_and_actions() -> None:
 
 
 def replace_reviewer_functions() -> None:
-    # This skips the cards the user specified in preferences GUI
-    Reviewer.nextCard = hooks.wrap(  # type: ignore[method-assign]
-        Reviewer.nextCard, reviewing_utils.am_next_card, "around"
-    )
+    assert mw is not None
 
-    # Automatically highlights morphs on cards if the respective note stylings are present
-    # hooks.field_filter.append(reviewing_utils.am_highlight)
+    mw.reviewer.nextCard = partial(reviewing_utils.am_next_card, self=mw.reviewer)
 
-    Reviewer._shortcutKeys = hooks.wrap(  # type: ignore[method-assign]
-        Reviewer._shortcutKeys, reviewing_utils.am_reviewer_shortcut_keys, "around"
+    mw.reviewer._shortcutKeys = partial(
+        reviewing_utils.am_reviewer_shortcut_keys,
+        self=mw.reviewer,
+        _old=Reviewer._shortcutKeys,
     )
 
 

@@ -8,6 +8,7 @@ warn_return_any = "True"
 warn_unused_configs = "True"
 ignore_missing_imports = "True"
 follow_imports = "silent" # TODO change this eventually
+disable_error_code = ["method-assign"]
 strict = "True"
 
 [tool.pylint]
