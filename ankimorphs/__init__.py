@@ -36,6 +36,7 @@ from .toolbar_stats import MorphToolbarStats
 TOOL_MENU: str = "am_tool_menu"
 BROWSE_MENU: str = "am_browse_menu"
 CONTEXT_MENU: str = "am_context_menu"
+DEV_MODE = False
 
 last_undo_step_handled: int = -1
 db_initialized: bool = False
@@ -218,8 +219,9 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
 
-    test_action = create_test_action()
-    am_tool_menu.addAction(test_action)
+    if DEV_MODE:
+        test_action = create_test_action()
+        am_tool_menu.addAction(test_action)
 
 
 def init_browser_menus_and_actions() -> None:
