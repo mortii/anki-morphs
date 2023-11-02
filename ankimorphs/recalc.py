@@ -1,4 +1,5 @@
 import re
+import time
 from collections import Counter
 from collections.abc import Sequence
 from functools import partial
@@ -31,11 +32,15 @@ from .morph_utils import get_morphemes
 from .morpheme import Morpheme
 from .morphemizer import get_morphemizer_by_name
 
+start_time: Optional[float] = None
+
 
 def recalc() -> None:
     assert mw is not None
+    global start_time  # pylint:disable=global-statement
 
     mw.progress.start(label="Recalculating...")
+    start_time = time.time()
 
     operation = QueryOp(
         parent=mw,
@@ -618,9 +623,15 @@ def on_success(result: Any) -> None:
     del result  # unused
     assert mw is not None
     assert mw.progress is not None
+    global start_time  # pylint:disable=global-statement
+
     mw.toolbar.draw()  # updates stats
     mw.progress.finish()
     tooltip("Finished Recalc")
+    if start_time is not None:
+        end_time: float = time.time()
+        print(f"Recalc duration: {round(end_time - start_time, 3)} seconds")
+        start_time = None
 
 
 def on_failure(
