@@ -274,9 +274,16 @@
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="parse_ignore_proper_nouns_input">
+            <widget class="QCheckBox" name="parse_ignore_names_morphemizer_input">
              <property name="text">
-              <string>Ignore proper nouns (names)</string>
+              <string>Ignore names found by the morphemizer</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="parse_ignore_names_textfile_input">
+             <property name="text">
+              <string>Ignore names found in &quot;names.txt&quot;</string>
              </property>
             </widget>
            </item>

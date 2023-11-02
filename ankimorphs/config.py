@@ -94,8 +94,11 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.parse_ignore_slim_round_bracket_contents: bool = _get_bool_config(
             "parse_ignore_slim_round_bracket_contents", is_default
         )
-        self.parse_ignore_proper_nouns: bool = _get_bool_config(
-            "parse_ignore_proper_nouns", is_default
+        self.parse_ignore_names_morphemizer: bool = _get_bool_config(
+            "parse_ignore_names_morphemizer", is_default
+        )
+        self.parse_ignore_names_textfile: bool = _get_bool_config(
+            "parse_ignore_names_textfile", is_default
         )
         self.parse_ignore_suspended_cards_content: bool = _get_bool_config(
             "parse_ignore_suspended_cards_content", is_default

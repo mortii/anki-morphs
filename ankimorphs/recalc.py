@@ -22,7 +22,11 @@ from .config import (
     get_modify_enabled_filters,
     get_read_enabled_filters,
 )
-from .exceptions import CancelledRecalcException, DefaultSettingsException
+from .exceptions import (
+    CancelledRecalcException,
+    DefaultSettingsException,
+    NamesTextfileNotFoundException,
+)
 from .morph_utils import get_morphemes
 from .morpheme import Morpheme
 from .morphemizer import get_morphemizer_by_name
@@ -620,7 +624,12 @@ def on_success(result: Any) -> None:
 
 
 def on_failure(
-    error: Union[Exception, DefaultSettingsException, CancelledRecalcException]
+    error: Union[
+        Exception,
+        DefaultSettingsException,
+        CancelledRecalcException,
+        NamesTextfileNotFoundException,
+    ]
 ) -> None:
     # This function runs on the main thread.
     assert mw is not None
@@ -630,6 +639,20 @@ def on_failure(
     if isinstance(error, DefaultSettingsException):
         title = "AnkiMorphs Error"
         text = "Save settings before using Recalc!"
+        critical_box = QMessageBox(mw)
+        critical_box.setWindowTitle(title)
+        critical_box.setIcon(QMessageBox.Icon.Critical)
+        critical_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        critical_box.setText(text)
+        critical_box.exec()
+    elif isinstance(error, NamesTextfileNotFoundException):
+        title = "AnkiMorphs Error"
+        text = (
+            f'Ignore names found in "names.txt" is selected'
+            f"<br>in settings, but the file:"
+            f"<br>'{error.path}'"
+            f"<br>was not found!"
+        )
         critical_box = QMessageBox(mw)
         critical_box.setWindowTitle(title)
         critical_box.setIcon(QMessageBox.Icon.Critical)

@@ -235,8 +235,11 @@ class PreferencesDialog(QDialog):
         self.ui.parse_ignore_slim_round_bracket_contents_input.setChecked(
             self.config.parse_ignore_slim_round_bracket_contents
         )
-        self.ui.parse_ignore_proper_nouns_input.setChecked(
-            self.config.parse_ignore_proper_nouns
+        self.ui.parse_ignore_names_morphemizer_input.setChecked(
+            self.config.parse_ignore_names_morphemizer
+        )
+        self.ui.parse_ignore_names_textfile_input.setChecked(
+            self.config.parse_ignore_names_textfile
         )
         self.ui.parse_ignore_suspended_cards_content_input.setChecked(
             self.config.parse_ignore_suspended_cards_content
@@ -282,8 +285,11 @@ class PreferencesDialog(QDialog):
         self.ui.parse_ignore_slim_round_bracket_contents_input.setChecked(
             self._default_config.parse_ignore_slim_round_bracket_contents
         )
-        self.ui.parse_ignore_proper_nouns_input.setChecked(
-            self._default_config.parse_ignore_proper_nouns
+        self.ui.parse_ignore_names_morphemizer_input.setChecked(
+            self._default_config.parse_ignore_names_morphemizer
+        )
+        self.ui.parse_ignore_names_textfile_input.setChecked(
+            self._default_config.parse_ignore_names_textfile
         )
         self.ui.parse_ignore_suspended_cards_content_input.setChecked(
             self._default_config.parse_ignore_suspended_cards_content
@@ -448,7 +454,8 @@ class PreferencesDialog(QDialog):
             "parse_ignore_bracket_contents": self.ui.parse_ignore_bracket_contents_input.isChecked(),
             "parse_ignore_round_bracket_contents": self.ui.parse_ignore_round_bracket_contents_input.isChecked(),
             "parse_ignore_slim_round_bracket_contents": self.ui.parse_ignore_slim_round_bracket_contents_input.isChecked(),
-            "parse_ignore_proper_nouns": self.ui.parse_ignore_proper_nouns_input.isChecked(),
+            "parse_ignore_names_morphemizer": self.ui.parse_ignore_names_morphemizer_input.isChecked(),
+            "parse_ignore_names_textfile": self.ui.parse_ignore_names_textfile_input.isChecked(),
             "parse_ignore_suspended_cards_content": self.ui.parse_ignore_suspended_cards_content_input.isChecked(),
             "skip_stale_cards": self.ui.skip_stale_cards_input.isChecked(),
             "skip_unknown_morph_seen_today_cards": self.ui.skip_unknown_morph_seen_today_cards_input.isChecked(),

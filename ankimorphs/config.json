@@ -21,7 +21,8 @@
     }
   ],
   "parse_ignore_bracket_contents": false,
-  "parse_ignore_proper_nouns": true,
+  "parse_ignore_names_morphemizer": true,
+  "parse_ignore_names_textfile": false,
   "parse_ignore_quotation_marks": true,
   "parse_ignore_round_bracket_contents": false,
   "parse_ignore_slim_round_bracket_contents": false,
