@@ -1,9 +1,9 @@
-anki==2.1.66
-aqt[qt6]==2.1.66
-black==23.9.1
-mypy==1.5.1
-pre-commit==3.4.0
-pylint==2.17.5
-pytest==7.4.2
+anki==23.10
+aqt[qt6]==23.10
+black==23.10.1
+mypy==1.6.1
+pre-commit==3.5.0
+pylint==3.0.2
+pytest==7.4.3
 pytest-qt==4.2.0
 pytest-xvfb==3.0.0
