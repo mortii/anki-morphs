@@ -161,8 +161,8 @@ def update_seen_morphs(info: UndoActionsInfo) -> None:
             # is most likely because it is a custom undo entry.
             # This is not a big deal, we can just update seen morphs
             # directly in the 'set_card_as_known_and_skip' function.
-            assert mw.reviewer.card is not None
-            am_db.update_seen_unknown_morph_single_card(mw.reviewer.card.id)
+            if mw.reviewer.card is not None:
+                am_db.update_seen_unknown_morph_single_card(mw.reviewer.card.id)
 
         # print("Seen_Morphs:")
         # am_db.print_table("Seen_Morphs")
