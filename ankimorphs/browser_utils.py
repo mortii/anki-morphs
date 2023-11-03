@@ -1,19 +1,16 @@
 from typing import Optional
 
+from anki.collection import SearchNode
+from anki.notes import Note
+from anki.utils import ids2str
 from aqt import dialogs, mw
 from aqt.browser.browser import Browser
-from aqt.browser.table.state import ItemState
 from aqt.qt import QLineEdit, QMessageBox  # pylint:disable=no-name-in-module
 from aqt.reviewer import RefreshNeeded
 from aqt.utils import tooltip
 
 from .ankimorphs_db import AnkiMorphsDB
 from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter, get_matching_read_filter
-
-# A bug in the anki module leads to cyclic imports if these are placed higher
-from anki.notes import Note  # isort:skip pylint:disable=wrong-import-order
-from anki.collection import SearchNode  # isort:skip pylint:disable=wrong-import-order
-
 
 browser: Optional[Browser] = None
 
@@ -119,15 +116,17 @@ def run_already_known_tagger() -> None:
 
 def run_learn_card_now() -> None:
     assert mw is not None
+    assert mw.col.db is not None
     assert browser is not None
 
     selected_cards = browser.selectedCards()
-    
-    mw.col.sched.reposition_new_cards(selected_cards, 0, 1, False, True)
-    note_ids = ItemState.note_ids_from_card_ids(mw, selected_cards)
+    note_ids = mw.col.db.list(
+        f"select distinct nid from cards where id in {ids2str(selected_cards)}"
+    )
     mw.col.tags.bulk_add(note_ids, "learn_now")
-    
-    mw.moveToState("review") 
+
+    mw.col.sched.reposition_new_cards(selected_cards, 0, 1, False, True)
+    mw.moveToState("review")
     mw.activateWindow()
     mw.reviewer._refresh_needed = RefreshNeeded.QUEUES
     mw.reviewer.refresh_if_needed()

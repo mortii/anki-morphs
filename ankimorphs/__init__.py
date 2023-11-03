@@ -155,7 +155,7 @@ def update_seen_morphs(info: UndoActionsInfo) -> None:
             # 'Answer Card' occurred, insert its morphs into seen table
             if mw.reviewer.card is not None:
                 am_db.update_seen_unknown_morph_single_card(mw.reviewer.card.id)
-        elif undo_status.undo == reviewing_utils.SET_KNOWN_AND_SKIP_STRING:
+        elif undo_status.undo == reviewing_utils.SET_KNOWN_AND_SKIP_UNDO:
             # this only runs on 'set known and skip'-redo for some reason,
             # not after every 'set known and skip'-operation. This
             # is most likely because it is a custom undo entry.

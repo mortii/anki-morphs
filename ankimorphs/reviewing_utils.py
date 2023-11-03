@@ -12,10 +12,9 @@ from .ankimorphs_db import AnkiMorphsDB
 from .browser_utils import browse_same_morphs
 from .config import AnkiMorphsConfig, get_matching_modify_filter
 
-SET_KNOWN_AND_SKIP_STRING = "Set known and skip"
-ANKIMORPHS_UNDO_TARGET = "AnkiMorphs custom undo target"
-set_known_and_skip_undo: Optional[UndoStatus] = None
-valid_undo_merge_targets: set[str] = {  # a set has faster lookup than a list
+SET_KNOWN_AND_SKIP_UNDO = "Set known and skip"
+ANKIMORPHS_UNDO = "AnkiMorphs custom undo"
+VALID_UNDO_MERGE_TARGETS: set[str] = {  # a set has faster lookup than a list
     "Answer Card",
     "Bury",
     "Suspend",
@@ -23,6 +22,7 @@ valid_undo_merge_targets: set[str] = {  # a set has faster lookup than a list
     "Set Due Date",
     "Delete Note",
 }
+set_known_and_skip_undo: Optional[UndoStatus] = None
 
 
 def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
@@ -65,20 +65,20 @@ def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
 
     undo_status = self.mw.col.undo_status()
 
-    if undo_status.undo == SET_KNOWN_AND_SKIP_STRING:
+    if undo_status.undo == SET_KNOWN_AND_SKIP_UNDO:
         # The undo stack has been altered, so we cannot use
         # the normal 'last_step' as a merge point, we have
         # to use set_known_and_skip_undo last_step instead.
         # See comment in set_card_as_known_and_skip for more info
         assert set_known_and_skip_undo is not None
         undo_status = set_known_and_skip_undo
-    elif undo_status.undo not in valid_undo_merge_targets:
+    elif undo_status.undo not in VALID_UNDO_MERGE_TARGETS:
         # We have to create a custom undo_targets that can be merged into.
-        mw.col.add_custom_undo_entry(ANKIMORPHS_UNDO_TARGET)
+        mw.col.add_custom_undo_entry(ANKIMORPHS_UNDO)
         undo_status = self.mw.col.undo_status()
 
     am_config = AnkiMorphsConfig()
-    skipped_cards = SkippedCards(am_config)
+    skipped_cards = SkippedCards()
     am_db = AnkiMorphsDB()
 
     while True:
@@ -117,11 +117,11 @@ def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
         if card_unknown_morphs is None:
             break
 
-        skip_card = skipped_cards.process_skip_conditions_of_card(
-            am_db, note, card_unknown_morphs
+        skipped_cards.process_skip_conditions_of_card(
+            am_config, am_db, note, card_unknown_morphs
         )
 
-        if not skip_card:
+        if not skipped_cards.did_skip_card:
             break
 
         self.mw.col.sched.buryCards([self.card.id], manual=False)
@@ -134,11 +134,9 @@ def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
 
     self._showQuestion()
 
-    if (
-        skipped_cards.total_skipped_cards > 0
-        and am_config.skip_show_num_of_skipped_cards
-    ):
-        skipped_cards.show_tooltip_of_skipped_cards()
+    if am_config.skip_show_num_of_skipped_cards:
+        if skipped_cards.total_skipped_cards > 0:
+            skipped_cards.show_tooltip_of_skipped_cards()
 
 
 def set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> None:
@@ -197,7 +195,7 @@ def set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> N
         tooltip("Card is not in the 'new'-queue")
         return
 
-    self.mw.col.add_custom_undo_entry(SET_KNOWN_AND_SKIP_STRING)
+    self.mw.col.add_custom_undo_entry(SET_KNOWN_AND_SKIP_UNDO)
     set_known_and_skip_undo = self.mw.col.undo_status()
 
     self.mw.col.sched.buryCards([self.card.id], manual=False)
@@ -230,21 +228,21 @@ def am_reviewer_shortcut_keys(
 ) -> list[Union[tuple[str, Callable[[], None]], tuple[Qt.Key, Callable[[], None]]]]:
     am_config = AnkiMorphsConfig()
 
-    key_browse: QKeySequence = am_config.shortcut_browse_ready_same_unknown
-    key_browse_non_vocab: QKeySequence = am_config.shortcut_browse_all_same_unknown
+    key_browse_ready: QKeySequence = am_config.shortcut_browse_ready_same_unknown
+    key_browse_all: QKeySequence = am_config.shortcut_browse_all_same_unknown
     key_skip: QKeySequence = am_config.shortcut_set_known_and_skip
 
     keys = _old(self)
     keys.extend(
         [
             (
-                key_browse.toString(),
+                key_browse_ready.toString(),
                 lambda: browse_same_morphs(
                     self.card.id, self.card.note(), am_config, search_unknowns=True, search_ready_tag=True  # type: ignore[union-attr]
                 ),
             ),
             (
-                key_browse_non_vocab.toString(),
+                key_browse_all.toString(),
                 lambda: browse_same_morphs(
                     self.card.id, self.card.note(), am_config, search_unknowns=True  # type: ignore[union-attr]
                 ),
@@ -274,50 +272,57 @@ def show_scheduler_version_error() -> None:
 
 
 class SkippedCards:
-    def __init__(self, am_config: AnkiMorphsConfig) -> None:
-        self.am_config = am_config
-        self.skipped_cards_dict = {"comprehension": 0, "today": 0}
+    __slots__ = (
+        "skipped_known_cards",
+        "skipped_already_seen_morphs_cards",
+        "total_skipped_cards",
+        "did_skip_card",
+    )
+
+    def __init__(self) -> None:
+        self.skipped_known_cards = 0
+        self.skipped_already_seen_morphs_cards = 0
         self.total_skipped_cards = 0
-        self.skip_comprehension = am_config.skip_stale_cards
-        self.skip_focus_morph_seen_today = am_config.skip_unknown_morph_seen_today_cards
+        self.did_skip_card = False
 
     def process_skip_conditions_of_card(
         self,
+        am_config: AnkiMorphsConfig,
         am_db: AnkiMorphsDB,
         note: Note,
-        card_unknown_morphs: set[tuple[str, str]],
-    ) -> bool:
-        is_comprehension_card = note.has_tag(self.am_config.tag_known)
+        card_unknown_morphs_raw: set[tuple[str, str]],
+    ) -> None:
+        self.did_skip_card = False
+
         morphs_already_seen_morphs_today = am_db.get_all_morphs_seen_today()
 
-        unknown_card_morphs_combined: set[str] = {
-            morph[0] + morph[1] for morph in card_unknown_morphs
+        card_unknown_morphs: set[str] = {
+            morph_raw[0] + morph_raw[1] for morph_raw in card_unknown_morphs_raw
         }
 
         if "learn_now" in note.tags:
-            return False
-        if is_comprehension_card:
-            if self.skip_comprehension:
-                self.skipped_cards_dict["comprehension"] += 1
-                self.total_skipped_cards += 1
-                return True
-        elif self.skip_focus_morph_seen_today:
-            if unknown_card_morphs_combined.issubset(morphs_already_seen_morphs_today):
-                self.skipped_cards_dict["today"] += 1
-                self.total_skipped_cards += 1
-                return True
-        return False
+            self.did_skip_card = False
+        elif note.has_tag(am_config.tag_known):
+            if am_config.skip_stale_cards:
+                self.skipped_known_cards += 1
+                self.did_skip_card = True
+        elif am_config.skip_unknown_morph_seen_today_cards:
+            if card_unknown_morphs.issubset(morphs_already_seen_morphs_today):
+                self.skipped_already_seen_morphs_cards += 1
+                self.did_skip_card = True
+
+        self.total_skipped_cards = (
+            self.skipped_known_cards + self.skipped_already_seen_morphs_cards
+        )
 
     def show_tooltip_of_skipped_cards(self) -> None:
         skipped_string = ""
 
-        if self.skipped_cards_dict["comprehension"] > 0:
-            skipped_string += (
-                f"Skipped <b>{self.skipped_cards_dict['comprehension']}</b> stale cards"
-            )
-        if self.skipped_cards_dict["today"] > 0:
+        if self.skipped_known_cards > 0:
+            skipped_string += f"Skipped <b>{self.skipped_known_cards}</b> stale cards"
+        if self.skipped_already_seen_morphs_cards > 0:
             if skipped_string != "":
                 skipped_string += "<br>"
-            skipped_string += f"Skipped <b>{self.skipped_cards_dict['today']}</b> cards with morphs already seen today"
+            skipped_string += f"Skipped <b>{self.skipped_already_seen_morphs_cards}</b> cards with morphs already seen today"
 
         tooltip(skipped_string, parent=mw)
