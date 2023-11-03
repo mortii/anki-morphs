@@ -1,7 +1,9 @@
-name: Issue assignment
+name: Issue/PR assignment
 
 on:
     issues:
+        types: [opened]
+    pull_request:
         types: [opened]
 
 jobs:
@@ -10,7 +12,7 @@ jobs:
         permissions:
             issues: write
         steps:
-            - name: 'Auto-assign issue'
+            - name: 'Auto-assign issue/PR'
               uses: pozil/auto-assign-issue@v1
               with:
                   assignees: ${{ vars.REPO_OWNER }}
