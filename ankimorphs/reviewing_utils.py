@@ -184,7 +184,7 @@ def set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> N
     ################################################################
 
     assert self.card is not None
-    global set_known_and_skip_undo  # pylint:disable=global-statement
+    global set_known_and_skip_undo
 
     note: Note = self.card.note()
     am_config_filter = get_matching_modify_filter(note)

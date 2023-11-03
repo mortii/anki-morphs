@@ -44,7 +44,7 @@ def browse_same_morphs(
     # if we were to only query the text on the cards themselves we can get false positives
     # because inflected morphs with different bases can be identical to each-other.
 
-    global browser  # pylint:disable=global-statement
+    global browser
 
     am_db = AnkiMorphsDB()
     am_filter = get_matching_read_filter(note)

@@ -136,7 +136,7 @@ def update_seen_morphs(info: UndoActionsInfo) -> None:
     ################################################################
 
     assert mw is not None
-    global last_undo_step_handled  # pylint:disable=global-statement
+    global last_undo_step_handled
 
     if not db_initialized:
         # gui_hooks.undo_state_did_change runs before profile is loaded
@@ -170,7 +170,7 @@ def update_seen_morphs(info: UndoActionsInfo) -> None:
 
 
 def init_db() -> None:
-    global db_initialized  # pylint:disable=global-statement
+    global db_initialized
 
     read_config_filters: list[AnkiMorphsConfigFilter] = get_read_enabled_filters()
     has_active_note_filter = False

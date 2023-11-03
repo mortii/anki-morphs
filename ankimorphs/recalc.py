@@ -37,7 +37,7 @@ start_time: Optional[float] = None
 
 def recalc() -> None:
     assert mw is not None
-    global start_time  # pylint:disable=global-statement
+    global start_time
 
     mw.progress.start(label="Recalculating...")
     start_time = time.time()
@@ -623,7 +623,7 @@ def on_success(result: Any) -> None:
     del result  # unused
     assert mw is not None
     assert mw.progress is not None
-    global start_time  # pylint:disable=global-statement
+    global start_time
 
     mw.toolbar.draw()  # updates stats
     mw.progress.finish()

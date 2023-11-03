@@ -22,7 +22,8 @@ disable = """
     redefined-outer-name,
     line-too-long,
     too-few-public-methods,
-    fixme
+    fixme,
+    global-statement,
 """
 
 # Docs: https://docs.pytest.org/en/7.1.x/reference/reference.html#ini-options-ref

@@ -1,19 +1,17 @@
 # Roadmap
 
-1. Update docs
-    1. settings
-    2. setup
-    3. names.txt
-2. have github assign bot work on pull requests
-3. remove global statements from pylint
-4. create a simple dataclass for morphs
-5. Implement spaCy
-6. Remove old morphemizers
-7. Remake readability analyzer
-8. Allow for custom morph prioritization for specified languages (e.g. jp-morph-priority.txt)
-9. Remake tests
-10. Update guide
-11. **Release AnkiMorphs stable version**
-12. Implement optional "automatic recalc before sync"
-13. Remake statistics page
-14. Implement "cloze"-option [(#12)](https://github.com/mortii/anki-morphs/discussions/12)
+1. create a simple dataclass for morphs
+2. Update docs
+   1. settings
+   2. setup
+   3. names.txt
+3. Implement spaCy
+4. Remove old morphemizers
+5. Remake readability analyzer
+6. Allow for custom morph prioritization for specified languages (e.g. jp-morph-priority.txt)
+7. Remake tests
+8. Update guide
+9. **Release AnkiMorphs stable version**
+10. Implement optional "automatic recalc before sync"
+11. Remake statistics page
+12. Implement "cloze"-option [(#12)](https://github.com/mortii/anki-morphs/discussions/12)

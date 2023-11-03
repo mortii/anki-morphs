@@ -48,7 +48,7 @@ morphemizers_by_name = {}
 
 
 def get_all_morphemizers() -> list[Morphemizer]:
-    global morphemizers  # pylint:disable=global-statement
+    global morphemizers
     if morphemizers is None:
         morphemizers = [
             SpaceMorphemizer(),
