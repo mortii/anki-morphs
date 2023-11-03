@@ -1,6 +1,6 @@
 # Roadmap
 
-1. create a simple dataclass for morphs
+1. rename skip_stale_cards config
 2. Update docs
    1. settings
    2. setup

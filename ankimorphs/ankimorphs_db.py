@@ -244,10 +244,8 @@ class AnkiMorphsDB:
     def get_ids_of_cards_with_same_morphs(
         self, card_id: int, search_unknowns: bool = False
     ) -> Optional[set[int]]:
-        """
-        The where_query_string is a necessary hack to overcome the sqlite problem
-        of not allowing variable length parameters
-        """
+        # The where_query_string is a necessary hack to overcome the sqlite problem
+        # of not allowing variable length parameters
 
         card_ids: set[int] = set()
         card_morphs: Optional[set[tuple[str, str]]] = self.get_morphs_of_card(
@@ -312,9 +310,6 @@ def get_new_cards_seen_today() -> Sequence[int]:
     # it is also more robust to api changes than hardcoded strings.
     # An example of the resulting total_search_string is:
     #   "(introduced:1 note:ankimorphs\_sub2srs OR introduced:1 note:Basic) OR is:buried tag:am-known"
-    #
-    # TODO: this string is fairly static, maybe just generate it once
-    #  every time anki goes to the 'review' state?
 
     assert mw is not None
 

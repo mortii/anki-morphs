@@ -52,3 +52,20 @@ class Morpheme:
         return hash(
             (self.norm, self.base, self.inflected, self.read, self.pos, self.sub_pos)
         )
+
+
+class SimplifiedMorph:
+    __slots__ = (
+        "norm",
+        "inflected",
+        "highest_learning_interval",
+        "norm_and_inflected",
+    )
+
+    def __init__(
+        self, norm: str, inflected: str, highest_learning_interval: int
+    ) -> None:
+        self.norm: str = norm
+        self.inflected: str = inflected
+        self.highest_learning_interval: int = highest_learning_interval
+        self.norm_and_inflected: str = self.norm + self.inflected

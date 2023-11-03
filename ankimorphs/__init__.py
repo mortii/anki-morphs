@@ -164,8 +164,10 @@ def update_seen_morphs(info: UndoActionsInfo) -> None:
             if mw.reviewer.card is not None:
                 am_db.update_seen_unknown_morph_single_card(mw.reviewer.card.id)
 
-        # print("Seen_Morphs:")
-        # am_db.print_table("Seen_Morphs")
+        if DEV_MODE:
+            print("Seen_Morphs:")
+            am_db.print_table("Seen_Morphs")
+
         am_db.con.close()
 
 

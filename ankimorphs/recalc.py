@@ -29,7 +29,7 @@ from .exceptions import (
     NamesTextfileNotFoundException,
 )
 from .morph_utils import get_morphemes
-from .morpheme import Morpheme
+from .morpheme import Morpheme, SimplifiedMorph
 from .morphemizer import get_morphemizer_by_name
 
 start_time: Optional[float] = None
@@ -234,10 +234,6 @@ def get_card_morphs(
 def update_cards(  # pylint:disable=too-many-locals,too-many-statements
     am_config: AnkiMorphsConfig,
 ) -> None:
-    # A single sqlite query is very fast, but looping queries is
-    # incredibly slow because of the overhead, so instead we query
-    # once and store the data.
-
     assert mw is not None
     assert mw.col.db is not None
     assert mw.progress is not None
@@ -251,8 +247,7 @@ def update_cards(  # pylint:disable=too-many-locals,too-many-statements
     tag_manager.set_collapsed(am_config.tag_known, collapsed=False)
 
     modify_config_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
-    morph_cache: dict[str, int] = get_morph_cache(am_db)
-    card_morph_map_cache: dict[int, list[dict[str, str]]] = get_card_morph_map_cache(
+    card_morph_map_cache: dict[int, list[SimplifiedMorph]] = get_card_morph_map_cache(
         am_db
     )
     morph_priority: dict[str, int] = get_morph_priority(am_db, am_config)
@@ -291,7 +286,6 @@ def update_cards(  # pylint:disable=too-many-locals,too-many-statements
                     am_config,
                     card_id,
                     card_morph_map_cache,
-                    morph_cache,
                     morph_priority,
                 )
 
@@ -304,7 +298,6 @@ def update_cards(  # pylint:disable=too-many-locals,too-many-statements
                 am_config,
                 config_filter,
                 card_morph_map_cache,
-                morph_cache,
                 card.id,
                 note,
             )
@@ -341,54 +334,26 @@ def update_cards(  # pylint:disable=too-many-locals,too-many-statements
     mw.col.update_notes(modified_notes)
 
 
-def get_morph_cache(am_db: AnkiMorphsDB) -> dict[str, int]:
-    morph_cache = {}
-
-    morphs_raw = am_db.con.execute(
-        """
-        SELECT norm, inflected, highest_learning_interval
-        FROM Morphs
-        """,
-    ).fetchall()
-
-    for row in morphs_raw:
-        morph_key = row[0] + row[1]
-        morph_cache[morph_key] = row[2]
-
-    return morph_cache
-
-
-def get_card_morph_map_cache(am_db: AnkiMorphsDB) -> dict[int, list[dict[str, str]]]:
-    card_morph_map_cache: dict[int, list[dict[str, str]]] = {}
+def get_card_morph_map_cache(am_db: AnkiMorphsDB) -> dict[int, list[SimplifiedMorph]]:
+    card_morph_map_cache: dict[int, list[SimplifiedMorph]] = {}
 
     card_morph_map_cache_raw = am_db.con.execute(
         """
-        SELECT card_id, morph_norm, morph_inflected
+        SELECT Card_Morph_Map.card_id, Morphs.norm, Morphs.inflected, Morphs.highest_learning_interval
         FROM Card_Morph_Map
+        INNER JOIN Morphs ON
+            Card_Morph_Map.morph_norm = Morphs.norm AND Card_Morph_Map.morph_inflected = Morphs.inflected
         """,
     ).fetchall()
 
-    card_id_outer = None
     for row in card_morph_map_cache_raw:
-        card_id_inner = row[0]
-        morph_base = row[1]
-        morph_inflection = row[2]
+        card_id = row[0]
+        morph = SimplifiedMorph(row[1], row[2], row[3])
 
-        if card_id_inner != card_id_outer:
-            card_morph_map_cache[card_id_inner] = [
-                {
-                    "entire_morph": morph_base + morph_inflection,
-                    "inflected_morph": morph_inflection,
-                },
-            ]
-            card_id_outer = card_id_inner
+        if card_id not in card_morph_map_cache:
+            card_morph_map_cache[card_id] = [morph]
         else:
-            card_morph_map_cache[card_id_inner].append(
-                {
-                    "entire_morph": morph_base + morph_inflection,
-                    "inflected_morph": morph_inflection,
-                }
-            )
+            card_morph_map_cache[card_id].append(morph)
 
     return card_morph_map_cache
 
@@ -424,7 +389,7 @@ def get_morph_collection_priority(am_db: AnkiMorphsDB) -> dict[str, int]:
         sorted(card_morph_map_cache.items(), key=lambda item: item[1], reverse=True)
     )
 
-    # inverse the values, the lower the priority number the more it is prioritized
+    # reverse the values, the lower the priority number the more it is prioritized
     for index, key in enumerate(card_morph_map_cache_sorted):
         card_morph_map_cache_sorted[key] = index
 
@@ -455,8 +420,7 @@ def get_am_cards_data_dict(
 def get_card_difficulty_and_unknowns(
     am_config: AnkiMorphsConfig,
     card_id: int,
-    card_morph_map_cache: dict[int, list[dict[str, str]]],
-    morph_cache: dict[str, int],
+    card_morph_map_cache: dict[int, list[SimplifiedMorph]],
     morph_priority: dict[str, int],
 ) -> tuple[int, list[str]]:
     ####################################################################################
@@ -483,7 +447,7 @@ def get_card_difficulty_and_unknowns(
     unknowns: list[str] = []
 
     try:
-        card_morphs: list[dict[str, str]] = card_morph_map_cache[card_id]
+        card_morphs: list[SimplifiedMorph] = card_morph_map_cache[card_id]
     except KeyError:
         # card does not have morphs or is buggy in some way
         return default_difficulty, unknowns
@@ -491,13 +455,13 @@ def get_card_difficulty_and_unknowns(
     difficulty = 0
 
     for morph in card_morphs:
-        highest_interval = morph_cache[morph["entire_morph"]]
-        is_unknown = highest_interval == 0  # gives a bool
+        is_unknown = morph.highest_learning_interval == 0  # gives a bool
         if is_unknown:
-            unknowns.append(morph["inflected_morph"])
-        difficulty += morph_priority[morph["entire_morph"]]
+            unknowns.append(morph.inflected)
+        difficulty += morph_priority[morph.norm_and_inflected]
 
     if difficulty >= morph_unknown_penalty:
+        #  cap morph priority penalties as described in #(2.2)
         difficulty = morph_unknown_penalty - 1
 
     # print(f"pre unknown difficulty: {difficulty}")
@@ -529,16 +493,15 @@ def update_difficulty_field(
             note.fields[config_filter.difficulty_field_index - 1] = str(difficulty)
 
 
-def update_highlighted_field(  # pylint:disable=too-many-arguments
+def update_highlighted_field(
     am_config: AnkiMorphsConfig,
     config_filter: AnkiMorphsConfigFilter,
-    card_morph_map_cache: dict[int, list[dict[str, str]]],
-    morph_cache: dict[str, int],
+    card_morph_map_cache: dict[int, list[SimplifiedMorph]],
     card_id: int,
     note: Note,
 ) -> None:
     try:
-        card_morphs: list[dict[str, str]] = card_morph_map_cache[card_id]
+        card_morphs: list[SimplifiedMorph] = card_morph_map_cache[card_id]
     except KeyError:
         # card does not have morphs or is buggy in some way
         return
@@ -550,7 +513,6 @@ def update_highlighted_field(  # pylint:disable=too-many-arguments
             highlighted_text = highlight_text(
                 am_config,
                 card_morphs,
-                morph_cache,
                 text_to_highlight,
             )
             note.fields[config_filter.highlighted_field_index - 1] = highlighted_text
@@ -574,23 +536,22 @@ def update_tags(am_config: AnkiMorphsConfig, note: Note, unknowns: int) -> None:
 
 def highlight_text(
     am_config: AnkiMorphsConfig,
-    card_morphs: list[dict[str, str]],
-    morph_cache: dict[str, int],
+    card_morphs: list[SimplifiedMorph],
     text_to_highlight: str,
 ) -> str:
     highlighted_text = text_to_highlight
 
-    # TODO: create a dataclass for morph
     # Avoid formatting a smaller morph that is contained in a bigger morph, reverse sort fixes this
     sorted_morphs = sorted(
-        card_morphs, key=lambda x: len(x["inflected_morph"]), reverse=True
+        card_morphs,
+        key=lambda _simple_morph: len(_simple_morph.inflected),
+        reverse=True,
     )
 
     for morph in sorted_morphs:
-        highest_interval = morph_cache[morph["entire_morph"]]
-        if highest_interval == 0:
+        if morph.highest_learning_interval == 0:
             morph_status = "unknown"
-        elif highest_interval < am_config.recalc_interval_for_known:
+        elif morph.highest_learning_interval < am_config.recalc_interval_for_known:
             morph_status = "learning"
         else:
             morph_status = "known"
@@ -599,7 +560,7 @@ def highlight_text(
         # print(f"maturity: {morph_status}")
         replacement = f'<span morph-status="{morph_status}">\\1</span>'
         highlighted_text = non_span_sub(
-            f"({morph['inflected_morph']})", replacement, highlighted_text
+            f"({morph.inflected})", replacement, highlighted_text
         )
 
     # print(f"highlighted_text: {highlighted_text}")
