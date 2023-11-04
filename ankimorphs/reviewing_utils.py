@@ -294,6 +294,8 @@ class SkippedCards:
             morph[0] + morph[1] for morph in card_unknown_morphs
         }
 
+        if "learn_now" in note.tags:
+            return False
         if is_comprehension_card:
             if self.skip_comprehension:
                 self.skipped_cards_dict["comprehension"] += 1
