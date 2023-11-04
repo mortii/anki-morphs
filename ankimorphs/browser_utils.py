@@ -2,10 +2,10 @@ from typing import Optional
 
 from aqt import dialogs, mw
 from aqt.browser.browser import Browser
+from aqt.browser.table.state import ItemState
 from aqt.qt import QLineEdit, QMessageBox  # pylint:disable=no-name-in-module
 from aqt.reviewer import RefreshNeeded
 from aqt.utils import tooltip
-
 from .ankimorphs_db import AnkiMorphsDB
 from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter, get_matching_read_filter
 
@@ -121,13 +121,12 @@ def run_learn_card_now() -> None:
     assert browser is not None
 
     selected_cards = browser.selectedCards()
-
-    for cid in selected_cards:
-        card = mw.col.get_card(cid)
-        card.due = 0
-        mw.col.update_card(card)
-
-    mw.moveToState("review")
+    
+    mw.col.sched.reposition_new_cards(selected_cards, 0, 1, False, True)
+    note_ids = ItemState.note_ids_from_card_ids(mw, selected_cards)
+    mw.col.tags.bulk_add(note_ids, "learn_now")
+    
+    mw.moveToState("review") 
     mw.activateWindow()
     mw.reviewer._refresh_needed = RefreshNeeded.QUEUES
     mw.reviewer.refresh_if_needed()
