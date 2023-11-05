@@ -435,7 +435,7 @@ def add_name_to_file(name: str) -> None:
 
     profile_path: str = mw.pm.profileFolder()
     path = os.path.join(profile_path, "names.txt")
-    with open(path, "a", encoding="utf-8") as file: 
+    with open(path, "a", encoding="utf-8") as file:
         file.write("\n" + name)
         file.close()
 
