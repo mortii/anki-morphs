@@ -27,6 +27,7 @@ from aqt.reviewer import Reviewer
 from aqt.toolbar import Toolbar
 from aqt.undo import UndoActionsInfo
 from aqt.utils import tooltip
+from aqt.webview import AnkiWebView
 
 from . import browser_utils, recalc, reviewing_utils, settings_dialog, toolbar_stats
 from .ankimorphs_db import AnkiMorphsDB
@@ -366,7 +367,7 @@ def create_already_known_tagger_action(am_config: AnkiMorphsConfig) -> QAction:
     return action
 
 
-def add_name(web_view, menu):
+def add_name(web_view: AnkiWebView, menu: QMenu):
     selected_text = web_view.selectedText()
     if selected_text == "":
         return
@@ -429,7 +430,9 @@ def test_function() -> None:
     am_db.con.close()
 
 
-def add_name_to_file(name: str):
+def add_name_to_file(name: str) -> None:
+    assert mw is not None
+
     profile_path: str = mw.pm.profileFolder()
     path = os.path.join(profile_path, "names.txt")
     file = open(path, "a")
