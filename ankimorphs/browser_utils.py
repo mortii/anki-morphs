@@ -5,7 +5,6 @@ from anki.notes import Note
 from anki.utils import ids2str
 from aqt import dialogs, mw
 from aqt.browser.browser import Browser
-from aqt.browser.table.state import ItemState
 from aqt.qt import QLineEdit, QMessageBox  # pylint:disable=no-name-in-module
 from aqt.reviewer import RefreshNeeded
 from aqt.utils import tooltip
