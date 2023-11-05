@@ -11,7 +11,7 @@
 # Incorrect:
 # from ankimorphs import browser_utils
 ################################################################
-
+import os
 from functools import partial
 
 from aqt import gui_hooks, mw
@@ -57,6 +57,7 @@ def main() -> None:
     gui_hooks.profile_did_open.append(replace_reviewer_functions)
 
     gui_hooks.profile_will_close.append(clear_seen_morphs)
+    gui_hooks.webview_will_show_context_menu.append(add_name)
 
 
 def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
@@ -365,6 +366,15 @@ def create_already_known_tagger_action(am_config: AnkiMorphsConfig) -> QAction:
     return action
 
 
+def add_name(web_view, menu):
+    selected_text = web_view.selectedText()
+    if selected_text == "":
+        return
+    action = QAction("Mark as name", menu)
+    action.triggered.connect(lambda: add_name_to_file(selected_text))
+    menu.addAction(action)
+
+
 def create_test_action() -> QAction:
     keys = QKeySequence("Ctrl+T")
     action = QAction("&Test", mw)
@@ -417,6 +427,14 @@ def test_function() -> None:
     # am_db.print_table("Seen_Morphs")
 
     am_db.con.close()
+
+
+def add_name_to_file(name: str):
+    profile_path: str = mw.pm.profileFolder()
+    path = os.path.join(profile_path, "names.txt")
+    file = open(path, "a")
+    file.write("\n" + name)
+    file.close()
 
 
 main()
