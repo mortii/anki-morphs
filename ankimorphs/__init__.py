@@ -11,7 +11,7 @@
 # Incorrect:
 # from ankimorphs import browser_utils
 ################################################################
-import os
+
 from functools import partial
 
 from aqt import gui_hooks, mw
@@ -29,7 +29,14 @@ from aqt.undo import UndoActionsInfo
 from aqt.utils import tooltip
 from aqt.webview import AnkiWebView
 
-from . import browser_utils, recalc, reviewing_utils, settings_dialog, toolbar_stats
+from . import (
+    browser_utils,
+    name_file_utils,
+    recalc,
+    reviewing_utils,
+    settings_dialog,
+    toolbar_stats,
+)
 from .ankimorphs_db import AnkiMorphsDB
 from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter, get_read_enabled_filters
 from .toolbar_stats import MorphToolbarStats
@@ -57,8 +64,9 @@ def main() -> None:
     gui_hooks.profile_did_open.append(init_browser_menus_and_actions)
     gui_hooks.profile_did_open.append(replace_reviewer_functions)
 
+    gui_hooks.webview_will_show_context_menu.append(add_name_action)
+
     gui_hooks.profile_will_close.append(clear_seen_morphs)
-    gui_hooks.webview_will_show_context_menu.append(add_name)
 
 
 def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
@@ -367,15 +375,6 @@ def create_already_known_tagger_action(am_config: AnkiMorphsConfig) -> QAction:
     return action
 
 
-def add_name(web_view: AnkiWebView, menu: QMenu) -> None:
-    selected_text = web_view.selectedText()
-    if selected_text == "":
-        return
-    action = QAction("Mark as name", menu)
-    action.triggered.connect(lambda: add_name_to_file(selected_text))
-    menu.addAction(action)
-
-
 def create_test_action() -> QAction:
     keys = QKeySequence("Ctrl+T")
     action = QAction("&Test", mw)
@@ -384,19 +383,18 @@ def create_test_action() -> QAction:
     return action
 
 
+def add_name_action(web_view: AnkiWebView, menu: QMenu) -> None:
+    selected_text = web_view.selectedText()
+    if selected_text == "":
+        return
+    action = QAction("Mark as name", menu)
+    action.triggered.connect(lambda: name_file_utils.add_name_to_file(selected_text))
+    menu.addAction(action)
+
+
 def test_function() -> None:
     assert mw is not None
     assert mw.col.db is not None
-
-    # table_info = mw.col.db.execute("PRAGMA table_info('decks');")
-    # print(f"table_info: {table_info}")
-
-    # due_cards = mw.col.find_cards("is:due")
-    # rated_ids = mw.col.find_cards("rated:1")  # all studied today
-    # rated_ids = mw.col.find_cards("introduced:1")  # first reviewed today
-    #
-    # print(f"due_cards: {due_cards}")
-    # print(f"rated_ids: {rated_ids}")
 
     am_db = AnkiMorphsDB()
 
@@ -412,32 +410,7 @@ def test_function() -> None:
         ).fetchall()
     print(f"result?: {result}")
 
-    # with am_db.con:
-    #     am_db.con.execute(
-    #         """
-    #             INSERT OR IGNORE INTO Seen_Morphs (norm, inflected)
-    #             SELECT morph_norm, morph_inflected
-    #             FROM Card_Morph_Map
-    #             WHERE card_id = 1691325536242
-    #             """
-    #     )
-
-    # WHERE card_id = 1673815531636 AND card_id = 1673815532356
-
-    # print("Seen_Morphs: ")
-    # am_db.print_table("Seen_Morphs")
-
     am_db.con.close()
-
-
-def add_name_to_file(name: str) -> None:
-    assert mw is not None
-
-    profile_path: str = mw.pm.profileFolder()
-    path = os.path.join(profile_path, "names.txt")
-    with open(path, "a", encoding="utf-8") as file:
-        file.write("\n" + name)
-        file.close()
 
 
 main()

@@ -1,11 +1,7 @@
-import functools
-import os
 import re
 
-from aqt import mw
-
+from . import name_file_utils
 from .config import AnkiMorphsConfig
-from .exceptions import NamesTextfileNotFoundException
 from .morpheme import Morpheme
 from .morphemizer import Morphemizer
 
@@ -49,7 +45,7 @@ def _remove_names(
     if not am_config.parse_ignore_names_textfile:
         return morphs
 
-    names = create_hash_set_out_of_names()
+    names = name_file_utils.create_hash_set_out_of_names()
     non_name_morphs: list[Morpheme] = []
 
     for morph in morphs:
@@ -57,20 +53,3 @@ def _remove_names(
             non_name_morphs.append(morph)
 
     return non_name_morphs
-
-
-@functools.cache
-def create_hash_set_out_of_names() -> set[str]:
-    assert mw is not None
-
-    profile_path: str = mw.pm.profileFolder()
-    path: str = os.path.join(profile_path, "names.txt")
-
-    try:
-        with open(path, encoding="utf-8") as names_file:
-            lines_lower_case = map(lambda x: x.lower(), names_file.read().splitlines())
-            names = set(lines_lower_case)
-    except FileNotFoundError as error:
-        raise NamesTextfileNotFoundException(path) from error
-
-    return names
