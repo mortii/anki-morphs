@@ -10,6 +10,7 @@ from anki.collection import Collection
 from anki.consts import CARD_TYPE_NEW
 from anki.notes import Note
 from anki.tags import TagManager
+from anki.utils import ids2str
 from aqt import mw
 from aqt.operations import QueryOp
 from aqt.qt import QMessageBox  # pylint:disable=no-name-in-module
@@ -39,7 +40,7 @@ def recalc() -> None:
     assert mw is not None
     global start_time
 
-    mw.progress.start(label="Recalculating...")
+    mw.progress.start(label="Recalculating")
     start_time = time.time()
 
     operation = QueryOp(
@@ -58,7 +59,7 @@ def recalc_background_op(collection: Collection) -> None:
 
     am_config = AnkiMorphsConfig()
     cache_anki_data(am_config)
-    update_cards(am_config)
+    update_cards_and_notes(am_config)
 
 
 def cache_anki_data(  # pylint:disable=too-many-locals
@@ -231,7 +232,7 @@ def get_card_morphs(
         return None
 
 
-def update_cards(  # pylint:disable=too-many-locals,too-many-statements
+def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statements
     am_config: AnkiMorphsConfig,
 ) -> None:
     assert mw is not None
@@ -239,19 +240,15 @@ def update_cards(  # pylint:disable=too-many-locals,too-many-statements
     assert mw.progress is not None
 
     am_db = AnkiMorphsDB()
-    tag_manager = TagManager(mw.col)
-
-    # set_collapsed registers the tags in the browser if they don't already exist
-    tag_manager.set_collapsed(am_config.tag_ready, collapsed=False)
-    tag_manager.set_collapsed(am_config.tag_not_ready, collapsed=False)
-    tag_manager.set_collapsed(am_config.tag_known, collapsed=False)
 
     modify_config_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
+
+    morph_priority: dict[str, int] = get_morph_priority(am_db, am_config)
     card_morph_map_cache: dict[int, list[SimplifiedMorph]] = get_card_morph_map_cache(
         am_db
     )
-    morph_priority: dict[str, int] = get_morph_priority(am_db, am_config)
-    end_of_queue: int = mw.col.db.scalar("select count() from cards where type = 0")
+
+    original_due: dict[int, int] = {}
 
     modified_cards: list[Card] = []
     modified_notes: list[Note] = []
@@ -281,6 +278,11 @@ def update_cards(  # pylint:disable=too-many-locals,too-many-statements
             card = mw.col.get_card(card_id)
             note = card.note()
 
+            # make sure to get the values and not references
+            original_due[card_id] = int(card.due)
+            original_fields = note.fields.copy()
+            original_tags = note.tags.copy()
+
             if card.type == CARD_TYPE_NEW:
                 card_difficulty, unknowns = get_card_difficulty_and_unknowns(
                     am_config,
@@ -302,15 +304,19 @@ def update_cards(  # pylint:disable=too-many-locals,too-many-statements
                 note,
             )
 
+            # We cannot check if due is different from the original here
+            # because due is recalculated later.
             modified_cards.append(card)
-            modified_notes.append(note)
+
+            if original_fields != note.fields or original_tags != note.tags:
+                modified_notes.append(note)
 
     am_db.con.close()
 
     mw.taskman.run_on_main(
         partial(
             mw.progress.update,
-            label="Inserting into Anki collection...",
+            label="Sorting & filtering cards",
         )
     )
 
@@ -324,11 +330,25 @@ def update_cards(  # pylint:disable=too-many-locals,too-many-statements
     # the due with the index the card has in the list.
     ################################################################
 
-    modified_cards.sort(key=lambda _card: _card.due)
+    # if the due is the same then it is sorted by id
+    modified_cards.sort(key=lambda _card: (_card.due, _card.id))
+
+    end_of_queue = get_end_of_query(modified_cards)
 
     for index, card in enumerate(modified_cards, start=end_of_queue):
         if card.type == CARD_TYPE_NEW:
             card.due = index
+
+    modified_cards = [
+        _card for _card in modified_cards if card_is_modified(_card, original_due)
+    ]
+
+    mw.taskman.run_on_main(
+        partial(
+            mw.progress.update,
+            label="Inserting into Anki collection",
+        )
+    )
 
     mw.col.update_cards(modified_cards)
     mw.col.update_notes(modified_notes)
@@ -337,12 +357,14 @@ def update_cards(  # pylint:disable=too-many-locals,too-many-statements
 def get_card_morph_map_cache(am_db: AnkiMorphsDB) -> dict[int, list[SimplifiedMorph]]:
     card_morph_map_cache: dict[int, list[SimplifiedMorph]] = {}
 
+    # Sorting the morphs (ORDER BY) is crucial to avoid bugs
     card_morph_map_cache_raw = am_db.con.execute(
         """
         SELECT Card_Morph_Map.card_id, Morphs.norm, Morphs.inflected, Morphs.highest_learning_interval
         FROM Card_Morph_Map
         INNER JOIN Morphs ON
             Card_Morph_Map.morph_norm = Morphs.norm AND Card_Morph_Map.morph_inflected = Morphs.inflected
+        ORDER BY Morphs.norm, Morphs.inflected
         """,
     ).fetchall()
 
@@ -373,10 +395,12 @@ def get_morph_priority(
 
 
 def get_morph_collection_priority(am_db: AnkiMorphsDB) -> dict[str, int]:
+    # Sorting the morphs (ORDER BY) is crucial to avoid bugs
     morph_priority = am_db.con.execute(
         """
         SELECT morph_norm, morph_inflected
         FROM Card_Morph_Map
+        ORDER BY morph_norm, morph_inflected
         """,
     ).fetchall()
 
@@ -384,10 +408,7 @@ def get_morph_collection_priority(am_db: AnkiMorphsDB) -> dict[str, int]:
     for row in morph_priority:
         temp_list.append(row[0] + row[1])
 
-    card_morph_map_cache: dict[str, int] = Counter(temp_list)
-    card_morph_map_cache_sorted = dict(
-        sorted(card_morph_map_cache.items(), key=lambda item: item[1], reverse=True)
-    )
+    card_morph_map_cache_sorted: dict[str, int] = dict(Counter(temp_list).most_common())
 
     # reverse the values, the lower the priority number the more it is prioritized
     for index, key in enumerate(card_morph_map_cache_sorted):
@@ -541,6 +562,7 @@ def highlight_text(
 ) -> str:
     highlighted_text = text_to_highlight
 
+    # TODO: sorting might be redundant now since morphs are ordered on sqlite query
     # Avoid formatting a smaller morph that is contained in a bigger morph, reverse sort fixes this
     sorted_morphs = sorted(
         card_morphs,
@@ -577,6 +599,27 @@ def non_span_sub(sub: str, repl: str, string: str) -> str:
 
     # print(f"non_span_sub: {txt}")
     return txt
+
+
+def get_end_of_query(modified_cards: list[Card]) -> int:
+    assert mw is not None
+    assert mw.col.db is not None
+
+    end_of_queue_query_string = (
+        """
+    SELECT MAX(due) 
+    FROM cards 
+    """
+        + f"WHERE type = 0 AND due != 2147483647 AND id NOT IN {ids2str(card.id for card in modified_cards)}"
+    )
+    highest_due: int = int(mw.col.db.scalar(end_of_queue_query_string))
+    return highest_due + 1
+
+
+def card_is_modified(card: Card, original_due: dict[int, int]) -> bool:
+    if original_due[card.id] == card.due:
+        return False
+    return True
 
 
 def on_success(result: Any) -> None:
