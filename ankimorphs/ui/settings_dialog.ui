@@ -246,13 +246,6 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_9">
            <item>
-            <widget class="QCheckBox" name="parse_ignore_quotation_marks_input">
-             <property name="text">
-              <string>ignore quotation marks (&quot;&quot;, »«)</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QCheckBox" name="parse_ignore_bracket_contents_input">
              <property name="text">
               <string>ignore content in square brackets []</string>

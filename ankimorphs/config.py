@@ -82,9 +82,6 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         # self.recalc_prioritize_textfile: bool = _get_bool_config(
         #     "recalc_prioritize_textfile", is_default
         # )
-        self.parse_ignore_quotation_marks: bool = _get_bool_config(
-            "parse_ignore_quotation_marks", is_default
-        )
         self.parse_ignore_bracket_contents: bool = _get_bool_config(
             "parse_ignore_bracket_contents", is_default
         )

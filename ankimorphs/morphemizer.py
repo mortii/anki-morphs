@@ -108,8 +108,11 @@ class SpaceMorphemizer(Morphemizer):
     """
 
     def _get_morphemes_from_expr(self, expression):
+        # the regex "\w+(?:[-']\w+)*" matches any alphanumeric word,
+        # including ones with multiple hyphens or apostrophes.
         word_list = [
-            word.lower() for word in re.findall(r"\b[^\s\d]+\b", expression, re.UNICODE)
+            word.lower()
+            for word in re.findall(r"\w+(?:[-']\w+)*", expression, re.UNICODE)
         ]
         return [
             Morpheme(word, word, word, word, "UNKNOWN", "UNKNOWN") for word in word_list
