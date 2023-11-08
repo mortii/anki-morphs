@@ -63,7 +63,9 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.shortcut_view_morphemes: QKeySequence = _get_key_sequence_config(
             "shortcut_view_morphemes", is_default
         )
-        self.skip_stale_cards: bool = _get_bool_config("skip_stale_cards", is_default)
+        self.skip_only_known_morphs_cards: bool = _get_bool_config(
+            "skip_only_known_morphs_cards", is_default
+        )
         self.skip_unknown_morph_seen_today_cards: bool = _get_bool_config(
             "skip_unknown_morph_seen_today_cards", is_default
         )

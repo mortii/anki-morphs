@@ -355,7 +355,9 @@ class PreferencesDialog(QDialog):
         # )
 
     def _populate_skip_tab(self) -> None:
-        self.ui.skip_stale_cards_input.setChecked(self.config.skip_stale_cards)
+        self.ui.skip_only_known_morphs_cards_input.setChecked(
+            self.config.skip_only_known_morphs_cards
+        )
         self.ui.skip_unknown_morph_seen_today_cards_input.setChecked(
             self.config.skip_unknown_morph_seen_today_cards
         )
@@ -372,7 +374,9 @@ class PreferencesDialog(QDialog):
             if not confirmed:
                 return
 
-        self.ui.skip_stale_cards_input.setChecked(self._default_config.skip_stale_cards)
+        self.ui.skip_only_known_morphs_cards_input.setChecked(
+            self._default_config.skip_only_known_morphs_cards
+        )
         self.ui.skip_unknown_morph_seen_today_cards_input.setChecked(
             self._default_config.skip_unknown_morph_seen_today_cards
         )
@@ -450,7 +454,7 @@ class PreferencesDialog(QDialog):
             "parse_ignore_names_morphemizer": self.ui.parse_ignore_names_morphemizer_input.isChecked(),
             "parse_ignore_names_textfile": self.ui.parse_ignore_names_textfile_input.isChecked(),
             "parse_ignore_suspended_cards_content": self.ui.parse_ignore_suspended_cards_content_input.isChecked(),
-            "skip_stale_cards": self.ui.skip_stale_cards_input.isChecked(),
+            "skip_only_known_morphs_cards": self.ui.skip_only_known_morphs_cards_input.isChecked(),
             "skip_unknown_morph_seen_today_cards": self.ui.skip_unknown_morph_seen_today_cards_input.isChecked(),
             "skip_show_num_of_skipped_cards": self.ui.skip_show_num_of_skipped_cards_input.isChecked(),
         }

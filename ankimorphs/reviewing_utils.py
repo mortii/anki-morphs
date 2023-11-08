@@ -209,8 +209,6 @@ def set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> N
     # update seen morphs table with this card's morphs
     am_db = AnkiMorphsDB()
     am_db.update_seen_unknown_morph_single_card(self.card.id)
-    # print("Seen_Morphs SKIPPED FUNCTION: ")
-    # am_db.print_table("Seen_Morphs")
     am_db.con.close()
 
     if am_config.skip_show_num_of_skipped_cards:
@@ -300,10 +298,10 @@ class SkippedCards:
             morph_raw[0] + morph_raw[1] for morph_raw in card_unknown_morphs_raw
         }
 
-        if "learn_now" in note.tags:
+        if note.has_tag("learn-now"):
             self.did_skip_card = False
         elif note.has_tag(am_config.tag_known):
-            if am_config.skip_stale_cards:
+            if am_config.skip_only_known_morphs_cards:
                 self.skipped_known_cards += 1
                 self.did_skip_card = True
         elif am_config.skip_unknown_morph_seen_today_cards:

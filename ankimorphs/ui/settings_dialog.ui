@@ -336,7 +336,7 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_11">
            <item>
-            <widget class="QCheckBox" name="skip_stale_cards_input">
+            <widget class="QCheckBox" name="skip_only_known_morphs_cards_input">
              <property name="text">
               <string>Skip cards with only known morphs</string>
              </property>

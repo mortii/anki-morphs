@@ -485,7 +485,7 @@ def get_card_difficulty_and_unknowns(
     difficulty += len(unknowns) * morph_unknown_penalty
     # print(f"post unknown difficulty: {difficulty}")
 
-    if len(unknowns) == 0 and am_config.skip_stale_cards:
+    if len(unknowns) == 0 and am_config.skip_only_known_morphs_cards:
         # Move stale cards to the end of the queue
         return default_difficulty, unknowns
 
