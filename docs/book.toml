@@ -26,3 +26,5 @@ heading-split-level = 2
 [preprocessor.katex]
 after = ["links"]
 macros = "src/latex_macros.txt"
+block-delimiter = {left = "$$$", right = "$$$"} # add one extra $ to prevent bash code-blocks breaking
+inline-delimiter = {left = "$$", right = "$$"}
