@@ -281,9 +281,12 @@ class AnkiMorphsDB:
         return card_ids
 
     def print_table(self, table: str) -> None:
-        # using f-string is terrible practice, but this is a trivial operation
-        for row in self.con.execute(f"SELECT * FROM {table}"):
-            print(f"row: {row}")
+        try:
+            # using f-string is terrible practice, but this is a trivial operation
+            for row in self.con.execute(f"SELECT * FROM {table}"):
+                print(f"row: {row}")
+        except sqlite3.OperationalError:
+            print(f"table: '{table}' does not exist")
 
     def print_table_info(self, table: str) -> None:
         with self.con:

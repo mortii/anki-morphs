@@ -123,7 +123,7 @@ def run_learn_card_now() -> None:
     note_ids = mw.col.db.list(
         f"select distinct nid from cards where id in {ids2str(selected_cards)}"
     )
-    mw.col.tags.bulk_add(note_ids, "learn_now")
+    mw.col.tags.bulk_add(note_ids, "learn-now")
 
     mw.col.sched.reposition_new_cards(selected_cards, 0, 1, False, True)
     mw.moveToState("review")

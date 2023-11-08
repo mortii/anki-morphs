@@ -56,7 +56,7 @@ class PreferencesDialog(QDialog):
         self.ui.tabWidget.currentChanged.connect(self.tab_change)
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.2.1-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.3.0-alpha")
 
     def _setup_note_filters_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
@@ -223,9 +223,6 @@ class PreferencesDialog(QDialog):
         self.ui.known_tag_input.setText(self._default_config.tag_known)
 
     def _populate_parse_tab(self) -> None:
-        self.ui.parse_ignore_quotation_marks_input.setChecked(
-            self.config.parse_ignore_quotation_marks
-        )
         self.ui.parse_ignore_bracket_contents_input.setChecked(
             self.config.parse_ignore_bracket_contents
         )
@@ -273,9 +270,6 @@ class PreferencesDialog(QDialog):
             if not confirmed:
                 return
 
-        self.ui.parse_ignore_quotation_marks_input.setChecked(
-            self._default_config.parse_ignore_quotation_marks
-        )
         self.ui.parse_ignore_bracket_contents_input.setChecked(
             self._default_config.parse_ignore_bracket_contents
         )
@@ -361,7 +355,9 @@ class PreferencesDialog(QDialog):
         # )
 
     def _populate_skip_tab(self) -> None:
-        self.ui.skip_stale_cards_input.setChecked(self.config.skip_stale_cards)
+        self.ui.skip_only_known_morphs_cards_input.setChecked(
+            self.config.skip_only_known_morphs_cards
+        )
         self.ui.skip_unknown_morph_seen_today_cards_input.setChecked(
             self.config.skip_unknown_morph_seen_today_cards
         )
@@ -378,7 +374,9 @@ class PreferencesDialog(QDialog):
             if not confirmed:
                 return
 
-        self.ui.skip_stale_cards_input.setChecked(self._default_config.skip_stale_cards)
+        self.ui.skip_only_known_morphs_cards_input.setChecked(
+            self._default_config.skip_only_known_morphs_cards
+        )
         self.ui.skip_unknown_morph_seen_today_cards_input.setChecked(
             self._default_config.skip_unknown_morph_seen_today_cards
         )
@@ -450,14 +448,13 @@ class PreferencesDialog(QDialog):
             "recalc_interval_for_known": self.ui.recalc_interval_known_input.value(),
             "recalc_prioritize_collection": self.ui.recalc_prioritize_collection_input.isChecked(),
             # "recalc_prioritize_textfile": self.ui.recalc_prioritize_textfile_input.isChecked(),
-            "parse_ignore_quotation_marks": self.ui.parse_ignore_quotation_marks_input.isChecked(),
             "parse_ignore_bracket_contents": self.ui.parse_ignore_bracket_contents_input.isChecked(),
             "parse_ignore_round_bracket_contents": self.ui.parse_ignore_round_bracket_contents_input.isChecked(),
             "parse_ignore_slim_round_bracket_contents": self.ui.parse_ignore_slim_round_bracket_contents_input.isChecked(),
             "parse_ignore_names_morphemizer": self.ui.parse_ignore_names_morphemizer_input.isChecked(),
             "parse_ignore_names_textfile": self.ui.parse_ignore_names_textfile_input.isChecked(),
             "parse_ignore_suspended_cards_content": self.ui.parse_ignore_suspended_cards_content_input.isChecked(),
-            "skip_stale_cards": self.ui.skip_stale_cards_input.isChecked(),
+            "skip_only_known_morphs_cards": self.ui.skip_only_known_morphs_cards_input.isChecked(),
             "skip_unknown_morph_seen_today_cards": self.ui.skip_unknown_morph_seen_today_cards_input.isChecked(),
             "skip_show_num_of_skipped_cards": self.ui.skip_show_num_of_skipped_cards_input.isChecked(),
         }

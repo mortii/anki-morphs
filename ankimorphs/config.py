@@ -63,7 +63,9 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.shortcut_view_morphemes: QKeySequence = _get_key_sequence_config(
             "shortcut_view_morphemes", is_default
         )
-        self.skip_stale_cards: bool = _get_bool_config("skip_stale_cards", is_default)
+        self.skip_only_known_morphs_cards: bool = _get_bool_config(
+            "skip_only_known_morphs_cards", is_default
+        )
         self.skip_unknown_morph_seen_today_cards: bool = _get_bool_config(
             "skip_unknown_morph_seen_today_cards", is_default
         )
@@ -82,9 +84,6 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         # self.recalc_prioritize_textfile: bool = _get_bool_config(
         #     "recalc_prioritize_textfile", is_default
         # )
-        self.parse_ignore_quotation_marks: bool = _get_bool_config(
-            "parse_ignore_quotation_marks", is_default
-        )
         self.parse_ignore_bracket_contents: bool = _get_bool_config(
             "parse_ignore_bracket_contents", is_default
         )

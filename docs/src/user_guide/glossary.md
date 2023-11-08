@@ -72,16 +72,16 @@ The databases are stored in the following directory:
 MorphMan sorts your cards in accordance with their MorphMan Index, the lower the MMI the sooner the card will be shown.
 The formula is:
 
-$$ MMI = 100000U_k + 1000L + \round{U_n} $$
+$$$ MMI = 100000U_k + 1000L + \round{U_n} $$$
 
 where
-$$
+$$$
 \begin{align*}
 & U_k = \text{Unknown morphs} \\
 & L = \text{Distance from ideal sentence length} \\
 & U_n = \text{Usefulness}
 \end{align*}
-$$
+$$$
 
 In other words, cards are first sorted by the number of unknown Morphs they contain. This means that 0T cards (or what
 MorphMan calls “comprehension” and “fresh vocab” cards) will be at the very top (although in MorphMan Preferences you

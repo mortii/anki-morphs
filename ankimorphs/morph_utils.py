@@ -32,10 +32,6 @@ def _get_parsed_expression(am_config: AnkiMorphsConfig, expression: str) -> str:
         if slim_round_brackets_regexp.search(expression):
             expression = slim_round_brackets_regexp.sub("", expression)
 
-    if am_config.parse_ignore_quotation_marks:
-        # replace quotation marks with a whitespace
-        expression = re.sub('["«»]', " ", expression)
-
     return expression
 
 

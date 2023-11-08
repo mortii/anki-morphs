@@ -37,6 +37,43 @@
    git commit -am "fixed abc" --no-verify
    ```
 
+   Pre-commit can be annoying to use in the same way that it can be annoying to follow traffic-laws--sure it might slow you down
+   _right now_, but it is much better in the long-run when everybody does it. Pre-commit can help you in three ways:
+   - Automatically fix code for you
+   - Catch bugs earlier
+   - Make code more understandable
+
+    Once you get used to the pre-commit flow it no longer slows you down, and there are only upsides to using it.
+    
+    Pre-commit fails in two ways:
+
+    - **Automatically fixed**   
+      When a pre-commit hook changes a file (fixing it) then you simply have to re-stage the file
+      and re-run the commit. E.g:
+    
+      ```bash
+      $ vim recalc.py
+      $ git commit -am "made changes"
+      isort (python)..........Failed
+        - hook id: isort
+        - files were modified by this hook
+      Fixing /home/{...}/recalc.py
+      $ git commit -am "made changes"
+        [main c0bd018] made changes
+        1 file changed, 56 insertions(+)
+       ```
+
+    - **Has to be manually fixed**   
+      The majority of the hooks provide warnings that have to be handled manually. Most of the time the required fixes provide
+      significant improvements to the code, and you might learn something new and become a better programmer in the process. Sometimes the suggested errors are
+      false-positive, or the suggested fix is
+      actually problematic in some way. When this happens then ignoring it is fine, e.g:
+       ```
+      from aqt.qt import QMessageBox  # pylint:disable=no-name-in-module
+       ```
+
+    <br>
+   
    **Optional:** if you use gitkraken you have to adjust the pre-commit script (`anki-morphs/.git/hooks/pre-commit`) to
    activate the virtual environment first:
 

@@ -329,7 +329,7 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
     # if the due is the same then it is sorted by id
     modified_cards.sort(key=lambda _card: (_card.due, _card.id))
 
-    end_of_queue = get_end_of_query(modified_cards)
+    end_of_queue = get_end_of_queue(modified_cards)
 
     for index, card in enumerate(modified_cards, start=end_of_queue):
         if card.type == CARD_TYPE_NEW:
@@ -485,7 +485,7 @@ def get_card_difficulty_and_unknowns(
     difficulty += len(unknowns) * morph_unknown_penalty
     # print(f"post unknown difficulty: {difficulty}")
 
-    if len(unknowns) == 0 and am_config.skip_stale_cards:
+    if len(unknowns) == 0 and am_config.skip_only_known_morphs_cards:
         # Move stale cards to the end of the queue
         return default_difficulty, unknowns
 
@@ -597,7 +597,7 @@ def non_span_sub(sub: str, repl: str, string: str) -> str:
     return txt
 
 
-def get_end_of_query(modified_cards: list[Card]) -> int:
+def get_end_of_queue(modified_cards: list[Card]) -> int:
     assert mw is not None
     assert mw.col.db is not None
 
@@ -608,7 +608,11 @@ def get_end_of_query(modified_cards: list[Card]) -> int:
     """
         + f"WHERE type = 0 AND due != 2147483647 AND id NOT IN {ids2str(card.id for card in modified_cards)}"
     )
-    highest_due: int = int(mw.col.db.scalar(end_of_queue_query_string))
+    try:
+        highest_due: int = int(mw.col.db.scalar(end_of_queue_query_string))
+    except TypeError:
+        # if all your cards match the note filters then the query will return None
+        highest_due = 0
     return highest_due + 1
 
 
