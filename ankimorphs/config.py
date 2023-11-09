@@ -102,6 +102,7 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.parse_ignore_suspended_cards_content: bool = _get_bool_config(
             "parse_ignore_suspended_cards_content", is_default
         )
+        self.recalc_on_sync: bool = _get_recalc_on_sync("recalc_on_sync", is_default)
         self.tag_ready: str = _get_string_config("tag_ready", is_default)
         self.tag_not_ready: str = _get_string_config("tag_not_ready", is_default)
         self.tag_known: str = _get_string_config("tag_known", is_default)
@@ -222,6 +223,15 @@ def _get_string_config(key: str, is_default: bool = False) -> str:
 
 
 def _get_bool_config(key: str, is_default: bool = False) -> bool:
+    if is_default:
+        config_item = get_default_config(key)
+    else:
+        config_item = _get_config(key)
+    assert isinstance(config_item, bool)
+    return config_item
+
+
+def _get_recalc_on_sync(key: str, is_default: bool = False) -> bool:
     if is_default:
         config_item = get_default_config(key)
     else:

@@ -68,6 +68,7 @@ def main() -> None:
 
     gui_hooks.profile_will_close.append(clear_seen_morphs)
     gui_hooks.webview_will_show_context_menu.append(add_name)
+    gui_hooks.sync_will_start.append(recalc_on_sync)
 
 
 def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
@@ -400,6 +401,12 @@ def add_name_action(web_view: AnkiWebView, menu: QMenu) -> None:
     action = QAction("Mark as name", menu)
     action.triggered.connect(lambda: name_file_utils.add_name_to_file(selected_text))
     menu.addAction(action)
+
+
+def recalc_on_sync() -> None:
+    am_config = AnkiMorphsConfig()
+    if am_config.recalc_on_sync:
+        recalc.recalc()
 
 
 def test_function() -> None:

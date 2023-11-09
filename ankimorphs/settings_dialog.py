@@ -328,6 +328,7 @@ class PreferencesDialog(QDialog):
         self.ui.recalc_prioritize_collection_input.setChecked(
             self.config.recalc_prioritize_collection
         )
+        self.ui.recalc_on_sync.setChecked(self.config.recalc_on_sync)
         # self.ui.recalc_prioritize_textfile_input.setChecked(
         #     self.config.recalc_prioritize_textfile
         # )
@@ -457,6 +458,7 @@ class PreferencesDialog(QDialog):
             "skip_only_known_morphs_cards": self.ui.skip_only_known_morphs_cards_input.isChecked(),
             "skip_unknown_morph_seen_today_cards": self.ui.skip_unknown_morph_seen_today_cards_input.isChecked(),
             "skip_show_num_of_skipped_cards": self.ui.skip_show_num_of_skipped_cards_input.isChecked(),
+            "recalc_on_sync": self.ui.recalc_on_sync.isChecked()
         }
 
         filters = []
