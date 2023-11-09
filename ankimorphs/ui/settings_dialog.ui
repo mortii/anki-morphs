@@ -442,6 +442,13 @@
             </layout>
            </item>
            <item>
+            <widget class="QCheckBox" name="recalc_on_sync">
+             <property name="text">
+              <string>Recalc on sync</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <layout class="QVBoxLayout" name="verticalLayout_14">
              <property name="topMargin">
               <number>10</number>

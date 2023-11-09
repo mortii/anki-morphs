@@ -29,6 +29,7 @@
   "parse_ignore_suspended_cards_content": true,
   "recalc_before_sync": false,
   "recalc_interval_for_known": 21,
+  "recalc_on_sync": false,
   "recalc_prioritize_collection": true,
   "recalc_prioritize_textfile": false,
   "shortcut_browse_all_same_unknown": "Shift+L",
