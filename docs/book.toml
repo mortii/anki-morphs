@@ -7,7 +7,7 @@ title = "AnkiMorphs"
 
 [output.html]
 git-repository-url = "https://github.com/mortii/anki-morphs"
-edit-url-template = "https://github.com/mortii/anki-morphs/edit/website/docs/{path}"
+edit-url-template = "https://github.com/mortii/anki-morphs/edit/main/docs/{path}"
 additional-css = ["src/custom.css"]
 
 [output.html.fold]
