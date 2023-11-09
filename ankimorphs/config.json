@@ -5,8 +5,6 @@
       "difficulty_field_index": null,
       "field": "",
       "field_index": null,
-      "focus_morph_field": "",
-      "focus_morph_field_index": null,
       "highlighted_field": "",
       "highlighted_field_index": null,
       "modify": true,
@@ -17,7 +15,9 @@
       "read": true,
       "tags": [
         ""
-      ]
+      ],
+      "unknowns_field": "",
+      "unknowns_field_index": null
     }
   ],
   "parse_ignore_bracket_contents": false,

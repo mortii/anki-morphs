@@ -288,7 +288,7 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
                 )
 
                 card.due = card_difficulty
-                update_focus_morph_field(config_filter, note, unknowns)
+                update_unknowns_field(config_filter, note, unknowns)
                 update_difficulty_field(config_filter, note, card_difficulty)
                 update_tags(am_config, note, len(unknowns))
 
@@ -492,14 +492,14 @@ def get_card_difficulty_and_unknowns(
     return difficulty, unknowns
 
 
-def update_focus_morph_field(
+def update_unknowns_field(
     config_filter: AnkiMorphsConfigFilter, note: Note, unknowns: list[str]
 ) -> None:
-    if config_filter.focus_morph_field_index is not None:
-        if config_filter.focus_morph_field_index > 0:
+    if config_filter.unknowns_field_index is not None:
+        if config_filter.unknowns_field_index > 0:
             focus_morph_string: str = "".join(f"{unknown}, " for unknown in unknowns)
             focus_morph_string = focus_morph_string[:-2]  # removes last comma
-            note.fields[config_filter.focus_morph_field_index - 1] = focus_morph_string
+            note.fields[config_filter.unknowns_field_index - 1] = focus_morph_string
 
 
 def update_difficulty_field(

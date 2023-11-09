@@ -154,7 +154,7 @@ class PreferencesDialog(QDialog):
         note_type_text = note_type_widget.itemText(note_type_widget.currentIndex())
         current_model_id = self.models[note_type_widget.currentIndex()].id
         note_type = mw.col.models.get(NotetypeId(int(current_model_id)))
-        assert note_type
+        assert note_type is not None
         fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
 
         matching_filter = None
@@ -163,17 +163,17 @@ class PreferencesDialog(QDialog):
                 matching_filter = config_filter
                 break
 
-        focus_morph_cbox = QComboBox(self.ui.extra_fields_table)
-        focus_morph_cbox.addItems(["(none)"])
-        focus_morph_cbox.addItems(fields)
+        unknowns_cbox = QComboBox(self.ui.extra_fields_table)
+        unknowns_cbox.addItems(["(none)"])
+        unknowns_cbox.addItems(fields)
 
         if matching_filter is not None:
-            focus_morph_cbox_index = _get_cbox_index(
-                fields, matching_filter.focus_morph_field
+            unknowns_cbox_index = _get_cbox_index(
+                fields, matching_filter.unknowns_field_
             )
-            if focus_morph_cbox_index is not None:
-                focus_morph_cbox_index += 1  # to offset the added (none) item
-                focus_morph_cbox.setCurrentIndex(focus_morph_cbox_index)
+            if unknowns_cbox_index is not None:
+                unknowns_cbox_index += 1  # to offset the added (none) item
+                unknowns_cbox.setCurrentIndex(unknowns_cbox_index)
 
         highlighted_cbox = QComboBox(self.ui.extra_fields_table)
         highlighted_cbox.addItems(["(none)"])
@@ -200,7 +200,7 @@ class PreferencesDialog(QDialog):
                 difficulty_cbox.setCurrentIndex(difficulty_cbox_cbox_index)
 
         self.ui.extra_fields_table.setItem(row, 0, QTableWidgetItem(note_type_text))
-        self.ui.extra_fields_table.setCellWidget(row, 1, focus_morph_cbox)
+        self.ui.extra_fields_table.setCellWidget(row, 1, unknowns_cbox)
         self.ui.extra_fields_table.setCellWidget(row, 2, highlighted_cbox)
         self.ui.extra_fields_table.setCellWidget(row, 3, difficulty_cbox)
 
@@ -483,7 +483,7 @@ class PreferencesDialog(QDialog):
             modify_widget: QCheckBox = _get_checkbox_widget(
                 self.ui.note_filters_table.cellWidget(row, 5)
             )
-            focus_morph_widget: QComboBox = _get_cbox_widget(
+            unknowns_widget: QComboBox = _get_cbox_widget(
                 self.ui.extra_fields_table.cellWidget(row, 1)
             )
             highlighted_widget: QComboBox = _get_cbox_widget(
@@ -507,10 +507,10 @@ class PreferencesDialog(QDialog):
                 ].get_name(),
                 "read": read_widget.isChecked(),
                 "modify": modify_widget.isChecked(),
-                "focus_morph_field": focus_morph_widget.itemText(
-                    focus_morph_widget.currentIndex()
+                "unknowns_field": unknowns_widget.itemText(
+                    unknowns_widget.currentIndex()
                 ),
-                "focus_morph_field_index": focus_morph_widget.currentIndex(),
+                "unknowns_field_index": unknowns_widget.currentIndex(),
                 "highlighted_field": highlighted_widget.itemText(
                     highlighted_widget.currentIndex()
                 ),

@@ -351,7 +351,7 @@ class Ui_SettingsDialog:
         item = self.extra_fields_table.horizontalHeaderItem(0)
         item.setText(_translate("SettingsDialog", "Note Type"))
         item = self.extra_fields_table.horizontalHeaderItem(1)
-        item.setText(_translate("SettingsDialog", "Focus Morph"))
+        item.setText(_translate("SettingsDialog", "Unknowns"))
         item = self.extra_fields_table.horizontalHeaderItem(2)
         item.setText(_translate("SettingsDialog", "Highlighted"))
         item = self.extra_fields_table.horizontalHeaderItem(3)

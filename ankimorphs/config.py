@@ -26,9 +26,9 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
         self.morphemizer_name: str = _get_filter_str(_filter, "morphemizer_name")
         self.read: bool = _get_filter_bool(_filter, "read")
         self.modify: bool = _get_filter_bool(_filter, "modify")
-        self.focus_morph_field: str = _get_filter_str(_filter, "focus_morph_field")
-        self.focus_morph_field_index: Optional[int] = _get_filter_optional_int(
-            _filter, "focus_morph_field_index"
+        self.unknowns_field_: str = _get_filter_str(_filter, "unknowns_field")
+        self.unknowns_field_index: Optional[int] = _get_filter_optional_int(
+            _filter, "unknowns_field_index"
         )
         self.highlighted_field: str = _get_filter_str(_filter, "highlighted_field")
         self.highlighted_field_index: Optional[int] = _get_filter_optional_int(
