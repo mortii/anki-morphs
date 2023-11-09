@@ -252,12 +252,12 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
     for config_filter in modify_config_filters:
         assert config_filter.note_type_id is not None
 
-        cards_data_map: dict[int, AnkiMorphsCardData] = get_am_cards_data_dict(
+        cards_data_dict: dict[int, AnkiMorphsCardData] = get_am_cards_data_dict(
             am_db, config_filter.note_type_id
         )
-        card_amount = len(cards_data_map)
+        card_amount = len(cards_data_dict)
 
-        for counter, card_id in enumerate(cards_data_map):
+        for counter, card_id in enumerate(cards_data_dict):
             if counter % 1000 == 0:
                 if mw.progress.want_cancel():  # user clicked 'x'
                     raise CancelledRecalcException
@@ -336,7 +336,7 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
             card.due = index
 
     modified_cards = [
-        _card for _card in modified_cards if card_is_modified(_card, original_due)
+        _card for _card in modified_cards if _card.due != original_due[_card.id]
     ]
 
     mw.taskman.run_on_main(
@@ -614,12 +614,6 @@ def get_end_of_queue(modified_cards: list[Card]) -> int:
         # if all your cards match the note filters then the query will return None
         highest_due = 0
     return highest_due + 1
-
-
-def card_is_modified(card: Card, original_due: dict[int, int]) -> bool:
-    if original_due[card.id] == card.due:
-        return False
-    return True
 
 
 def on_success(result: Any) -> None:
