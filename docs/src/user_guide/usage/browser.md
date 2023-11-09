@@ -1,5 +1,5 @@
 # Browser
-MorphMan adds new options in the Browse window that can be accessed either from the "MorphMan" menu at the top or when
+AnkiMorphs adds new options in the Browse window that can be accessed either from the "AnkiMorphs" menu at the top or when
 right-clicking cards:
 
 * **View Morphemes**:  

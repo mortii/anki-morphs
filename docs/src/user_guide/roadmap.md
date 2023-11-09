@@ -2,8 +2,7 @@
 
 1. Update docs
    1. settings
-   2. setup
-   3. names.txt
+   2. names.txt
 2. Implement spaCy
 3. Remove old morphemizers
 4. Remake readability analyzer
