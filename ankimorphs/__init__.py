@@ -11,7 +11,6 @@
 # Incorrect:
 # from ankimorphs import browser_utils
 ################################################################
-import os
 from functools import partial
 
 from aqt import gui_hooks, mw
@@ -376,15 +375,6 @@ def create_already_known_tagger_action(am_config: AnkiMorphsConfig) -> QAction:
     return action
 
 
-def add_name(web_view: AnkiWebView, menu: QMenu) -> None:
-    selected_text = web_view.selectedText()
-    if selected_text == "":
-        return
-    action = QAction("Mark as name", menu)
-    action.triggered.connect(lambda: add_name_to_file(selected_text))
-    menu.addAction(action)
-
-
 def create_test_action() -> QAction:
     keys = QKeySequence("Ctrl+T")
     action = QAction("&Test", mw)
@@ -427,16 +417,6 @@ def test_function() -> None:
     print(f"result?: {result}")
 
     am_db.con.close()
-
-
-def add_name_to_file(name: str) -> None:
-    assert mw is not None
-
-    profile_path: str = mw.pm.profileFolder()
-    path = os.path.join(profile_path, "names.txt")
-    with open(path, "a", encoding="utf-8") as file:
-        file.write("\n" + name)
-        file.close()
 
 
 main()
