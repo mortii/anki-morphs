@@ -8,6 +8,7 @@ from aqt.browser.browser import Browser
 from aqt.qt import QLineEdit, QMessageBox  # pylint:disable=no-name-in-module
 from aqt.reviewer import RefreshNeeded
 from aqt.utils import tooltip
+
 from .ankimorphs_db import AnkiMorphsDB
 from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter, get_matching_read_filter
 
