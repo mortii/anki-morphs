@@ -22,6 +22,7 @@
   ],
   "parse_ignore_bracket_contents": false,
   "parse_ignore_names_morphemizer": true,
+  "recalc_on_sync": false,
   "parse_ignore_names_textfile": false,
   "parse_ignore_quotation_marks": true,
   "parse_ignore_round_bracket_contents": false,
