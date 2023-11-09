@@ -108,8 +108,22 @@ class SpaceMorphemizer(Morphemizer):
     """
 
     def _get_morphemes_from_expr(self, expression):
-        # the regex "\w+(?:[-']\w+)*" matches any alphanumeric word,
-        # including ones with multiple hyphens or apostrophes.
+        # We want the expression: "At 3 o'clock that god-forsaken-man shows up..."
+        # to produce: ['at', '3', "o'clock", 'that', 'god-forsaken-man', 'shows', 'up']
+        #
+        # Regex:
+        # The '\w' character matches alphanumeric and underscore characters
+        #
+        # To also match words that have multiple hyphens or apostrophes, we add
+        # the optional group: '([-']\w+)*'
+        #
+        # re.findall() treats groups in a special way:
+        #   "If one or more capturing groups are present in the pattern, return
+        #    a list of groups; this will be a list of tuples if the pattern
+        #    has more than one group."
+        # We don't want this to happen, we want a pure list of matches. To prevent
+        # this we prepend '?:' to make the group non-capturing.
+
         word_list = [
             word.lower()
             for word in re.findall(r"\w+(?:[-']\w+)*", expression, re.UNICODE)

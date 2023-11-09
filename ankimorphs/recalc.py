@@ -326,7 +326,7 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
     # the due with the index the card has in the list.
     ################################################################
 
-    # if the due is the same then it is sorted by id
+    # if the due is the same then the secondary sort is by id
     modified_cards.sort(key=lambda _card: (_card.due, _card.id))
 
     end_of_queue = get_end_of_queue(modified_cards)
@@ -459,7 +459,9 @@ def get_card_difficulty_and_unknowns(
     #     morph_unknown_penalty = 500,000
     ####################################################################################
 
-    default_difficulty = 2147483647  # arbitrary, 32 bit int max
+    # Anki stores 'due' as a 32-bit integers on the backend,
+    # 2147483647 is therefore the max value before overflow.
+    default_difficulty = 2147483647
     morph_unknown_penalty = 500000
     unknowns: list[str] = []
 
@@ -481,9 +483,7 @@ def get_card_difficulty_and_unknowns(
         #  cap morph priority penalties as described in #(2.2)
         difficulty = morph_unknown_penalty - 1
 
-    # print(f"pre unknown difficulty: {difficulty}")
     difficulty += len(unknowns) * morph_unknown_penalty
-    # print(f"post unknown difficulty: {difficulty}")
 
     if len(unknowns) == 0 and am_config.skip_only_known_morphs_cards:
         # Move stale cards to the end of the queue
