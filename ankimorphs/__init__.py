@@ -48,6 +48,7 @@ DEV_MODE = False
 
 last_undo_step_handled: int = -1
 db_initialized: bool = False
+startup_sync: bool = True
 
 
 def main() -> None:
@@ -66,8 +67,9 @@ def main() -> None:
 
     gui_hooks.webview_will_show_context_menu.append(add_name_action)
 
-    gui_hooks.profile_will_close.append(clear_seen_morphs)
     gui_hooks.sync_will_start.append(recalc_on_sync)
+
+    gui_hooks.profile_will_close.append(clear_seen_morphs)
 
 
 def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
@@ -295,6 +297,20 @@ def replace_reviewer_functions() -> None:
     )
 
 
+def recalc_on_sync() -> None:
+    # Sync automatically happens on Anki startup, so we have
+    # to check for that before we run recalc
+
+    global startup_sync
+
+    if startup_sync:
+        startup_sync = False
+    else:
+        am_config = AnkiMorphsConfig()
+        if am_config.recalc_on_sync:
+            recalc.recalc()
+
+
 def create_am_tool_menu() -> QMenu:
     assert mw is not None
     am_tool_menu = QMenu("AnkiMorphs", mw)
@@ -391,12 +407,6 @@ def add_name_action(web_view: AnkiWebView, menu: QMenu) -> None:
     action = QAction("Mark as name", menu)
     action.triggered.connect(lambda: name_file_utils.add_name_to_file(selected_text))
     menu.addAction(action)
-
-
-def recalc_on_sync() -> None:
-    am_config = AnkiMorphsConfig()
-    if am_config.recalc_on_sync:
-        recalc.recalc()
 
 
 def test_function() -> None:

@@ -11,6 +11,5 @@
 6. Remake tests
 7. Update guide
 8. **Release AnkiMorphs stable version**
-9. Implement optional "automatic recalc before sync"
-10. Remake statistics page
-11. Implement "cloze"-option [(#12)](https://github.com/mortii/anki-morphs/discussions/12)
+9. Remake statistics page
+10. Implement "cloze"-option [(#12)](https://github.com/mortii/anki-morphs/discussions/12)

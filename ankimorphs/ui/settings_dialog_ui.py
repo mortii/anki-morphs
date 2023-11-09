@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file './settings_dialog.ui'
+# Form implementation generated from reading ui file 'ankimorphs/ui/settings_dialog.ui'
 #
 # Created by: PyQt6 UI code generator 6.4.2
 #
@@ -193,6 +193,12 @@ class Ui_SettingsDialog:
         self.verticalLayout_18.setObjectName("verticalLayout_18")
         self.verticalLayout_17 = QtWidgets.QVBoxLayout()
         self.verticalLayout_17.setObjectName("verticalLayout_17")
+        self.verticalLayout_21 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_21.setObjectName("verticalLayout_21")
+        self.recalc_on_sync_input = QtWidgets.QCheckBox(parent=self.recalc_tab)
+        self.recalc_on_sync_input.setObjectName("recalc_on_sync_input")
+        self.verticalLayout_21.addWidget(self.recalc_on_sync_input)
+        self.verticalLayout_17.addLayout(self.verticalLayout_21)
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_6.setContentsMargins(-1, 10, -1, -1)
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
@@ -208,9 +214,6 @@ class Ui_SettingsDialog:
         spacerItem8 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_6.addItem(spacerItem8)
         self.verticalLayout_17.addLayout(self.horizontalLayout_6)
-        self.recalc_on_sync = QtWidgets.QCheckBox(parent=self.recalc_tab)
-        self.recalc_on_sync.setObjectName("recalc_on_sync")
-        self.verticalLayout_17.addWidget(self.recalc_on_sync)
         self.verticalLayout_14 = QtWidgets.QVBoxLayout()
         self.verticalLayout_14.setContentsMargins(-1, 10, -1, -1)
         self.verticalLayout_14.setObjectName("verticalLayout_14")
@@ -372,9 +375,9 @@ class Ui_SettingsDialog:
         self.skip_show_num_of_skipped_cards_input.setText(_translate("SettingsDialog", "Show \"skipped x cards\" notifications"))
         self.restore_skip_defaults_button.setText(_translate("SettingsDialog", "Restore Default Skip Settings"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.skip_tab), _translate("SettingsDialog", "Skip"))
+        self.recalc_on_sync_input.setText(_translate("SettingsDialog", "Recalc on sync"))
         self.label_16.setText(_translate("SettingsDialog", "Min. interval for known morphs:"))
         self.label_17.setText(_translate("SettingsDialog", "days"))
-        self.recalc_on_sync.setText(_translate("SettingsDialog", "Recalc on sync"))
         self.label_5.setText(_translate("SettingsDialog", "Prioritize morphs based on:"))
         self.recalc_prioritize_collection_input.setText(_translate("SettingsDialog", "Frequency in card collection"))
         self.restore_recalc_defaults_button.setText(_translate("SettingsDialog", "Restore Default Recalc Settings"))
@@ -392,13 +395,3 @@ class Ui_SettingsDialog:
         self.ankimorphs_version_label.setText(_translate("SettingsDialog", "AnkiMorphs version: x"))
         self.cancel_button.setText(_translate("SettingsDialog", "Cancel"))
         self.save_button.setText(_translate("SettingsDialog", "Save"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    SettingsDialog = QtWidgets.QDialog()
-    ui = Ui_SettingsDialog()
-    ui.setupUi(SettingsDialog)
-    SettingsDialog.show()
-    sys.exit(app.exec())

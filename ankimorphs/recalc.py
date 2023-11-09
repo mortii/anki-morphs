@@ -625,7 +625,7 @@ def on_success(result: Any) -> None:
 
     mw.toolbar.draw()  # updates stats
     mw.progress.finish()
-    tooltip("Finished Recalc")
+    tooltip("Finished Recalc", parent=mw)
     if start_time is not None:
         end_time: float = time.time()
         print(f"Recalc duration: {round(end_time - start_time, 3)} seconds")

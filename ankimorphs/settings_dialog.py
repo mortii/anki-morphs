@@ -56,7 +56,7 @@ class PreferencesDialog(QDialog):
         self.ui.tabWidget.currentChanged.connect(self.tab_change)
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.3.1-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.4.0-alpha")
 
     def _setup_note_filters_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
@@ -321,14 +321,13 @@ class PreferencesDialog(QDialog):
         )
 
     def _populate_recalc_tab(self) -> None:
-        # self.ui.recalc_before_sync_input.setChecked(self.config.recalc_before_sync)
         self.ui.recalc_interval_known_input.setValue(
             self.config.recalc_interval_for_known
         )
         self.ui.recalc_prioritize_collection_input.setChecked(
             self.config.recalc_prioritize_collection
         )
-        self.ui.recalc_on_sync.setChecked(self.config.recalc_on_sync)
+        self.ui.recalc_on_sync_input.setChecked(self.config.recalc_on_sync)
         # self.ui.recalc_prioritize_textfile_input.setChecked(
         #     self.config.recalc_prioritize_textfile
         # )
@@ -342,15 +341,13 @@ class PreferencesDialog(QDialog):
             if not confirmed:
                 return
 
-        # self.ui.recalc_before_sync_input.setChecked(
-        #     self._default_config.recalc_before_sync
-        # )
         self.ui.recalc_interval_known_input.setValue(
             self._default_config.recalc_interval_for_known
         )
         self.ui.recalc_prioritize_collection_input.setChecked(
             self._default_config.recalc_prioritize_collection
         )
+        self.ui.recalc_on_sync_input.setChecked(self._default_config.recalc_on_sync)
         # self.ui.recalc_prioritize_textfile_input.setChecked(
         #     self._default_config.recalc_prioritize_textfile
         # )
@@ -445,9 +442,9 @@ class PreferencesDialog(QDialog):
             "shortcut_set_known_and_skip": self.ui.shortcut_known_and_skip_input.keySequence().toString(),
             "shortcut_learn_now": self.ui.shortcut_learn_now_input.keySequence().toString(),
             "shortcut_view_morphemes": self.ui.shortcut_view_morphs_input.keySequence().toString(),
-            # "recalc_before_sync": self.ui.recalc_before_sync_input.isChecked(),
             "recalc_interval_for_known": self.ui.recalc_interval_known_input.value(),
             "recalc_prioritize_collection": self.ui.recalc_prioritize_collection_input.isChecked(),
+            "recalc_on_sync": self.ui.recalc_on_sync_input.isChecked(),
             # "recalc_prioritize_textfile": self.ui.recalc_prioritize_textfile_input.isChecked(),
             "parse_ignore_bracket_contents": self.ui.parse_ignore_bracket_contents_input.isChecked(),
             "parse_ignore_round_bracket_contents": self.ui.parse_ignore_round_bracket_contents_input.isChecked(),
@@ -458,7 +455,6 @@ class PreferencesDialog(QDialog):
             "skip_only_known_morphs_cards": self.ui.skip_only_known_morphs_cards_input.isChecked(),
             "skip_unknown_morph_seen_today_cards": self.ui.skip_unknown_morph_seen_today_cards_input.isChecked(),
             "skip_show_num_of_skipped_cards": self.ui.skip_show_num_of_skipped_cards_input.isChecked(),
-            "recalc_on_sync": self.ui.recalc_on_sync.isChecked(),
         }
 
         filters = []

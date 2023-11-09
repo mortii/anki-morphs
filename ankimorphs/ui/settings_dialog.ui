@@ -405,6 +405,17 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_17">
            <item>
+            <layout class="QVBoxLayout" name="verticalLayout_21">
+             <item>
+              <widget class="QCheckBox" name="recalc_on_sync_input">
+               <property name="text">
+                <string>Recalc on sync</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
             <layout class="QHBoxLayout" name="horizontalLayout_6">
              <property name="topMargin">
               <number>10</number>
@@ -440,13 +451,6 @@
               </spacer>
              </item>
             </layout>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="recalc_on_sync">
-             <property name="text">
-              <string>Recalc on sync</string>
-             </property>
-            </widget>
            </item>
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_14">
