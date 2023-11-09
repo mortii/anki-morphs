@@ -9,7 +9,7 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
-class Ui_SettingsDialog(object):
+class Ui_SettingsDialog:
     def setupUi(self, SettingsDialog):
         SettingsDialog.setObjectName("SettingsDialog")
         SettingsDialog.setWindowModality(QtCore.Qt.WindowModality.NonModal)
