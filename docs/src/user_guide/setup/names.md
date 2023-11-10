@@ -1,5 +1,5 @@
 # Names
-Ankimorphs includes a functionality that allows users to bypass processing names listed in a file named names.txt. This feature is specifically designed to prevent the misinterpretation of names of places or individuals as unknown, as these words may lack inherent meaning for the user.
+AnkiMorphs enables users to include a list of names in a file named names.txt, preventing them from being marked as unknown. This feature is designed so users won't have to learn the names of places or individuals, as these words lack inherent meaning that can be acquired.
 
 To activate this feature, navigate to ``Tool > AnkiMorphs > Settings > Skip > Parse``` and tick the option "Ignore names found in names.txt."
 ![ignore-names-option.png](../../img/ignore-names-option.png)
