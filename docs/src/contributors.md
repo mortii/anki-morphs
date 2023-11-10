@@ -7,7 +7,7 @@ If you have contributed, but you are not on the list, create an issue on github 
 mortii, Vilhelm-Ian.
 
 ### Docs contribution
-Matt Vs Japan, mortii.
+Matt Vs Japan, mortii, Vilhelm-Ian.
 
 ### Bugs reports, feature requests, or other helpful guidance
 Vilhelm-Ian, CodeWithMa, ashprice, Aleksej.
