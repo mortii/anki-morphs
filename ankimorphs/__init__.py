@@ -31,6 +31,7 @@ from aqt.webview import AnkiWebView
 
 from . import (
     browser_utils,
+    frequency_file_generator,
     name_file_utils,
     recalc,
     reviewing_utils,
@@ -44,7 +45,7 @@ from .toolbar_stats import MorphToolbarStats
 TOOL_MENU: str = "am_tool_menu"
 BROWSE_MENU: str = "am_browse_menu"
 CONTEXT_MENU: str = "am_context_menu"
-DEV_MODE = False
+DEV_MODE = True
 
 last_undo_step_handled: int = -1
 db_initialized: bool = False
@@ -178,8 +179,9 @@ def update_seen_morphs(info: UndoActionsInfo) -> None:
                 am_db.update_seen_unknown_morph_single_card(mw.reviewer.card.id)
 
         if DEV_MODE:
-            print("Seen_Morphs:")
-            am_db.print_table("Seen_Morphs")
+            pass
+            # print("Seen_Morphs:")
+            # am_db.print_table("Seen_Morphs")
 
         am_db.con.close()
 
@@ -235,6 +237,9 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu.addAction(changelog_action)
 
     if DEV_MODE:
+        frequency_list_action = create_frequency_file_action()
+        am_tool_menu.addAction(frequency_list_action)
+
         test_action = create_test_action()
         am_tool_menu.addAction(test_action)
 
@@ -392,14 +397,6 @@ def create_already_known_tagger_action(am_config: AnkiMorphsConfig) -> QAction:
     return action
 
 
-def create_test_action() -> QAction:
-    keys = QKeySequence("Ctrl+T")
-    action = QAction("&Test", mw)
-    action.setShortcut(keys)
-    action.triggered.connect(test_function)
-    return action
-
-
 def add_name_action(web_view: AnkiWebView, menu: QMenu) -> None:
     selected_text = web_view.selectedText()
     if selected_text == "":
@@ -407,6 +404,20 @@ def add_name_action(web_view: AnkiWebView, menu: QMenu) -> None:
     action = QAction("Mark as name", menu)
     action.triggered.connect(lambda: name_file_utils.add_name_to_file(selected_text))
     menu.addAction(action)
+
+
+def create_frequency_file_action() -> QAction:
+    action = QAction("&Generate Frequency File", mw)
+    action.triggered.connect(frequency_file_generator.main)
+    return action
+
+
+def create_test_action() -> QAction:
+    keys = QKeySequence("Ctrl+T")
+    action = QAction("&Test", mw)
+    action.setShortcut(keys)
+    action.triggered.connect(test_function)
+    return action
 
 
 def test_function() -> None:

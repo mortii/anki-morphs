@@ -19,6 +19,11 @@ Convert ui file to python:
 ```bash
 pyuic6 -o ankimorphs/ui/settings_dialog_ui.py ankimorphs/ui/settings_dialog.ui
 ```
+```bash
+pyuic6 -o ankimorphs/ui/frequency_file_generator_ui.py ankimorphs/ui/frequency_file_generator.ui
+```
+
+
 
 Useful guides:
 - https://realpython.com/qt-designer-python/
