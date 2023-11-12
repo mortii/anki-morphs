@@ -55,16 +55,13 @@ class FrequencyFileGeneratorDialog(QDialog):
             return
         for file_path in input_files[0]:
             files += Path(file_path).name + " "
-
-        self.ui.lineEdit.insert(files)
+        self.ui.lineEdit.setText(files)
         self.path = Path(input_files[0][0]).parent
-        tooltip("clicked select input button", parent=mw)
 
     def _on_output_button_clicked(self) -> None:
         output_file = QFileDialog.getSaveFileName(None, "Save File", "", "(*.csv)")
         print(output_file)
-        self.ui.lineEdit_2.insert(output_file[0])
-        tooltip("clicked select output button", parent=mw)
+        self.ui.lineEdit_2.setText(output_file[0])
 
     def _generate_freqyency_file(self) -> None:
         field_content = self.ui.lineEdit.text()
@@ -79,11 +76,10 @@ class FrequencyFileGeneratorDialog(QDialog):
         if not self.ui.lineEdit_2.text():
             tooltip("Output field is empty", parent=mw)
             return
-        with open(self.ui.lineEdit_2.text(), mode='w', encoding="utf-8", newline='') as csvfile:
+        with open(self.ui.lineEdit_2.text(), mode='w+', encoding="utf-8", newline='') as csvfile:
             spamwriter = csv.writer(csvfile)
             for [inflected, base, _] in frequency_list:
                 spamwriter.writerow([inflected, base])
-        tooltip("clicked create frequency file button", parent=mw)
 
     def _read_files(self, field_content: str) -> Optional[str]:
         if field_content == "":
