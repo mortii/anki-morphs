@@ -58,7 +58,7 @@ class FrequencyFileGeneratorDialog(QDialog):
         if not input_files[0]:
             return
         for file_path in input_files[0]:
-            files += Path(file_path).name + " "
+            files += Path(file_path).name + ","
         self.ui.lineEdit.setText(files)
         self.path = Path(input_files[0][0]).parent
 
@@ -83,17 +83,18 @@ class FrequencyFileGeneratorDialog(QDialog):
         if field_content == "":
             tooltip("Input field empty", parent=mw)
             return None
-        files = field_content.split()
+        files = field_content.split(",")
         if len(files) == 1 and Path(field_content).is_file():
-            with open(field_content, mode="r", encoding="utf-8") as file:
+            file_path = Path(field_content)
+            with file_path.open() as file:
                 return file.read()
         else:
-            for file in field_content.split():
+            for file in files:
                 file_path = self.path.joinpath(file)
                 if not Path(file_path).is_file():
                     tooltip(str(file_path) + " dosen't exist", parent=mw)
                     return None
-                with open(file_path, mode="r", encoding="utf-8") as file:
+                with file_path.open() as file:
                     return file.read()
 
     def _generate_frequency_list(self, morphes: list[Morpheme]) -> list[[str, str, int]]:
