@@ -80,6 +80,7 @@ class FrequencyFileGeneratorDialog(QDialog):
             spamwriter = csv.writer(csvfile)
             for [inflected, base, _] in frequency_list:
                 spamwriter.writerow([inflected, base])
+            print("finished")
 
     def _read_files(self, field_content: str) -> Optional[str]:
         if field_content == "":
@@ -99,15 +100,15 @@ class FrequencyFileGeneratorDialog(QDialog):
                     return file.read()
 
     def _generate_frequency_list(self, morphes: list[Morpheme]) -> list[[str, str, int]]:
-        hash_map = {}
+        morph_occurrence_dict = {}
         for morph in morphes:
-            if hash_map.get(morph.inflected) is None:
-                hash_map.update({morph.inflected: [morph.base, 0]})
+            if morph_occurrence_dict.get(morph.inflected) is None:
+                morph_occurrence_dict.update({morph.inflected: [morph.base, 0]})
             else:
-                occurences = hash_map.get(morph.inflected)[1]
-                hash_map.update({morph.inflected: [morph.base, occurences+1]})
+                occurences = morph_occurrence_dict.get(morph.inflected)[1]
+                morph_occurrence_dict.update({morph.inflected: [morph.base, occurences+1]})
         result = []
-        for [inflected, [base, occurences]] in hash_map.items():
+        for [inflected, [base, occurences]] in morph_occurrence_dict.items():
             result.append([inflected, base, occurences])
         result.sort(reverse=True, key=lambda e: e[2])
         return result
