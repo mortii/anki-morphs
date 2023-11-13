@@ -33,6 +33,17 @@ start_time: Optional[float] = None
 
 
 def recalc() -> None:
+    ################################################################
+    #                          FREEZING
+    ################################################################
+    # Recalc can take a long time if there are many cards, so to
+    # prevent Anki from freezing we need to run this on a background
+    # thread by using QueryOp.
+    #
+    # QueryOp docs:
+    # https://addon-docs.ankiweb.net/background-ops.html
+    ################################################################
+
     assert mw is not None
     global start_time
 
@@ -280,7 +291,11 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
             original_tags = note.tags.copy()
 
             if card.type == CARD_TYPE_NEW:
-                card_difficulty, unknowns = get_card_difficulty_and_unknowns(
+                (
+                    card_difficulty,
+                    card_unknown_morphs,
+                    card_has_learning_morphs,
+                ) = get_card_difficulty_and_unknowns_and_learning_status(
                     am_config,
                     card_id,
                     card_morph_map_cache,
@@ -288,9 +303,11 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
                 )
 
                 card.due = card_difficulty
-                update_unknowns_field(config_filter, note, unknowns)
+                update_unknowns_field(config_filter, note, card_unknown_morphs)
                 update_difficulty_field(config_filter, note, card_difficulty)
-                update_tags(am_config, note, len(unknowns))
+                update_tags(
+                    am_config, note, len(card_unknown_morphs), card_has_learning_morphs
+                )
 
             update_highlighted_field(
                 am_config,
@@ -434,12 +451,12 @@ def get_am_cards_data_dict(
     return am_db_row_data_dict
 
 
-def get_card_difficulty_and_unknowns(
+def get_card_difficulty_and_unknowns_and_learning_status(
     am_config: AnkiMorphsConfig,
     card_id: int,
     card_morph_map_cache: dict[int, list[SimplifiedMorph]],
     morph_priority: dict[str, int],
-) -> tuple[int, list[str]]:
+) -> tuple[int, list[str], bool]:
     ####################################################################################
     #                                      ALGORITHM
     ####################################################################################
@@ -452,8 +469,8 @@ def get_card_difficulty_and_unknowns(
     #     unknown_morph_penalty > sum(morph_priority_penalty)  #(1.1)
     #
     # We need to set some arbitrary limits to make the algorithm practical:
-    #     1. Assume max(morph_priority) = 50k (a frequency list of 50k morphs)  #(2.1)
-    #     2. Limit max(sum(morph_priority_penalty)) = max(morph_priority) * 10  #(2.2)
+    #     1. Assume max(morph_priority_penalty) = 50k (a frequency list of 50k morphs)  #(2.1)
+    #     2. Limit max(sum(morph_priority_penalty)) = max(morph_priority_penalty) * 10  #(2.2)
     #
     # With the equations #(1.1), #(2.1), and #(2.2) we get:
     #     morph_unknown_penalty = 500,000
@@ -463,33 +480,35 @@ def get_card_difficulty_and_unknowns(
     # 2147483647 is therefore the max value before overflow.
     default_difficulty = 2147483647
     morph_unknown_penalty = 500000
-    unknowns: list[str] = []
+    unknown_morphs: list[str] = []
+    has_learning_morph: bool = False
 
     try:
         card_morphs: list[SimplifiedMorph] = card_morph_map_cache[card_id]
     except KeyError:
         # card does not have morphs or is buggy in some way
-        return default_difficulty, unknowns
+        return default_difficulty, unknown_morphs, has_learning_morph
 
     difficulty = 0
 
     for morph in card_morphs:
-        is_unknown = morph.highest_learning_interval == 0  # gives a bool
-        if is_unknown:
-            unknowns.append(morph.inflected)
+        if morph.highest_learning_interval == 0:
+            unknown_morphs.append(morph.inflected)
+        elif morph.highest_learning_interval <= am_config.recalc_interval_for_known:
+            has_learning_morph = True
         difficulty += morph_priority[morph.norm_and_inflected]
 
     if difficulty >= morph_unknown_penalty:
         #  cap morph priority penalties as described in #(2.2)
         difficulty = morph_unknown_penalty - 1
 
-    difficulty += len(unknowns) * morph_unknown_penalty
+    difficulty += len(unknown_morphs) * morph_unknown_penalty
 
-    if len(unknowns) == 0 and am_config.skip_only_known_morphs_cards:
+    if len(unknown_morphs) == 0 and am_config.skip_only_known_morphs_cards:
         # Move stale cards to the end of the queue
-        return default_difficulty, unknowns
+        return default_difficulty, unknown_morphs, has_learning_morph
 
-    return difficulty, unknowns
+    return difficulty, unknown_morphs, has_learning_morph
 
 
 def update_unknowns_field(
@@ -535,10 +554,13 @@ def update_highlighted_field(
             note.fields[config_filter.highlighted_field_index - 1] = highlighted_text
 
 
-def update_tags(am_config: AnkiMorphsConfig, note: Note, unknowns: int) -> None:
+def update_tags(
+    am_config: AnkiMorphsConfig, note: Note, unknowns: int, has_learning_morphs: bool
+) -> None:
     if unknowns == 0:
-        if am_config.tag_known not in note.tags:
-            note.tags.append(am_config.tag_known)
+        if not has_learning_morphs:
+            if am_config.tag_known not in note.tags:
+                note.tags.append(am_config.tag_known)
         if am_config.tag_ready in note.tags:
             note.tags.remove(am_config.tag_ready)
     elif unknowns == 1:
