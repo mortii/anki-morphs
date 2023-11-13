@@ -68,14 +68,14 @@ class FrequencyFileGeneratorDialog(QDialog):
         text = self._read_files(field_content)
         if not text:
             return
+        if not self.ui.lineEdit_2.text():
+            tooltip("Output field is empty", parent=mw)
+            return
         am_config = AnkiMorphsConfig()
         morphemizer = self._morphemizers[self.ui.comboBox.currentIndex()]
         assert morphemizer is not None
         morphs = get_morphemes(morphemizer, text, am_config)
         frequency_list = self._generate_frequency_list(morphs)
-        if not self.ui.lineEdit_2.text():
-            tooltip("Output field is empty", parent=mw)
-            return
         with open(self.ui.lineEdit_2.text(), mode='w+', encoding="utf-8", newline='') as csvfile:
             spamwriter = csv.writer(csvfile)
             for [inflected, base, _] in frequency_list:
