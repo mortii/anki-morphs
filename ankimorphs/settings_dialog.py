@@ -21,19 +21,17 @@ from .ui.settings_dialog_ui import Ui_SettingsDialog
 
 
 def main() -> None:
-    mw.ankimorphs_preferences_dialog = PreferencesDialog(mw)  # type: ignore[union-attr]
-    mw.ankimorphs_preferences_dialog.exec()  # type: ignore[union-attr]
+    mw.ankimorphs_settings_dialog = SettingsDialog(mw)  # type: ignore[union-attr]
+    mw.ankimorphs_settings_dialog.exec()  # type: ignore[union-attr]
 
 
-class PreferencesDialog(QDialog):
-    """
-    The UI comes from ankimorphs/ui/settings_dialog.ui which is used in Qt Designer,
-    which is then converted to ankimorphs/ui/settings_dialog_ui.py,
-    which is then imported here.
-
-    Here we make the final adjustments that can't be made (or are hard to make) in
-    Qt Designer, like setting up tables and widget-connections.
-    """
+class SettingsDialog(QDialog):
+    # The UI comes from ankimorphs/ui/settings_dialog.ui which is used in Qt Designer,
+    # which is then converted to ankimorphs/ui/settings_dialog_ui.py,
+    # which is then imported here.
+    #
+    # Here we make the final adjustments that can't be made (or are hard to make) in
+    # Qt Designer, like setting up tables and widget-connections.
 
     def __init__(self, parent: Optional[QMainWindow] = None) -> None:
         super().__init__(parent)
@@ -56,7 +54,7 @@ class PreferencesDialog(QDialog):
         self.ui.tabWidget.currentChanged.connect(self.tab_change)
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.4.0-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.4.1-alpha")
 
     def _setup_note_filters_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
