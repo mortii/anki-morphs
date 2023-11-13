@@ -1,13 +1,17 @@
 from typing import Optional
 from pathlib import Path, PurePath
 import csv
+from typing import Any, Union
 
+from anki.collection import Collection
 from aqt import mw
 from aqt.qt import QDialog, QMainWindow, QFileDialog  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
+from aqt.operations import QueryOp
 from .morph_utils import get_morphemes
 from .config import AnkiMorphsConfig
 from .morpheme import Morpheme
+
 
 from .morphemizer import Morphemizer, get_all_morphemizers, get_morphemizer_by_name
 from .ui.frequency_file_generator_ui import Ui_FrequencyFileGeneratorDialog
@@ -59,28 +63,21 @@ class FrequencyFileGeneratorDialog(QDialog):
         self.path = Path(input_files[0][0]).parent
 
     def _on_output_button_clicked(self) -> None:
-        output_file = QFileDialog.getSaveFileName(None, "Save File", "", "(*.csv)")
-        print(output_file)
+        profile_path: str = mw.pm.profileFolder()
+        output_file = QFileDialog.getSaveFileName(None, "Save File", profile_path, "CSV File (*.csv)")
         self.ui.lineEdit_2.setText(output_file[0])
 
     def _generate_freqyency_file(self) -> None:
-        field_content = self.ui.lineEdit.text()
-        text = self._read_files(field_content)
-        if not text:
-            return
-        if not self.ui.lineEdit_2.text():
-            tooltip("Output field is empty", parent=mw)
-            return
-        am_config = AnkiMorphsConfig()
-        morphemizer = self._morphemizers[self.ui.comboBox.currentIndex()]
-        assert morphemizer is not None
-        morphs = get_morphemes(morphemizer, text, am_config)
-        frequency_list = self._generate_frequency_list(morphs)
-        with open(self.ui.lineEdit_2.text(), mode='w+', encoding="utf-8", newline='') as csvfile:
-            spamwriter = csv.writer(csvfile)
-            for [inflected, base, _] in frequency_list:
-                spamwriter.writerow([inflected, base])
-            print("finished")
+        assert mw is not None
+
+        mw.progress.start(label="Generating frequency list")
+
+        operation = QueryOp(
+            parent=mw,
+            op=self._background_generate_frequency_file,
+            success=on_success,
+        )
+        operation.with_progress().run_in_background()
 
     def _read_files(self, field_content: str) -> Optional[str]:
         if field_content == "":
@@ -112,3 +109,44 @@ class FrequencyFileGeneratorDialog(QDialog):
             result.append([inflected, base, occurences])
         result.sort(reverse=True, key=lambda e: e[2])
         return result
+
+    def _background_generate_frequency_file(self, col: Collection) -> None:
+        del col
+        field_content = self.ui.lineEdit.text()
+        text = self._read_files(field_content)
+        if not text:
+            return
+        if not self.ui.lineEdit_2.text():
+            tooltip("Output field is empty", parent=mw)
+            return
+        am_config = AnkiMorphsConfig()
+        morphemizer = self._morphemizers[self.ui.comboBox.currentIndex()]
+        assert morphemizer is not None
+        morphs = get_morphemes(morphemizer, text, am_config)
+        frequency_list = self._generate_frequency_list(morphs)
+        with open(self.ui.lineEdit_2.text(), mode='w+', encoding="utf-8", newline='') as csvfile:
+            spamwriter = csv.writer(csvfile)
+            for [inflected, base, _] in frequency_list:
+                spamwriter.writerow([inflected, base])
+
+
+def on_success(result: Any) -> None:
+    # This function runs on the main thread.
+    del result  # unused
+    assert mw is not None
+    assert mw.progress is not None
+    global start_time
+
+    mw.toolbar.draw()  # updates stats
+    mw.progress.finish()
+    tooltip("Frequency list generated", parent=mw)
+
+
+def on_failure(
+    error: Any,
+) -> None:
+    # This function runs on the main thread.
+    assert mw is not None
+    assert mw.progress is not None
+    mw.progress.finish()
+    tooltip("Frequency list generation failed")
