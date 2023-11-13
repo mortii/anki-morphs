@@ -85,7 +85,8 @@ class FrequencyFileGeneratorDialog(QDialog):
         if field_content == "":
             tooltip("Input field empty", parent=mw)
             return None
-        if Path(field_content).is_file():
+        files = field_content.split()
+        if len(files) == 1 and Path(field_content).is_file():
             with open(field_content, mode="r", encoding="utf-8") as file:
                 return file.read()
         else:
