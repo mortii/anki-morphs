@@ -1,16 +1,42 @@
-from typing import Optional
-from pathlib import Path, PurePath
 import csv
+import os
+import re
+from functools import partial
+from pathlib import Path
+from typing import Any, Optional, Union
 
+from anki.collection import Collection
 from aqt import mw
-from aqt.qt import QDialog, QMainWindow, QFileDialog  # pylint:disable=no-name-in-module
+from aqt.operations import QueryOp
+from aqt.qt import (  # pylint:disable=no-name-in-module
+    QDialog,
+    QDir,
+    QFileDialog,
+    QMainWindow,
+)
 from aqt.utils import tooltip
-from .morph_utils import get_morphemes
-from .config import AnkiMorphsConfig
-from .morpheme import Morpheme
 
-from .morphemizer import Morphemizer, get_all_morphemizers, get_morphemizer_by_name
+from .exceptions import CancelledOperationException, EmptyFileSelectionException
+from .morph_utils import (
+    _remove_names,
+    round_brackets_regex,
+    slim_round_brackets_regexp,
+    square_brackets_regex,
+)
+from .morpheme import Morpheme
+from .morphemizer import get_all_morphemizers
 from .ui.frequency_file_generator_ui import Ui_FrequencyFileGeneratorDialog
+
+
+class MorphOccurrence:
+    __slots__ = (
+        "morph",
+        "occurrence",
+    )
+
+    def __init__(self, morph: Morpheme) -> None:
+        self.morph: Morpheme = morph
+        self.occurrence: int = 1
 
 
 def main() -> None:
@@ -34,83 +60,159 @@ class FrequencyFileGeneratorDialog(QDialog):
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
         self._morphemizers = get_all_morphemizers()
         self._populate_morphemizers()
+        self._output_file: str = ""
+        self._setup_output_path()
         self._setup_buttons()
-        self.path = PurePath("")
+        self.input_files: list[str] = []
 
     def _populate_morphemizers(self) -> None:
-        morphemizers: list[Morphemizer] = get_all_morphemizers()
-        morphemizer_names = [mizer.get_description() for mizer in morphemizers]
+        morphemizer_names = [mizer.get_description() for mizer in self._morphemizers]
         morphemizers_cbox = self.ui.comboBox
         morphemizers_cbox.addItems(morphemizer_names)
+
+    def _setup_output_path(self) -> None:
+        assert mw is not None
+        self._output_file = os.path.join(
+            mw.pm.profileFolder(), "frequency-files", "frequency.csv"
+        )
+        # create the parent directories if they don't exist
+        Path(self._output_file).parent.mkdir(parents=True, exist_ok=True)
+        self.ui.outputFileLineEdit.setText(self._output_file)
 
     def _setup_buttons(self) -> None:
         self.ui.inputButton.clicked.connect(self._on_input_button_clicked)
         self.ui.outputButton.clicked.connect(self._on_output_button_clicked)
-        self.ui.createFrequencyFileButton.clicked.connect(self._generate_freqyency_file)
+        self.ui.createFrequencyFileButton.clicked.connect(self._generate_frequency_file)
 
     def _on_input_button_clicked(self) -> None:
-        input_files = QFileDialog.getOpenFileNames(None, "Files to Analyze", "", "(*.txt *.srt)")
-        files = ""
-        if not input_files[0]:
-            return
-        for file_path in input_files[0]:
-            files += Path(file_path).name + " "
-
-        self.ui.lineEdit.insert(files)
-        self.path = Path(input_files[0][0]).parent
-        tooltip("clicked select input button", parent=mw)
+        input_files_list: list[str] = QFileDialog.getOpenFileNames(
+            None, "Files to Analyze", QDir().homePath(), "(*.txt *.srt)"
+        )[0]
+        self.ui.inputFileLiineEdit.setText("".join(input_files_list))
+        self.input_files = input_files_list
 
     def _on_output_button_clicked(self) -> None:
-        output_file = QFileDialog.getSaveFileName(None, "Save File", "", "(*.csv)")
-        print(output_file)
-        self.ui.lineEdit_2.insert(output_file[0])
-        tooltip("clicked select output button", parent=mw)
+        assert mw is not None
+        output_file = QFileDialog.getSaveFileName(
+            None, "Save File", self._output_file, "CSV File (*.csv)"
+        )
+        self.ui.outputFileLineEdit.setText(output_file[0])
 
-    def _generate_freqyency_file(self) -> None:
-        field_content = self.ui.lineEdit.text()
-        text = self._read_files(field_content)
-        if not text:
-            return
-        am_config = AnkiMorphsConfig()
+    def _generate_frequency_file(self) -> None:
+        assert mw is not None
+        mw.progress.start(label="Generating frequency list")
+        operation = QueryOp(
+            parent=mw,
+            op=self._background_generate_frequency_file,
+            success=on_success,
+        )
+        operation.failure(on_failure)
+        operation.with_progress().run_in_background()
+
+    def _background_generate_frequency_file(self, col: Collection) -> None:
+        del col  # unused
+        assert mw is not None
+
+        if len(self.input_files) == 0 or self.ui.outputFileLineEdit.text() == "":
+            raise EmptyFileSelectionException
+
+        morph_frequency_dict: dict[str, MorphOccurrence] = {}
         morphemizer = self._morphemizers[self.ui.comboBox.currentIndex()]
         assert morphemizer is not None
-        morphs = get_morphemes(morphemizer, text, am_config)
-        frequency_list = self._generate_frequency_list(morphs)
-        if not self.ui.lineEdit_2.text():
-            tooltip("Output field is empty", parent=mw)
-            return
-        with open(self.ui.lineEdit_2.text(), mode='w', encoding="utf-8", newline='') as csvfile:
-            spamwriter = csv.writer(csvfile)
-            for [inflected, base, _] in frequency_list:
-                spamwriter.writerow([inflected, base])
-        tooltip("clicked create frequency file button", parent=mw)
 
-    def _read_files(self, field_content: str) -> Optional[str]:
-        if field_content == "":
-            tooltip("Input field empty", parent=mw)
-            return None
-        if Path(field_content).is_file():
-            with open(field_content, mode="r", encoding="utf-8") as file:
-                return file.read()
-        else:
-            for file in field_content.split():
-                file_path = self.path.joinpath(file)
-                if not Path(file_path).is_file():
-                    tooltip(str(file_path) + " dosen't exist", parent=mw)
-                    return None
-                with open(file_path, mode="r", encoding="utf-8") as file:
-                    return file.read()
+        for input_file in self.input_files:
+            if mw.progress.want_cancel():  # user clicked 'x'
+                raise CancelledOperationException
 
-    def _generate_frequency_list(self, morphes: list[Morpheme]) -> list[[str, str, int]]:
-        hash_map = {}
-        for morph in morphes:
-            if hash_map.get(morph.inflected) is None:
-                hash_map.update({morph.inflected: [morph.base, 0]})
-            else:
-                occurences = hash_map.get(morph.inflected)[1]
-                hash_map.update({morph.inflected: [morph.base, occurences+1]})
-        result = []
-        for [inflected, [base, occurences]] in hash_map.items():
-            result.append([inflected, base, occurences])
-        result.sort(reverse=True, key=lambda e: e[2])
-        return result
+            mw.taskman.run_on_main(
+                partial(
+                    mw.progress.update,
+                    label=f"Reading file:<br>{input_file}",
+                )
+            )
+
+            with open(input_file, encoding="utf-8") as file:
+                # NB! Never use readlines(), it loads the entire file to memory
+                for line in file:
+                    expression = self._filter_expression(line)
+                    morphs = morphemizer.get_morphemes_from_expr(expression)
+                    if self.ui.namesFileCheckBox.isChecked():
+                        morphs = _remove_names(morphs)
+                    for morph in morphs:
+                        key = morph.norm + morph.inflected
+                        if key in morph_frequency_dict:
+                            morph_frequency_dict[key].occurrence += 1
+                        else:
+                            morph_frequency_dict[key] = MorphOccurrence(morph)
+
+        sorted_morph_frequency = dict(
+            sorted(
+                morph_frequency_dict.items(),
+                key=lambda item: item[1].occurrence,
+                reverse=True,
+            )
+        )
+        self._output_to_file(sorted_morph_frequency)
+
+    def _filter_expression(self, expression: str) -> str:
+        if self.ui.squareBracketsCheckBox.isChecked():
+            if square_brackets_regex.search(expression):
+                expression = square_brackets_regex.sub("", expression)
+
+        if self.ui.roundBracketsCheckBox.isChecked():
+            if round_brackets_regex.search(expression):
+                expression = round_brackets_regex.sub("", expression)
+
+        if self.ui.slimRoundBracketsCheckBox.isChecked():
+            if slim_round_brackets_regexp.search(expression):
+                expression = slim_round_brackets_regexp.sub("", expression)
+
+        if self.ui.numbersCheckBox.isChecked():
+            expression = re.sub(r"\d", "", expression)
+
+        return expression
+
+    def _output_to_file(
+        self, sorted_morph_frequency: dict[str, MorphOccurrence]
+    ) -> None:
+        output_file: str = self.ui.outputFileLineEdit.text()
+
+        with open(output_file, mode="w+", encoding="utf-8", newline="") as csvfile:
+            morph_writer = csv.writer(csvfile)
+            morph_writer.writerow(["Morph-base", "Morph-inflected"])
+            for morph_occurrence in sorted_morph_frequency.values():
+                if morph_occurrence.occurrence < self.ui.minOccurrenceSpinBox.value():
+                    break
+                morph = morph_occurrence.morph
+                morph_writer.writerow([morph.norm, morph.inflected])
+
+
+def on_success(result: Any) -> None:
+    # This function runs on the main thread.
+    del result  # unused
+    assert mw is not None
+    assert mw.progress is not None
+
+    mw.toolbar.draw()  # updates stats
+    mw.progress.finish()
+    tooltip("Frequency list generated", parent=mw)
+
+
+def on_failure(
+    error: Union[
+        Exception,
+        CancelledOperationException,
+        EmptyFileSelectionException,
+    ]
+) -> None:
+    # This function runs on the main thread.
+    assert mw is not None
+    assert mw.progress is not None
+    mw.progress.finish()
+
+    if isinstance(error, CancelledOperationException):
+        tooltip("Cancelled Frequency File Generator")
+    if isinstance(error, EmptyFileSelectionException):
+        tooltip("No file selected")
+    else:
+        raise error

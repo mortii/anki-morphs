@@ -15,7 +15,9 @@ def get_morphemes(
 ) -> list[Morpheme]:
     expression = _get_parsed_expression(am_config, expression)
     morphs = morphemizer.get_morphemes_from_expr(expression)
-    morphs = _remove_names(am_config, morphs)
+    if not am_config.parse_ignore_names_textfile:
+        return morphs
+    morphs = _remove_names(morphs)
     return morphs
 
 
@@ -35,12 +37,7 @@ def _get_parsed_expression(am_config: AnkiMorphsConfig, expression: str) -> str:
     return expression
 
 
-def _remove_names(
-    am_config: AnkiMorphsConfig, morphs: list[Morpheme]
-) -> list[Morpheme]:
-    if not am_config.parse_ignore_names_textfile:
-        return morphs
-
+def _remove_names(morphs: list[Morpheme]) -> list[Morpheme]:
     names = name_file_utils.create_hash_set_out_of_names()
     non_name_morphs: list[Morpheme] = []
 

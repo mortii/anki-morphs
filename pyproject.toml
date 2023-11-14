@@ -26,6 +26,13 @@ disable = """
     global-statement,
 """
 
+[tool.pylint.similarities]
+ignore-comments = true
+ignore-docstrings = true
+ignore-imports = true
+ignore-signatures = true
+min-similarity-lines = 7
+
 # Docs: https://docs.pytest.org/en/7.1.x/reference/reference.html#ini-options-ref
 [tool.pytest.ini_options]
 # testpaths: directories that should be searched when no specific directories, files or test ids are given

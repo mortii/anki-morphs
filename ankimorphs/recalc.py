@@ -24,7 +24,7 @@ from .config import (
     get_modify_enabled_filters,
     get_read_enabled_filters,
 )
-from .exceptions import CancelledRecalcException, DefaultSettingsException
+from .exceptions import CancelledOperationException, DefaultSettingsException
 from .morph_utils import get_morphemes
 from .morpheme import Morpheme, SimplifiedMorph
 from .morphemizer import get_morphemizer_by_name
@@ -106,7 +106,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals
         for counter, card_id in enumerate(card_data_dict):
             if counter % 1000 == 0:
                 if mw.progress.want_cancel():  # user clicked 'x'
-                    raise CancelledRecalcException
+                    raise CancelledOperationException
 
                 mw.taskman.run_on_main(
                     partial(
@@ -271,7 +271,7 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
         for counter, card_id in enumerate(cards_data_dict):
             if counter % 1000 == 0:
                 if mw.progress.want_cancel():  # user clicked 'x'
-                    raise CancelledRecalcException
+                    raise CancelledOperationException
 
                 mw.taskman.run_on_main(
                     partial(
@@ -658,7 +658,7 @@ def on_failure(
     error: Union[
         Exception,
         DefaultSettingsException,
-        CancelledRecalcException,
+        CancelledOperationException,
     ]
 ) -> None:
     # This function runs on the main thread.
@@ -675,7 +675,7 @@ def on_failure(
         critical_box.setStandardButtons(QMessageBox.StandardButton.Ok)
         critical_box.setText(text)
         critical_box.exec()
-    elif isinstance(error, CancelledRecalcException):
+    elif isinstance(error, CancelledOperationException):
         tooltip("Cancelled Recalc")
     else:
         raise error
