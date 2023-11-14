@@ -45,7 +45,7 @@ from .toolbar_stats import MorphToolbarStats
 TOOL_MENU: str = "am_tool_menu"
 BROWSE_MENU: str = "am_browse_menu"
 CONTEXT_MENU: str = "am_context_menu"
-DEV_MODE = True
+DEV_MODE = False
 
 last_undo_step_handled: int = -1
 db_initialized: bool = False
@@ -227,19 +227,18 @@ def init_tool_menu_and_actions() -> None:
 
     settings_action = create_settings_action(am_config)
     recalc_action = create_recalc_action(am_config)
+    frequency_list_action = create_frequency_file_action()
     guide_action = create_guide_action()
     changelog_action = create_changelog_action()
 
     am_tool_menu = create_am_tool_menu()
     am_tool_menu.addAction(settings_action)
     am_tool_menu.addAction(recalc_action)
+    am_tool_menu.addAction(frequency_list_action)
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
 
     if DEV_MODE:
-        frequency_list_action = create_frequency_file_action()
-        am_tool_menu.addAction(frequency_list_action)
-
         test_action = create_test_action()
         am_tool_menu.addAction(test_action)
 
