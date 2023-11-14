@@ -24,6 +24,8 @@
   - [Recalc](user_guide/usage/recalc.md)
   - [Reviewing Cards](user_guide/usage/reviewing-cards.md)
   - [Browser](user_guide/usage/browser.md)
+  - [Frequency File Generator](user_guide/usage/frequency-file-generator.md)
+  - [Readability Report Generator](user_guide/usage/readability-report-generator.md)
   - [Statistics](user_guide/usage/statistics.md)
 - [Known Problems](user_guide/known-problems.md)
 - [Roadmap](user_guide/roadmap.md)
