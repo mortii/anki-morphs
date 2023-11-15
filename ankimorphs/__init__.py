@@ -406,7 +406,7 @@ def add_name_action(web_view: AnkiWebView, menu: QMenu) -> None:
 
 
 def create_frequency_file_action() -> QAction:
-    action = QAction("&Generate Frequency File", mw)
+    action = QAction("&Frequency File Generator", mw)
     action.triggered.connect(frequency_file_generator.main)
     return action
 
@@ -423,21 +423,27 @@ def test_function() -> None:
     assert mw is not None
     assert mw.col.db is not None
 
-    am_db = AnkiMorphsDB()
+    # am_db = AnkiMorphsDB()
+    #
+    # with am_db.con:
+    #     result = am_db.con.execute(
+    #         """
+    #             SELECT morph_norm, morph_inflected, highest_learning_interval
+    #             FROM Card_Morph_Map
+    #             INNER JOIN Morphs ON
+    #                     Card_Morph_Map.morph_norm = Morphs.norm AND Card_Morph_Map.morph_inflected = Morphs.inflected
+    #             WHERE card_id = 1691325367067
+    #             """
+    #     ).fetchall()
+    # print(f"result?: {result}")
+    #
+    # am_db.con.close()
 
-    with am_db.con:
-        result = am_db.con.execute(
-            """
-                SELECT morph_norm, morph_inflected, highest_learning_interval
-                FROM Card_Morph_Map
-                INNER JOIN Morphs ON
-                        Card_Morph_Map.morph_norm = Morphs.norm AND Card_Morph_Map.morph_inflected = Morphs.inflected
-                WHERE card_id = 1691325367067
-                """
-        ).fetchall()
-    print(f"result?: {result}")
-
-    am_db.con.close()
+    # morphemizer = MecabMorphemizer()
+    # expression = "うん あ カフェ モカ お願い おかわり"
+    # morphs = get_morphemes(morphemizer, expression, am_config=AnkiMorphsConfig())
+    # morph_list = [morph.inflected for morph in morphs]
+    # print(f"morphs: {morph_list}")
 
 
 main()

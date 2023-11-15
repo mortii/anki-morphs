@@ -53,6 +53,9 @@ class Morpheme:
             (self.norm, self.base, self.inflected, self.read, self.pos, self.sub_pos)
         )
 
+    def is_proper_noun(self) -> bool:
+        return self.sub_pos == "固有名詞" or self.pos == "PROPN"
+
 
 class SimplifiedMorph:
     __slots__ = (

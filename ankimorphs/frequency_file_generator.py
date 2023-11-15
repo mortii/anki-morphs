@@ -18,7 +18,8 @@ from aqt.utils import tooltip
 
 from .exceptions import CancelledOperationException, EmptyFileSelectionException
 from .morph_utils import (
-    _remove_names,
+    remove_names_morphemizer,
+    remove_names_textfile,
     round_brackets_regex,
     slim_round_brackets_regexp,
     square_brackets_regex,
@@ -136,8 +137,10 @@ class FrequencyFileGeneratorDialog(QDialog):
                 for line in file:
                     expression = self._filter_expression(line)
                     morphs = morphemizer.get_morphemes_from_expr(expression)
+                    if self.ui.namesMorphemizerCheckBox.isChecked():
+                        morphs = remove_names_morphemizer(morphs)
                     if self.ui.namesFileCheckBox.isChecked():
-                        morphs = _remove_names(morphs)
+                        morphs = remove_names_textfile(morphs)
                     for morph in morphs:
                         key = morph.norm + morph.inflected
                         if key in morph_frequency_dict:
