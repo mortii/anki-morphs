@@ -256,7 +256,7 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
     )
 
     original_due: dict[int, int] = {}
-
+    handled_cards: dict[int, None] = {}  # we only care about the key lookup, not values
     modified_cards: list[Card] = []
     modified_notes: list[Note] = []
 
@@ -281,6 +281,10 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
                         max=card_amount,
                     )
                 )
+
+            # check if card has already been handled in a previous note filter
+            if card_id in handled_cards:
+                continue
 
             card = mw.col.get_card(card_id)
             note = card.note()
@@ -320,6 +324,7 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
             # We cannot check if due is different from the original here
             # because due is recalculated later.
             modified_cards.append(card)
+            handled_cards[card_id] = None
 
             if original_fields != note.fields or original_tags != note.tags:
                 modified_notes.append(note)
