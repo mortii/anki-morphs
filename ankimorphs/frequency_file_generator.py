@@ -63,8 +63,8 @@ class FrequencyFileGeneratorDialog(QDialog):
         self._populate_morphemizers()
         self._output_file: str = ""
         self._setup_output_path()
+        self._setup_checkboxes()
         self._setup_buttons()
-        self.input_files: list[str] = []
 
     def _populate_morphemizers(self) -> None:
         morphemizer_names = [mizer.get_description() for mizer in self._morphemizers]
@@ -80,17 +80,22 @@ class FrequencyFileGeneratorDialog(QDialog):
         Path(self._output_file).parent.mkdir(parents=True, exist_ok=True)
         self.ui.outputFileLineEdit.setText(self._output_file)
 
+    def _setup_checkboxes(self) -> None:
+        self.ui.txtFilesCheckBox.setChecked(True)
+        self.ui.srtFilesCheckBox.setChecked(True)
+        self.ui.vttFilesCheckBox.setChecked(True)
+
     def _setup_buttons(self) -> None:
         self.ui.inputButton.clicked.connect(self._on_input_button_clicked)
         self.ui.outputButton.clicked.connect(self._on_output_button_clicked)
         self.ui.createFrequencyFileButton.clicked.connect(self._generate_frequency_file)
 
     def _on_input_button_clicked(self) -> None:
-        input_files_list: list[str] = QFileDialog.getOpenFileNames(
-            None, "Files to Analyze", QDir().homePath(), "(*.txt *.srt)"
-        )[0]
-        self.ui.inputFileLiineEdit.setText("".join(input_files_list))
-        self.input_files = input_files_list
+        input_dir: str = QFileDialog.getExistingDirectory(
+            caption="Directory with files to analyze",
+            directory=QDir().homePath(),
+        )
+        self.ui.inputDirLineEdit.setText(input_dir)
 
     def _on_output_button_clicked(self) -> None:
         assert mw is not None
@@ -114,14 +119,19 @@ class FrequencyFileGeneratorDialog(QDialog):
         del col  # unused
         assert mw is not None
 
-        if len(self.input_files) == 0 or self.ui.outputFileLineEdit.text() == "":
+        if (
+            self.ui.inputDirLineEdit.text() == ""
+            or self.ui.outputFileLineEdit.text() == ""
+        ):
             raise EmptyFileSelectionException
+
+        input_files: list[Path] = self._gather_input_files()
 
         morph_frequency_dict: dict[str, MorphOccurrence] = {}
         morphemizer = self._morphemizers[self.ui.comboBox.currentIndex()]
         assert morphemizer is not None
 
-        for input_file in self.input_files:
+        for input_file in input_files:
             if mw.progress.want_cancel():  # user clicked 'x'
                 raise CancelledOperationException
 
@@ -156,6 +166,42 @@ class FrequencyFileGeneratorDialog(QDialog):
             )
         )
         self._output_to_file(sorted_morph_frequency)
+
+    def _gather_input_files(self) -> list[Path]:
+        assert mw is not None
+
+        input_files: list[Path] = []
+        input_dir = self.ui.inputDirLineEdit.text()
+        extensions = self._get_checked_extensions()
+
+        for extension in extensions:
+            if mw.progress.want_cancel():  # user clicked 'x'
+                raise CancelledOperationException
+            mw.taskman.run_on_main(
+                partial(
+                    mw.progress.update,
+                    label=f"Gathering {extension} files",
+                )
+            )
+            for path in Path(input_dir).rglob(extension):
+                if mw.progress.want_cancel():  # user clicked 'x'
+                    raise CancelledOperationException
+                input_files.append(path)
+                # print(path.name)
+
+        return input_files
+
+    def _get_checked_extensions(self) -> list[str]:
+        extensions = []
+
+        if self.ui.txtFilesCheckBox.isChecked():
+            extensions.append("*.txt")
+        if self.ui.srtFilesCheckBox.isChecked():
+            extensions.append("*.srt")
+        if self.ui.vttFilesCheckBox.isChecked():
+            extensions.append("*.vtt")
+
+        return extensions
 
     def _filter_expression(self, expression: str) -> str:
         if self.ui.squareBracketsCheckBox.isChecked():
