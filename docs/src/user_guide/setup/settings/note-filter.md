@@ -40,14 +40,37 @@ after.
 
 You can further filter AnkiMorphs to only work on cards with a certain note type **and** specific tag(s).
 
-Take for
-example a collection with 3K cards with the tag "movie", 6K cards with the tag "demon-slayer", and 1K cards having both.
-If you specify the tags:
-```text
-movie, demon-slayer
+Let's use an example of having a note type: `note_type1`. The card break-down of the note type is the following:
+- Total cards: 20K
+- Cards with the tag `demon-slayer`: 6k
+- Cards with the tag `movie`: 3k
+- Cards that have **both** `demon-slayer` and `movie` tags: 1k
+
+
+If you want all the 20K cards of note type `note_type1` then leave the tags empty:
 ```
-Then AnkiMorphs will then get the subset of
-cards that have both, i.e. 1k cards.
+Note Type                   Tags            
+1. note_type1               
+```
+
+If you want the 6K cards with the `demon-slayer` tag:
+```
+Note Type                   Tags            
+1. note_type1               demon-slayer
+```
+
+If you want the 1k cards that have **both** `demon-slayer` and `movie` tags, i.e. the intersection,:
+```
+Note Type                   Tags            
+1. note_type1               demon-slayer, movie
+```
+
+If you want the 8K cards that have **either** `demon-slayer` or `movie` tags, i.e. the union,:
+```
+Note Type                   Tags          
+1. note_type1               demon-slayer
+2. note_type1               movie 
+```
 
 ## Field
 
@@ -60,7 +83,6 @@ This is the field on the card AnkiMorphs reads and analyzes, which is then used 
 3. Find the field you care about
 
 In my case the field I'm interested in is "Japanese"
-
 
 ## Morphemizer
 
