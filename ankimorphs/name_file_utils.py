@@ -17,9 +17,12 @@ def add_name_to_file(selected_text: str) -> None:
         for name in names:
             file.write("\n" + name)
 
+    # clear the cache so the new name(s) are included
+    get_names_from_file.cache_clear()
+
 
 @functools.cache
-def create_hash_set_out_of_names() -> set[str]:
+def get_names_from_file() -> set[str]:
     assert mw is not None
 
     profile_path: str = mw.pm.profileFolder()

@@ -42,7 +42,7 @@ def _get_parsed_expression(am_config: AnkiMorphsConfig, expression: str) -> str:
 
 
 def remove_names_textfile(morphs: list[Morpheme]) -> list[Morpheme]:
-    names = name_file_utils.create_hash_set_out_of_names()
+    names = name_file_utils.get_names_from_file()
     non_name_morphs: list[Morpheme] = []
 
     for morph in morphs:
