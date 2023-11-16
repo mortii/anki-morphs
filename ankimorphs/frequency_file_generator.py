@@ -84,6 +84,7 @@ class FrequencyFileGeneratorDialog(QDialog):
         self.ui.txtFilesCheckBox.setChecked(True)
         self.ui.srtFilesCheckBox.setChecked(True)
         self.ui.vttFilesCheckBox.setChecked(True)
+        self.ui.mdFilesCheckBox.setChecked(True)
 
     def _setup_buttons(self) -> None:
         self.ui.inputButton.clicked.connect(self._on_input_button_clicked)
@@ -200,6 +201,8 @@ class FrequencyFileGeneratorDialog(QDialog):
             extensions.append("*.srt")
         if self.ui.vttFilesCheckBox.isChecked():
             extensions.append("*.vtt")
+        if self.ui.mdFilesCheckBox.isChecked():
+            extensions.append("*.md")
 
         return extensions
 
@@ -262,6 +265,6 @@ def on_failure(
     if isinstance(error, CancelledOperationException):
         tooltip("Cancelled Frequency File Generator")
     if isinstance(error, EmptyFileSelectionException):
-        tooltip("No file selected")
+        tooltip("No file/folder selected")
     else:
         raise error
