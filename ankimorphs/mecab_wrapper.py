@@ -1,3 +1,4 @@
+import functools
 import importlib
 import importlib.util
 import os
@@ -7,7 +8,6 @@ import sys
 from typing import Optional
 
 from .morpheme import Morpheme
-from .util_external import Memoize
 
 ####################################################################################################
 # Mecab Morphemizer
@@ -180,7 +180,7 @@ def spawn_mecab(base_cmd, startupinfo):
     return spawn_cmd(base_cmd + args, startupinfo)
 
 
-@Memoize
+@functools.cache
 def mecab():  # pylint: disable=too-many-branches,too-many-statements
     """Start a MeCab subprocess and return it.
     `mecab` reads expressions from stdin at runtime, so only one
