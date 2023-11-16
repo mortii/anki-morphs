@@ -35,7 +35,8 @@ english_texts/
             - The Wise Man's Fear.txt
     - subs/
         - Game-of-Thrones/
-            - episode_1.srt
+            - season-1/
+                - episode_1.srt
         - Lord_of_the_Rings/
             - The_Fellowship_of_the_Ring.vff
 
