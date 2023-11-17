@@ -1,3 +1,5 @@
+import csv
+import os
 import re
 import time
 from collections import Counter
@@ -406,8 +408,9 @@ def get_morph_priority(
     if am_config.recalc_prioritize_collection:
         print("prioritizing collection")
         morph_priority = get_morph_collection_priority(am_db)
-
-    # TODO add text file branch
+    if am_config.recalc_prioritize_frequency_list:
+        print("prioritizing frequency file")
+        morph_priority = get_morph_frequency_file_priority(am_config)
 
     return morph_priority
 
@@ -432,6 +435,24 @@ def get_morph_collection_priority(am_db: AnkiMorphsDB) -> dict[str, int]:
     for index, key in enumerate(card_morph_map_cache_sorted):
         card_morph_map_cache_sorted[key] = index
 
+    return card_morph_map_cache_sorted
+
+
+def get_morph_frequency_file_priority(am_config: AnkiMorphsConfig) -> dict[str, int]:
+    assert mw is not None
+    frequency_list_path = os.path.join(
+        mw.pm.profileFolder(), "frequency-files", am_config.frequency_list
+    )
+    with open(frequency_list_path, mode="r+", encoding="utf-8") as csvfile:
+        print(csvfile)
+        morph_reader = csv.reader(csvfile, delimiter=",")
+        i = 0
+        card_morph_map_cache_sorted: dict[str, int] = {}
+        for row in morph_reader:
+            if i != 0:
+                key = row[0] + row[1]
+                card_morph_map_cache_sorted.update({key: i})
+            i += 1
     return card_morph_map_cache_sorted
 
 
@@ -501,7 +522,11 @@ def get_card_difficulty_and_unknowns_and_learning_status(
             unknown_morphs.append(morph.inflected)
         elif morph.highest_learning_interval <= am_config.recalc_interval_for_known:
             has_learning_morph = True
-        difficulty += morph_priority[morph.norm_and_inflected]
+        # Heavily penalizes if a card is not frequency.csv
+        if morph.norm_and_inflected not in morph_priority:
+            difficulty = morph_unknown_penalty
+        else:
+            difficulty += morph_priority[morph.norm_and_inflected]
 
     if difficulty >= morph_unknown_penalty:
         #  cap morph priority penalties as described in #(2.2)

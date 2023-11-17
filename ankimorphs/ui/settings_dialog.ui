@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>793</width>
-    <height>358</height>
+    <height>408</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>5</number>
        </property>
        <widget class="QWidget" name="note_filters_tab">
         <attribute name="title">
@@ -469,6 +469,41 @@
                <property name="text">
                 <string>Frequency in card collection</string>
                </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_14">
+             <item alignment="Qt::AlignLeft">
+              <widget class="QRadioButton" name="recalc_prioritize_frequency_input">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="text">
+                <string>Frequency in file</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="frequency_selector">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>150</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="currentText">
+                <string>Frequency file not found</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>Frequency file not found</string>
+                </property>
+               </item>
               </widget>
              </item>
             </layout>
