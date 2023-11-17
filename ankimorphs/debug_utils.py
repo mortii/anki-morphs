@@ -15,4 +15,4 @@ def print_stacktrace() -> None:
 
 
 def print_thread_name() -> None:
-    print(f"thread name: {threading.currentThread().getName()}")
+    print(f"thread name: {threading.current_thread().name}")

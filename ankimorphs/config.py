@@ -78,9 +78,9 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.recalc_prioritize_collection: bool = _get_bool_config(
             "recalc_prioritize_collection", is_default
         )
-        # self.recalc_prioritize_textfile: bool = _get_bool_config(
-        #     "recalc_prioritize_textfile", is_default
-        # )
+        self.recalc_prioritize_frequency_list: bool = _get_bool_config(
+            "recalc_prioritize_frequency_list", is_default
+        )
         self.parse_ignore_bracket_contents: bool = _get_bool_config(
             "parse_ignore_bracket_contents", is_default
         )
@@ -103,7 +103,7 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.tag_ready: str = _get_string_config("tag_ready", is_default)
         self.tag_not_ready: str = _get_string_config("tag_not_ready", is_default)
         self.tag_known: str = _get_string_config("tag_known", is_default)
-
+        self.frequency_list: str = _get_string_config("frequency_list", is_default)
         self.filters: list[AnkiMorphsConfigFilter] = _get_filters_config(is_default)
 
 

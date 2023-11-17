@@ -1,5 +1,7 @@
+import os
 from collections.abc import Iterable, Sequence
 from functools import partial
+from pathlib import Path
 from typing import Optional
 
 from anki.models import FieldDict, NotetypeId, NotetypeNameId
@@ -325,10 +327,23 @@ class SettingsDialog(QDialog):
         self.ui.recalc_prioritize_collection_input.setChecked(
             self.config.recalc_prioritize_collection
         )
+        self.ui.recalc_prioritize_frequency_input.setChecked(
+            self.config.recalc_prioritize_frequency_list
+        )
         self.ui.recalc_on_sync_input.setChecked(self.config.recalc_on_sync)
-        # self.ui.recalc_prioritize_textfile_input.setChecked(
-        #     self.config.recalc_prioritize_textfile
-        # )
+        self._populate_frequency_lists()
+
+    def _populate_frequency_lists(self) -> None:
+        assert mw is not None
+        input_dir = os.path.join(mw.pm.profileFolder(), "frequency-files")
+
+        frequency_files = Path(input_dir).glob("*.csv")
+        i = 0
+        for file in frequency_files:
+            if i == 0:
+                self.ui.frequency_selector.clear()
+            i += 1
+            self.ui.frequency_selector.addItem(file.name)
 
     def restore_recalc_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -346,9 +361,6 @@ class SettingsDialog(QDialog):
             self._default_config.recalc_prioritize_collection
         )
         self.ui.recalc_on_sync_input.setChecked(self._default_config.recalc_on_sync)
-        # self.ui.recalc_prioritize_textfile_input.setChecked(
-        #     self._default_config.recalc_prioritize_textfile
-        # )
 
     def _populate_skip_tab(self) -> None:
         self.ui.skip_only_known_morphs_cards_input.setChecked(
@@ -359,6 +371,12 @@ class SettingsDialog(QDialog):
         )
         self.ui.skip_show_num_of_skipped_cards_input.setChecked(
             self.config.skip_show_num_of_skipped_cards
+        )
+
+    def _use_custom_frequency_list(self) -> bool:
+        return (
+            self.ui.recalc_prioritize_frequency_input.isChecked()
+            and self.ui.frequency_selector.currentText() != "Frequency file not found"
         )
 
     def restore_skip_defaults(self, skip_confirmation: bool = False) -> None:
@@ -441,9 +459,9 @@ class SettingsDialog(QDialog):
             "shortcut_learn_now": self.ui.shortcut_learn_now_input.keySequence().toString(),
             "shortcut_view_morphemes": self.ui.shortcut_view_morphs_input.keySequence().toString(),
             "recalc_interval_for_known": self.ui.recalc_interval_known_input.value(),
-            "recalc_prioritize_collection": self.ui.recalc_prioritize_collection_input.isChecked(),
+            "recalc_prioritize_collection": not self._use_custom_frequency_list(),
+            "recalc_prioritize_frequency_list": self._use_custom_frequency_list(),
             "recalc_on_sync": self.ui.recalc_on_sync_input.isChecked(),
-            # "recalc_prioritize_textfile": self.ui.recalc_prioritize_textfile_input.isChecked(),
             "parse_ignore_bracket_contents": self.ui.parse_ignore_bracket_contents_input.isChecked(),
             "parse_ignore_round_bracket_contents": self.ui.parse_ignore_round_bracket_contents_input.isChecked(),
             "parse_ignore_slim_round_bracket_contents": self.ui.parse_ignore_slim_round_bracket_contents_input.isChecked(),
@@ -453,6 +471,7 @@ class SettingsDialog(QDialog):
             "skip_only_known_morphs_cards": self.ui.skip_only_known_morphs_cards_input.isChecked(),
             "skip_unknown_morph_seen_today_cards": self.ui.skip_unknown_morph_seen_today_cards_input.isChecked(),
             "skip_show_num_of_skipped_cards": self.ui.skip_show_num_of_skipped_cards_input.isChecked(),
+            "frequency_list": self.ui.frequency_selector.currentText(),
         }
 
         filters = []
