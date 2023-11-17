@@ -4,7 +4,7 @@ Please link any related issues.
 
 ## What is the new behavior?
 
-## What kind of change does this PR introduce?
+## What kind of changes does this PR introduce?
 
 Please delete options that are not relevant.
 
@@ -14,7 +14,7 @@ Please delete options that are not relevant.
 - [ ] This change requires a documentation update
 
 
-# Checklist:
+## Checklist:
 
 - [ ] My code successfully passes pre-commit
 - [ ] I have commented my code, particularly in hard-to-understand areas
