@@ -38,7 +38,7 @@ english_texts/
             - season-1/
                 - episode_1.srt
         - Lord_of_the_Rings/
-            - The_Fellowship_of_the_Ring.vff
+            - The_Fellowship_of_the_Ring.vtt
 
 ```
 
@@ -49,7 +49,7 @@ If you were to select the folder `english_texts` and you checked all the file fo
 use the files:
 - `The Wise Man's Fear.txt`
 - `episode_1.srt`
-- `The_Fellowship_of_the_Ring.vff`
+- `The_Fellowship_of_the_Ring.vtt`
 
 ### Select Output
 
