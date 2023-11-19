@@ -1,12 +1,15 @@
 ## What is the current behavior?
 
-Please link any related issues.
+[//]: # (Please link any related issues)
+
 
 ## What is the new behavior?
 
 ## What kind of changes does this PR introduce?
 
-Please delete options that are not relevant.
+[//]: # (Please delete options that are not relevant)
+
+[//]: # (Set items to checked like this: [x])
 
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
@@ -20,3 +23,4 @@ Please delete options that are not relevant.
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I am willing to help create documentation/guides for the changes made in this PR
 - [ ] This PR can be rebased onto main without conflicts (create a backup branch before attempting a rebase)
+- [ ] I have squashed my commits into sensible portions
