@@ -10,7 +10,7 @@ mortii, Vilhelm-Ian.
 Matt Vs Japan, mortii, Vilhelm-Ian.
 
 ### Bugs reports, feature requests, or other helpful guidance
-Vilhelm-Ian, CodeWithMa, ashprice, Aleksej, HQYang1979.
+Vilhelm-Ian, CodeWithMa, ashprice, Aleksej, HQYang1979, soliviantar.
 
 
 ### MorphMan (v5.0-qt6-alpha.1)
