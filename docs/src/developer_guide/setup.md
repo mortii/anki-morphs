@@ -2,26 +2,47 @@
 
 ## Linux
 
-1. Set up local environment:
+1. **Installing python 3.9**:
 
-   Anki uses python 3.9, using other versions in the dev environment might lead to problems.
+   Anki (very unfortunately) uses python 3.9. This is considered a dead version of python, so it can't be installed
+   automatically by most package managers. To install 3.9 on a debian system you can do
+   something [like this](https://askubuntu.com/questions/1318846/how-do-i-install-python-3-9/1318849#1318849).
+   Alternatively you can use [pyenv](https://github.com/pyenv/pyenv).
+
+   The reason we want to install python 3.9 is that we need to make sure the dev-environment matches the real-world Anki
+   environment--if we use newer versions of python then things might work fine in the dev environment, but Anki crashes
+   as soon as we leave it because the python code is too new (this has happened multiple times).
+
+   When this command succeeds:
+   ```
+   $ python3.9 --version
+   Python 3.9.[x]
+   ```
+   then you are ready move on to the next step.
+2. **Setting up dev environment:**
+
+   We want to use a virtual environment for a few reasons: we don't want to install the project's dependencies on the
+   global environment (your pc) because you might end up with package conflicts or accidentally downgrading packages,
+   etc; a virtual environment also makes sure the dependencies are consistent for all developers.
     ``` bash
     python3.9 -m pip install --upgrade pip
     python3.9 -m pip install virtualenv
     python3.9 -m virtualenv venv
-    source venv/bin/activate
+    source venv/bin/activate  # <--- this activates the virtual environment
     python3.9 -m pip install -r requirements.txt
     pre-commit install
     ```
-2. Set the project python interpreter to be `anki-morphs/venv/bin/python` to get your IDE to recognize the packages
+   Remember to activate the virtual environment any time before you start working on the project, some IDEs do this
+   automatically.
+2. **Set the project python interpreter** to be `anki-morphs/venv/bin/python` to get your IDE to recognize the packages
    installed above.
 
-3. Create a soft symbolic link from the cloned repo to the anki add-ons folder so anki starts using the cloned
+3. **Create a soft symbolic link** from the cloned repo to the anki add-ons folder so anki starts using the cloned
    AnkiMorphs:
    ``` bash
    ln -s ~/path/to/cloned/repo/anki-morphs/ankimorphs  ~/.local/share/Anki2/addons21/ankimorphs
    ```
-4. Using pre-commit:
+4. **Using pre-commit**:
 
    Pre-commit runs some commands (pylint, pytest, etc.) on the code before you commit to make sure the code is in good
    condition. Pre-commit is configured in `.pre-commit-config.yaml` and some of the commands have additional
@@ -37,20 +58,21 @@
    git commit -am "fixed abc" --no-verify
    ```
 
-   Pre-commit can be annoying to use in the same way that it can be annoying to follow traffic-laws--sure it might slow you down
+   Pre-commit can be annoying to use in the same way that it can be annoying to follow traffic-laws--sure it might slow
+   you down
    _right now_, but it is much better in the long-run when everybody does it. Pre-commit can help you in three ways:
-   - Automatically fix code for you
-   - Catch bugs earlier
-   - Make code more understandable
+    - Automatically fix code for you
+    - Catch bugs earlier
+    - Make code more understandable
 
-    Once you get used to the pre-commit flow it no longer slows you down, and there are only upsides to using it.
-    
-    Pre-commit fails in two ways:
+   Once you get used to the pre-commit flow it no longer slows you down, and there are only upsides to using it.
+
+   Pre-commit fails in two ways:
 
     - **Automatically fixed**   
       When a pre-commit hook changes a file (fixing it) then you simply have to re-stage the file
       and re-run the commit. E.g:
-    
+
       ```bash
       $ vim recalc.py
       $ git commit -am "made changes"
@@ -64,8 +86,10 @@
        ```
 
     - **Has to be manually fixed**   
-      The majority of the hooks provide warnings that have to be handled manually. Most of the time the required fixes provide
-      significant improvements to the code, and you might learn something new and become a better programmer in the process. Sometimes the suggested errors are
+      The majority of the hooks provide warnings that have to be handled manually. Most of the time the required fixes
+      provide
+      significant improvements to the code, and you might learn something new and become a better programmer in the
+      process. Sometimes the suggested errors are
       false-positive, or the suggested fix is
       actually problematic in some way. When this happens then ignoring it is fine, e.g:
        ```
@@ -73,7 +97,7 @@
        ```
 
     <br>
-   
+
    **Optional:** if you use gitkraken you have to adjust the pre-commit script (`anki-morphs/.git/hooks/pre-commit`) to
    activate the virtual environment first:
 
