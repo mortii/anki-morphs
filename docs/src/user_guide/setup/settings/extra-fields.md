@@ -6,18 +6,22 @@
 
 ![extra-fields.png](../../../img/extra-fields.png)
 
-## Unknowns
+These are potentially destructive options, and they might not do what you think they do at first glance, so be extra
+careful. What happens here is the following:
 
-A list of the unknown morphs found on the card will be placed in this field by AnkiMorphs.
+The text found in the `note filter: field` is extracted and analyzed by AnkiMorphs. AnkiMorphs can then place
+information about that text into dedicated fields on your cards. Here are what the options produce:
 
-## Highlighted
+- **Unknowns**: a list of the morphs that are still unknown to you that was found in the text
+- **Highlighted**: an HTML version of the text that [highlights](../highlighting.md) the morphs based on learning status
+- **Difficulty**: the difficulty AnkiMorphs calculated the text to have
 
-A [highlighted](../highlighting.md) version of the text of the [note filter field](note-filter.md#field) will be placed
-here by AnkiMorphs.
+All of these are completely optional, you can leave them to be `(none)` and AnkiMorphs will work just fine. 
 
-## Difficulty
+Here is an example (the `note filter: field` is `Japanese`):
 
-The difficulty AnkiMorphs calculates the card to have will be placed in this field.
+![extra-fields-results.png](../../../img/extra-fields-results.png)
+
 
 ## Adding A Field To Your Cards
 
