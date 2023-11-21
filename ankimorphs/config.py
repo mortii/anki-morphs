@@ -24,6 +24,10 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
             _filter, "morphemizer_description"
         )
         self.morphemizer_name: str = _get_filter_str(_filter, "morphemizer_name")
+        self.morph_priority: str = _get_filter_str(_filter, "morph_priority")
+        self.morph_priority_index: Optional[int] = _get_filter_optional_int(
+            _filter, "morph_priority_index"
+        )
         self.read: bool = _get_filter_bool(_filter, "read")
         self.modify: bool = _get_filter_bool(_filter, "modify")
         self.unknowns_field_: str = _get_filter_str(_filter, "unknowns_field")
@@ -75,12 +79,6 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.recalc_interval_for_known: int = _get_int_config(
             "recalc_interval_for_known", is_default
         )
-        self.recalc_prioritize_collection: bool = _get_bool_config(
-            "recalc_prioritize_collection", is_default
-        )
-        self.recalc_prioritize_frequency_list: bool = _get_bool_config(
-            "recalc_prioritize_frequency_list", is_default
-        )
         self.parse_ignore_bracket_contents: bool = _get_bool_config(
             "parse_ignore_bracket_contents", is_default
         )
@@ -103,7 +101,6 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
         self.tag_ready: str = _get_string_config("tag_ready", is_default)
         self.tag_not_ready: str = _get_string_config("tag_not_ready", is_default)
         self.tag_known: str = _get_string_config("tag_known", is_default)
-        self.frequency_list: str = _get_string_config("frequency_list", is_default)
         self.filters: list[AnkiMorphsConfigFilter] = _get_filters_config(is_default)
 
 

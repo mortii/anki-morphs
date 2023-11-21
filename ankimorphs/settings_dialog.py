@@ -1,4 +1,3 @@
-import os
 from collections.abc import Iterable, Sequence
 from functools import partial
 from pathlib import Path
@@ -56,13 +55,14 @@ class SettingsDialog(QDialog):
         self.ui.tabWidget.currentChanged.connect(self.tab_change)
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.5.3-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.6.0-alpha")
 
     def _setup_note_filters_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
     ) -> None:
-        self.ui.note_filters_table.setColumnWidth(0, 150)
-        self.ui.note_filters_table.setColumnWidth(3, 150)
+        self.ui.note_filters_table.setColumnWidth(0, 150)  # note type column
+        self.ui.note_filters_table.setColumnWidth(3, 150)  # morphemizer column
+        self.ui.note_filters_table.setColumnWidth(4, 150)  # prioritizing column
         self.ui.note_filters_table.setRowCount(len(config_filters))
         self.ui.note_filters_table.setAlternatingRowColors(True)
 
@@ -108,6 +108,17 @@ class SettingsDialog(QDialog):
         if morphemizer_cbox_index is not None:
             morphemizer_cbox.setCurrentIndex(morphemizer_cbox_index)
 
+        morph_priority_cbox = QComboBox(self.ui.note_filters_table)
+        frequency_files: list[str] = _get_frequency_files()
+        morph_priority_cbox.addItems(["Collection frequency"])
+        morph_priority_cbox.addItems(frequency_files)
+        morph_priority_cbox_index = _get_cbox_index(
+            frequency_files, config_filter.morph_priority
+        )
+        if morph_priority_cbox_index is not None:
+            morph_priority_cbox_index += 1  # to offset the added "Collection frequency"
+            morph_priority_cbox.setCurrentIndex(morph_priority_cbox_index)
+
         read_checkbox = QCheckBox()
         read_checkbox.setChecked(config_filter.read)
         read_checkbox.setStyleSheet("margin-left:auto; margin-right:auto;")
@@ -122,8 +133,9 @@ class SettingsDialog(QDialog):
         self.ui.note_filters_table.setItem(row, 1, QTableWidgetItem(tags))
         self.ui.note_filters_table.setCellWidget(row, 2, field_cbox)
         self.ui.note_filters_table.setCellWidget(row, 3, morphemizer_cbox)
-        self.ui.note_filters_table.setCellWidget(row, 4, read_checkbox)
-        self.ui.note_filters_table.setCellWidget(row, 5, modify_checkbox)
+        self.ui.note_filters_table.setCellWidget(row, 4, morph_priority_cbox)
+        self.ui.note_filters_table.setCellWidget(row, 5, read_checkbox)
+        self.ui.note_filters_table.setCellWidget(row, 6, modify_checkbox)
 
     def _setup_extra_fields_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
@@ -324,26 +336,10 @@ class SettingsDialog(QDialog):
         self.ui.recalc_interval_known_input.setValue(
             self.config.recalc_interval_for_known
         )
-        self.ui.recalc_prioritize_collection_input.setChecked(
-            self.config.recalc_prioritize_collection
-        )
-        self.ui.recalc_prioritize_frequency_input.setChecked(
-            self.config.recalc_prioritize_frequency_list
-        )
         self.ui.recalc_on_sync_input.setChecked(self.config.recalc_on_sync)
-        self._populate_frequency_lists()
 
-    def _populate_frequency_lists(self) -> None:
-        assert mw is not None
-        input_dir = os.path.join(mw.pm.profileFolder(), "frequency-files")
-
-        frequency_files = Path(input_dir).glob("*.csv")
-        i = 0
-        for file in frequency_files:
-            if i == 0:
-                self.ui.frequency_selector.clear()
-            i += 1
-            self.ui.frequency_selector.addItem(file.name)
+    #     self._populate_frequency_lists()
+    #
 
     def restore_recalc_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -356,9 +352,6 @@ class SettingsDialog(QDialog):
 
         self.ui.recalc_interval_known_input.setValue(
             self._default_config.recalc_interval_for_known
-        )
-        self.ui.recalc_prioritize_collection_input.setChecked(
-            self._default_config.recalc_prioritize_collection
         )
         self.ui.recalc_on_sync_input.setChecked(self._default_config.recalc_on_sync)
 
@@ -373,11 +366,11 @@ class SettingsDialog(QDialog):
             self.config.skip_show_num_of_skipped_cards
         )
 
-    def _use_custom_frequency_list(self) -> bool:
-        return (
-            self.ui.recalc_prioritize_frequency_input.isChecked()
-            and self.ui.frequency_selector.currentText() != "Frequency file not found"
-        )
+    # def _use_custom_frequency_list(self) -> bool:
+    #     return (
+    #         self.ui.recalc_prioritize_frequency_input.isChecked()
+    #         and self.ui.frequency_selector.currentText() != "Frequency file not found"
+    #     )
 
     def restore_skip_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -459,8 +452,8 @@ class SettingsDialog(QDialog):
             "shortcut_learn_now": self.ui.shortcut_learn_now_input.keySequence().toString(),
             "shortcut_view_morphemes": self.ui.shortcut_view_morphs_input.keySequence().toString(),
             "recalc_interval_for_known": self.ui.recalc_interval_known_input.value(),
-            "recalc_prioritize_collection": not self._use_custom_frequency_list(),
-            "recalc_prioritize_frequency_list": self._use_custom_frequency_list(),
+            # "recalc_prioritize_collection": not self._use_custom_frequency_list(),
+            # "recalc_prioritize_frequency_list": self._use_custom_frequency_list(),
             "recalc_on_sync": self.ui.recalc_on_sync_input.isChecked(),
             "parse_ignore_bracket_contents": self.ui.parse_ignore_bracket_contents_input.isChecked(),
             "parse_ignore_round_bracket_contents": self.ui.parse_ignore_round_bracket_contents_input.isChecked(),
@@ -471,7 +464,6 @@ class SettingsDialog(QDialog):
             "skip_only_known_morphs_cards": self.ui.skip_only_known_morphs_cards_input.isChecked(),
             "skip_unknown_morph_seen_today_cards": self.ui.skip_unknown_morph_seen_today_cards_input.isChecked(),
             "skip_show_num_of_skipped_cards": self.ui.skip_show_num_of_skipped_cards_input.isChecked(),
-            "frequency_list": self.ui.frequency_selector.currentText(),
         }
 
         filters = []
@@ -494,11 +486,14 @@ class SettingsDialog(QDialog):
             morphemizer_widget: QComboBox = _get_cbox_widget(
                 self.ui.note_filters_table.cellWidget(row, 3)
             )
-            read_widget: QCheckBox = _get_checkbox_widget(
+            morph_priority_widget: QComboBox = _get_cbox_widget(
                 self.ui.note_filters_table.cellWidget(row, 4)
             )
-            modify_widget: QCheckBox = _get_checkbox_widget(
+            read_widget: QCheckBox = _get_checkbox_widget(
                 self.ui.note_filters_table.cellWidget(row, 5)
+            )
+            modify_widget: QCheckBox = _get_checkbox_widget(
+                self.ui.note_filters_table.cellWidget(row, 6)
             )
             unknowns_widget: QComboBox = _get_cbox_widget(
                 self.ui.extra_fields_table.cellWidget(row, 1)
@@ -522,6 +517,10 @@ class SettingsDialog(QDialog):
                 "morphemizer_name": self._morphemizers[
                     morphemizer_widget.currentIndex()
                 ].get_name(),
+                "morph_priority": morph_priority_widget.itemText(
+                    morph_priority_widget.currentIndex()
+                ),
+                "morph_priority_index": morph_priority_widget.currentIndex(),
                 "read": read_widget.isChecked(),
                 "modify": modify_widget.isChecked(),
                 "unknowns_field": unknowns_widget.itemText(
@@ -602,3 +601,10 @@ def _get_cbox_widget(widget: Optional[QWidget]) -> QComboBox:
 def _get_checkbox_widget(widget: Optional[QWidget]) -> QCheckBox:
     assert isinstance(widget, QCheckBox)
     return widget
+
+
+def _get_frequency_files() -> list[str]:
+    assert mw is not None
+    path_generator = Path(mw.pm.profileFolder(), "frequency-files").glob("*.csv")
+    frequency_files = [file.name for file in path_generator if file.is_file()]
+    return frequency_files

@@ -8,3 +8,10 @@ class CancelledOperationException(Exception):
 
 class EmptyFileSelectionException(Exception):
     """No file(s) selected"""
+
+
+class FrequencyFileNotFoundException(Exception):
+    """Selected frequency files not found"""
+
+    def __init__(self, path: str):
+        self.path = path

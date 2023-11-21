@@ -1,4 +1,5 @@
 import csv
+import functools
 import os
 import re
 import time
@@ -26,7 +27,11 @@ from .config import (
     get_modify_enabled_filters,
     get_read_enabled_filters,
 )
-from .exceptions import CancelledOperationException, DefaultSettingsException
+from .exceptions import (
+    CancelledOperationException,
+    DefaultSettingsException,
+    FrequencyFileNotFoundException,
+)
 from .morph_utils import get_morphemes
 from .morpheme import Morpheme, SimplifiedMorph
 from .morphemizer import get_morphemizer_by_name
@@ -249,22 +254,22 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
     assert mw.progress is not None
 
     am_db = AnkiMorphsDB()
-
     modify_config_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
-
-    morph_priority: dict[str, int] = get_morph_priority(am_db, am_config)
     card_morph_map_cache: dict[int, list[SimplifiedMorph]] = get_card_morph_map_cache(
         am_db
     )
-
     original_due: dict[int, int] = {}
     handled_cards: dict[int, None] = {}  # we only care about the key lookup, not values
     modified_cards: list[Card] = []
     modified_notes: list[Note] = []
 
+    # clear the morph collection frequency cache between recalcs
+    get_morph_collection_priority.cache_clear()
+
     for config_filter in modify_config_filters:
         assert config_filter.note_type_id is not None
 
+        morph_priority: dict[str, int] = get_morph_priority(am_db, config_filter)
         cards_data_dict: dict[int, AnkiMorphsCardData] = get_am_cards_data_dict(
             am_db, config_filter.note_type_id
         )
@@ -401,20 +406,19 @@ def get_card_morph_map_cache(am_db: AnkiMorphsDB) -> dict[int, list[SimplifiedMo
 
 
 def get_morph_priority(
-    am_db: AnkiMorphsDB, am_config: AnkiMorphsConfig
+    am_db: AnkiMorphsDB,
+    am_config_filter: AnkiMorphsConfigFilter,
 ) -> dict[str, int]:
-    morph_priority: dict[str, int] = {}
-
-    if am_config.recalc_prioritize_collection:
-        print("prioritizing collection")
+    if am_config_filter.morph_priority_index == 0:
         morph_priority = get_morph_collection_priority(am_db)
-    if am_config.recalc_prioritize_frequency_list:
-        print("prioritizing frequency file")
-        morph_priority = get_morph_frequency_file_priority(am_config)
-
+    else:
+        morph_priority = get_morph_frequency_file_priority(
+            am_config_filter.morph_priority
+        )
     return morph_priority
 
 
+@functools.cache
 def get_morph_collection_priority(am_db: AnkiMorphsDB) -> dict[str, int]:
     # Sorting the morphs (ORDER BY) is crucial to avoid bugs
     morph_priority = am_db.con.execute(
@@ -438,21 +442,22 @@ def get_morph_collection_priority(am_db: AnkiMorphsDB) -> dict[str, int]:
     return card_morph_map_cache_sorted
 
 
-def get_morph_frequency_file_priority(am_config: AnkiMorphsConfig) -> dict[str, int]:
+def get_morph_frequency_file_priority(frequency_file_name: str) -> dict[str, int]:
     assert mw is not None
-    frequency_list_path = os.path.join(
-        mw.pm.profileFolder(), "frequency-files", am_config.frequency_list
+
+    card_morph_map_cache_sorted: dict[str, int] = {}
+    frequency_file_path = os.path.join(
+        mw.pm.profileFolder(), "frequency-files", frequency_file_name
     )
-    with open(frequency_list_path, mode="r+", encoding="utf-8") as csvfile:
-        print(csvfile)
-        morph_reader = csv.reader(csvfile, delimiter=",")
-        i = 0
-        card_morph_map_cache_sorted: dict[str, int] = {}
-        for row in morph_reader:
-            if i != 0:
+    try:
+        with open(frequency_file_path, mode="r+", encoding="utf-8") as csvfile:
+            morph_reader = csv.reader(csvfile, delimiter=",")
+            next(morph_reader, None)  # skip the headers
+            for index, row in enumerate(morph_reader):
                 key = row[0] + row[1]
-                card_morph_map_cache_sorted.update({key: i})
-            i += 1
+                card_morph_map_cache_sorted[key] = index
+    except FileNotFoundError as error:
+        raise FrequencyFileNotFoundException(frequency_file_path) from error
     return card_morph_map_cache_sorted
 
 
@@ -522,14 +527,15 @@ def get_card_difficulty_and_unknowns_and_learning_status(
             unknown_morphs.append(morph.inflected)
         elif morph.highest_learning_interval <= am_config.recalc_interval_for_known:
             has_learning_morph = True
-        # Heavily penalizes if a card is not frequency.csv
+
         if morph.norm_and_inflected not in morph_priority:
-            difficulty = morph_unknown_penalty
+            # Heavily penalizes if a morph is not in frequency file
+            difficulty = morph_unknown_penalty - 1
         else:
             difficulty += morph_priority[morph.norm_and_inflected]
 
     if difficulty >= morph_unknown_penalty:
-        #  cap morph priority penalties as described in #(2.2)
+        # Cap morph priority penalties as described in #(2.2)
         difficulty = morph_unknown_penalty - 1
 
     difficulty += len(unknown_morphs) * morph_unknown_penalty
@@ -689,6 +695,7 @@ def on_failure(
         Exception,
         DefaultSettingsException,
         CancelledOperationException,
+        FrequencyFileNotFoundException,
     ]
 ) -> None:
     # This function runs on the main thread.
@@ -696,16 +703,22 @@ def on_failure(
     assert mw.progress is not None
     mw.progress.finish()
 
+    if isinstance(error, CancelledOperationException):
+        tooltip("Cancelled Recalc")
+        return
+
     if isinstance(error, DefaultSettingsException):
         title = "AnkiMorphs Error"
         text = "Save settings before using Recalc!"
-        critical_box = QMessageBox(mw)
-        critical_box.setWindowTitle(title)
-        critical_box.setIcon(QMessageBox.Icon.Critical)
-        critical_box.setStandardButtons(QMessageBox.StandardButton.Ok)
-        critical_box.setText(text)
-        critical_box.exec()
-    elif isinstance(error, CancelledOperationException):
-        tooltip("Cancelled Recalc")
+    elif isinstance(error, FrequencyFileNotFoundException):
+        title = "AnkiMorphs Error"
+        text = f"Frequency file: {error.path} not found!"
     else:
         raise error
+
+    critical_box = QMessageBox(mw)
+    critical_box.setWindowTitle(title)
+    critical_box.setIcon(QMessageBox.Icon.Critical)
+    critical_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+    critical_box.setText(text)
+    critical_box.exec()
