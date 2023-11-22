@@ -6,7 +6,7 @@ The Frequency File Generator creates a csv file (comma delimited) containing the
 morphs are placed in descending order based on frequency; the most frequent morph is on line 2, the 2nd most frequent
 is on line 3, etc.
 
-![csv-file.png](../../img/csv-file.png)
+![frequency-csv.png](../../img/frequency-csv.png)
 
 ### Morph Collision
 
@@ -18,7 +18,7 @@ Base : Inflection
 或る    ある
 ```
 
-To prevent misinterpretation of the inflected morphs we also store the base.
+To prevent misinterpretation of the inflected morphs we also store the bases.
 
 ### Select Input
 
@@ -45,16 +45,18 @@ english_texts/
 If you were to select the `books` folder and you checked the .txt file format, then the frequency file analyzer would
 only use the `The Wise Man's Fear.txt` file.
 
-If you were to select the folder `english_texts` and you checked all the file format options, then the frequency file analyzer would
-use the files:
+If you were to select the folder `english_texts` and you checked all the file format options, then the frequency file
+analyzer would use the files:
+
 - `The Wise Man's Fear.txt`
 - `episode_1.srt`
 - `The_Fellowship_of_the_Ring.vtt`
 
 ### Select Output
 
-The output file is automatically set to be `[anki profile folder]/frequency-files/frequency.csv`. You can set it to be
-what ever you want.
+The output file is automatically set to
+be [[anki profile folder](../glossary.md#profile-folder)]`/frequency-files/frequency.csv`. You can name it whatever you
+want, e.g. `jp-freq.csv`, `chinese_hieroglyphs_frequencies.csv`.
 
 ### Minimum Occurrence
 

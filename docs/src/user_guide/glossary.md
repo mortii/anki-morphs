@@ -32,14 +32,14 @@ have already made.
 
 [Read more about sub2srs here](https://learnanylanguage.fandom.com/wiki/Subs2srs)
 
-### Databases
+### Profile folder
 
-AnkiMorphs creates a local sqlite database called 'ankimorphs.db' stored in your Anki profile folder.
+AnkiMorphs places `ankimorphs.db`, `names.txt`, and the `frequency-files` folder here.
 
-You can find the folder here:
+These are the paths for the respective operating systems:
 
-* Windows: `C:\Users\[user]\AppData\Roaming\Anki2\[profile_name]\dbs.`
-* Mac: `/Users/[user]/Library/Application Support/Anki2/[profile_name]/dbs`
-* Linux: `/home/[user]/.local/share/Anki2/[profile_name]/dbs`
+* Windows: `C:\Users\[user]\AppData\Roaming\Anki2\[profile_name]`
+* Mac: `/Users/[user]/Library/Application Support/Anki2/[profile_name]`
+* Linux: `/home/[user]/.local/share/Anki2/[profile_name]`
 
 

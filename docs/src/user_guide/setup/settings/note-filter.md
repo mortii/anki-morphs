@@ -3,8 +3,10 @@
 ![settings-note-filter.png](../../../img/settings-note-filter.png)
 
 AnkiMorphs only analyzes and sorts cards that matches at least one "note filter"; if you don't specify any note filters
-then AnkiMorphs
-won't do anything, so this is a necessary step.
+then AnkiMorphs won't do anything, so this is a necessary step. This can seem overly complicated and overwhelming, but
+hopefully things will make sense after reading to the end of this page. This is really the heart of the add-on, and it
+has some powerful options (notably [tags](note-filter.md#tags)), so having a good understanding of note filters work
+might significantly improve how much you benefit from AnkiMorphs.
 
 Each note filter contains:
 
@@ -12,6 +14,7 @@ Each note filter contains:
 * [Tags](note-filter.md#tags) (optional)
 * [Field](note-filter.md#field)
 * [Morphemizer](note-filter.md#morphemizer)
+* [Morph Priority](note-filter.md#morph-priority)
 * [Read & Modify](note-filter.md#read--modify) (optional)
 
 ## Note Type
@@ -86,11 +89,22 @@ This is the field on the card AnkiMorphs reads and analyzes, which is then used 
 2. Find the note type in the left sidebar
 3. Find the field you care about
 
-In my case the field I'm interested in is "Japanese"
+In my case the field I'm interested in is `Japanese`
 
 ## Morphemizer
 
 This is the [parsing dictionary](../../installation/parsing-dictionary.md) AnkiMorphs uses to find morphs.
+
+## Morph Priority
+
+The calculated difficulty of the card, and as a result, the sorting of the card, depends on
+the [priority](../prioritizing.md) you give the
+morphs. You can either set the priorities to be `Collection frequency` (how often the morphs occur in your card
+collection), or you could use a [custom .csv file](../prioritizing.md#frequencycsv) that specifies the priorities of the
+morphs.
+
+AnkiMorphs automatically finds .csv files placed
+in [[anki profile folder](../../glossary.md#profile-folder)]`/frequency-files/`.
 
 ## Read & Modify
 
