@@ -445,7 +445,7 @@ def get_morph_collection_priority(am_db: AnkiMorphsDB) -> dict[str, int]:
 def get_morph_frequency_file_priority(frequency_file_name: str) -> dict[str, int]:
     assert mw is not None
 
-    card_morph_map_cache_sorted: dict[str, int] = {}
+    morph_priority: dict[str, int] = {}
     frequency_file_path = os.path.join(
         mw.pm.profileFolder(), "frequency-files", frequency_file_name
     )
@@ -454,11 +454,15 @@ def get_morph_frequency_file_priority(frequency_file_name: str) -> dict[str, int
             morph_reader = csv.reader(csvfile, delimiter=",")
             next(morph_reader, None)  # skip the headers
             for index, row in enumerate(morph_reader):
+                if index > 50000:
+                    # the difficulty algorithm ignores values > 50K
+                    # so any rows after this will be ignored anyway
+                    break
                 key = row[0] + row[1]
-                card_morph_map_cache_sorted[key] = index
+                morph_priority[key] = index
     except FileNotFoundError as error:
         raise FrequencyFileNotFoundException(frequency_file_path) from error
-    return card_morph_map_cache_sorted
+    return morph_priority
 
 
 def get_am_cards_data_dict(
