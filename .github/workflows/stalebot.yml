@@ -7,6 +7,10 @@ permissions:
 on:
   schedule:
     - cron: '30 1 * * *'
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "Debugging dry run"
 
 jobs:
   stale:
