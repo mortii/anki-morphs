@@ -60,9 +60,9 @@ def recalc() -> None:
     operation = QueryOp(
         parent=mw,
         op=recalc_background_op,
-        success=on_success,
+        success=_on_success,
     )
-    operation.failure(on_failure)
+    operation.failure(_on_failure)
     operation.with_progress().run_in_background()
 
 
@@ -678,7 +678,7 @@ def get_end_of_queue(modified_cards: list[Card]) -> int:
     return highest_due + 1
 
 
-def on_success(result: Any) -> None:
+def _on_success(result: Any) -> None:
     # This function runs on the main thread.
     del result  # unused
     assert mw is not None
@@ -694,7 +694,7 @@ def on_success(result: Any) -> None:
         start_time = None
 
 
-def on_failure(
+def _on_failure(
     error: Union[
         Exception,
         DefaultSettingsException,

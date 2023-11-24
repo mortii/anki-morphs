@@ -1,10 +1,11 @@
 import os
 import sqlite3
 from collections.abc import Sequence
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
-from anki.collection import SearchNode
+from anki.collection import Collection, SearchNode
 from aqt import mw
+from aqt.operations import QueryOp
 
 from .config import AnkiMorphsConfig
 
@@ -178,27 +179,6 @@ class AnkiMorphsDB:
 
         return card_morphs
 
-    def update_seen_unknown_morphs(self) -> None:
-        cards_studied_today: Sequence[int] = get_new_cards_seen_today()
-
-        where_query_string = "WHERE" + "".join(
-            [f" card_id = {card_id} OR" for card_id in cards_studied_today]
-        )
-        where_query_string = where_query_string[:-3]  # removes the last " OR"
-
-        self.drop_seen_morphs_table()
-        self.create_seen_morph_table()
-
-        with self.con:
-            self.con.execute(
-                """
-                    INSERT OR IGNORE INTO Seen_Morphs (norm, inflected)
-                    SELECT morph_norm, morph_inflected
-                    FROM Card_Morph_Map
-                    """
-                + where_query_string
-            )
-
     def update_seen_unknown_morph_single_card(self, card_id: int) -> None:
         with self.con:
             self.con.execute(
@@ -307,32 +287,84 @@ class AnkiMorphsDB:
         with am_db.con:
             am_db.con.execute("DROP TABLE IF EXISTS Seen_Morphs;")
 
+    @staticmethod
+    def update_seen_morphs_today() -> None:
+        # the duration of this operation can be long depending
+        # on how many cards have been reviewed today and the
+        # quality of the user hardware. To prevent long freezes
+        # with no feedback we run this on a background thread.
+        assert mw is not None
 
-def get_new_cards_seen_today() -> Sequence[int]:
-    # SearchNode handles escaping characters for us (e.g. 'am_known' -> 'am\_known')
-    # it is also more robust to api changes than hardcoded strings.
-    # An example of the resulting total_search_string is:
-    #   "(introduced:1 note:ankimorphs\_sub2srs OR introduced:1 note:Basic) OR is:buried tag:am-known"
+        mw.progress.start(label="Updating seen morphs...")
+        operation = QueryOp(
+            parent=mw,
+            op=AnkiMorphsDB.update_seen_morphs_today_background,
+            success=_on_success,
+        )
+        operation.with_progress().run_in_background()
 
-    assert mw is not None
+    @staticmethod
+    def update_seen_morphs_today_background(collection: Collection) -> None:
+        # sqlite can only use a db instance in the same thread it was created
+        # on, that is why this function is static.
+        del collection  # unused
+        assert mw is not None
 
-    am_config = AnkiMorphsConfig()
+        am_db = AnkiMorphsDB()
+        cards_studied_today: Sequence[int] = AnkiMorphsDB.get_new_cards_seen_today()
 
-    total_search_string = "("
-    for _filter in am_config.filters:
-        if _filter.read:
-            search_string = mw.col.build_search_string(
-                SearchNode(introduced_in_days=1), SearchNode(note=_filter.note_type)
+        where_query_string = "WHERE" + "".join(
+            [f" card_id = {card_id} OR" for card_id in cards_studied_today]
+        )
+        where_query_string = where_query_string[:-3]  # removes the last " OR"
+
+        am_db.drop_seen_morphs_table()
+        am_db.create_seen_morph_table()
+
+        with am_db.con:
+            am_db.con.execute(
+                """
+                    INSERT OR IGNORE INTO Seen_Morphs (norm, inflected)
+                    SELECT morph_norm, morph_inflected
+                    FROM Card_Morph_Map
+                    """
+                + where_query_string
             )
-            total_search_string += search_string + " OR "
+        am_db.con.close()
 
-    known_and_skipped_search_string = mw.col.build_search_string(
-        SearchNode(card_state=SearchNode.CARD_STATE_BURIED),
-        SearchNode(tag=am_config.tag_known),
-    )
+    @staticmethod
+    def get_new_cards_seen_today() -> Sequence[int]:
+        # SearchNode handles escaping characters for us (e.g. 'am_known' -> 'am\_known')
+        # it is also more robust to api changes than hardcoded strings.
+        # An example of the resulting total_search_string is:
+        #   "(introduced:1 note:ankimorphs\_sub2srs OR introduced:1 note:Basic) OR is:buried tag:am-known"
+        assert mw is not None
 
-    total_search_string = total_search_string[:-4]  # remove last " OR "
-    total_search_string += ") OR " + known_and_skipped_search_string
+        am_config = AnkiMorphsConfig()
 
-    known_and_skipped_cards: Sequence[int] = mw.col.find_cards(total_search_string)
-    return known_and_skipped_cards
+        total_search_string = "("
+        for _filter in am_config.filters:
+            if _filter.read:
+                search_string = mw.col.build_search_string(
+                    SearchNode(introduced_in_days=1), SearchNode(note=_filter.note_type)
+                )
+                total_search_string += search_string + " OR "
+
+        known_and_skipped_search_string = mw.col.build_search_string(
+            SearchNode(card_state=SearchNode.CARD_STATE_BURIED),
+            SearchNode(tag=am_config.tag_known),
+        )
+
+        total_search_string = total_search_string[:-4]  # remove last " OR "
+        total_search_string += ") OR " + known_and_skipped_search_string
+
+        known_and_skipped_cards: Sequence[int] = mw.col.find_cards(total_search_string)
+        return known_and_skipped_cards
+
+
+def _on_success(result: Any) -> None:
+    # This function runs on the main thread.
+    del result  # unused
+    assert mw is not None
+    assert mw.progress is not None
+    mw.progress.finish()

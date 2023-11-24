@@ -164,7 +164,7 @@ def update_seen_morphs(info: UndoActionsInfo) -> None:
 
         if info.can_redo:
             # 'undo' occurred, recompute all seen_morphs
-            am_db.update_seen_unknown_morphs()
+            AnkiMorphsDB.update_seen_morphs_today()
         elif undo_status.undo == "Answer Card":
             # 'Answer Card' occurred, insert its morphs into seen table
             if mw.reviewer.card is not None:
@@ -199,7 +199,7 @@ def init_db() -> None:
     am_db = AnkiMorphsDB()
     am_db.create_all_tables()
     if has_active_note_filter:
-        am_db.update_seen_unknown_morphs()
+        AnkiMorphsDB.update_seen_morphs_today()
     am_db.con.close()
 
     db_initialized = True
