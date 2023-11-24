@@ -2,7 +2,10 @@ from .ankimorphs_db import AnkiMorphsDB
 
 
 class MorphToolbarStats:
-    # TODO: adjustable learning interval value?
+    # TODO: have a settings option to
+    #  see the true 'known' morphs
+    #  instead of seen morphs like
+    #  it is now?
     def __init__(self) -> None:
         self.unique_morphs = "U: ?"
         self.all_morphs = "A: ?"
@@ -12,7 +15,7 @@ class MorphToolbarStats:
         try:
             am_db = AnkiMorphsDB()
         except TypeError:
-            # The toolbar initiates before the profile
+            # The toolbar initiates before the profile,
             # when this happens the path to the db can't
             # be found, and we get a type error
             return
@@ -23,7 +26,7 @@ class MorphToolbarStats:
             """
             SELECT COUNT(*)
             FROM Morphs
-            WHERE highest_learning_interval > 1 AND is_base
+            WHERE highest_learning_interval > 0 AND is_base
             """
         ).fetchone()[0]
 
@@ -31,7 +34,7 @@ class MorphToolbarStats:
             """
             SELECT COUNT(*)
             FROM Morphs
-            WHERE highest_learning_interval > 1
+            WHERE highest_learning_interval > 0
             """
         ).fetchone()[0]
         am_db.con.close()

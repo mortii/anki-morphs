@@ -55,7 +55,7 @@ class SettingsDialog(QDialog):
         self.ui.tabWidget.currentChanged.connect(self.tab_change)
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.6.0-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.6.1-alpha")
 
     def _setup_note_filters_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
