@@ -2,10 +2,7 @@
 
 ![recalc-tab.png](../../../img/recalc-tab.png)
 
-Here you can adjust the how [Recalc](../../usage/recalc.md) process.
-
-### Interval for known morphs
-This adjusts [highlighting](../highlighting.md)
-
-### Prioritizing
-This adjusts [Priority](../prioritizing.md)
+* **Recalc on sync**:  
+  Recalc automatically runs before Anki syncs your collection
+* **Minimum interval for known morphs**:  
+  This is used in [highlighting](../../setup/highlighting.md).

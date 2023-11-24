@@ -38,7 +38,11 @@ know, and I'll add it to the lists below.
 <details>
   <summary>Japanese Frequency Lists</summary>
 
-> *
+
+> * <a download href="../../frequency_lists/japanese_frequency_lists/nanako-25k/jp_frequency.csv">nanako 25k</a>  
+    Created from [NanakoRaws-Anime-Japanese-subtitles](https://github.com/kienkzz/NanakoRaws-Anime-Japanese-subtitles)
+
+
 </details>
 
 <details>
