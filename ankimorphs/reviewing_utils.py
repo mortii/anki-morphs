@@ -90,7 +90,6 @@ def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
         self._v3 = None
 
         self._get_next_v3_card()
-
         self._previous_card_info.set_card(self.previous_card)
         self._card_info.set_card(self.card)
 
@@ -208,7 +207,7 @@ def set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> N
 
     # update seen morphs table with this card's morphs
     am_db = AnkiMorphsDB()
-    am_db.update_seen_unknown_morph_single_card(self.card.id)
+    am_db.update_seen_morphs_today_single_card(self.card.id)
     am_db.con.close()
 
     if am_config.skip_show_num_of_skipped_cards:
@@ -292,7 +291,7 @@ class SkippedCards:
     ) -> None:
         self.did_skip_card = False
 
-        morphs_already_seen_morphs_today = am_db.get_all_morphs_seen_today()
+        morphs_already_seen_morphs_today: set[str] = am_db.get_all_morphs_seen_today()
 
         card_unknown_morphs: set[str] = {
             morph_raw[0] + morph_raw[1] for morph_raw in card_unknown_morphs_raw

@@ -17,3 +17,8 @@
   This is a weird bug, but I suspect it is due to some guards Anki has about not being able to undo something until the
   user has made a change manually first ('set known and skip' only makes changes programmatically).
 
+### Redo is not supported
+
+Redoing, i.e. undoing an undo (Ctrl+Shift+Z), is a nightmare to handle with the current Anki API. Since it is a rarely
+used feature it is not worth the required time and effort to make sure it always works. Redo _might_ work just fine, but
+it also might not. Use it at your own risk.

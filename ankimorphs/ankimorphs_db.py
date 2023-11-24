@@ -179,7 +179,7 @@ class AnkiMorphsDB:
 
         return card_morphs
 
-    def update_seen_unknown_morph_single_card(self, card_id: int) -> None:
+    def update_seen_morphs_today_single_card(self, card_id: int) -> None:
         with self.con:
             self.con.execute(
                 """
@@ -288,7 +288,7 @@ class AnkiMorphsDB:
             am_db.con.execute("DROP TABLE IF EXISTS Seen_Morphs;")
 
     @staticmethod
-    def update_seen_morphs_today() -> None:
+    def rebuild_seen_morphs_today() -> None:
         # the duration of this operation can be long depending
         # on how many cards have been reviewed today and the
         # quality of the user hardware. To prevent long freezes
@@ -298,13 +298,13 @@ class AnkiMorphsDB:
         mw.progress.start(label="Updating seen morphs...")
         operation = QueryOp(
             parent=mw,
-            op=AnkiMorphsDB.update_seen_morphs_today_background,
+            op=AnkiMorphsDB.rebuild_seen_morphs_today_background,
             success=_on_success,
         )
         operation.with_progress().run_in_background()
 
     @staticmethod
-    def update_seen_morphs_today_background(collection: Collection) -> None:
+    def rebuild_seen_morphs_today_background(collection: Collection) -> None:
         # sqlite can only use a db instance in the same thread it was created
         # on, that is why this function is static.
         del collection  # unused

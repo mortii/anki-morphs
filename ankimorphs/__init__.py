@@ -13,7 +13,10 @@
 ################################################################
 
 from functools import partial
+from typing import Literal
 
+from anki.cards import Card
+from anki.collection import OpChangesAfterUndo
 from aqt import gui_hooks, mw
 from aqt.browser.browser import Browser
 from aqt.qt import (  # pylint:disable=no-name-in-module
@@ -25,7 +28,6 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.reviewer import Reviewer
 from aqt.toolbar import Toolbar
-from aqt.undo import UndoActionsInfo
 from aqt.utils import tooltip
 from aqt.webview import AnkiWebView
 
@@ -47,8 +49,6 @@ BROWSE_MENU: str = "am_browse_menu"
 CONTEXT_MENU: str = "am_context_menu"
 DEV_MODE = False
 
-last_undo_step_handled: int = -1
-db_initialized: bool = False
 startup_sync: bool = True
 
 
@@ -58,17 +58,19 @@ def main() -> None:
 
     gui_hooks.top_toolbar_did_init_links.append(init_toolbar_items)
 
-    gui_hooks.undo_state_did_change.append(update_seen_morphs)
-
     gui_hooks.profile_did_open.append(init_db)
     gui_hooks.profile_did_open.append(redraw_toolbar)
     gui_hooks.profile_did_open.append(init_tool_menu_and_actions)
     gui_hooks.profile_did_open.append(init_browser_menus_and_actions)
     gui_hooks.profile_did_open.append(replace_reviewer_functions)
 
+    gui_hooks.sync_will_start.append(recalc_on_sync)
+
     gui_hooks.webview_will_show_context_menu.append(add_name_action)
 
-    gui_hooks.sync_will_start.append(recalc_on_sync)
+    gui_hooks.reviewer_did_answer_card.append(insert_seen_morphs)
+
+    gui_hooks.state_did_undo.append(rebuild_seen_morphs)
 
     gui_hooks.profile_will_close.append(clear_seen_morphs)
 
@@ -107,88 +109,7 @@ def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
     )
 
 
-def update_seen_morphs(info: UndoActionsInfo) -> None:
-    ################################################################
-    #                      TRACKING SEEN MORPHS
-    ################################################################
-    # We need to keep track of which morphs have been seen today,
-    # which gets complicated when a user undos or redos cards.
-    # Ideally we should make as few queries and updates to dbs as
-    # possible to minimize the performance impact--a frozen UI
-    # with no feedback is a terrible user experience.
-    #
-    # When a card is answered/set known, we insert all the card's
-    # morphs into the 'Seen_Morphs'-table, if a morph is already
-    # in the table we just ignore the insert error. This makes
-    # it tricky to remove morphs from the table because we don't
-    # track if the morphs were already in the table or not. To not
-    # have to deal with this removal problem, we just drop the entire
-    # table and rebuild it with the morphs of all the studied cards.
-    # This is admittedly costly, but it only happens on 'undo' which
-    # should be a rare occurrence.
-    #
-    # REDO:
-    # Redoing, i.e. undoing an undo (Ctrl+Shift+Z), is almost
-    # impossible to distinguish from a regular forward operation,
-    # but luckily we don't have to--just treat all forward operation
-    # the same.
-    #
-    # HOOK CHOICE:
-    # 'gui_hooks.undo_state_did_change' is used because it is called
-    # on all undo and redo operation, and it runs before am_next_card().
-    # 'gui_hooks.state_did_undo' only runs on undo.
-    # 'gui_hooks.operation_did_execute' runs after am_next_card().
-    #
-    # The downside of 'gui_hooks.undo_state_did_change' is that there
-    # is a bug/unideal implementation in Anki that makes it run twice
-    # in a row for every operation. This is the culprit:
-    #   venv/lib/python3.9/site-packages/aqt/operations/__init__.py:
-    #      150 mw.update_undo_actions()
-    #      151 mw.autosave() -> self.update_undo_actions()
-    # Because of this we need to have a global variable that checks
-    # if the 'last_step' has already been handled or not.
-    ################################################################
-
-    assert mw is not None
-    global last_undo_step_handled
-
-    if not db_initialized:
-        # gui_hooks.undo_state_did_change runs before profile is loaded
-        return
-
-    undo_status = mw.col.undo_status()
-
-    if last_undo_step_handled != undo_status.last_step:
-        last_undo_step_handled = undo_status.last_step
-        am_db = AnkiMorphsDB()
-
-        if info.can_redo:
-            # 'undo' occurred, recompute all seen_morphs
-            AnkiMorphsDB.update_seen_morphs_today()
-        elif undo_status.undo == "Answer Card":
-            # 'Answer Card' occurred, insert its morphs into seen table
-            if mw.reviewer.card is not None:
-                am_db.update_seen_unknown_morph_single_card(mw.reviewer.card.id)
-        elif undo_status.undo == reviewing_utils.SET_KNOWN_AND_SKIP_UNDO:
-            # this only runs on 'set known and skip'-redo for some reason,
-            # not after every 'set known and skip'-operation. This
-            # is most likely because it is a custom undo entry.
-            # This is not a big deal, we can just update seen morphs
-            # directly in the 'set_card_as_known_and_skip' function.
-            if mw.reviewer.card is not None:
-                am_db.update_seen_unknown_morph_single_card(mw.reviewer.card.id)
-
-        if DEV_MODE:
-            pass
-            # print("Seen_Morphs:")
-            # am_db.print_table("Seen_Morphs")
-
-        am_db.con.close()
-
-
 def init_db() -> None:
-    global db_initialized
-
     read_config_filters: list[AnkiMorphsConfigFilter] = get_read_enabled_filters()
     has_active_note_filter = False
 
@@ -199,14 +120,8 @@ def init_db() -> None:
     am_db = AnkiMorphsDB()
     am_db.create_all_tables()
     if has_active_note_filter:
-        AnkiMorphsDB.update_seen_morphs_today()
+        AnkiMorphsDB.rebuild_seen_morphs_today()
     am_db.con.close()
-
-    db_initialized = True
-
-
-def clear_seen_morphs() -> None:
-    AnkiMorphsDB.drop_seen_morphs_table()
 
 
 def redraw_toolbar() -> None:
@@ -289,6 +204,19 @@ def init_browser_menus_and_actions() -> None:
     gui_hooks.browser_will_show_context_menu.append(setup_context_menu)
 
 
+def recalc_on_sync() -> None:
+    # Sync automatically happens on Anki startup, so we have
+    # to check for that before we run recalc
+    global startup_sync
+
+    if startup_sync:
+        startup_sync = False
+    else:
+        am_config = AnkiMorphsConfig()
+        if am_config.recalc_on_sync:
+            recalc.recalc()
+
+
 def replace_reviewer_functions() -> None:
     assert mw is not None
 
@@ -301,18 +229,53 @@ def replace_reviewer_functions() -> None:
     )
 
 
-def recalc_on_sync() -> None:
-    # Sync automatically happens on Anki startup, so we have
-    # to check for that before we run recalc
+def insert_seen_morphs(
+    reviewer: Reviewer, card: Card, ease: Literal[1, 2, 3, 4]
+) -> None:
+    del reviewer, ease  # unused
+    am_db = AnkiMorphsDB()
+    am_db.update_seen_morphs_today_single_card(card.id)
+    am_db.con.close()
 
-    global startup_sync
 
-    if startup_sync:
-        startup_sync = False
-    else:
-        am_config = AnkiMorphsConfig()
-        if am_config.recalc_on_sync:
-            recalc.recalc()
+def rebuild_seen_morphs(changes: OpChangesAfterUndo) -> None:
+    ################################################################
+    #                      TRACKING SEEN MORPHS
+    ################################################################
+    # We need to keep track of which morphs have been seen today,
+    # which gets complicated when a user undos or redos cards.
+    #
+    # When a card is answered/set known, we insert all the card's
+    # morphs into the 'Seen_Morphs'-table, if a morph is already
+    # in the table we just ignore the insert error. This makes
+    # it tricky to remove morphs from the table  when undo is used
+    # because we don't track if the morphs were already in the table
+    # or not. To not have to deal with this removal problem, we just
+    # drop the entire table and rebuild it with the morphs of all
+    # the studied cards. This is admittedly costly, but it only
+    # happens on 'undo' which should be a rare occurrence.
+    #
+    # REDO:
+    # Redoing, i.e. undoing an undo (Ctrl+Shift+Z), is almost
+    # impossible to distinguish from a regular forward operation.
+    # Since this is such a nightmare to deal with, and is hopefully
+    # a rare occurrence, this will just be left as unexpected behavior.
+    # Whatever bugs the user might experience at that point is not a
+    # concern.
+    ################################################################
+    del changes  # unused
+
+    AnkiMorphsDB.rebuild_seen_morphs_today()
+
+    if DEV_MODE:
+        print("Seen_Morphs:")
+        am_db = AnkiMorphsDB()
+        am_db.print_table("Seen_Morphs")
+        am_db.con.close()
+
+
+def clear_seen_morphs() -> None:
+    AnkiMorphsDB.drop_seen_morphs_table()
 
 
 def create_am_tool_menu() -> QMenu:
