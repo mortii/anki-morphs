@@ -365,6 +365,8 @@ def add_name_action(web_view: AnkiWebView, menu: QMenu) -> None:
         return
     action = QAction("Mark as name", menu)
     action.triggered.connect(lambda: name_file_utils.add_name_to_file(selected_text))
+    assert mw is not None
+    action.triggered.connect(mw.reviewer.bury_current_card)
     menu.addAction(action)
 
 
