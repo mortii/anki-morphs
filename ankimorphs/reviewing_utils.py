@@ -1,9 +1,11 @@
-from typing import Callable, Optional, Union
+from functools import partial
+from typing import Any, Callable, Optional, Union
 
-from anki.collection import UndoStatus
+from anki.collection import Collection, UndoStatus
 from anki.consts import CARD_TYPE_NEW
 from anki.notes import Note
 from aqt import mw
+from aqt.operations import QueryOp
 from aqt.qt import QKeySequence, QMessageBox, Qt  # pylint:disable=no-name-in-module
 from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
@@ -11,6 +13,8 @@ from aqt.utils import tooltip
 from .ankimorphs_db import AnkiMorphsDB
 from .browser_utils import browse_same_morphs
 from .config import AnkiMorphsConfig, get_matching_modify_filter
+from .exceptions import CancelledOperationException, CardQueueEmptyException
+from .skipped_cards import SkippedCards
 
 SET_KNOWN_AND_SKIP_UNDO = "Set known and skip"
 ANKIMORPHS_UNDO = "AnkiMorphs custom undo"
@@ -25,65 +29,67 @@ VALID_UNDO_MERGE_TARGETS: set[str] = {  # a set has faster lookup than a list
 set_known_and_skip_undo: Optional[UndoStatus] = None
 
 
-def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
-    self: Reviewer,
-) -> None:
+def am_next_card(self: Reviewer) -> None:
     ################################################################
     #                          FREEZING
     ################################################################
-    # We cannot run this on a background thread because it will
-    # cause Anki to crash upon review completion. Anki also does
-    # not support async operations (e.g. asyncio), therefore it is
-    # unavoidable that the UI freezes if many cards are skipped.
-    # The only thing we can do to alleviate the problem is to make
-    # the algorithm more efficient.
-    ################################################################
-    ################################################################
-    #                          UNDO/REDO
-    ################################################################
-    # We are making changes (burying, tagging) BEFORE the next card
-    # is shown, that means the changes have to be merged into the
-    # previous undo entry.
-    #
-    # If the current undo status has a 'redo' value it means the
-    # user undid the previous operation and the undo stack is now
-    # 'dirty', which means we cannot merge undo entries--you get
-    # an error if you try.
-    #
-    # The new anki undo system only works on the v3 scheduler which
-    # means we can stop supporting the v2 scheduler and just display
-    # an error message if it is used.
+    # A lot of cards might be skipped, so to prevent Anki from
+    # freezing we have to run this on a background thread by using
+    # QueryOp.
     ################################################################
 
     assert mw is not None
     assert self is not None
 
     if self.mw.col.sched.version < 3:
-        show_scheduler_version_error()
+        _show_scheduler_version_error()
         self.mw.moveToState("overview")
         return
 
-    undo_status = self.mw.col.undo_status()
-
-    if undo_status.undo == SET_KNOWN_AND_SKIP_UNDO:
-        # The undo stack has been altered, so we cannot use
-        # the normal 'last_step' as a merge point, we have
-        # to use set_known_and_skip_undo last_step instead.
-        # See comment in set_card_as_known_and_skip for more info
-        assert set_known_and_skip_undo is not None
-        undo_status = set_known_and_skip_undo
-    elif undo_status.undo not in VALID_UNDO_MERGE_TARGETS:
-        # We have to create a custom undo_targets that can be merged into.
-        mw.col.add_custom_undo_entry(ANKIMORPHS_UNDO)
-        undo_status = self.mw.col.undo_status()
-
     am_config = AnkiMorphsConfig()
     skipped_cards = SkippedCards()
+
+    operation = QueryOp(
+        parent=mw,
+        op=partial(
+            _get_next_card_background,
+            self=self,
+            am_config=am_config,
+            skipped_cards=skipped_cards,
+        ),
+        success=partial(
+            _show_card, self=self, am_config=am_config, skipped_cards=skipped_cards
+        ),
+    )
+    operation.failure(_on_failure)
+    operation.with_progress().run_in_background()
+
+
+def _get_next_card_background(
+    collection: Collection,
+    self: Reviewer,
+    am_config: AnkiMorphsConfig,
+    skipped_cards: SkippedCards,
+) -> None:
+    assert mw is not None
+    del collection  # unused
+
+    undo_status = _get_valid_undo_status()
     am_db = AnkiMorphsDB()
 
     while True:
         # If a break occurs in this loop it means 'show the card'
         # If a card makes it to the end it is buried/skipped
+
+        if mw.progress.want_cancel():  # user clicked 'x'
+            raise CancelledOperationException
+
+        mw.taskman.run_on_main(
+            partial(
+                mw.progress.update,
+                label=f"Skipping {skipped_cards.total_skipped_cards} cards",
+            )
+        )
 
         self.previous_card = self.card
         self.card = None
@@ -94,8 +100,7 @@ def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
         self._card_info.set_card(self.card)
 
         if not self.card:
-            self.mw.moveToState("overview")
-            return
+            raise CardQueueEmptyException  # handled in _on_failure()
 
         if undo_status.redo != "":
             break  # The undo stack is dirty, we cannot merge undo entries.
@@ -128,6 +133,52 @@ def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
 
     am_db.con.close()
 
+
+def _get_valid_undo_status() -> UndoStatus:
+    ################################################################
+    #                          UNDO/REDO
+    ################################################################
+    # We are making changes (burying, tagging) BEFORE the next card
+    # is shown, that means the changes have to be merged into the
+    # previous undo entry.
+    #
+    # If the current undo status has a 'redo' value it means the
+    # user undid the previous operation and the undo stack is now
+    # 'dirty', which means we cannot merge undo entries--you get
+    # an error if you try.
+    #
+    # The new anki undo system only works on the v3 scheduler which
+    # means we can stop supporting the v2 scheduler and just display
+    # an error message if it is used.
+    ################################################################
+    assert mw is not None
+
+    undo_status = mw.col.undo_status()
+
+    if undo_status.undo == SET_KNOWN_AND_SKIP_UNDO:
+        # The undo stack has been altered, so we cannot use
+        # the normal 'last_step' as a merge point, we have
+        # to use set_known_and_skip_undo last_step instead.
+        # See comment in set_card_as_known_and_skip for more info
+        assert set_known_and_skip_undo is not None
+        undo_status = set_known_and_skip_undo
+    elif undo_status.undo not in VALID_UNDO_MERGE_TARGETS:
+        # We have to create a custom undo_targets that can be merged into.
+        mw.col.add_custom_undo_entry(ANKIMORPHS_UNDO)
+        undo_status = mw.col.undo_status()
+
+    return undo_status
+
+
+def _show_card(
+    result: Any,
+    self: Reviewer,
+    am_config: AnkiMorphsConfig,
+    skipped_cards: SkippedCards,
+) -> None:
+    # this function runs on the main thread
+    del result  # unused
+
     if self._reps is None:
         self._initWeb()
 
@@ -138,7 +189,7 @@ def am_next_card(  # pylint:disable=too-many-branches,too-many-statements
             skipped_cards.show_tooltip_of_skipped_cards()
 
 
-def set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> None:
+def _set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> None:
     ################################################################
     #                          KNOWN BUG
     ################################################################
@@ -244,13 +295,13 @@ def am_reviewer_shortcut_keys(
                     self.card.id, self.card.note(), am_config, search_unknowns=True  # type: ignore[union-attr]
                 ),
             ),
-            (key_skip.toString(), lambda: set_card_as_known_and_skip(self, am_config)),
+            (key_skip.toString(), lambda: _set_card_as_known_and_skip(self, am_config)),
         ]
     )
     return keys
 
 
-def show_scheduler_version_error() -> None:
+def _show_scheduler_version_error() -> None:
     assert mw is not None
 
     title = "AnkiMorphs Error"
@@ -268,58 +319,18 @@ def show_scheduler_version_error() -> None:
     critical_box.exec()
 
 
-class SkippedCards:
-    __slots__ = (
-        "skipped_known_cards",
-        "skipped_already_seen_morphs_cards",
-        "total_skipped_cards",
-        "did_skip_card",
-    )
+def _on_failure(
+    error: Union[Exception, CardQueueEmptyException, CancelledOperationException]
+) -> None:
+    # This function runs on the main thread.
+    assert mw is not None
+    assert mw.progress is not None
+    mw.progress.finish()
 
-    def __init__(self) -> None:
-        self.skipped_known_cards = 0
-        self.skipped_already_seen_morphs_cards = 0
-        self.total_skipped_cards = 0
-        self.did_skip_card = False
-
-    def process_skip_conditions_of_card(
-        self,
-        am_config: AnkiMorphsConfig,
-        am_db: AnkiMorphsDB,
-        note: Note,
-        card_unknown_morphs_raw: set[tuple[str, str]],
-    ) -> None:
-        self.did_skip_card = False
-
-        morphs_already_seen_morphs_today: set[str] = am_db.get_all_morphs_seen_today()
-
-        card_unknown_morphs: set[str] = {
-            morph_raw[0] + morph_raw[1] for morph_raw in card_unknown_morphs_raw
-        }
-
-        if note.has_tag("learn-now"):
-            self.did_skip_card = False
-        elif note.has_tag(am_config.tag_known):
-            if am_config.skip_only_known_morphs_cards:
-                self.skipped_known_cards += 1
-                self.did_skip_card = True
-        elif am_config.skip_unknown_morph_seen_today_cards:
-            if card_unknown_morphs.issubset(morphs_already_seen_morphs_today):
-                self.skipped_already_seen_morphs_cards += 1
-                self.did_skip_card = True
-
-        self.total_skipped_cards = (
-            self.skipped_known_cards + self.skipped_already_seen_morphs_cards
-        )
-
-    def show_tooltip_of_skipped_cards(self) -> None:
-        skipped_string = ""
-
-        if self.skipped_known_cards > 0:
-            skipped_string += f"Skipped <b>{self.skipped_known_cards}</b> stale cards"
-        if self.skipped_already_seen_morphs_cards > 0:
-            if skipped_string != "":
-                skipped_string += "<br>"
-            skipped_string += f"Skipped <b>{self.skipped_already_seen_morphs_cards}</b> cards with morphs already seen today"
-
-        tooltip(skipped_string, parent=mw)
+    if isinstance(error, CardQueueEmptyException):
+        mw.moveToState("overview")
+    elif isinstance(error, CancelledOperationException):
+        tooltip("Cancelled get_next_card")
+        mw.moveToState("overview")
+    else:
+        raise error
