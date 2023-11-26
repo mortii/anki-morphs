@@ -8,9 +8,10 @@ from aqt import mw
 from aqt.operations import QueryOp
 
 from .config import AnkiMorphsConfig
+from .name_file_utils import get_names_from_file_as_morphs
 
 
-class AnkiMorphsDB:
+class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
     # A card can have many morphs, morphs can be on many cards
     # therefore we need a many-to-many db structure:
     # Cards -> Card_Morph_Map <- Morphs
@@ -313,24 +314,30 @@ class AnkiMorphsDB:
         am_db = AnkiMorphsDB()
         cards_studied_today: Sequence[int] = AnkiMorphsDB.get_new_cards_seen_today()
 
-        where_query_string = "WHERE" + "".join(
-            [f" card_id = {card_id} OR" for card_id in cards_studied_today]
-        )
-        where_query_string = where_query_string[:-3]  # removes the last " OR"
+        where_query_string = ""
+        if len(cards_studied_today) > 0:
+            where_query_string = "WHERE" + "".join(
+                [f" card_id = {card_id} OR" for card_id in cards_studied_today]
+            )
+            where_query_string = where_query_string[:-3]  # removes the last " OR"
 
         am_db.drop_seen_morphs_table()
         am_db.create_seen_morph_table()
 
         with am_db.con:
-            am_db.con.execute(
-                """
-                    INSERT OR IGNORE INTO Seen_Morphs (norm, inflected)
-                    SELECT morph_norm, morph_inflected
-                    FROM Card_Morph_Map
+            # if no cards are studied then don't insert any morphs
+            if where_query_string != "":
+                am_db.con.execute(
                     """
-                + where_query_string
-            )
+                        INSERT OR IGNORE INTO Seen_Morphs (norm, inflected)
+                        SELECT morph_norm, morph_inflected
+                        FROM Card_Morph_Map
+                        """
+                    + where_query_string
+                )
         am_db.con.close()
+
+        am_db.insert_names_to_seen_morphs()
 
     @staticmethod
     def get_new_cards_seen_today() -> Sequence[int]:
@@ -360,6 +367,20 @@ class AnkiMorphsDB:
 
         known_and_skipped_cards: Sequence[int] = mw.col.find_cards(total_search_string)
         return known_and_skipped_cards
+
+    @staticmethod
+    def insert_names_to_seen_morphs() -> None:
+        name_morphs: list[tuple[str, str]] = get_names_from_file_as_morphs()
+        am_db = AnkiMorphsDB()
+
+        with am_db.con:
+            am_db.con.executemany(
+                """
+                    INSERT OR IGNORE INTO Seen_Morphs VALUES (?, ?)
+                    """,
+                name_morphs,
+            )
+        am_db.con.close()
 
 
 def _on_success(result: Any) -> None:

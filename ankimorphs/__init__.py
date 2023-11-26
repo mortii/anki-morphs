@@ -119,8 +119,10 @@ def init_db() -> None:
 
     am_db = AnkiMorphsDB()
     am_db.create_all_tables()
+
     if has_active_note_filter:
         AnkiMorphsDB.rebuild_seen_morphs_today()
+
     am_db.con.close()
 
 
@@ -360,12 +362,13 @@ def create_already_known_tagger_action(am_config: AnkiMorphsConfig) -> QAction:
 
 
 def add_name_action(web_view: AnkiWebView, menu: QMenu) -> None:
+    assert mw is not None
     selected_text = web_view.selectedText()
     if selected_text == "":
         return
     action = QAction("Mark as name", menu)
     action.triggered.connect(lambda: name_file_utils.add_name_to_file(selected_text))
-    assert mw is not None
+    action.triggered.connect(AnkiMorphsDB.insert_names_to_seen_morphs)
     action.triggered.connect(mw.reviewer.bury_current_card)
     menu.addAction(action)
 
@@ -409,6 +412,11 @@ def test_function() -> None:
     # morphs = get_morphemes(morphemizer, expression, am_config=AnkiMorphsConfig())
     # morph_list = [morph.inflected for morph in morphs]
     # print(f"morphs: {morph_list}")
+
+    print("Seen_Morphs:")
+    am_db = AnkiMorphsDB()
+    am_db.print_table("Seen_Morphs")
+    am_db.con.close()
 
 
 main()
