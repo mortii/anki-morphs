@@ -11,12 +11,18 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
     QDialog,
     QMainWindow,
     QMessageBox,
+    Qt,
     QTableWidgetItem,
     QWidget,
 )
 from aqt.utils import tooltip
 
-from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter, update_configs
+from .config import (
+    AnkiMorphsConfig,
+    AnkiMorphsConfigFilter,
+    FilterTypeAlias,
+    update_configs,
+)
 from .morphemizer import get_all_morphemizers
 from .ui.settings_dialog_ui import Ui_SettingsDialog
 
@@ -55,7 +61,7 @@ class SettingsDialog(QDialog):
         self.ui.tabWidget.currentChanged.connect(self.tab_change)
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.6.3-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.6.4-alpha")
 
     def _setup_note_filters_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
@@ -181,7 +187,7 @@ class SettingsDialog(QDialog):
 
         if matching_filter is not None:
             unknowns_cbox_index = _get_cbox_index(
-                fields, matching_filter.unknowns_field_
+                fields, matching_filter.unknowns_field
             )
             if unknowns_cbox_index is not None:
                 unknowns_cbox_index += 1  # to offset the added (none) item
@@ -366,12 +372,6 @@ class SettingsDialog(QDialog):
             self.config.skip_show_num_of_skipped_cards
         )
 
-    # def _use_custom_frequency_list(self) -> bool:
-    #     return (
-    #         self.ui.recalc_prioritize_frequency_input.isChecked()
-    #         and self.ui.frequency_selector.currentText() != "Frequency file not found"
-    #     )
-
     def restore_skip_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"
@@ -452,8 +452,6 @@ class SettingsDialog(QDialog):
             "shortcut_learn_now": self.ui.shortcut_learn_now_input.keySequence().toString(),
             "shortcut_view_morphemes": self.ui.shortcut_view_morphs_input.keySequence().toString(),
             "recalc_interval_for_known": self.ui.recalc_interval_known_input.value(),
-            # "recalc_prioritize_collection": not self._use_custom_frequency_list(),
-            # "recalc_prioritize_frequency_list": self._use_custom_frequency_list(),
             "recalc_on_sync": self.ui.recalc_on_sync_input.isChecked(),
             "parse_ignore_bracket_contents": self.ui.parse_ignore_bracket_contents_input.isChecked(),
             "parse_ignore_round_bracket_contents": self.ui.parse_ignore_round_bracket_contents_input.isChecked(),
@@ -466,7 +464,7 @@ class SettingsDialog(QDialog):
             "skip_show_num_of_skipped_cards": self.ui.skip_show_num_of_skipped_cards_input.isChecked(),
         }
 
-        filters = []
+        filters: list[FilterTypeAlias] = []
         rows = self.ui.note_filters_table.rowCount()
         for row in range(rows):
             note_type_cbox: QComboBox = _get_cbox_widget(
@@ -505,7 +503,7 @@ class SettingsDialog(QDialog):
                 self.ui.extra_fields_table.cellWidget(row, 3)
             )
 
-            _filter = {
+            _filter: FilterTypeAlias = {
                 "note_type": note_type_cbox.itemText(note_type_cbox.currentIndex()),
                 "note_type_id": self.models[note_type_cbox.currentIndex()].id,
                 "tags": tags,
@@ -538,9 +536,55 @@ class SettingsDialog(QDialog):
             }
             filters.append(_filter)
         new_config["filters"] = filters
+
+        if self.extra_fields_changed(filters):
+            _title = "AnkiMorphs Warning"
+            _text = (
+                "You have changed your **Extra Fields** settings.\n"
+                "This can potentially destroy your cards.\n\n"
+                "Before saving, make sure you have done the following:\n"
+                "- Read and understood the <a href='https://mortii.github.io/anki-morphs/user_guide/setup/settings/extra-fields.html'>guide</a>\n"
+                "- Created a backup of your cards.\n\n"
+                "Are you sure you want to save the settings?"
+            )
+            accepted = self.warning_dialog(
+                title=_title, text=_text, display_tooltip=False
+            )
+            if not accepted:
+                return
+
         update_configs(new_config)
         self.config = AnkiMorphsConfig()
         tooltip("Please recalc to avoid unexpected behaviour", parent=mw)
+
+    def extra_fields_changed(self, new_filters: list[FilterTypeAlias]) -> bool:
+        extra_fields: list[str] = [
+            "unknowns_field",
+            "highlighted_field",
+            "difficulty_field",
+        ]
+        extra_fields_changed = False
+
+        for _filter in new_filters:
+            for field in extra_fields:
+                if _filter[field] != "(none)":
+                    extra_fields_changed = True
+
+        if not extra_fields_changed:
+            return False
+
+        for index, old_filter in enumerate(self.config.filters):
+            if index > len(new_filters) - 1:
+                break
+
+            if new_filters[index]["unknowns_field"] != old_filter.unknowns_field:
+                return True
+            if new_filters[index]["highlighted_field"] != old_filter.highlighted_field:
+                return True
+            if new_filters[index]["difficulty_field"] != old_filter.difficulty_field:
+                return True
+
+        return False
 
     def update_fields_cbox(
         self, field_cbox: QComboBox, note_type_cbox: QComboBox
@@ -562,7 +606,9 @@ class SettingsDialog(QDialog):
         if tab_index == 1:
             self._setup_extra_fields_table(self.config.filters)
 
-    def warning_dialog(self, title: str, text: str) -> bool:
+    def warning_dialog(
+        self, title: str, text: str, display_tooltip: bool = True
+    ) -> bool:
         warning_box = QMessageBox(self)
         warning_box.setWindowTitle(title)
         warning_box.setIcon(QMessageBox.Icon.Warning)
@@ -570,9 +616,11 @@ class SettingsDialog(QDialog):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         warning_box.setText(text)
+        warning_box.setTextFormat(Qt.TextFormat.MarkdownText)
         answer = warning_box.exec()
         if answer == QMessageBox.StandardButton.Yes:
-            tooltip("Remember to save!", parent=mw)
+            if display_tooltip:
+                tooltip("Remember to save!", parent=mw)
             return True
         return False
 

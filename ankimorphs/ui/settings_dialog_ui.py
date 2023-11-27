@@ -64,6 +64,12 @@ class Ui_SettingsDialog:
         self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout()
         self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.label = QtWidgets.QLabel(parent=self.extra_fields_tab)
+        self.label.setStyleSheet("margin-bottom: 10px;")
+        self.label.setTextFormat(QtCore.Qt.TextFormat.MarkdownText)
+        self.label.setOpenExternalLinks(True)
+        self.label.setObjectName("label")
+        self.verticalLayout_5.addWidget(self.label)
         self.extra_fields_table = QtWidgets.QTableWidget(parent=self.extra_fields_tab)
         self.extra_fields_table.setObjectName("extra_fields_table")
         self.extra_fields_table.setColumnCount(4)
@@ -342,6 +348,10 @@ class Ui_SettingsDialog:
         self.delete_row_button.setText(_translate("SettingsDialog", "Delete Selected Row"))
         self.add_new_row_button.setText(_translate("SettingsDialog", "Add New Row"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.note_filters_tab), _translate("SettingsDialog", "Note Filters"))
+        self.label.setText(_translate("SettingsDialog", "**CHANGING EXTRA FIELDS CAN COMPLETELY DESTORY YOUR CARDS!**  \n"
+" Do the following before making any changes here: \n"
+" - Read the <a href=\"https://mortii.github.io/anki-morphs/user_guide/setup/settings/extra-fields.html\">guide</a>, these options probably work differently from what you expect. \n"
+" - Create a backup of your card collection."))
         item = self.extra_fields_table.horizontalHeaderItem(0)
         item.setText(_translate("SettingsDialog", "Note Type"))
         item = self.extra_fields_table.horizontalHeaderItem(1)

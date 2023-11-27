@@ -113,6 +113,25 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_5">
            <item>
+            <widget class="QLabel" name="label">
+             <property name="styleSheet">
+              <string notr="true">margin-bottom: 10px;</string>
+             </property>
+             <property name="text">
+              <string>**CHANGING EXTRA FIELDS CAN COMPLETELY DESTORY YOUR CARDS!**  
+ Do the following before making any changes here: 
+ - Read the &lt;a href=&quot;https://mortii.github.io/anki-morphs/user_guide/setup/settings/extra-fields.html&quot;&gt;guide&lt;/a&gt;, these options probably work differently from what you expect. 
+ - Create a backup of your card collection.</string>
+             </property>
+             <property name="textFormat">
+              <enum>Qt::MarkdownText</enum>
+             </property>
+             <property name="openExternalLinks">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QTableWidget" name="extra_fields_table">
              <column>
               <property name="text">
