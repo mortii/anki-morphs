@@ -98,9 +98,20 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
             "parse_ignore_suspended_cards_content", is_default
         )
         self.recalc_on_sync: bool = _get_bool_config("recalc_on_sync", is_default)
+        self.recalc_suspend_known_new_cards: bool = _get_bool_config(
+            "recalc_suspend_known_new_cards", is_default
+        )
         self.tag_ready: str = _get_string_config("tag_ready", is_default)
         self.tag_not_ready: str = _get_string_config("tag_not_ready", is_default)
-        self.tag_known: str = _get_string_config("tag_known", is_default)
+        self.tag_known_automatically: str = _get_string_config(
+            "tag_known_automatically", is_default
+        )
+        self.tag_known_manually: str = _get_string_config(
+            "tag_known_manually", is_default
+        )
+        self.tag_learn_card_now: str = _get_string_config(
+            "tag_learn_card_now", is_default
+        )
         self.filters: list[AnkiMorphsConfigFilter] = _get_filters_config(is_default)
 
 

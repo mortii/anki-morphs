@@ -98,13 +98,16 @@ This is the [parsing dictionary](../../installation/parsing-dictionary.md) AnkiM
 ## Morph Priority
 
 The calculated difficulty of the card, and as a result, the sorting of the card, depends on
-the [priority](../prioritizing.md) you give the
-morphs. You can either set the priorities to be `Collection frequency` (how often the morphs occur in your card
-collection), or you could use a [custom .csv file](../prioritizing.md#frequencycsv) that specifies the priorities of the
+the [priority](../prioritizing.md) you give the morphs. You can either set the priorities to be `Collection frequency` (
+how often the morphs occur in your card collection), or you could use
+a [custom .csv file](../prioritizing.md#frequencycsv) that specifies the priorities of the
 morphs.
 
 AnkiMorphs automatically finds .csv files placed
 in [[anki profile folder](../../glossary.md#profile-folder)]`/frequency-files/`.
+
+> **Note:** using 'Collection frequency' is not recommended because it is more volatile; if you make any changes to your
+> cards (delete, suspend, move, etc), then that might cause a cascade if sorting changes.
 
 ## Read & Modify
 

@@ -413,10 +413,15 @@ def test_function() -> None:
     # morph_list = [morph.inflected for morph in morphs]
     # print(f"morphs: {morph_list}")
 
-    print("Seen_Morphs:")
-    am_db = AnkiMorphsDB()
-    am_db.print_table("Seen_Morphs")
-    am_db.con.close()
+    # print("Seen_Morphs:")
+    # am_db = AnkiMorphsDB()
+    # am_db.print_table("Seen_Morphs")
+    # am_db.con.close()
+
+    # card_id = 1691326508940
+    # card: Card = mw.col.get_card(card_id)
+    # card.queue = -1  # suspend
+    # mw.col.update_card(card)
 
 
 main()

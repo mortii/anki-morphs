@@ -61,7 +61,7 @@ class SettingsDialog(QDialog):
         self.ui.tabWidget.currentChanged.connect(self.tab_change)
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.6.4-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.7.0-alpha")
 
     def _setup_note_filters_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
@@ -225,7 +225,11 @@ class SettingsDialog(QDialog):
     def _populate_tags_tab(self) -> None:
         self.ui.ready_tag_input.setText(self.config.tag_ready)
         self.ui.not_read_tag_input.setText(self.config.tag_not_ready)
-        self.ui.known_tag_input.setText(self.config.tag_known)
+        self.ui.known_automatically_tag_input.setText(
+            self.config.tag_known_automatically
+        )
+        self.ui.known_manually_tag_input.setText(self.config.tag_known_manually)
+        self.ui.learn_card_now_tag_input.setText(self.config.tag_learn_card_now)
 
     def restore_tags_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -238,7 +242,15 @@ class SettingsDialog(QDialog):
 
         self.ui.ready_tag_input.setText(self._default_config.tag_ready)
         self.ui.not_read_tag_input.setText(self._default_config.tag_not_ready)
-        self.ui.known_tag_input.setText(self._default_config.tag_known)
+        self.ui.known_automatically_tag_input.setText(
+            self._default_config.tag_known_automatically
+        )
+        self.ui.known_manually_tag_input.setText(
+            self._default_config.tag_known_manually
+        )
+        self.ui.learn_card_now_tag_input.setText(
+            self._default_config.tag_learn_card_now
+        )
 
     def _populate_parse_tab(self) -> None:
         self.ui.parse_ignore_bracket_contents_input.setChecked(
@@ -343,9 +355,9 @@ class SettingsDialog(QDialog):
             self.config.recalc_interval_for_known
         )
         self.ui.recalc_on_sync_input.setChecked(self.config.recalc_on_sync)
-
-    #     self._populate_frequency_lists()
-    #
+        self.ui.recalc_suspend_new_cards_input.setChecked(
+            self.config.recalc_suspend_known_new_cards
+        )
 
     def restore_recalc_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -360,6 +372,9 @@ class SettingsDialog(QDialog):
             self._default_config.recalc_interval_for_known
         )
         self.ui.recalc_on_sync_input.setChecked(self._default_config.recalc_on_sync)
+        self.ui.recalc_suspend_new_cards_input.setChecked(
+            self._default_config.recalc_suspend_known_new_cards
+        )
 
     def _populate_skip_tab(self) -> None:
         self.ui.skip_only_known_morphs_cards_input.setChecked(
@@ -445,7 +460,9 @@ class SettingsDialog(QDialog):
         new_config = {
             "tag_ready": self.ui.ready_tag_input.text(),
             "tag_not_ready": self.ui.not_read_tag_input.text(),
-            "tag_known": self.ui.known_tag_input.text(),
+            "tag_known": self.ui.known_automatically_tag_input.text(),
+            "tag_known_manually": self.ui.known_manually_tag_input.text(),
+            "tag_learn_card_now": self.ui.learn_card_now_tag_input.text(),
             "shortcut_browse_ready_same_unknown": self.ui.shortcut_browse_ready_same_unknown_input.keySequence().toString(),
             "shortcut_browse_all_same_unknown": self.ui.shortcut_browse_all_same_unknown_input.keySequence().toString(),
             "shortcut_set_known_and_skip": self.ui.shortcut_known_and_skip_input.keySequence().toString(),
@@ -453,6 +470,7 @@ class SettingsDialog(QDialog):
             "shortcut_view_morphemes": self.ui.shortcut_view_morphs_input.keySequence().toString(),
             "recalc_interval_for_known": self.ui.recalc_interval_known_input.value(),
             "recalc_on_sync": self.ui.recalc_on_sync_input.isChecked(),
+            "recalc_suspend_known_new_cards": self.ui.recalc_suspend_new_cards_input.isChecked(),
             "parse_ignore_bracket_contents": self.ui.parse_ignore_bracket_contents_input.isChecked(),
             "parse_ignore_round_bracket_contents": self.ui.parse_ignore_round_bracket_contents_input.isChecked(),
             "parse_ignore_slim_round_bracket_contents": self.ui.parse_ignore_slim_round_bracket_contents_input.isChecked(),
@@ -563,26 +581,31 @@ class SettingsDialog(QDialog):
             "highlighted_field",
             "difficulty_field",
         ]
-        extra_fields_changed = False
+        has_active_extra_fields = False
 
         for _filter in new_filters:
             for field in extra_fields:
                 if _filter[field] != "(none)":
-                    extra_fields_changed = True
+                    has_active_extra_fields = True
 
-        if not extra_fields_changed:
+        if not has_active_extra_fields:
+            # if all extra fields are (none) return False
             return False
 
         for index, old_filter in enumerate(self.config.filters):
-            if index > len(new_filters) - 1:
+            if (len(new_filters) - 1) < index:
+                # if existing note filters are deleted then this occurs
                 break
 
             if new_filters[index]["unknowns_field"] != old_filter.unknowns_field:
-                return True
+                if new_filters[index]["unknowns_field"] != "(none)":
+                    return True
             if new_filters[index]["highlighted_field"] != old_filter.highlighted_field:
-                return True
+                if new_filters[index]["highlighted_field"] != "(none)":
+                    return True
             if new_filters[index]["difficulty_field"] != old_filter.difficulty_field:
-                return True
+                if new_filters[index]["difficulty_field"] != "(none)":
+                    return True
 
         return False
 

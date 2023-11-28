@@ -30,14 +30,18 @@ class SkippedCards:
         self.did_skip_card = False
 
         morphs_already_seen_morphs_today: set[str] = am_db.get_all_morphs_seen_today()
-
         card_unknown_morphs: set[str] = {
             morph_raw[0] + morph_raw[1] for morph_raw in card_unknown_morphs_raw
         }
 
-        if note.has_tag("learn-now"):
+        learn_now_tag: bool = note.has_tag(am_config.tag_learn_card_now)
+        known_automatically: bool = note.has_tag(am_config.tag_known_automatically)
+        known_manually: bool = note.has_tag(am_config.tag_known_manually)
+        known_tag: bool = known_automatically or known_manually
+
+        if learn_now_tag:
             self.did_skip_card = False
-        elif note.has_tag(am_config.tag_known):
+        elif known_tag:
             if am_config.skip_only_known_morphs_cards:
                 self.skipped_known_cards += 1
                 self.did_skip_card = True

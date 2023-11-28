@@ -102,7 +102,7 @@ def run_already_known_tagger() -> None:
 
     am_config = AnkiMorphsConfig()
 
-    known_tag = am_config.tag_known
+    known_tag = am_config.tag_known_manually
     selected_cards = browser.selectedCards()
 
     for cid in selected_cards:
@@ -119,11 +119,13 @@ def run_learn_card_now() -> None:
     assert mw.col.db is not None
     assert browser is not None
 
+    am_config = AnkiMorphsConfig()
+
     selected_cards = browser.selectedCards()
     note_ids = mw.col.db.list(
         f"select distinct nid from cards where id in {ids2str(selected_cards)}"
     )
-    mw.col.tags.bulk_add(note_ids, "learn-now")
+    mw.col.tags.bulk_add(note_ids, am_config.tag_learn_card_now)
 
     mw.col.sched.reposition_new_cards(selected_cards, 0, 1, False, True)
     mw.moveToState("review")

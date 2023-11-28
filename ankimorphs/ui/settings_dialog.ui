@@ -180,7 +180,21 @@
                <item>
                 <widget class="QLabel" name="label_3">
                  <property name="text">
-                  <string>Multiple Unknown morphs</string>
+                  <string>Multiple unknown morphs</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_6">
+                 <property name="text">
+                  <string>Learn card now</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_5">
+                 <property name="text">
+                  <string>Set known and skip</string>
                  </property>
                 </widget>
                </item>
@@ -202,7 +216,13 @@
                 <widget class="QLineEdit" name="not_read_tag_input"/>
                </item>
                <item>
-                <widget class="QLineEdit" name="known_tag_input"/>
+                <widget class="QLineEdit" name="learn_card_now_tag_input"/>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="known_manually_tag_input"/>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="known_automatically_tag_input"/>
                </item>
               </layout>
              </item>
@@ -291,6 +311,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="parse_ignore_suspended_cards_content_input">
+             <property name="text">
+              <string>Ignore content in suspended cards</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QCheckBox" name="parse_ignore_names_morphemizer_input">
              <property name="text">
               <string>Ignore names found by the morphemizer</string>
@@ -300,14 +327,7 @@
            <item>
             <widget class="QCheckBox" name="parse_ignore_names_textfile_input">
              <property name="text">
-              <string>Ignore names found in &quot;names.txt&quot;</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="parse_ignore_suspended_cards_content_input">
-             <property name="text">
-              <string>Ignore suspended cards</string>
+              <string>Ignore names found in names.txt</string>
              </property>
             </widget>
            </item>
@@ -433,7 +453,14 @@
              <item>
               <widget class="QCheckBox" name="recalc_on_sync_input">
                <property name="text">
-                <string>Recalc on sync</string>
+                <string>Automatically Recalc before Anki sync</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="recalc_suspend_new_cards_input">
+               <property name="text">
+                <string>Suspend new cards with only known morphs</string>
                </property>
               </widget>
              </item>

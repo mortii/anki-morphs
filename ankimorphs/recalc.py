@@ -10,7 +10,7 @@ from typing import Any, Optional, Union
 
 from anki.cards import Card
 from anki.collection import Collection
-from anki.consts import CARD_TYPE_NEW
+from anki.consts import CARD_TYPE_NEW, CardQueue
 from anki.notes import Note
 from anki.tags import TagManager
 from anki.utils import ids2str
@@ -59,24 +59,24 @@ def recalc() -> None:
 
     operation = QueryOp(
         parent=mw,
-        op=recalc_background_op,
+        op=_recalc_background_op,
         success=_on_success,
     )
     operation.failure(_on_failure)
     operation.with_progress().run_in_background()
 
 
-def recalc_background_op(collection: Collection) -> None:
+def _recalc_background_op(collection: Collection) -> None:
     del collection  # unused
     assert mw is not None
     assert mw.progress is not None
 
     am_config = AnkiMorphsConfig()
-    cache_anki_data(am_config)
-    update_cards_and_notes(am_config)
+    _cache_anki_data(am_config)
+    _update_cards_and_notes(am_config)
 
 
-def cache_anki_data(  # pylint:disable=too-many-locals
+def _cache_anki_data(  # pylint:disable=too-many-locals
     am_config: AnkiMorphsConfig,
 ) -> None:
     # Extracting morphs from cards is expensive so caching them yields a significant
@@ -92,7 +92,6 @@ def cache_anki_data(  # pylint:disable=too-many-locals
     am_db.create_all_tables()
 
     read_config_filters: list[AnkiMorphsConfigFilter] = get_read_enabled_filters()
-    ignore_suspended: bool = am_config.parse_ignore_suspended_cards_content
 
     card_table_data: list[dict[str, Any]] = []
     morph_table_data: list[dict[str, Any]] = []
@@ -102,11 +101,11 @@ def cache_anki_data(  # pylint:disable=too-many-locals
         if config_filter.note_type == "":
             raise DefaultSettingsException  # handled in on_failure()
 
-        card_data_dict: dict[int, AnkiCardData] = create_card_data_dict(
+        card_data_dict: dict[int, AnkiCardData] = _create_card_data_dict(
+            am_config,
             config_filter,
             config_filter.note_type_id,
             config_filter.tags,
-            ignore_suspended,
         )
         card_amount = len(card_data_dict)
 
@@ -126,7 +125,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals
 
             card_data: AnkiCardData = card_data_dict[card_id]
 
-            if card_data.known_tag:
+            if card_data.automatically_known_tag or card_data.manually_known_tag:
                 highest_interval = am_config.recalc_interval_for_known
             else:
                 highest_interval = card_data.interval
@@ -142,7 +141,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals
                 }
             )
 
-            morphs = get_card_morphs(card_data.expression, am_config, config_filter)
+            morphs = _get_card_morphs(card_data.expression, am_config, config_filter)
             if morphs is None:
                 continue
 
@@ -173,49 +172,59 @@ def cache_anki_data(  # pylint:disable=too-many-locals
     am_db.con.close()
 
 
-def create_card_data_dict(
+def _create_card_data_dict(
+    am_config: AnkiMorphsConfig,
     config_filter: AnkiMorphsConfigFilter,
     model_id: Optional[int],
     tags: list[str],
-    ignore_suspended: bool,
 ) -> dict[int, AnkiCardData]:
     assert mw is not None
 
     cards_data_dict: dict[int, AnkiCardData] = {}
-    am_config = AnkiMorphsConfig()
     tag_manager = TagManager(mw.col)
 
-    for anki_row_data in get_anki_data(model_id, tags, ignore_suspended).values():
+    for anki_row_data in _get_anki_data(am_config, model_id, tags).values():
         cards_data_dict[anki_row_data.card_id] = AnkiCardData(
             am_config, config_filter, tag_manager, anki_row_data
         )
     return cards_data_dict
 
 
-def get_anki_data(
-    model_id: Optional[int], tags: list[str], ignore_suspended: bool
+def _get_anki_data(
+    am_config: AnkiMorphsConfig, model_id: Optional[int], tags: list[str]
 ) -> dict[int, AnkiDBRowData]:
-    # This query is hacky because of the limitation in sqlite where you can't
-    # really build a query with variable parameter length (tags in this case)
+    ################################################################
+    #                        SQL QUERY
+    ################################################################
+    # This sql query is horrible, partly because of the limitation
+    # in sqlite where you can't really build a query with variable
+    # parameter length (tags in this case)
     # More info:
     # https://stackoverflow.com/questions/5766230/select-from-sqlite-table-where-rowid-in-list-using-python-sqlite3-db-api-2-0
+    #
+    # EXAMPLE FINAL SQL QUERY:
+    #   SELECT cards.id, cards.ivl, cards.type, cards.queue, notes.id, notes.flds, notes.tags
+    #   FROM cards
+    #   INNER JOIN notes ON
+    #       cards.nid = notes.id
+    #   WHERE notes.mid = 1691076536776 AND (cards.queue != -1 OR notes.tags LIKE '% am-known-manually %') AND notes.tags LIKE '% movie %'
+    ################################################################
 
     assert mw
     assert mw.col.db
 
-    if ignore_suspended:
-        ignore_suspended_string = " AND cards.queue != -1"
-    else:
-        ignore_suspended_string = ""
+    ignore_suspended_cards = ""
+    if am_config.parse_ignore_suspended_cards_content:
+        # if this part is included then we don't get cards that are suspended EXCEPT for
+        # the cards that were 'set known and skip' and later suspended. We want to always
+        # include those cards otherwise we can lose track of known morphs
+        ignore_suspended_cards = f" AND (cards.queue != -1 OR notes.tags LIKE '% {am_config.tag_known_manually} %')"
 
-    if len(tags) == 1 and tags[0] == "":
-        where_clause_string = f"WHERE notes.mid = {model_id}{ignore_suspended_string}"
-    else:
+    tags_search_string = ""
+    if len(tags) > 0 and tags[0] != "":
+        # if there are tags then this part gets the cards that have ALL the tags
         tags_search_string = "".join(
             [f" AND notes.tags LIKE '% {tag} %'" for tag in tags]
-        )
-        where_clause_string = (
-            f"WHERE notes.mid = {model_id}{ignore_suspended_string}{tags_search_string}"
         )
 
     result: list[Sequence[Any]] = mw.col.db.all(
@@ -225,7 +234,7 @@ def get_anki_data(
         INNER JOIN notes ON
             cards.nid = notes.id
         """
-        + where_clause_string,
+        + f"WHERE notes.mid = {model_id}{ignore_suspended_cards}{tags_search_string}",
     )
 
     anki_db_row_data_dict = {}
@@ -234,7 +243,7 @@ def get_anki_data(
     return anki_db_row_data_dict
 
 
-def get_card_morphs(
+def _get_card_morphs(
     expression: str, am_config: AnkiMorphsConfig, am_filter: AnkiMorphsConfigFilter
 ) -> Optional[set[Morpheme]]:
     try:
@@ -246,7 +255,7 @@ def get_card_morphs(
         return None
 
 
-def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statements
+def _update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statements
     am_config: AnkiMorphsConfig,
 ) -> None:
     assert mw is not None
@@ -255,22 +264,23 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
 
     am_db = AnkiMorphsDB()
     modify_config_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
-    card_morph_map_cache: dict[int, list[SimplifiedMorph]] = get_card_morph_map_cache(
+    card_morph_map_cache: dict[int, list[SimplifiedMorph]] = _get_card_morph_map_cache(
         am_db
     )
     original_due: dict[int, int] = {}
+    original_queue: dict[int, int] = {}
     handled_cards: dict[int, None] = {}  # we only care about the key lookup, not values
     modified_cards: list[Card] = []
     modified_notes: list[Note] = []
 
     # clear the morph collection frequency cache between recalcs
-    get_morph_collection_priority.cache_clear()
+    _get_morph_collection_priority.cache_clear()
 
     for config_filter in modify_config_filters:
         assert config_filter.note_type_id is not None
 
-        morph_priority: dict[str, int] = get_morph_priority(am_db, config_filter)
-        cards_data_dict: dict[int, AnkiMorphsCardData] = get_am_cards_data_dict(
+        morph_priority: dict[str, int] = _get_morph_priority(am_db, config_filter)
+        cards_data_dict: dict[int, AnkiMorphsCardData] = _get_am_cards_data_dict(
             am_db, config_filter.note_type_id
         )
         card_amount = len(cards_data_dict)
@@ -298,6 +308,7 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
 
             # make sure to get the values and not references
             original_due[card_id] = int(card.due)
+            original_queue[card_id] = int(card.queue)
             original_fields = note.fields.copy()
             original_tags = note.tags.copy()
 
@@ -306,7 +317,7 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
                     card_difficulty,
                     card_unknown_morphs,
                     card_has_learning_morphs,
-                ) = get_card_difficulty_and_unknowns_and_learning_status(
+                ) = _get_card_difficulty_and_unknowns_and_learning_status(
                     am_config,
                     card_id,
                     card_morph_map_cache,
@@ -314,13 +325,17 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
                 )
 
                 card.due = card_difficulty
-                update_unknowns_field(config_filter, note, card_unknown_morphs)
-                update_difficulty_field(config_filter, note, card_difficulty)
-                update_tags(
-                    am_config, note, len(card_unknown_morphs), card_has_learning_morphs
+                _update_unknowns_field(config_filter, note, card_unknown_morphs)
+                _update_difficulty_field(config_filter, note, card_difficulty)
+                _update_tags_and_queue(
+                    am_config,
+                    note,
+                    card,
+                    len(card_unknown_morphs),
+                    card_has_learning_morphs,
                 )
 
-            update_highlighted_field(
+            _update_highlighted_field(
                 am_config,
                 config_filter,
                 card_morph_map_cache,
@@ -358,14 +373,16 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
     # if the due is the same then the secondary sort is by id
     modified_cards.sort(key=lambda _card: (_card.due, _card.id))
 
-    end_of_queue = get_end_of_queue(modified_cards)
+    end_of_queue = _get_end_of_new_cards_queue(modified_cards)
 
     for index, card in enumerate(modified_cards, start=end_of_queue):
         if card.type == CARD_TYPE_NEW:
             card.due = index
 
     modified_cards = [
-        _card for _card in modified_cards if _card.due != original_due[_card.id]
+        _card
+        for _card in modified_cards
+        if _card_is_modified(_card, original_due, original_queue)
     ]
 
     mw.taskman.run_on_main(
@@ -379,7 +396,17 @@ def update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statement
     mw.col.update_notes(modified_notes)
 
 
-def get_card_morph_map_cache(am_db: AnkiMorphsDB) -> dict[int, list[SimplifiedMorph]]:
+def _card_is_modified(
+    _card: Card, original_due: dict[int, int], original_queue: dict[int, int]
+) -> bool:
+    if _card.due != original_due[_card.id]:
+        return True
+    if _card.queue != original_queue[_card.id]:
+        return True
+    return False
+
+
+def _get_card_morph_map_cache(am_db: AnkiMorphsDB) -> dict[int, list[SimplifiedMorph]]:
     card_morph_map_cache: dict[int, list[SimplifiedMorph]] = {}
 
     # Sorting the morphs (ORDER BY) is crucial to avoid bugs
@@ -405,21 +432,21 @@ def get_card_morph_map_cache(am_db: AnkiMorphsDB) -> dict[int, list[SimplifiedMo
     return card_morph_map_cache
 
 
-def get_morph_priority(
+def _get_morph_priority(
     am_db: AnkiMorphsDB,
     am_config_filter: AnkiMorphsConfigFilter,
 ) -> dict[str, int]:
     if am_config_filter.morph_priority_index == 0:
-        morph_priority = get_morph_collection_priority(am_db)
+        morph_priority = _get_morph_collection_priority(am_db)
     else:
-        morph_priority = get_morph_frequency_file_priority(
+        morph_priority = _get_morph_frequency_file_priority(
             am_config_filter.morph_priority
         )
     return morph_priority
 
 
 @functools.cache
-def get_morph_collection_priority(am_db: AnkiMorphsDB) -> dict[str, int]:
+def _get_morph_collection_priority(am_db: AnkiMorphsDB) -> dict[str, int]:
     # Sorting the morphs (ORDER BY) is crucial to avoid bugs
     morph_priority = am_db.con.execute(
         """
@@ -442,7 +469,7 @@ def get_morph_collection_priority(am_db: AnkiMorphsDB) -> dict[str, int]:
     return card_morph_map_cache_sorted
 
 
-def get_morph_frequency_file_priority(frequency_file_name: str) -> dict[str, int]:
+def _get_morph_frequency_file_priority(frequency_file_name: str) -> dict[str, int]:
     assert mw is not None
 
     morph_priority: dict[str, int] = {}
@@ -465,7 +492,7 @@ def get_morph_frequency_file_priority(frequency_file_name: str) -> dict[str, int
     return morph_priority
 
 
-def get_am_cards_data_dict(
+def _get_am_cards_data_dict(
     am_db: AnkiMorphsDB, note_type_id: int
 ) -> dict[int, AnkiMorphsCardData]:
     assert mw is not None
@@ -486,7 +513,7 @@ def get_am_cards_data_dict(
     return am_db_row_data_dict
 
 
-def get_card_difficulty_and_unknowns_and_learning_status(
+def _get_card_difficulty_and_unknowns_and_learning_status(
     am_config: AnkiMorphsConfig,
     card_id: int,
     card_morph_map_cache: dict[int, list[SimplifiedMorph]],
@@ -551,7 +578,7 @@ def get_card_difficulty_and_unknowns_and_learning_status(
     return difficulty, unknown_morphs, has_learning_morph
 
 
-def update_unknowns_field(
+def _update_unknowns_field(
     config_filter: AnkiMorphsConfigFilter, note: Note, unknowns: list[str]
 ) -> None:
     if config_filter.unknowns_field_index is not None:
@@ -561,7 +588,7 @@ def update_unknowns_field(
             note.fields[config_filter.unknowns_field_index - 1] = focus_morph_string
 
 
-def update_difficulty_field(
+def _update_difficulty_field(
     config_filter: AnkiMorphsConfigFilter, note: Note, difficulty: int
 ) -> None:
     if config_filter.difficulty_field_index is not None:
@@ -569,7 +596,7 @@ def update_difficulty_field(
             note.fields[config_filter.difficulty_field_index - 1] = str(difficulty)
 
 
-def update_highlighted_field(
+def _update_highlighted_field(
     am_config: AnkiMorphsConfig,
     config_filter: AnkiMorphsConfigFilter,
     card_morph_map_cache: dict[int, list[SimplifiedMorph]],
@@ -586,7 +613,7 @@ def update_highlighted_field(
         assert config_filter.field_index is not None
         if config_filter.highlighted_field_index > 0:
             text_to_highlight = note.fields[config_filter.field_index]
-            highlighted_text = highlight_text(
+            highlighted_text = _highlight_text(
                 am_config,
                 card_morphs,
                 text_to_highlight,
@@ -594,15 +621,30 @@ def update_highlighted_field(
             note.fields[config_filter.highlighted_field_index - 1] = highlighted_text
 
 
-def update_tags(
-    am_config: AnkiMorphsConfig, note: Note, unknowns: int, has_learning_morphs: bool
+def _update_tags_and_queue(
+    am_config: AnkiMorphsConfig,
+    note: Note,
+    card: Card,
+    unknowns: int,
+    has_learning_morphs: bool,
 ) -> None:
+    suspended = CardQueue(-1)
+
     if unknowns == 0:
+        # if a card has any learning morphs then we don't want to
+        # give it a 'known' tag because that would automatically
+        # give the morph a 'known'-status instead of 'learning'
         if not has_learning_morphs:
-            if am_config.tag_known not in note.tags:
-                note.tags.append(am_config.tag_known)
+            # if a card was 'set known and skip' then it already has
+            # the 'manually known' tag, don't add 'automatically known'
+            if am_config.tag_known_manually not in note.tags:
+                if am_config.tag_known_automatically not in note.tags:
+                    note.tags.append(am_config.tag_known_automatically)
         if am_config.tag_ready in note.tags:
             note.tags.remove(am_config.tag_ready)
+        if am_config.recalc_suspend_known_new_cards:
+            if card.queue != suspended:
+                card.queue = suspended
     elif unknowns == 1:
         if am_config.tag_ready not in note.tags:
             note.tags.append(am_config.tag_ready)
@@ -613,7 +655,7 @@ def update_tags(
             note.tags.append(am_config.tag_not_ready)
 
 
-def highlight_text(
+def _highlight_text(
     am_config: AnkiMorphsConfig,
     card_morphs: list[SimplifiedMorph],
     text_to_highlight: str,
@@ -636,10 +678,8 @@ def highlight_text(
         else:
             morph_status = "known"
 
-        # print(f"morph: {morph}")
-        # print(f"maturity: {morph_status}")
         replacement = f'<span morph-status="{morph_status}">\\1</span>'
-        highlighted_text = non_span_sub(
+        highlighted_text = _create_highlight_span(
             f"({morph.inflected})", replacement, highlighted_text
         )
 
@@ -647,7 +687,7 @@ def highlight_text(
     return highlighted_text
 
 
-def non_span_sub(sub: str, repl: str, string: str) -> str:
+def _create_highlight_span(sub: str, repl: str, string: str) -> str:
     txt = ""
     for span in re.split("(<span.*?</span>)", string):
         if span.startswith("<span"):
@@ -659,7 +699,7 @@ def non_span_sub(sub: str, repl: str, string: str) -> str:
     return txt
 
 
-def get_end_of_queue(modified_cards: list[Card]) -> int:
+def _get_end_of_new_cards_queue(modified_cards: list[Card]) -> int:
     assert mw is not None
     assert mw.col.db is not None
 

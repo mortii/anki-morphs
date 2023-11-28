@@ -251,7 +251,7 @@ def _set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> 
     self.mw.col.sched.buryCards([self.card.id], manual=False)
 
     note = self.card.note()
-    note.add_tag(am_config.tag_known)
+    note.add_tag(am_config.tag_known_manually)
     self.mw.col.update_note(note)
 
     self.mw.col.merge_undo_entries(set_known_and_skip_undo.last_step)

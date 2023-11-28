@@ -359,7 +359,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         known_and_skipped_search_string = mw.col.build_search_string(
             SearchNode(card_state=SearchNode.CARD_STATE_BURIED),
-            SearchNode(tag=am_config.tag_known),
+            SearchNode(tag=am_config.tag_known_manually),
         )
 
         total_search_string = total_search_string[:-4]  # remove last " OR "

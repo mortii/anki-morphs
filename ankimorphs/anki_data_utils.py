@@ -48,7 +48,8 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         "interval",
         "type",
         "expression",
-        "known_tag",
+        "automatically_known_tag",
+        "manually_known_tag",
         "ready_tag",
         "not_ready_tag",
         "fields",
@@ -71,14 +72,16 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         expression_field = fields_list[config_filter.field_index]
         expression = anki.utils.strip_html(expression_field)
 
-        known_tag = am_config.tag_known in tags_list
+        automatically_known_tag = am_config.tag_known_automatically in tags_list
+        manually_known_tag = am_config.tag_known_manually in tags_list
         ready_tag = am_config.tag_ready in tags_list
         not_ready_tag = am_config.tag_not_ready in tags_list
 
         self.interval = anki_row_data.card_interval
         self.type = anki_row_data.card_type
         self.expression = expression
-        self.known_tag = known_tag
+        self.automatically_known_tag = automatically_known_tag
+        self.manually_known_tag = manually_known_tag
         self.ready_tag = ready_tag
         self.not_ready_tag = not_ready_tag
         self.fields = anki_row_data.note_fields

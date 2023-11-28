@@ -89,5 +89,5 @@ def fake_environment():
 
 def test_recalc(fake_environment):
     mock_collection = fake_environment
-    recalc.recalc_background_op(mock_collection)
+    recalc._recalc_background_op(mock_collection)
     assert False
