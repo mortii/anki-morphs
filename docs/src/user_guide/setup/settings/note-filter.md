@@ -107,7 +107,7 @@ AnkiMorphs automatically finds .csv files placed
 in [[anki profile folder](../../glossary.md#profile-folder)]`/frequency-files/`.
 
 > **Note:** using 'Collection frequency' is not recommended because it is more volatile; if you make any changes to your
-> cards (delete, suspend, move, etc), then that might cause a cascade if sorting changes.
+> cards (delete, suspend, move, etc.), then that might cause a cascade of sorting changes.
 
 ## Read & Modify
 

@@ -58,7 +58,7 @@ class SkippedCards:
         skipped_string = ""
 
         if self.skipped_known_cards > 0:
-            skipped_string += f"Skipped <b>{self.skipped_known_cards}</b> stale cards"
+            skipped_string += f"Skipped <b>{self.skipped_known_cards}</b> cards with only known morphs"
         if self.skipped_already_seen_morphs_cards > 0:
             if skipped_string != "":
                 skipped_string += "<br>"
