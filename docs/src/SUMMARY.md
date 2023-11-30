@@ -28,6 +28,7 @@
   - [Readability Report Generator](user_guide/usage/readability-report-generator.md)
   - [Statistics](user_guide/usage/statistics.md)
 - [Known Problems](user_guide/known-problems.md)
+- [Changelog](user_guide/changelog.md)
 - [Roadmap](user_guide/roadmap.md)
 - [FAQ](user_guide/faq.md)
 
