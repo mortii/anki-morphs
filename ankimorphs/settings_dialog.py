@@ -24,6 +24,7 @@ from .config import (
     update_configs,
 )
 from .morphemizer import get_all_morphemizers
+from .tag_selection import TagSelectionDialog
 from .ui.settings_dialog_ui import Ui_SettingsDialog
 
 
@@ -42,7 +43,7 @@ class SettingsDialog(QDialog):
 
     def __init__(self, parent: Optional[QMainWindow] = None) -> None:
         super().__init__(parent)
-        assert mw
+        assert mw is not None
         self.mw = parent  # pylint:disable=invalid-name
         self.models: Sequence[NotetypeNameId] = mw.col.models.all_names_and_ids()
         self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
@@ -60,8 +61,10 @@ class SettingsDialog(QDialog):
         self._setup_buttons()
         self.ui.tabWidget.currentChanged.connect(self.tab_change)
 
+        self.ui.note_filters_table.cellClicked.connect(self._tags_cell_clicked)
+
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.7.0-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.7.1-alpha")
 
     def _setup_note_filters_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
@@ -223,13 +226,13 @@ class SettingsDialog(QDialog):
         self.ui.extra_fields_table.setCellWidget(row, 3, difficulty_cbox)
 
     def _populate_tags_tab(self) -> None:
-        self.ui.ready_tag_input.setText(self.config.tag_ready)
-        self.ui.not_read_tag_input.setText(self.config.tag_not_ready)
-        self.ui.known_automatically_tag_input.setText(
+        self.ui.tagReadyLineEdit.setText(self.config.tag_ready)
+        self.ui.tagNotReadyLineEdit.setText(self.config.tag_not_ready)
+        self.ui.tagKnownAutomaticallyLineEdit.setText(
             self.config.tag_known_automatically
         )
-        self.ui.known_manually_tag_input.setText(self.config.tag_known_manually)
-        self.ui.learn_card_now_tag_input.setText(self.config.tag_learn_card_now)
+        self.ui.tagKnownManuallyLineEdit.setText(self.config.tag_known_manually)
+        self.ui.tagLearnCardNowLineEdit.setText(self.config.tag_learn_card_now)
 
     def restore_tags_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -240,54 +243,56 @@ class SettingsDialog(QDialog):
             if not confirmed:
                 return
 
-        self.ui.ready_tag_input.setText(self._default_config.tag_ready)
-        self.ui.not_read_tag_input.setText(self._default_config.tag_not_ready)
-        self.ui.known_automatically_tag_input.setText(
+        self.ui.tagReadyLineEdit.setText(self._default_config.tag_ready)
+        self.ui.tagNotReadyLineEdit.setText(self._default_config.tag_not_ready)
+        self.ui.tagKnownAutomaticallyLineEdit.setText(
             self._default_config.tag_known_automatically
         )
-        self.ui.known_manually_tag_input.setText(
+        self.ui.tagKnownManuallyLineEdit.setText(
             self._default_config.tag_known_manually
         )
-        self.ui.learn_card_now_tag_input.setText(
-            self._default_config.tag_learn_card_now
-        )
+        self.ui.tagLearnCardNowLineEdit.setText(self._default_config.tag_learn_card_now)
 
     def _populate_parse_tab(self) -> None:
-        self.ui.parse_ignore_bracket_contents_input.setChecked(
+        self.ui.parseIgnoreSquareCheckBox.setChecked(
             self.config.parse_ignore_bracket_contents
         )
-        self.ui.parse_ignore_round_bracket_contents_input.setChecked(
+        self.ui.parseIgnoreRoundCheckBox.setChecked(
             self.config.parse_ignore_round_bracket_contents
         )
-        self.ui.parse_ignore_slim_round_bracket_contents_input.setChecked(
+        self.ui.parseIgnoreSlimCheckBox.setChecked(
             self.config.parse_ignore_slim_round_bracket_contents
         )
-        self.ui.parse_ignore_names_morphemizer_input.setChecked(
+        self.ui.parseIgnoreNamesMizerCheckBox.setChecked(
             self.config.parse_ignore_names_morphemizer
         )
-        self.ui.parse_ignore_names_textfile_input.setChecked(
+        self.ui.parseIgnoreNamesFileCheckBox.setChecked(
             self.config.parse_ignore_names_textfile
         )
-        self.ui.parse_ignore_suspended_cards_content_input.setChecked(
+        self.ui.parseIgnoreSuspendedCheckBox.setChecked(
             self.config.parse_ignore_suspended_cards_content
         )
 
     def _populate_shortcuts_tab(self) -> None:
-        self.ui.shortcut_recalc_input.setKeySequence(self.config.shortcut_recalc)
-        self.ui.shortcut_settings_input.setKeySequence(self.config.shortcut_settings)
-        self.ui.shortcut_browse_ready_same_unknown_input.setKeySequence(
+        self.ui.shortcutRecalcKeySequenceEdit.setKeySequence(
+            self.config.shortcut_recalc
+        )
+        self.ui.shortcutSettingsKeySequenceEdit.setKeySequence(
+            self.config.shortcut_settings
+        )
+        self.ui.shortcutBrowseReadyKeySequenceEdit.setKeySequence(
             self.config.shortcut_browse_ready_same_unknown.toString()
         )
-        self.ui.shortcut_browse_all_same_unknown_input.setKeySequence(
+        self.ui.shortcutBrowseAllKeySequenceEdit.setKeySequence(
             self.config.shortcut_browse_all_same_unknown.toString()
         )
-        self.ui.shortcut_known_and_skip_input.setKeySequence(
+        self.ui.shortcutKnownAndSkipKeySequenceEdit.setKeySequence(
             self.config.shortcut_set_known_and_skip.toString()
         )
-        self.ui.shortcut_learn_now_input.setKeySequence(
+        self.ui.shortcutLearnNowKeySequenceEdit.setKeySequence(
             self.config.shortcut_learn_now.toString()
         )
-        self.ui.shortcut_view_morphs_input.setKeySequence(
+        self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
             self.config.shortcut_view_morphemes.toString()
         )
 
@@ -300,22 +305,22 @@ class SettingsDialog(QDialog):
             if not confirmed:
                 return
 
-        self.ui.parse_ignore_bracket_contents_input.setChecked(
+        self.ui.parseIgnoreSquareCheckBox.setChecked(
             self._default_config.parse_ignore_bracket_contents
         )
-        self.ui.parse_ignore_round_bracket_contents_input.setChecked(
+        self.ui.parseIgnoreRoundCheckBox.setChecked(
             self._default_config.parse_ignore_round_bracket_contents
         )
-        self.ui.parse_ignore_slim_round_bracket_contents_input.setChecked(
+        self.ui.parseIgnoreSlimCheckBox.setChecked(
             self._default_config.parse_ignore_slim_round_bracket_contents
         )
-        self.ui.parse_ignore_names_morphemizer_input.setChecked(
+        self.ui.parseIgnoreNamesMizerCheckBox.setChecked(
             self._default_config.parse_ignore_names_morphemizer
         )
-        self.ui.parse_ignore_names_textfile_input.setChecked(
+        self.ui.parseIgnoreNamesFileCheckBox.setChecked(
             self._default_config.parse_ignore_names_textfile
         )
-        self.ui.parse_ignore_suspended_cards_content_input.setChecked(
+        self.ui.parseIgnoreSuspendedCheckBox.setChecked(
             self._default_config.parse_ignore_suspended_cards_content
         )
 
@@ -328,34 +333,32 @@ class SettingsDialog(QDialog):
             if not confirmed:
                 return
 
-        self.ui.shortcut_recalc_input.setKeySequence(
+        self.ui.shortcutRecalcKeySequenceEdit.setKeySequence(
             self._default_config.shortcut_recalc
         )
-        self.ui.shortcut_settings_input.setKeySequence(
+        self.ui.shortcutSettingsKeySequenceEdit.setKeySequence(
             self._default_config.shortcut_settings
         )
-        self.ui.shortcut_browse_ready_same_unknown_input.setKeySequence(
+        self.ui.shortcutBrowseReadyKeySequenceEdit.setKeySequence(
             self._default_config.shortcut_browse_ready_same_unknown
         )
-        self.ui.shortcut_browse_all_same_unknown_input.setKeySequence(
+        self.ui.shortcutBrowseAllKeySequenceEdit.setKeySequence(
             self._default_config.shortcut_browse_all_same_unknown
         )
-        self.ui.shortcut_known_and_skip_input.setKeySequence(
+        self.ui.shortcutKnownAndSkipKeySequenceEdit.setKeySequence(
             self._default_config.shortcut_set_known_and_skip
         )
-        self.ui.shortcut_learn_now_input.setKeySequence(
+        self.ui.shortcutLearnNowKeySequenceEdit.setKeySequence(
             self._default_config.shortcut_learn_now
         )
-        self.ui.shortcut_view_morphs_input.setKeySequence(
+        self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
             self._default_config.shortcut_view_morphemes
         )
 
     def _populate_recalc_tab(self) -> None:
-        self.ui.recalc_interval_known_input.setValue(
-            self.config.recalc_interval_for_known
-        )
-        self.ui.recalc_on_sync_input.setChecked(self.config.recalc_on_sync)
-        self.ui.recalc_suspend_new_cards_input.setChecked(
+        self.ui.recalcIntervalSpinBox.setValue(self.config.recalc_interval_for_known)
+        self.ui.recalcBeforeSyncCheckBox.setChecked(self.config.recalc_on_sync)
+        self.ui.recalcSuspendKnownCheckBox.setChecked(
             self.config.recalc_suspend_known_new_cards
         )
 
@@ -368,22 +371,20 @@ class SettingsDialog(QDialog):
             if not confirmed:
                 return
 
-        self.ui.recalc_interval_known_input.setValue(
+        self.ui.recalcIntervalSpinBox.setValue(
             self._default_config.recalc_interval_for_known
         )
-        self.ui.recalc_on_sync_input.setChecked(self._default_config.recalc_on_sync)
-        self.ui.recalc_suspend_new_cards_input.setChecked(
+        self.ui.recalcBeforeSyncCheckBox.setChecked(self._default_config.recalc_on_sync)
+        self.ui.recalcSuspendKnownCheckBox.setChecked(
             self._default_config.recalc_suspend_known_new_cards
         )
 
     def _populate_skip_tab(self) -> None:
-        self.ui.skip_only_known_morphs_cards_input.setChecked(
-            self.config.skip_only_known_morphs_cards
-        )
-        self.ui.skip_unknown_morph_seen_today_cards_input.setChecked(
+        self.ui.skipKnownCheckBox.setChecked(self.config.skip_only_known_morphs_cards)
+        self.ui.skipAlreadySeenCheckBox.setChecked(
             self.config.skip_unknown_morph_seen_today_cards
         )
-        self.ui.skip_show_num_of_skipped_cards_input.setChecked(
+        self.ui.skipNotificationsCheckBox.setChecked(
             self.config.skip_show_num_of_skipped_cards
         )
 
@@ -396,13 +397,13 @@ class SettingsDialog(QDialog):
             if not confirmed:
                 return
 
-        self.ui.skip_only_known_morphs_cards_input.setChecked(
+        self.ui.skipKnownCheckBox.setChecked(
             self._default_config.skip_only_known_morphs_cards
         )
-        self.ui.skip_unknown_morph_seen_today_cards_input.setChecked(
+        self.ui.skipAlreadySeenCheckBox.setChecked(
             self._default_config.skip_unknown_morph_seen_today_cards
         )
-        self.ui.skip_show_num_of_skipped_cards_input.setChecked(
+        self.ui.skipNotificationsCheckBox.setChecked(
             self._default_config.skip_show_num_of_skipped_cards
         )
 
@@ -422,22 +423,29 @@ class SettingsDialog(QDialog):
             self.restore_shortcuts_defaults(skip_confirmation=True)
 
     def _setup_buttons(self) -> None:
-        self.ui.save_button.clicked.connect(self.save_to_config)
-        self.ui.cancel_button.clicked.connect(self.close)
-        self.ui.add_new_row_button.clicked.connect(self.add_new_row)
-        self.ui.delete_row_button.clicked.connect(self.delete_row)
-        self.ui.restore_tags_defaults_button.clicked.connect(self.restore_tags_defaults)
-        self.ui.restore_recalc_defaults_button.clicked.connect(
-            self.restore_recalc_defaults
-        )
-        self.ui.restore_shortcut_defaults_button.clicked.connect(
+        self.ui.savePushButton.setAutoDefault(False)
+        self.ui.cancelPushButton.setAutoDefault(False)
+        self.ui.addNewRowPushButton.setAutoDefault(False)
+        self.ui.deleteRowPushButton.setAutoDefault(False)
+        self.ui.restoreTagsPushButton.setAutoDefault(False)
+        self.ui.restoreRecalcPushButton.setAutoDefault(False)
+        self.ui.restoreShortcutsPushButton.setAutoDefault(False)
+        self.ui.restoreParsePushButton.setAutoDefault(False)
+        self.ui.restoreSkipPushButton.setAutoDefault(False)
+        self.ui.restoreAllDefaultsPushButton.setAutoDefault(False)
+
+        self.ui.savePushButton.clicked.connect(self.save_to_config)
+        self.ui.cancelPushButton.clicked.connect(self.close)
+        self.ui.addNewRowPushButton.clicked.connect(self.add_new_row)
+        self.ui.deleteRowPushButton.clicked.connect(self.delete_row)
+        self.ui.restoreTagsPushButton.clicked.connect(self.restore_tags_defaults)
+        self.ui.restoreRecalcPushButton.clicked.connect(self.restore_recalc_defaults)
+        self.ui.restoreShortcutsPushButton.clicked.connect(
             self.restore_shortcuts_defaults
         )
-        self.ui.restore_parse_defaults_button.clicked.connect(
-            self.restore_parse_defaults
-        )
-        self.ui.restore_skip_defaults_button.clicked.connect(self.restore_skip_defaults)
-        self.ui.restore_all_defaults_button.clicked.connect(self.restore_all_defaults)
+        self.ui.restoreParsePushButton.clicked.connect(self.restore_parse_defaults)
+        self.ui.restoreSkipPushButton.clicked.connect(self.restore_skip_defaults)
+        self.ui.restoreAllDefaultsPushButton.clicked.connect(self.restore_all_defaults)
 
     def delete_row(self) -> None:
         title = "Confirmation"
@@ -458,28 +466,30 @@ class SettingsDialog(QDialog):
 
     def save_to_config(self) -> None:  # pylint:disable=too-many-locals
         new_config = {
-            "tag_ready": self.ui.ready_tag_input.text(),
-            "tag_not_ready": self.ui.not_read_tag_input.text(),
-            "tag_known": self.ui.known_automatically_tag_input.text(),
-            "tag_known_manually": self.ui.known_manually_tag_input.text(),
-            "tag_learn_card_now": self.ui.learn_card_now_tag_input.text(),
-            "shortcut_browse_ready_same_unknown": self.ui.shortcut_browse_ready_same_unknown_input.keySequence().toString(),
-            "shortcut_browse_all_same_unknown": self.ui.shortcut_browse_all_same_unknown_input.keySequence().toString(),
-            "shortcut_set_known_and_skip": self.ui.shortcut_known_and_skip_input.keySequence().toString(),
-            "shortcut_learn_now": self.ui.shortcut_learn_now_input.keySequence().toString(),
-            "shortcut_view_morphemes": self.ui.shortcut_view_morphs_input.keySequence().toString(),
-            "recalc_interval_for_known": self.ui.recalc_interval_known_input.value(),
-            "recalc_on_sync": self.ui.recalc_on_sync_input.isChecked(),
-            "recalc_suspend_known_new_cards": self.ui.recalc_suspend_new_cards_input.isChecked(),
-            "parse_ignore_bracket_contents": self.ui.parse_ignore_bracket_contents_input.isChecked(),
-            "parse_ignore_round_bracket_contents": self.ui.parse_ignore_round_bracket_contents_input.isChecked(),
-            "parse_ignore_slim_round_bracket_contents": self.ui.parse_ignore_slim_round_bracket_contents_input.isChecked(),
-            "parse_ignore_names_morphemizer": self.ui.parse_ignore_names_morphemizer_input.isChecked(),
-            "parse_ignore_names_textfile": self.ui.parse_ignore_names_textfile_input.isChecked(),
-            "parse_ignore_suspended_cards_content": self.ui.parse_ignore_suspended_cards_content_input.isChecked(),
-            "skip_only_known_morphs_cards": self.ui.skip_only_known_morphs_cards_input.isChecked(),
-            "skip_unknown_morph_seen_today_cards": self.ui.skip_unknown_morph_seen_today_cards_input.isChecked(),
-            "skip_show_num_of_skipped_cards": self.ui.skip_show_num_of_skipped_cards_input.isChecked(),
+            "tag_ready": self.ui.tagReadyLineEdit.text(),
+            "tag_not_ready": self.ui.tagNotReadyLineEdit.text(),
+            "tag_known_automatically": self.ui.tagKnownAutomaticallyLineEdit.text(),
+            "tag_known_manually": self.ui.tagKnownManuallyLineEdit.text(),
+            "tag_learn_card_now": self.ui.tagLearnCardNowLineEdit.text(),
+            "shortcut_recalc": self.ui.shortcutRecalcKeySequenceEdit.keySequence().toString(),
+            "shortcut_settings": self.ui.shortcutSettingsKeySequenceEdit.keySequence().toString(),
+            "shortcut_browse_ready_same_unknown": self.ui.shortcutBrowseReadyKeySequenceEdit.keySequence().toString(),
+            "shortcut_browse_all_same_unknown": self.ui.shortcutBrowseAllKeySequenceEdit.keySequence().toString(),
+            "shortcut_set_known_and_skip": self.ui.shortcutKnownAndSkipKeySequenceEdit.keySequence().toString(),
+            "shortcut_learn_now": self.ui.shortcutLearnNowKeySequenceEdit.keySequence().toString(),
+            "shortcut_view_morphemes": self.ui.shortcutViewMorphsKeySequenceEdit.keySequence().toString(),
+            "recalc_interval_for_known": self.ui.recalcIntervalSpinBox.value(),
+            "recalc_on_sync": self.ui.recalcBeforeSyncCheckBox.isChecked(),
+            "recalc_suspend_known_new_cards": self.ui.recalcSuspendKnownCheckBox.isChecked(),
+            "parse_ignore_bracket_contents": self.ui.parseIgnoreSquareCheckBox.isChecked(),
+            "parse_ignore_round_bracket_contents": self.ui.parseIgnoreRoundCheckBox.isChecked(),
+            "parse_ignore_slim_round_bracket_contents": self.ui.parseIgnoreSlimCheckBox.isChecked(),
+            "parse_ignore_names_morphemizer": self.ui.parseIgnoreNamesMizerCheckBox.isChecked(),
+            "parse_ignore_names_textfile": self.ui.parseIgnoreNamesFileCheckBox.isChecked(),
+            "parse_ignore_suspended_cards_content": self.ui.parseIgnoreSuspendedCheckBox.isChecked(),
+            "skip_only_known_morphs_cards": self.ui.skipKnownCheckBox.isChecked(),
+            "skip_unknown_morph_seen_today_cards": self.ui.skipAlreadySeenCheckBox.isChecked(),
+            "skip_show_num_of_skipped_cards": self.ui.skipNotificationsCheckBox.isChecked(),
         }
 
         filters: list[FilterTypeAlias] = []
@@ -573,7 +583,7 @@ class SettingsDialog(QDialog):
 
         update_configs(new_config)
         self.config = AnkiMorphsConfig()
-        tooltip("Please recalc to avoid unexpected behaviour", parent=mw)
+        tooltip("Please recalc to avoid unexpected behaviour", parent=self)
 
     def extra_fields_changed(self, new_filters: list[FilterTypeAlias]) -> bool:
         extra_fields: list[str] = [
@@ -629,6 +639,25 @@ class SettingsDialog(QDialog):
         if tab_index == 1:
             self._setup_extra_fields_table(self.config.filters)
 
+    def _tags_cell_clicked(self, row: int, column: int) -> None:
+        if column != 1:
+            # tags cells are in column 1
+            return
+
+        tags_widget: Optional[QTableWidgetItem] = self.ui.note_filters_table.item(
+            row, 1
+        )
+        assert tags_widget is not None
+        tags = tags_widget.text().split(",")
+        selected_tags = [tag.strip() for tag in tags]
+
+        tags_selection_dialog = TagSelectionDialog(selected_tags, parent=mw)
+        if tags_selection_dialog.exec():
+            # received dialog.accept() signal
+            joined_tags: str = ", ".join(tags_selection_dialog.selected_tags)
+            self.ui.note_filters_table.setItem(row, 1, QTableWidgetItem(joined_tags))
+            tooltip("Remember to save!", parent=self)
+
     def warning_dialog(
         self, title: str, text: str, display_tooltip: bool = True
     ) -> bool:
@@ -643,7 +672,7 @@ class SettingsDialog(QDialog):
         answer = warning_box.exec()
         if answer == QMessageBox.StandardButton.Yes:
             if display_tooltip:
-                tooltip("Remember to save!", parent=mw)
+                tooltip("Remember to save!", parent=self)
             return True
         return False
 

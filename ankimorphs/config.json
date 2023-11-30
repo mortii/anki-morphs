@@ -22,11 +22,9 @@
       "unknowns_field_index": null
     }
   ],
-  "frequency_list": "Frequency file not found",
   "parse_ignore_bracket_contents": false,
   "parse_ignore_names_morphemizer": true,
   "parse_ignore_names_textfile": false,
-  "parse_ignore_quotation_marks": true,
   "parse_ignore_round_bracket_contents": false,
   "parse_ignore_slim_round_bracket_contents": false,
   "parse_ignore_suspended_cards_content": false,
@@ -46,7 +44,6 @@
   "tag_known_automatically": "am-known-automatically",
   "tag_known_manually": "am-known-manually",
   "tag_learn_card_now": "am-learn-card-now",
-  "tag_learning": "am-learning",
   "tag_not_ready": "am-not-ready",
   "tag_ready": "am-ready"
 }

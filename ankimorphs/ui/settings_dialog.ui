@@ -73,7 +73,7 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_2">
              <item>
-              <widget class="QPushButton" name="delete_row_button">
+              <widget class="QPushButton" name="deleteRowPushButton">
                <property name="text">
                 <string>Delete Selected Row</string>
                </property>
@@ -93,7 +93,7 @@
               </spacer>
              </item>
              <item>
-              <widget class="QPushButton" name="add_new_row_button">
+              <widget class="QPushButton" name="addNewRowPushButton">
                <property name="text">
                 <string>Add New Row</string>
                </property>
@@ -210,19 +210,19 @@
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_7">
                <item>
-                <widget class="QLineEdit" name="ready_tag_input"/>
+                <widget class="QLineEdit" name="tagReadyLineEdit"/>
                </item>
                <item>
-                <widget class="QLineEdit" name="not_read_tag_input"/>
+                <widget class="QLineEdit" name="tagNotReadyLineEdit"/>
                </item>
                <item>
-                <widget class="QLineEdit" name="learn_card_now_tag_input"/>
+                <widget class="QLineEdit" name="tagLearnCardNowLineEdit"/>
                </item>
                <item>
-                <widget class="QLineEdit" name="known_manually_tag_input"/>
+                <widget class="QLineEdit" name="tagKnownManuallyLineEdit"/>
                </item>
                <item>
-                <widget class="QLineEdit" name="known_automatically_tag_input"/>
+                <widget class="QLineEdit" name="tagKnownAutomaticallyLineEdit"/>
                </item>
               </layout>
              </item>
@@ -257,7 +257,7 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_7">
              <item>
-              <widget class="QPushButton" name="restore_tags_defaults_button">
+              <widget class="QPushButton" name="restoreTagsPushButton">
                <property name="text">
                 <string>Restore Default Tags Settings</string>
                </property>
@@ -290,42 +290,42 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_9">
            <item>
-            <widget class="QCheckBox" name="parse_ignore_bracket_contents_input">
+            <widget class="QCheckBox" name="parseIgnoreSquareCheckBox">
              <property name="text">
               <string>ignore content in square brackets []</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="parse_ignore_round_bracket_contents_input">
+            <widget class="QCheckBox" name="parseIgnoreRoundCheckBox">
              <property name="text">
               <string>ignore content in round brackets（）</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="parse_ignore_slim_round_bracket_contents_input">
+            <widget class="QCheckBox" name="parseIgnoreSlimCheckBox">
              <property name="text">
               <string>ignore content in slim round brackets ()</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="parse_ignore_suspended_cards_content_input">
+            <widget class="QCheckBox" name="parseIgnoreSuspendedCheckBox">
              <property name="text">
               <string>Ignore content in suspended cards</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="parse_ignore_names_morphemizer_input">
+            <widget class="QCheckBox" name="parseIgnoreNamesMizerCheckBox">
              <property name="text">
               <string>Ignore names found by the morphemizer</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="parse_ignore_names_textfile_input">
+            <widget class="QCheckBox" name="parseIgnoreNamesFileCheckBox">
              <property name="text">
               <string>Ignore names found in names.txt</string>
              </property>
@@ -349,7 +349,7 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_8">
            <item>
-            <widget class="QPushButton" name="restore_parse_defaults_button">
+            <widget class="QPushButton" name="restoreParsePushButton">
              <property name="text">
               <string>Restore Default Parse Settings</string>
              </property>
@@ -380,21 +380,21 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_11">
            <item>
-            <widget class="QCheckBox" name="skip_only_known_morphs_cards_input">
+            <widget class="QCheckBox" name="skipKnownCheckBox">
              <property name="text">
               <string>Skip cards with only known morphs</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="skip_unknown_morph_seen_today_cards_input">
+            <widget class="QCheckBox" name="skipAlreadySeenCheckBox">
              <property name="text">
               <string>Skip cards that have unknown morphs already seen today</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="skip_show_num_of_skipped_cards_input">
+            <widget class="QCheckBox" name="skipNotificationsCheckBox">
              <property name="text">
               <string>Show &quot;skipped x cards&quot; notifications</string>
              </property>
@@ -418,7 +418,7 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_11">
            <item>
-            <widget class="QPushButton" name="restore_skip_defaults_button">
+            <widget class="QPushButton" name="restoreSkipPushButton">
              <property name="text">
               <string>Restore Default Skip Settings</string>
              </property>
@@ -451,14 +451,14 @@
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_21">
              <item>
-              <widget class="QCheckBox" name="recalc_on_sync_input">
+              <widget class="QCheckBox" name="recalcBeforeSyncCheckBox">
                <property name="text">
                 <string>Automatically Recalc before Anki sync</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="recalc_suspend_new_cards_input">
+              <widget class="QCheckBox" name="recalcSuspendKnownCheckBox">
                <property name="text">
                 <string>Suspend new cards with only known morphs</string>
                </property>
@@ -479,7 +479,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QSpinBox" name="recalc_interval_known_input"/>
+              <widget class="QSpinBox" name="recalcIntervalSpinBox"/>
              </item>
              <item>
               <widget class="QLabel" name="label_17">
@@ -519,7 +519,7 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_9">
              <item>
-              <widget class="QPushButton" name="restore_recalc_defaults_button">
+              <widget class="QPushButton" name="restoreRecalcPushButton">
                <property name="text">
                 <string>Restore Default Recalc Settings</string>
                </property>
@@ -607,25 +607,25 @@
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_15">
              <item>
-              <widget class="QKeySequenceEdit" name="shortcut_recalc_input"/>
+              <widget class="QKeySequenceEdit" name="shortcutRecalcKeySequenceEdit"/>
              </item>
              <item>
-              <widget class="QKeySequenceEdit" name="shortcut_settings_input"/>
+              <widget class="QKeySequenceEdit" name="shortcutSettingsKeySequenceEdit"/>
              </item>
              <item>
-              <widget class="QKeySequenceEdit" name="shortcut_browse_ready_same_unknown_input"/>
+              <widget class="QKeySequenceEdit" name="shortcutBrowseReadyKeySequenceEdit"/>
              </item>
              <item>
-              <widget class="QKeySequenceEdit" name="shortcut_browse_all_same_unknown_input"/>
+              <widget class="QKeySequenceEdit" name="shortcutBrowseAllKeySequenceEdit"/>
              </item>
              <item>
-              <widget class="QKeySequenceEdit" name="shortcut_known_and_skip_input"/>
+              <widget class="QKeySequenceEdit" name="shortcutKnownAndSkipKeySequenceEdit"/>
              </item>
              <item>
-              <widget class="QKeySequenceEdit" name="shortcut_learn_now_input"/>
+              <widget class="QKeySequenceEdit" name="shortcutLearnNowKeySequenceEdit"/>
              </item>
              <item>
-              <widget class="QKeySequenceEdit" name="shortcut_view_morphs_input"/>
+              <widget class="QKeySequenceEdit" name="shortcutViewMorphsKeySequenceEdit"/>
              </item>
             </layout>
            </item>
@@ -660,7 +660,7 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_10">
            <item>
-            <widget class="QPushButton" name="restore_shortcut_defaults_button">
+            <widget class="QPushButton" name="restoreShortcutsPushButton">
              <property name="text">
               <string>Restore Default Shortcut Settings</string>
              </property>
@@ -688,7 +688,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QPushButton" name="restore_all_defaults_button">
+        <widget class="QPushButton" name="restoreAllDefaultsPushButton">
          <property name="text">
           <string>Restore All Default Settings</string>
          </property>
@@ -728,14 +728,14 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="cancel_button">
+        <widget class="QPushButton" name="cancelPushButton">
          <property name="text">
           <string>Cancel</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="save_button">
+        <widget class="QPushButton" name="savePushButton">
          <property name="text">
           <string>Save</string>
          </property>

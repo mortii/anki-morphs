@@ -22,8 +22,9 @@ pyuic6 -o ankimorphs/ui/settings_dialog_ui.py ankimorphs/ui/settings_dialog.ui
 ```bash
 pyuic6 -o ankimorphs/ui/frequency_file_generator_ui.py ankimorphs/ui/frequency_file_generator.ui
 ```
-
-
+```bash
+pyuic6 -o ankimorphs/ui/tag_selection_ui.py ankimorphs/ui/tag_selection.ui
+```
 
 Useful guides:
 - https://realpython.com/qt-designer-python/
