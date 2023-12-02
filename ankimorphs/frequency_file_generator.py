@@ -3,8 +3,9 @@ import os
 import re
 from functools import partial
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Callable, Optional, Union
 
+import aqt
 from anki.collection import Collection
 from aqt import mw
 from aqt.operations import QueryOp
@@ -16,6 +17,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
+from . import ankimorphs_constants
 from .exceptions import CancelledOperationException, EmptyFileSelectionException
 from .morph_utils import (
     remove_names_morphemizer,
@@ -40,11 +42,6 @@ class MorphOccurrence:
         self.occurrence: int = 1
 
 
-def main() -> None:
-    mw.ankimorphs_frequency_file_generator = FrequencyFileGeneratorDialog(mw)  # type: ignore[union-attr]
-    mw.ankimorphs_frequency_file_generator.exec()  # type: ignore[union-attr]
-
-
 class FrequencyFileGeneratorDialog(QDialog):
     # The UI comes from ankimorphs/ui/frequency_file_generator.ui which is used in Qt Designer,
     # which is then converted to ankimorphs/ui/frequency_file_generator_ui.py,
@@ -65,6 +62,7 @@ class FrequencyFileGeneratorDialog(QDialog):
         self._setup_output_path()
         self._setup_checkboxes()
         self._setup_buttons()
+        self.show()
 
     def _populate_morphemizers(self) -> None:
         morphemizer_names = [mizer.get_description() for mizer in self._morphemizers]
@@ -237,6 +235,20 @@ class FrequencyFileGeneratorDialog(QDialog):
                     break
                 morph = morph_occurrence.morph
                 morph_writer.writerow([morph.norm, morph.inflected])
+
+    def closeWithCallback(  # pylint:disable=invalid-name
+        self, callback: Callable[[], None]
+    ) -> None:
+        # This is used by the Anki dialog manager
+        self.close()
+        aqt.dialogs.markClosed(
+            ankimorphs_constants.FREQUENCY_FILE_GENERATOR_DIALOG_NAME
+        )
+        callback()
+
+    def reopen(self) -> None:
+        # This is used by the Anki dialog manager
+        self.show()
 
 
 def on_success(result: Any) -> None:

@@ -13,8 +13,9 @@
 ################################################################
 
 from functools import partial
-from typing import Literal
+from typing import Literal, Optional
 
+import aqt
 from anki.cards import Card
 from anki.collection import OpChangesAfterUndo
 from aqt import gui_hooks, mw
@@ -32,6 +33,7 @@ from aqt.utils import tooltip
 from aqt.webview import AnkiWebView
 
 from . import (
+    ankimorphs_constants,
     browser_utils,
     frequency_file_generator,
     name_file_utils,
@@ -42,12 +44,14 @@ from . import (
 )
 from .ankimorphs_db import AnkiMorphsDB
 from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter, get_read_enabled_filters
+from .frequency_file_generator import FrequencyFileGeneratorDialog
+from .settings_dialog import SettingsDialog
+from .tag_selection_dialog import TagSelectionDialog
 from .toolbar_stats import MorphToolbarStats
 
 TOOL_MENU: str = "am_tool_menu"
 BROWSE_MENU: str = "am_browse_menu"
 CONTEXT_MENU: str = "am_context_menu"
-DEV_MODE = False
 
 startup_sync: bool = True
 
@@ -59,6 +63,7 @@ def main() -> None:
     gui_hooks.top_toolbar_did_init_links.append(init_toolbar_items)
 
     gui_hooks.profile_did_open.append(init_db)
+    gui_hooks.profile_did_open.append(register_addon_dialogs)
     gui_hooks.profile_did_open.append(redraw_toolbar)
     gui_hooks.profile_did_open.append(init_tool_menu_and_actions)
     gui_hooks.profile_did_open.append(init_browser_menus_and_actions)
@@ -109,6 +114,18 @@ def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
     )
 
 
+def register_addon_dialogs() -> None:
+    # We use the Anki dialog manager to handle our dialogs
+
+    aqt.dialogs.register_dialog(
+        name=ankimorphs_constants.SETTINGS_DIALOG_NAME, creator=SettingsDialog
+    )
+    aqt.dialogs.register_dialog(
+        name=ankimorphs_constants.FREQUENCY_FILE_GENERATOR_DIALOG_NAME,
+        creator=FrequencyFileGeneratorDialog,
+    )
+
+
 def init_db() -> None:
     read_config_filters: list[AnkiMorphsConfigFilter] = get_read_enabled_filters()
     has_active_note_filter = False
@@ -155,7 +172,7 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
 
-    if DEV_MODE:
+    if ankimorphs_constants.DEV_MODE:
         test_action = create_test_action()
         am_tool_menu.addAction(test_action)
 
@@ -231,6 +248,7 @@ def replace_reviewer_functions() -> None:
     )
 
 
+# TODO: move to reviewing utils?
 def insert_seen_morphs(
     reviewer: Reviewer, card: Card, ease: Literal[1, 2, 3, 4]
 ) -> None:
@@ -240,6 +258,7 @@ def insert_seen_morphs(
     am_db.con.close()
 
 
+# TODO: move to reviewing utils?
 def rebuild_seen_morphs(changes: OpChangesAfterUndo) -> None:
     ################################################################
     #                      TRACKING SEEN MORPHS
@@ -269,7 +288,7 @@ def rebuild_seen_morphs(changes: OpChangesAfterUndo) -> None:
 
     AnkiMorphsDB.rebuild_seen_morphs_today()
 
-    if DEV_MODE:
+    if ankimorphs_constants.DEV_MODE:
         print("Seen_Morphs:")
         am_db = AnkiMorphsDB()
         am_db.print_table("Seen_Morphs")
@@ -299,7 +318,9 @@ def create_recalc_action(am_config: AnkiMorphsConfig) -> QAction:
 def create_settings_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Settings", mw)
     action.setShortcut(am_config.shortcut_settings)
-    action.triggered.connect(settings_dialog.main)
+    action.triggered.connect(
+        partial(aqt.dialogs.open, name=ankimorphs_constants.SETTINGS_DIALOG_NAME)
+    )
     return action
 
 
@@ -375,7 +396,12 @@ def add_name_action(web_view: AnkiWebView, menu: QMenu) -> None:
 
 def create_frequency_file_action() -> QAction:
     action = QAction("&Frequency File Generator", mw)
-    action.triggered.connect(frequency_file_generator.main)
+    action.triggered.connect(
+        partial(
+            aqt.dialogs.open,
+            name=ankimorphs_constants.FREQUENCY_FILE_GENERATOR_DIALOG_NAME,
+        )
+    )
     return action
 
 

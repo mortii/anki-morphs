@@ -68,7 +68,7 @@ exclude = [
   "ankimorphs/debug_utils.py",
   "ankimorphs/mecab_wrapper.py"
 ]
-ignore_names = ["print_*", "_refresh_needed", "_v3"]
+ignore_names = ["print_*", "_refresh_needed", "_v3", "reopen", "closeWithCallback"]
 min_confidence = 60
 sort_by_size = true
 verbose = false

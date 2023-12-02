@@ -1,15 +1,17 @@
-from typing import Optional
+from typing import Callable, Optional
 
+import aqt
 from anki.tags import TagManager
 from aqt import mw
 from aqt.qt import (  # pylint:disable=no-name-in-module
     QDialog,
-    QMainWindow,
     QStandardItem,
     QStandardItemModel,
+    QStyle,
     Qt,
 )
 
+from . import ankimorphs_constants
 from .ui.tag_selection_ui import Ui_TagSelectionDialog
 
 
@@ -22,18 +24,22 @@ class TagSelectionDialog(QDialog):
     # Qt Designer, like setting up tables and widget-connections.
 
     def __init__(
-        self, selected_tags: list[str], parent: Optional[QMainWindow] = None
+        self,
     ) -> None:
-        super().__init__(parent)
+        super().__init__(parent=None)  # no parent makes the dialog modeless
         assert mw is not None
-        self.mw = parent  # pylint:disable=invalid-name
         self.ui = Ui_TagSelectionDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
         self._all_tags: list[str] = TagManager(mw.col).all()
-        self.selected_tags: list[str] = selected_tags
+        self.selected_tags: list[str] = []
+        self.current_row: int = -1
         self._model = QStandardItemModel()
-        self._populate_tags_list()
         self._setup_buttons()
+
+    def set_selected_tags_and_row(self, selected_tags: list[str], row: int) -> None:
+        self.selected_tags = selected_tags
+        self.current_row = row
+        self._populate_tags_list()
 
     def _populate_tags_list(self) -> None:
         for index, tag in enumerate(self._all_tags):
@@ -50,10 +56,17 @@ class TagSelectionDialog(QDialog):
         self.ui.listView.setModel(self._model)
 
     def _setup_buttons(self) -> None:
+        style: Optional[QStyle] = self.style()
+        assert style is not None
+
+        apply_icon = style.standardIcon(QStyle.StandardPixmap.SP_DialogApplyButton)
+        self.ui.applyButton.setIcon(apply_icon)
+
         self.ui.unselectAllButton.setAutoDefault(False)
-        self.ui.saveButton.setAutoDefault(False)
+        self.ui.applyButton.setAutoDefault(False)
+
         self.ui.unselectAllButton.clicked.connect(self.unselect_all_items)
-        self.ui.saveButton.clicked.connect(self.save)
+        self.ui.applyButton.clicked.connect(self.save)
 
     def unselect_all_items(self) -> None:
         for _row in range(self._model.rowCount()):
@@ -70,3 +83,11 @@ class TagSelectionDialog(QDialog):
                 checked.append(_item.text())
         self.selected_tags = checked
         self.accept()
+
+    def closeWithCallback(  # pylint:disable=invalid-name
+        self, callback: Callable[[], None]
+    ) -> None:
+        # This is used by the Anki dialog manager
+        self.close()
+        aqt.dialogs.markClosed(ankimorphs_constants.TAG_SELECTOR_DIALOG_NAME)
+        callback()

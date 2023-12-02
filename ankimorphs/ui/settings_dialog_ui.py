@@ -413,5 +413,5 @@ class Ui_SettingsDialog:
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.shortcuts_tab), _translate("SettingsDialog", "Shortcuts"))
         self.restoreAllDefaultsPushButton.setText(_translate("SettingsDialog", "Restore All Default Settings"))
         self.ankimorphs_version_label.setText(_translate("SettingsDialog", "AnkiMorphs version: x"))
-        self.cancelPushButton.setText(_translate("SettingsDialog", "Cancel"))
-        self.savePushButton.setText(_translate("SettingsDialog", "Save"))
+        self.cancelPushButton.setText(_translate("SettingsDialog", " Cancel"))
+        self.savePushButton.setText(_translate("SettingsDialog", " Save"))

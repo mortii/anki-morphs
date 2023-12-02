@@ -28,9 +28,9 @@ class Ui_TagSelectionDialog:
         self.verticalLayout.addWidget(self.unselectAllButton)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout.addItem(spacerItem)
-        self.saveButton = QtWidgets.QPushButton(parent=TagSelectionDialog)
-        self.saveButton.setObjectName("saveButton")
-        self.verticalLayout.addWidget(self.saveButton)
+        self.applyButton = QtWidgets.QPushButton(parent=TagSelectionDialog)
+        self.applyButton.setObjectName("applyButton")
+        self.verticalLayout.addWidget(self.applyButton)
         self.horizontalLayout.addLayout(self.verticalLayout)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
@@ -41,4 +41,4 @@ class Ui_TagSelectionDialog:
         _translate = QtCore.QCoreApplication.translate
         TagSelectionDialog.setWindowTitle(_translate("TagSelectionDialog", "Tag Selector"))
         self.unselectAllButton.setText(_translate("TagSelectionDialog", "Unselect All"))
-        self.saveButton.setText(_translate("TagSelectionDialog", "Save"))
+        self.applyButton.setText(_translate("TagSelectionDialog", " Apply"))

@@ -1,22 +1,25 @@
 from collections.abc import Iterable, Sequence
 from functools import partial
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
+import aqt
 from anki.models import FieldDict, NotetypeId, NotetypeNameId
 from aqt import mw
 from aqt.qt import (  # pylint:disable=no-name-in-module
+    QAbstractItemView,
     QCheckBox,
     QComboBox,
     QDialog,
-    QMainWindow,
     QMessageBox,
+    QStyle,
     Qt,
     QTableWidgetItem,
     QWidget,
 )
 from aqt.utils import tooltip
 
+from . import ankimorphs_constants
 from .config import (
     AnkiMorphsConfig,
     AnkiMorphsConfigFilter,
@@ -24,13 +27,8 @@ from .config import (
     update_configs,
 )
 from .morphemizer import get_all_morphemizers
-from .tag_selection import TagSelectionDialog
+from .tag_selection_dialog import TagSelectionDialog
 from .ui.settings_dialog_ui import Ui_SettingsDialog
-
-
-def main() -> None:
-    mw.ankimorphs_settings_dialog = SettingsDialog(mw)  # type: ignore[union-attr]
-    mw.ankimorphs_settings_dialog.exec()  # type: ignore[union-attr]
 
 
 class SettingsDialog(QDialog):
@@ -41,10 +39,10 @@ class SettingsDialog(QDialog):
     # Here we make the final adjustments that can't be made (or are hard to make) in
     # Qt Designer, like setting up tables and widget-connections.
 
-    def __init__(self, parent: Optional[QMainWindow] = None) -> None:
-        super().__init__(parent)
+    def __init__(self) -> None:
+        # TODO: make functions private
+        super().__init__(parent=None)  # no parent makes the dialog modeless
         assert mw is not None
-        self.mw = parent  # pylint:disable=invalid-name
         self.models: Sequence[NotetypeNameId] = mw.col.models.all_names_and_ids()
         self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
@@ -61,10 +59,30 @@ class SettingsDialog(QDialog):
         self._setup_buttons()
         self.ui.tabWidget.currentChanged.connect(self.tab_change)
 
+        # disables manual editing of in note filter table
+        self.ui.note_filters_table.setEditTriggers(
+            QAbstractItemView.EditTrigger.NoEditTriggers
+        )
+
+        # the tag selector dialog is spawned from the settings dialog
+        # so it makes the most sense to to store it here instead of __init__.py
+        self.tag_selector = TagSelectionDialog()
+        self.tag_selector.ui.applyButton.clicked.connect(self.update_note_filter_tags)
         self.ui.note_filters_table.cellClicked.connect(self._tags_cell_clicked)
 
+        # close the tag selector dialog when the settings dialog closes
+        self.finished.connect(self.tag_selector.close)
+
+        # Have the Anki dialog manager handle the tag selector dialog
+        aqt.dialogs.register_dialog(
+            name=ankimorphs_constants.TAG_SELECTOR_DIALOG_NAME,
+            creator=self.tag_selector.show,
+        )
+
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.7.1-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.7.2-alpha")
+
+        self.show()
 
     def _setup_note_filters_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
@@ -423,6 +441,15 @@ class SettingsDialog(QDialog):
             self.restore_shortcuts_defaults(skip_confirmation=True)
 
     def _setup_buttons(self) -> None:
+        style: Optional[QStyle] = self.style()
+        assert style is not None
+
+        save_icon = style.standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton)
+        self.ui.savePushButton.setIcon(save_icon)
+
+        cancel_icon = style.standardIcon(QStyle.StandardPixmap.SP_DialogCancelButton)
+        self.ui.cancelPushButton.setIcon(cancel_icon)
+
         self.ui.savePushButton.setAutoDefault(False)
         self.ui.cancelPushButton.setAutoDefault(False)
         self.ui.addNewRowPushButton.setAutoDefault(False)
@@ -631,11 +658,9 @@ class SettingsDialog(QDialog):
         field_cbox.addItems(fields)
 
     def tab_change(self, tab_index: int) -> None:
-        """
-        The extra fields settings are dependent on the note filters, so
-        everytime the extra fields tab is opened we just re-populate it
-        in case the note filters have changed.
-        """
+        # The extra fields settings are dependent on the note filters, so
+        # everytime the extra fields tab is opened we just re-populate it
+        # in case the note filters have changed.
         if tab_index == 1:
             self._setup_extra_fields_table(self.config.filters)
 
@@ -648,15 +673,35 @@ class SettingsDialog(QDialog):
             row, 1
         )
         assert tags_widget is not None
+
         tags = tags_widget.text().split(",")
         selected_tags = [tag.strip() for tag in tags]
 
-        tags_selection_dialog = TagSelectionDialog(selected_tags, parent=mw)
-        if tags_selection_dialog.exec():
-            # received dialog.accept() signal
-            joined_tags: str = ", ".join(tags_selection_dialog.selected_tags)
-            self.ui.note_filters_table.setItem(row, 1, QTableWidgetItem(joined_tags))
-            tooltip("Remember to save!", parent=self)
+        self.tag_selector.set_selected_tags_and_row(
+            selected_tags=selected_tags, row=row
+        )
+        aqt.dialogs.open(
+            name=ankimorphs_constants.TAG_SELECTOR_DIALOG_NAME,
+        )
+
+    def update_note_filter_tags(self) -> None:
+        joined_tags: str = ", ".join(self.tag_selector.selected_tags)
+        self.ui.note_filters_table.setItem(
+            self.tag_selector.current_row, 1, QTableWidgetItem(joined_tags)
+        )
+        tooltip("Remember to save!", parent=self)
+
+    def closeWithCallback(  # pylint:disable=invalid-name
+        self, callback: Callable[[], None]
+    ) -> None:
+        # This is used by the Anki dialog manager
+        self.close()
+        aqt.dialogs.markClosed(ankimorphs_constants.SETTINGS_DIALOG_NAME)
+        callback()
+
+    def reopen(self) -> None:
+        # This is used by the Anki dialog manager
+        self.show()
 
     def warning_dialog(
         self, title: str, text: str, display_tooltip: bool = True
