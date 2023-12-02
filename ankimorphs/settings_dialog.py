@@ -40,24 +40,23 @@ class SettingsDialog(QDialog):
     # Qt Designer, like setting up tables and widget-connections.
 
     def __init__(self) -> None:
-        # TODO: make functions private
         super().__init__(parent=None)  # no parent makes the dialog modeless
         assert mw is not None
         self.models: Sequence[NotetypeNameId] = mw.col.models.all_names_and_ids()
         self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
-        self.config = AnkiMorphsConfig()
+        self._config = AnkiMorphsConfig()
         self._morphemizers = get_all_morphemizers()
         self._default_config = AnkiMorphsConfig(is_default=True)
-        self._setup_note_filters_table(self.config.filters)
-        self._setup_extra_fields_table(self.config.filters)
+        self._setup_note_filters_table(self._config.filters)
+        self._setup_extra_fields_table(self._config.filters)
         self._populate_tags_tab()
         self._populate_parse_tab()
         self._populate_skip_tab()
         self._populate_shortcuts_tab()
         self._populate_recalc_tab()
         self._setup_buttons()
-        self.ui.tabWidget.currentChanged.connect(self.tab_change)
+        self.ui.tabWidget.currentChanged.connect(self._tab_change)
 
         # disables manual editing of in note filter table
         self.ui.note_filters_table.setEditTriggers(
@@ -67,7 +66,7 @@ class SettingsDialog(QDialog):
         # the tag selector dialog is spawned from the settings dialog
         # so it makes the most sense to to store it here instead of __init__.py
         self.tag_selector = TagSelectionDialog()
-        self.tag_selector.ui.applyButton.clicked.connect(self.update_note_filter_tags)
+        self.tag_selector.ui.applyButton.clicked.connect(self._update_note_filter_tags)
         self.ui.note_filters_table.cellClicked.connect(self._tags_cell_clicked)
 
         # close the tag selector dialog when the settings dialog closes
@@ -94,9 +93,9 @@ class SettingsDialog(QDialog):
         self.ui.note_filters_table.setAlternatingRowColors(True)
 
         for row, am_filter in enumerate(config_filters):
-            self.set_note_filters_table_row(row, am_filter)
+            self._set_note_filters_table_row(row, am_filter)
 
-    def set_note_filters_table_row(  # pylint:disable=too-many-locals
+    def _set_note_filters_table_row(  # pylint:disable=too-many-locals
         self, row: int, config_filter: AnkiMorphsConfigFilter
     ) -> None:
         assert mw
@@ -123,7 +122,7 @@ class SettingsDialog(QDialog):
 
         # Fields are dependent on note-type
         note_type_cbox.currentIndexChanged.connect(
-            partial(self.update_fields_cbox, field_cbox, note_type_cbox)
+            partial(self._update_fields_cbox, field_cbox, note_type_cbox)
         )
 
         morphemizer_cbox = QComboBox(self.ui.note_filters_table)
@@ -176,9 +175,9 @@ class SettingsDialog(QDialog):
         self.ui.extra_fields_table.setRowCount(note_filters_table_rows)
 
         for row in range(note_filters_table_rows):
-            self.set_extra_fields_table_row(row, config_filters)
+            self._set_extra_fields_table_row(row, config_filters)
 
-    def set_extra_fields_table_row(  # pylint:disable=too-many-locals
+    def _set_extra_fields_table_row(  # pylint:disable=too-many-locals
         self, row: int, config_filters: list[AnkiMorphsConfigFilter]
     ) -> None:
         assert mw
@@ -244,19 +243,19 @@ class SettingsDialog(QDialog):
         self.ui.extra_fields_table.setCellWidget(row, 3, difficulty_cbox)
 
     def _populate_tags_tab(self) -> None:
-        self.ui.tagReadyLineEdit.setText(self.config.tag_ready)
-        self.ui.tagNotReadyLineEdit.setText(self.config.tag_not_ready)
+        self.ui.tagReadyLineEdit.setText(self._config.tag_ready)
+        self.ui.tagNotReadyLineEdit.setText(self._config.tag_not_ready)
         self.ui.tagKnownAutomaticallyLineEdit.setText(
-            self.config.tag_known_automatically
+            self._config.tag_known_automatically
         )
-        self.ui.tagKnownManuallyLineEdit.setText(self.config.tag_known_manually)
-        self.ui.tagLearnCardNowLineEdit.setText(self.config.tag_learn_card_now)
+        self.ui.tagKnownManuallyLineEdit.setText(self._config.tag_known_manually)
+        self.ui.tagLearnCardNowLineEdit.setText(self._config.tag_learn_card_now)
 
-    def restore_tags_defaults(self, skip_confirmation: bool = False) -> None:
+    def _restore_tags_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"
             text = "Are you sure you want to restore default tags settings?"
-            confirmed = self.warning_dialog(title, text)
+            confirmed = self._warning_dialog(title, text)
 
             if not confirmed:
                 return
@@ -273,52 +272,52 @@ class SettingsDialog(QDialog):
 
     def _populate_parse_tab(self) -> None:
         self.ui.parseIgnoreSquareCheckBox.setChecked(
-            self.config.parse_ignore_bracket_contents
+            self._config.parse_ignore_bracket_contents
         )
         self.ui.parseIgnoreRoundCheckBox.setChecked(
-            self.config.parse_ignore_round_bracket_contents
+            self._config.parse_ignore_round_bracket_contents
         )
         self.ui.parseIgnoreSlimCheckBox.setChecked(
-            self.config.parse_ignore_slim_round_bracket_contents
+            self._config.parse_ignore_slim_round_bracket_contents
         )
         self.ui.parseIgnoreNamesMizerCheckBox.setChecked(
-            self.config.parse_ignore_names_morphemizer
+            self._config.parse_ignore_names_morphemizer
         )
         self.ui.parseIgnoreNamesFileCheckBox.setChecked(
-            self.config.parse_ignore_names_textfile
+            self._config.parse_ignore_names_textfile
         )
         self.ui.parseIgnoreSuspendedCheckBox.setChecked(
-            self.config.parse_ignore_suspended_cards_content
+            self._config.parse_ignore_suspended_cards_content
         )
 
     def _populate_shortcuts_tab(self) -> None:
         self.ui.shortcutRecalcKeySequenceEdit.setKeySequence(
-            self.config.shortcut_recalc
+            self._config.shortcut_recalc
         )
         self.ui.shortcutSettingsKeySequenceEdit.setKeySequence(
-            self.config.shortcut_settings
+            self._config.shortcut_settings
         )
         self.ui.shortcutBrowseReadyKeySequenceEdit.setKeySequence(
-            self.config.shortcut_browse_ready_same_unknown.toString()
+            self._config.shortcut_browse_ready_same_unknown.toString()
         )
         self.ui.shortcutBrowseAllKeySequenceEdit.setKeySequence(
-            self.config.shortcut_browse_all_same_unknown.toString()
+            self._config.shortcut_browse_all_same_unknown.toString()
         )
         self.ui.shortcutKnownAndSkipKeySequenceEdit.setKeySequence(
-            self.config.shortcut_set_known_and_skip.toString()
+            self._config.shortcut_set_known_and_skip.toString()
         )
         self.ui.shortcutLearnNowKeySequenceEdit.setKeySequence(
-            self.config.shortcut_learn_now.toString()
+            self._config.shortcut_learn_now.toString()
         )
         self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
-            self.config.shortcut_view_morphemes.toString()
+            self._config.shortcut_view_morphemes.toString()
         )
 
-    def restore_parse_defaults(self, skip_confirmation: bool = False) -> None:
+    def _restore_parse_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"
             text = "Are you sure you want to restore default parse settings?"
-            confirmed = self.warning_dialog(title, text)
+            confirmed = self._warning_dialog(title, text)
 
             if not confirmed:
                 return
@@ -342,11 +341,11 @@ class SettingsDialog(QDialog):
             self._default_config.parse_ignore_suspended_cards_content
         )
 
-    def restore_shortcuts_defaults(self, skip_confirmation: bool = False) -> None:
+    def _restore_shortcuts_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"
             text = "Are you sure you want to restore default shortcuts settings?"
-            confirmed = self.warning_dialog(title, text)
+            confirmed = self._warning_dialog(title, text)
 
             if not confirmed:
                 return
@@ -374,17 +373,17 @@ class SettingsDialog(QDialog):
         )
 
     def _populate_recalc_tab(self) -> None:
-        self.ui.recalcIntervalSpinBox.setValue(self.config.recalc_interval_for_known)
-        self.ui.recalcBeforeSyncCheckBox.setChecked(self.config.recalc_on_sync)
+        self.ui.recalcIntervalSpinBox.setValue(self._config.recalc_interval_for_known)
+        self.ui.recalcBeforeSyncCheckBox.setChecked(self._config.recalc_on_sync)
         self.ui.recalcSuspendKnownCheckBox.setChecked(
-            self.config.recalc_suspend_known_new_cards
+            self._config.recalc_suspend_known_new_cards
         )
 
-    def restore_recalc_defaults(self, skip_confirmation: bool = False) -> None:
+    def _restore_recalc_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"
             text = "Are you sure you want to restore default recalc settings?"
-            confirmed = self.warning_dialog(title, text)
+            confirmed = self._warning_dialog(title, text)
 
             if not confirmed:
                 return
@@ -398,19 +397,19 @@ class SettingsDialog(QDialog):
         )
 
     def _populate_skip_tab(self) -> None:
-        self.ui.skipKnownCheckBox.setChecked(self.config.skip_only_known_morphs_cards)
+        self.ui.skipKnownCheckBox.setChecked(self._config.skip_only_known_morphs_cards)
         self.ui.skipAlreadySeenCheckBox.setChecked(
-            self.config.skip_unknown_morph_seen_today_cards
+            self._config.skip_unknown_morph_seen_today_cards
         )
         self.ui.skipNotificationsCheckBox.setChecked(
-            self.config.skip_show_num_of_skipped_cards
+            self._config.skip_show_num_of_skipped_cards
         )
 
-    def restore_skip_defaults(self, skip_confirmation: bool = False) -> None:
+    def _restore_skip_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"
             text = "Are you sure you want to restore default skip settings?"
-            confirmed = self.warning_dialog(title, text)
+            confirmed = self._warning_dialog(title, text)
 
             if not confirmed:
                 return
@@ -425,20 +424,20 @@ class SettingsDialog(QDialog):
             self._default_config.skip_show_num_of_skipped_cards
         )
 
-    def restore_all_defaults(self) -> None:
+    def _restore_all_defaults(self) -> None:
         title = "Confirmation"
         text = "Are you sure you want to restore <b>all</b> default settings?"
-        confirmed = self.warning_dialog(title, text)
+        confirmed = self._warning_dialog(title, text)
 
         if confirmed:
             default_filters = self._default_config.filters
             self._setup_note_filters_table(default_filters)
             self._setup_extra_fields_table(default_filters)
-            self.restore_tags_defaults(skip_confirmation=True)
-            self.restore_parse_defaults(skip_confirmation=True)
-            self.restore_skip_defaults(skip_confirmation=True)
-            self.restore_recalc_defaults(skip_confirmation=True)
-            self.restore_shortcuts_defaults(skip_confirmation=True)
+            self._restore_tags_defaults(skip_confirmation=True)
+            self._restore_parse_defaults(skip_confirmation=True)
+            self._restore_skip_defaults(skip_confirmation=True)
+            self._restore_recalc_defaults(skip_confirmation=True)
+            self._restore_shortcuts_defaults(skip_confirmation=True)
 
     def _setup_buttons(self) -> None:
         style: Optional[QStyle] = self.style()
@@ -461,37 +460,37 @@ class SettingsDialog(QDialog):
         self.ui.restoreSkipPushButton.setAutoDefault(False)
         self.ui.restoreAllDefaultsPushButton.setAutoDefault(False)
 
-        self.ui.savePushButton.clicked.connect(self.save_to_config)
+        self.ui.savePushButton.clicked.connect(self._save_to_config)
         self.ui.cancelPushButton.clicked.connect(self.close)
-        self.ui.addNewRowPushButton.clicked.connect(self.add_new_row)
-        self.ui.deleteRowPushButton.clicked.connect(self.delete_row)
-        self.ui.restoreTagsPushButton.clicked.connect(self.restore_tags_defaults)
-        self.ui.restoreRecalcPushButton.clicked.connect(self.restore_recalc_defaults)
+        self.ui.addNewRowPushButton.clicked.connect(self._add_new_row)
+        self.ui.deleteRowPushButton.clicked.connect(self._delete_row)
+        self.ui.restoreTagsPushButton.clicked.connect(self._restore_tags_defaults)
+        self.ui.restoreRecalcPushButton.clicked.connect(self._restore_recalc_defaults)
         self.ui.restoreShortcutsPushButton.clicked.connect(
-            self.restore_shortcuts_defaults
+            self._restore_shortcuts_defaults
         )
-        self.ui.restoreParsePushButton.clicked.connect(self.restore_parse_defaults)
-        self.ui.restoreSkipPushButton.clicked.connect(self.restore_skip_defaults)
-        self.ui.restoreAllDefaultsPushButton.clicked.connect(self.restore_all_defaults)
+        self.ui.restoreParsePushButton.clicked.connect(self._restore_parse_defaults)
+        self.ui.restoreSkipPushButton.clicked.connect(self._restore_skip_defaults)
+        self.ui.restoreAllDefaultsPushButton.clicked.connect(self._restore_all_defaults)
 
-    def delete_row(self) -> None:
+    def _delete_row(self) -> None:
         title = "Confirmation"
         text = "Are you sure you want to delete the selected row?"
-        confirmed = self.warning_dialog(title, text)
+        confirmed = self._warning_dialog(title, text)
         if confirmed:
             selected_row = self.ui.note_filters_table.currentRow()
             self.ui.note_filters_table.removeRow(selected_row)
 
-    def add_new_row(self) -> None:
+    def _add_new_row(self) -> None:
         self.ui.note_filters_table.setRowCount(
             self.ui.note_filters_table.rowCount() + 1
         )
         config_filter = self._default_config.filters[0]
         row = self.ui.note_filters_table.rowCount() - 1
-        self.set_note_filters_table_row(row, config_filter)
-        self._setup_extra_fields_table(self.config.filters)
+        self._set_note_filters_table_row(row, config_filter)
+        self._setup_extra_fields_table(self._config.filters)
 
-    def save_to_config(self) -> None:  # pylint:disable=too-many-locals
+    def _save_to_config(self) -> None:  # pylint:disable=too-many-locals
         new_config = {
             "tag_ready": self.ui.tagReadyLineEdit.text(),
             "tag_not_ready": self.ui.tagNotReadyLineEdit.text(),
@@ -592,7 +591,7 @@ class SettingsDialog(QDialog):
             filters.append(_filter)
         new_config["filters"] = filters
 
-        if self.extra_fields_changed(filters):
+        if self._extra_fields_changed(filters):
             _title = "AnkiMorphs Warning"
             _text = (
                 "You have changed your **Extra Fields** settings.\n"
@@ -602,17 +601,17 @@ class SettingsDialog(QDialog):
                 "- Created a backup of your cards.\n\n"
                 "Are you sure you want to save the settings?"
             )
-            accepted = self.warning_dialog(
+            accepted = self._warning_dialog(
                 title=_title, text=_text, display_tooltip=False
             )
             if not accepted:
                 return
 
         update_configs(new_config)
-        self.config = AnkiMorphsConfig()
+        self._config = AnkiMorphsConfig()
         tooltip("Please recalc to avoid unexpected behaviour", parent=self)
 
-    def extra_fields_changed(self, new_filters: list[FilterTypeAlias]) -> bool:
+    def _extra_fields_changed(self, new_filters: list[FilterTypeAlias]) -> bool:
         extra_fields: list[str] = [
             "unknowns_field",
             "highlighted_field",
@@ -629,7 +628,7 @@ class SettingsDialog(QDialog):
             # if all extra fields are (none) return False
             return False
 
-        for index, old_filter in enumerate(self.config.filters):
+        for index, old_filter in enumerate(self._config.filters):
             if (len(new_filters) - 1) < index:
                 # if existing note filters are deleted then this occurs
                 break
@@ -646,7 +645,7 @@ class SettingsDialog(QDialog):
 
         return False
 
-    def update_fields_cbox(
+    def _update_fields_cbox(
         self, field_cbox: QComboBox, note_type_cbox: QComboBox
     ) -> None:
         assert mw
@@ -657,12 +656,12 @@ class SettingsDialog(QDialog):
         field_cbox.clear()
         field_cbox.addItems(fields)
 
-    def tab_change(self, tab_index: int) -> None:
+    def _tab_change(self, tab_index: int) -> None:
         # The extra fields settings are dependent on the note filters, so
         # everytime the extra fields tab is opened we just re-populate it
         # in case the note filters have changed.
         if tab_index == 1:
-            self._setup_extra_fields_table(self.config.filters)
+            self._setup_extra_fields_table(self._config.filters)
 
     def _tags_cell_clicked(self, row: int, column: int) -> None:
         if column != 1:
@@ -684,7 +683,7 @@ class SettingsDialog(QDialog):
             name=ankimorphs_constants.TAG_SELECTOR_DIALOG_NAME,
         )
 
-    def update_note_filter_tags(self) -> None:
+    def _update_note_filter_tags(self) -> None:
         joined_tags: str = ", ".join(self.tag_selector.selected_tags)
         self.ui.note_filters_table.setItem(
             self.tag_selector.current_row, 1, QTableWidgetItem(joined_tags)
@@ -703,7 +702,7 @@ class SettingsDialog(QDialog):
         # This is used by the Anki dialog manager
         self.show()
 
-    def warning_dialog(
+    def _warning_dialog(
         self, title: str, text: str, display_tooltip: bool = True
     ) -> bool:
         warning_box = QMessageBox(self)

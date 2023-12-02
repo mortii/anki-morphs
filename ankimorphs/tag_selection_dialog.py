@@ -65,16 +65,16 @@ class TagSelectionDialog(QDialog):
         self.ui.unselectAllButton.setAutoDefault(False)
         self.ui.applyButton.setAutoDefault(False)
 
-        self.ui.unselectAllButton.clicked.connect(self.unselect_all_items)
-        self.ui.applyButton.clicked.connect(self.save)
+        self.ui.unselectAllButton.clicked.connect(self._unselect_all_items)
+        self.ui.applyButton.clicked.connect(self._save_selected_tags)
 
-    def unselect_all_items(self) -> None:
+    def _unselect_all_items(self) -> None:
         for _row in range(self._model.rowCount()):
             _item = self._model.item(_row, column=0)
             assert _item is not None
             _item.setCheckState(Qt.CheckState.Unchecked)
 
-    def save(self) -> None:
+    def _save_selected_tags(self) -> None:
         checked: list[str] = []
         for _row in range(self._model.rowCount()):
             _item = self._model.item(_row, column=0)
