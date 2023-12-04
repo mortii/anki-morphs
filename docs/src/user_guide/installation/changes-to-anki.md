@@ -1,6 +1,6 @@
 # Changes To Anki
 
-After installing MorphMan you will find that some changes have been made to Anki.
+After installing AnkiMorphs you will find that some changes have been made to Anki.
 
 ## Toolbar
 
@@ -120,7 +120,7 @@ These numbers are updated after every [Recalc](../usage/recalc.md).
 
 ## Browse
 
-MorphMan adds new options in the Browse window that can be accessed either from the "Morphman" menu at the top or when
+AnkiMorphs adds new options in the Browse window that can be accessed either from the "AnkiMorphs" menu at the top or when
 right-clicking cards:
 
 * “View Morphemes”
@@ -132,14 +132,13 @@ These features are explained in [here](../usage/browser.md).
 
 ## Tools Menu
 
-A MorphMan menu is added to "Tools" menu and has the options:
+A AnkiMorphs menu is added to "Tools" menu and has the options:
 
+* [“Settings”](../setup/settings.md)
 * [“Recalc”](../usage/recalc.md)
-* [“Preferences”](../setup/preferences.md)
-* [“Database Manager”](../usage/database-manager.md)
-* [“Readability Analyzer”](../usage/readability-analyzer.md)
+* [“Frequency File Generator”](../usage/frequency-file-generator.md)
 
 ## Morph Stats & Graphs
 
-In the "Shift"-click version of the Stats window you can
+In the "Shift"-click version of the Stats window, you can
 see [stats ands graphs over your learned morphs](../usage/statistics.md).
