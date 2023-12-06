@@ -10,10 +10,23 @@ repos:
     hooks:
       - id: check-yaml
       - id: check-added-large-files
+        args: ['--enforce-all']
+        exclude: |
+          (?x)^(
+              ankimorphs/deps/.*||
+              docs/src/img/revert_changes.mp4|
+              docs/src/img/note-type.mp4|
+              docs/src/img/deck-options.mp4|
+              docs/src/img/add-field.mp4|
+              docs/src/img/learn-now.mp4|
+              docs/src/img/add-field.mp4|
+              tests/data/collection.anki2|
+              tests/data/frequency.txt|
+          )$
       - id: check-case-conflict
       - id: check-json
       - id: pretty-format-json
-        args: [--autofix]
+        args: ['--autofix']
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
         exclude: |
