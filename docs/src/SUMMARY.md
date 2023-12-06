@@ -18,7 +18,6 @@
     - [Shortcuts](user_guide/setup/settings/shortcuts.md)
   - [Prioritizing](user_guide/setup/prioritizing.md)
   - [Names](user_guide/setup/names.md)
-  - [Highlighting](user_guide/setup/highlighting.md)
 - [Usage](user_guide/usage.md)
   - [Recalc](user_guide/usage/recalc.md)
   - [Reviewing Cards](user_guide/usage/reviewing-cards.md)

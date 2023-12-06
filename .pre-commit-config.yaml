@@ -17,9 +17,8 @@ repos:
               docs/src/img/revert_changes.mp4|
               docs/src/img/note-type.mp4|
               docs/src/img/deck-options.mp4|
-              docs/src/img/add-field.mp4|
               docs/src/img/learn-now.mp4|
-              docs/src/img/add-field.mp4|
+              docs/src/img/adding-extra-fields.mp4|
               tests/data/collection.anki2|
               tests/data/frequency.txt|
           )$

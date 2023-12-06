@@ -8,4 +8,4 @@
   Cards that have either the ['All morphs known' tag](tags.md) or the ['Set known and skip' tag](tags.md) will be
   suspended on Recalc.
 * **Minimum interval for known morphs**:  
-  This is used when text is [highlighted](../../setup/highlighting.md).
+  This is used when text is [highlighted](../../setup/settings/extra-fields.md#using-highlighted).
