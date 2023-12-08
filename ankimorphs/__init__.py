@@ -239,7 +239,7 @@ def recalc_on_sync() -> None:
 def replace_reviewer_functions() -> None:
     assert mw is not None
 
-    mw.reviewer.nextCard = partial(reviewing_utils.am_next_card, self=mw.reviewer)
+    mw.reviewer.nextCard = reviewing_utils.am_next_card
 
     mw.reviewer._shortcutKeys = partial(
         reviewing_utils.am_reviewer_shortcut_keys,

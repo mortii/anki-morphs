@@ -1,6 +1,7 @@
 from functools import partial
 from typing import Any, Callable, Optional, Union
 
+from anki.cards import Card
 from anki.collection import Collection, UndoStatus
 from anki.consts import CARD_TYPE_NEW
 from anki.notes import Note
@@ -29,7 +30,7 @@ VALID_UNDO_MERGE_TARGETS: set[str] = {  # a set has faster lookup than a list
 set_known_and_skip_undo: Optional[UndoStatus] = None
 
 
-def am_next_card(self: Reviewer) -> None:
+def am_next_card() -> None:
     ################################################################
     #                          FREEZING
     ################################################################
@@ -39,11 +40,11 @@ def am_next_card(self: Reviewer) -> None:
     ################################################################
 
     assert mw is not None
-    assert self is not None
+    assert mw.reviewer is not None
 
-    if self.mw.col.sched.version < 3:
+    if mw.col.sched.version < 3:
         _show_scheduler_version_error()
-        self.mw.moveToState("overview")
+        mw.moveToState("overview")
         return
 
     am_config = AnkiMorphsConfig()
@@ -53,13 +54,10 @@ def am_next_card(self: Reviewer) -> None:
         parent=mw,
         op=partial(
             _get_next_card_background,
-            self=self,
             am_config=am_config,
             skipped_cards=skipped_cards,
         ),
-        success=partial(
-            _show_card, self=self, am_config=am_config, skipped_cards=skipped_cards
-        ),
+        success=partial(_show_card, am_config=am_config, skipped_cards=skipped_cards),
     )
     operation.failure(_on_failure)
     operation.with_progress().run_in_background()
@@ -67,13 +65,15 @@ def am_next_card(self: Reviewer) -> None:
 
 def _get_next_card_background(
     collection: Collection,
-    self: Reviewer,
     am_config: AnkiMorphsConfig,
     skipped_cards: SkippedCards,
 ) -> None:
-    assert mw is not None
     del collection  # unused
 
+    assert mw is not None
+    assert mw.reviewer is not None
+
+    reviewer: Reviewer = mw.reviewer
     undo_status = _get_valid_undo_status()
     am_db = AnkiMorphsDB()
 
@@ -91,31 +91,31 @@ def _get_next_card_background(
             )
         )
 
-        self.previous_card = self.card
-        self.card = None
-        self._v3 = None
+        reviewer.previous_card = reviewer.card
+        reviewer.card = None
+        reviewer._v3 = None
 
-        self._get_next_v3_card()
-        self._previous_card_info.set_card(self.previous_card)
-        self._card_info.set_card(self.card)
+        reviewer._get_next_v3_card()
+        reviewer._previous_card_info.set_card(reviewer.previous_card)
+        reviewer._card_info.set_card(reviewer.card)
 
-        if not self.card:
+        if not reviewer.card:
             raise CardQueueEmptyException  # handled in _on_failure()
 
         if undo_status.redo != "":
             break  # The undo stack is dirty, we cannot merge undo entries.
 
-        if self.card.type != CARD_TYPE_NEW:
+        if reviewer.card.type != CARD_TYPE_NEW:
             break
 
-        note: Note = self.card.note()
+        note: Note = reviewer.card.note()
         am_config_filter = get_matching_modify_filter(note)
 
         if am_config_filter is None:
             break  # card did not match note type and tags set in preferences GUI
 
         card_unknown_morphs: Optional[set[tuple[str, str]]] = am_db.get_morphs_of_card(
-            self.card.id, search_unknowns=True
+            reviewer.card.id, search_unknowns=True
         )
 
         if card_unknown_morphs is None:
@@ -128,8 +128,8 @@ def _get_next_card_background(
         if not skipped_cards.did_skip_card:
             break
 
-        self.mw.col.sched.buryCards([self.card.id], manual=False)
-        self.mw.col.merge_undo_entries(undo_status.last_step)
+        mw.col.sched.buryCards([reviewer.card.id], manual=False)
+        mw.col.merge_undo_entries(undo_status.last_step)
 
     am_db.con.close()
 
@@ -172,24 +172,26 @@ def _get_valid_undo_status() -> UndoStatus:
 
 def _show_card(
     result: Any,
-    self: Reviewer,
     am_config: AnkiMorphsConfig,
     skipped_cards: SkippedCards,
 ) -> None:
     # this function runs on the main thread
     del result  # unused
 
-    if self._reps is None:
-        self._initWeb()
+    assert mw is not None
+    assert mw.reviewer is not None
 
-    self._showQuestion()
+    if mw.reviewer._reps is None:
+        mw.reviewer._initWeb()
+
+    mw.reviewer._showQuestion()
 
     if am_config.skip_show_num_of_skipped_cards:
         if skipped_cards.total_skipped_cards > 0:
             skipped_cards.show_tooltip_of_skipped_cards()
 
 
-def _set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> None:
+def _set_card_as_known_and_skip(am_config: AnkiMorphsConfig) -> None:
     ################################################################
     #                          KNOWN BUG
     ################################################################
@@ -230,41 +232,43 @@ def _set_card_as_known_and_skip(self: Reviewer, am_config: AnkiMorphsConfig) -> 
     # variable--to keep track of where the entries were merged into,
     # so we can merge into this point later in am_next_card.
     ################################################################
-
-    assert self.card is not None
     global set_known_and_skip_undo
 
-    note: Note = self.card.note()
+    assert mw is not None
+    assert mw.reviewer is not None
+    assert mw.reviewer.card is not None
+
+    card: Card = mw.reviewer.card
+    note: Note = card.note()
     am_config_filter = get_matching_modify_filter(note)
 
     if am_config_filter is None:
         tooltip("Card does not match any note filter...")
         return
 
-    if self.card.type != CARD_TYPE_NEW:
+    if card.type != CARD_TYPE_NEW:
         tooltip("Card is not in the 'new'-queue")
         return
 
-    self.mw.col.add_custom_undo_entry(SET_KNOWN_AND_SKIP_UNDO)
-    set_known_and_skip_undo = self.mw.col.undo_status()
+    mw.col.add_custom_undo_entry(SET_KNOWN_AND_SKIP_UNDO)
+    set_known_and_skip_undo = mw.col.undo_status()
 
-    self.mw.col.sched.buryCards([self.card.id], manual=False)
+    mw.col.sched.buryCards([card.id], manual=False)
 
-    note = self.card.note()
     note.add_tag(am_config.tag_known_manually)
-    self.mw.col.update_note(note)
+    mw.col.update_note(note)
 
-    self.mw.col.merge_undo_entries(set_known_and_skip_undo.last_step)
+    mw.col.merge_undo_entries(set_known_and_skip_undo.last_step)
 
     # update seen morphs table with this card's morphs
     am_db = AnkiMorphsDB()
-    am_db.update_seen_morphs_today_single_card(self.card.id)
+    am_db.update_seen_morphs_today_single_card(card.id)
     am_db.con.close()
 
     if am_config.skip_show_num_of_skipped_cards:
         tooltip("Set card as known and skipped")
 
-    self.nextCard()
+    mw.reviewer.nextCard()
 
 
 def am_reviewer_shortcut_keys(
@@ -286,16 +290,14 @@ def am_reviewer_shortcut_keys(
             (
                 key_browse_ready.toString(),
                 lambda: browse_same_morphs(
-                    self.card.id, self.card.note(), am_config, search_unknowns=True, search_ready_tag=True  # type: ignore[union-attr]
+                    am_config, search_unknowns=True, search_ready_tag=True
                 ),
             ),
             (
                 key_browse_all.toString(),
-                lambda: browse_same_morphs(
-                    self.card.id, self.card.note(), am_config, search_unknowns=True  # type: ignore[union-attr]
-                ),
+                lambda: browse_same_morphs(am_config, search_unknowns=True),
             ),
-            (key_skip.toString(), lambda: _set_card_as_known_and_skip(self, am_config)),
+            (key_skip.toString(), lambda: _set_card_as_known_and_skip(am_config)),
         ]
     )
     return keys

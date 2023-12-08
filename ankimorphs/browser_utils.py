@@ -24,14 +24,16 @@ def run_browse_morph(search_unknowns: bool = False) -> None:
     for cid in browser.selectedCards():
         card = mw.col.get_card(cid)
         note = card.note()
-        browse_same_morphs(cid, note, am_config, search_unknowns=search_unknowns)
+        browse_same_morphs(
+            am_config, card_id=cid, note=note, search_unknowns=search_unknowns
+        )
         return  # Only use one card since note-types can be different
 
 
 def browse_same_morphs(
-    card_id: int,
-    note: Note,
     am_config: AnkiMorphsConfig,
+    card_id: Optional[int] = None,
+    note: Optional[Note] = None,
     search_unknowns: bool = False,
     search_ready_tag: bool = False,
 ) -> None:
@@ -43,6 +45,17 @@ def browse_same_morphs(
     # because inflected morphs with different bases can be identical to each-other.
 
     global browser
+    assert mw is not None
+
+    if card_id is None:
+        assert mw.reviewer is not None
+        assert mw.reviewer.card is not None
+        card_id = mw.reviewer.card.id
+
+    if note is None:
+        assert mw.reviewer is not None
+        assert mw.reviewer.card is not None
+        note = mw.reviewer.card.note()
 
     am_db = AnkiMorphsDB()
     am_filter = get_matching_read_filter(note)

@@ -79,7 +79,7 @@ class SettingsDialog(QDialog):
         )
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.7.2-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.7.3-alpha")
 
         self.show()
 
