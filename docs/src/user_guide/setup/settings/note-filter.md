@@ -41,43 +41,36 @@ after.
 
 ## Tags
 
-You can further filter AnkiMorphs to only work on cards with a certain note type **and** specific tag(s).
+You can further filter AnkiMorphs to only work on cards with a certain note type **and** with/without specific tag(s).
 
-Let's use an example of having a note type: `note_type1`. The card break-down of the note type is the following:
+Let's use an example of having a note type: `anime_sub2srs`. The card break-down of the note type is the following:
 
 - Total cards: 20K
 - Cards with the tag `demon-slayer`: 6k
 - Cards with the tag `movie`: 3k
+- Cards with the tag `fight-scene`: 2k
 - Cards that have **both** `demon-slayer` and `movie` tags: 1k
 
-If you want all the 20K cards of note type `note_type1` then leave the tags empty:
+If you want all the 20K cards of note type `anime_sub2srs` then leave the tags empty (default):
 
-```
-Note Type                   Tags            
-1. note_type1               
-```
+![default-tag-selection.png](../../../img/default-tag-selection.png)
 
 If you want the 6K cards with the `demon-slayer` tag:
 
-```
-Note Type                   Tags            
-1. note_type1               demon-slayer
-```
+![tag-include-one.png](../../../img/tag-include-one.png)
 
-If you want the 1k cards that have **both** `demon-slayer` and `movie` tags, i.e. the intersection,:
+If you want the 1k cards that have **both** `demon-slayer` and `movie` tags, i.e. the intersection:
 
-```
-Note Type                   Tags            
-1. note_type1               demon-slayer, movie
-```
+![tag-include-two.png](../../../img/tag-include-two.png)
 
-If you want the 8K cards that have **either** `demon-slayer` or `movie` tags, i.e. the union,:
+If you want the 8K cards that have **either** `demon-slayer` or `movie` tags, i.e. the union, then you have to create
+two note-filters like this:
 
-```
-Note Type                   Tags          
-1. note_type1               demon-slayer
-2. note_type1               movie 
-```
+![intersection-tags.png](../../../img/intersection-tags.png)
+
+If you want the 18K cards that don't have the `fight-scene` tag:
+
+![tag-exclude-one.png](../../../img/tag-exclude-one.png)
 
 ## Field
 

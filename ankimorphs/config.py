@@ -4,9 +4,9 @@ from anki.notes import Note
 from aqt import mw
 from aqt.qt import QKeySequence  # pylint:disable=no-name-in-module
 
-# Unfortunately 'TypeAlias' is introduced in python 3.10 so for now
+# Unfortunately, 'TypeAlias' is introduced in python 3.10 so for now
 # we can only create implicit type aliases.
-FilterTypeAlias = dict[str, Union[str, bool, int, list[str], None]]
+FilterTypeAlias = dict[str, Union[str, bool, int, dict[str, str], None]]
 
 
 class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
@@ -15,7 +15,7 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
         self.note_type_id: Optional[int] = _get_filter_optional_int(
             _filter, "note_type_id"
         )
-        self.tags: list[str] = _get_filter_str_list(_filter, "tags")
+        self.tags: dict[str, str] = _get_filter_str_from_json(_filter, "tags")
         self.field: str = _get_filter_str(_filter, "field")
         self.field_index: Optional[int] = _get_filter_optional_int(
             _filter, "field_index"
@@ -248,10 +248,10 @@ def _get_filter_bool(_filter: FilterTypeAlias, key: str) -> bool:
     return filter_item
 
 
-def _get_filter_str_list(_filter: FilterTypeAlias, key: str) -> list[str]:
-    filter_item = _filter[key]
-    assert isinstance(filter_item, list)
-    return filter_item
+def _get_filter_str_from_json(_filter: FilterTypeAlias, key: str) -> dict[str, str]:
+    filter_item_dict = _filter[key]
+    assert isinstance(filter_item_dict, dict)
+    return filter_item_dict
 
 
 def _get_filter_optional_int(_filter: FilterTypeAlias, key: str) -> Optional[int]:

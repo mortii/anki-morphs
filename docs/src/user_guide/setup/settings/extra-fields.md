@@ -42,8 +42,6 @@ above uses the following card-template:
 
 ## Using Highlighted
 
-
-
 <video autoplay loop muted controls>
     <source src="../../../img/highlighting.mp4" type="video/mp4">
 </video>

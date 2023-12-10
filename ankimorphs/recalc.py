@@ -176,7 +176,7 @@ def _create_card_data_dict(
     am_config: AnkiMorphsConfig,
     config_filter: AnkiMorphsConfigFilter,
     model_id: Optional[int],
-    tags: list[str],
+    tags: dict[str, str],
 ) -> dict[int, AnkiCardData]:
     assert mw is not None
 
@@ -191,7 +191,7 @@ def _create_card_data_dict(
 
 
 def _get_anki_data(
-    am_config: AnkiMorphsConfig, model_id: Optional[int], tags: list[str]
+    am_config: AnkiMorphsConfig, model_id: Optional[int], tags_object: dict[str, str]
 ) -> dict[int, AnkiDBRowData]:
     ################################################################
     #                        SQL QUERY
@@ -215,16 +215,22 @@ def _get_anki_data(
 
     ignore_suspended_cards = ""
     if am_config.parse_ignore_suspended_cards_content:
-        # if this part is included then we don't get cards that are suspended EXCEPT for
+        # If this part is included, then we don't get cards that are suspended EXCEPT for
         # the cards that were 'set known and skip' and later suspended. We want to always
         # include those cards otherwise we can lose track of known morphs
         ignore_suspended_cards = f" AND (cards.queue != -1 OR notes.tags LIKE '% {am_config.tag_known_manually} %')"
 
+    excluded_tags = tags_object["exclude"]
+    included_tags = tags_object["include"]
     tags_search_string = ""
-    if len(tags) > 0 and tags[0] != "":
-        # if there are tags then this part gets the cards that have ALL the tags
-        tags_search_string = "".join(
-            [f" AND notes.tags LIKE '% {tag} %'" for tag in tags]
+
+    if len(excluded_tags) > 0:
+        tags_search_string += "".join(
+            [f" AND notes.tags NOT LIKE '% {_tag} %'" for _tag in excluded_tags]
+        )
+    if len(included_tags) > 0:
+        tags_search_string += "".join(
+            [f" AND notes.tags LIKE '% {_tag} %'" for _tag in included_tags]
         )
 
     result: list[Sequence[Any]] = mw.col.db.all(

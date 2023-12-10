@@ -1,3 +1,4 @@
+import json
 from collections.abc import Iterable, Sequence
 from functools import partial
 from pathlib import Path
@@ -13,9 +14,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
     QDialog,
     QMessageBox,
     QStyle,
-    Qt,
     QTableWidgetItem,
-    QWidget,
 )
 from aqt.utils import tooltip
 
@@ -26,12 +25,19 @@ from .config import (
     FilterTypeAlias,
     update_configs,
 )
+from .message_box_utils import show_warning_box
 from .morphemizer import get_all_morphemizers
+from .table_utils import (
+    get_checkbox_widget,
+    get_combobox_index,
+    get_combobox_widget,
+    get_table_item,
+)
 from .tag_selection_dialog import TagSelectionDialog
 from .ui.settings_dialog_ui import Ui_SettingsDialog
 
 
-class SettingsDialog(QDialog):
+class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
     # The UI comes from ankimorphs/ui/settings_dialog.ui which is used in Qt Designer,
     # which is then converted to ankimorphs/ui/settings_dialog_ui.py,
     # which is then imported here.
@@ -45,8 +51,29 @@ class SettingsDialog(QDialog):
         self.models: Sequence[NotetypeNameId] = mw.col.models.all_names_and_ids()
         self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
-        self._config = AnkiMorphsConfig()
+        self.ui.tabWidget.currentChanged.connect(self._tab_change)
+        self.ui.note_filters_table.cellClicked.connect(self._tags_cell_clicked)
+
+        # disables manual editing of in note filter table
+        self.ui.note_filters_table.setEditTriggers(
+            QAbstractItemView.EditTrigger.NoEditTriggers
+        )
+
+        self._note_filter_note_type_column: int = 0
+        self._note_filter_tags_column: int = 1
+        self._note_filter_field_column: int = 2
+        self._note_filter_morphemizer_column: int = 3
+        self._note_filter_morph_priority_column: int = 4
+        self._note_filter_read_column: int = 5
+        self._note_filter_modify_column: int = 6
+
+        self._extra_fields_note_type_column: int = 0
+        self._extra_fields_unknowns_column: int = 1
+        self._extra_fields_highlighted_column: int = 2
+        self._extra_fields_difficulty_column: int = 3
+
         self._morphemizers = get_all_morphemizers()
+        self._config = AnkiMorphsConfig()
         self._default_config = AnkiMorphsConfig(is_default=True)
         self._setup_note_filters_table(self._config.filters)
         self._setup_extra_fields_table(self._config.filters)
@@ -56,19 +83,11 @@ class SettingsDialog(QDialog):
         self._populate_shortcuts_tab()
         self._populate_recalc_tab()
         self._setup_buttons()
-        self.ui.tabWidget.currentChanged.connect(self._tab_change)
 
-        # disables manual editing of in note filter table
-        self.ui.note_filters_table.setEditTriggers(
-            QAbstractItemView.EditTrigger.NoEditTriggers
-        )
-
-        # the tag selector dialog is spawned from the settings dialog
-        # so it makes the most sense to to store it here instead of __init__.py
+        # the tag selector dialog is spawned from the settings dialog,
+        # so it makes the most sense to store it here instead of __init__.py
         self.tag_selector = TagSelectionDialog()
         self.tag_selector.ui.applyButton.clicked.connect(self._update_note_filter_tags)
-        self.ui.note_filters_table.cellClicked.connect(self._tags_cell_clicked)
-
         # close the tag selector dialog when the settings dialog closes
         self.finished.connect(self.tag_selector.close)
 
@@ -79,16 +98,22 @@ class SettingsDialog(QDialog):
         )
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.7.3-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.8.0-alpha")
 
         self.show()
 
     def _setup_note_filters_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
     ) -> None:
-        self.ui.note_filters_table.setColumnWidth(0, 150)  # note type column
-        self.ui.note_filters_table.setColumnWidth(3, 150)  # morphemizer column
-        self.ui.note_filters_table.setColumnWidth(4, 150)  # prioritizing column
+        self.ui.note_filters_table.setColumnWidth(
+            self._note_filter_note_type_column, 150
+        )
+        self.ui.note_filters_table.setColumnWidth(
+            self._note_filter_morphemizer_column, 150
+        )
+        self.ui.note_filters_table.setColumnWidth(
+            self._note_filter_morph_priority_column, 150
+        )
         self.ui.note_filters_table.setRowCount(len(config_filters))
         self.ui.note_filters_table.setAlternatingRowColors(True)
 
@@ -103,7 +128,7 @@ class SettingsDialog(QDialog):
 
         note_type_cbox = QComboBox(self.ui.note_filters_table)
         note_type_cbox.addItems([model.name for model in self.models])
-        note_type_name_index = _get_model_cbox_index(
+        note_type_name_index = _get_model_combobox_index(
             self.models, config_filter.note_type
         )
         if note_type_name_index is not None:
@@ -116,7 +141,7 @@ class SettingsDialog(QDialog):
         fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
         field_cbox = QComboBox(self.ui.note_filters_table)
         field_cbox.addItems(fields)
-        field_cbox_index = _get_cbox_index(fields, config_filter.field)
+        field_cbox_index = get_combobox_index(fields, config_filter.field)
         if field_cbox_index is not None:
             field_cbox.setCurrentIndex(field_cbox_index)
 
@@ -128,7 +153,7 @@ class SettingsDialog(QDialog):
         morphemizer_cbox = QComboBox(self.ui.note_filters_table)
         morphemizers = [mizer.get_description() for mizer in self._morphemizers]
         morphemizer_cbox.addItems(morphemizers)
-        morphemizer_cbox_index = _get_cbox_index(
+        morphemizer_cbox_index = get_combobox_index(
             morphemizers, config_filter.morphemizer_description
         )
         if morphemizer_cbox_index is not None:
@@ -138,7 +163,7 @@ class SettingsDialog(QDialog):
         frequency_files: list[str] = _get_frequency_files()
         morph_priority_cbox.addItems(["Collection frequency"])
         morph_priority_cbox.addItems(frequency_files)
-        morph_priority_cbox_index = _get_cbox_index(
+        morph_priority_cbox_index = get_combobox_index(
             frequency_files, config_filter.morph_priority
         )
         if morph_priority_cbox_index is not None:
@@ -153,15 +178,29 @@ class SettingsDialog(QDialog):
         modify_checkbox.setChecked(config_filter.modify)
         modify_checkbox.setStyleSheet("margin-left:auto; margin-right:auto;")
 
-        tags = ", ".join(config_filter.tags)
-
-        self.ui.note_filters_table.setCellWidget(row, 0, note_type_cbox)
-        self.ui.note_filters_table.setItem(row, 1, QTableWidgetItem(tags))
-        self.ui.note_filters_table.setCellWidget(row, 2, field_cbox)
-        self.ui.note_filters_table.setCellWidget(row, 3, morphemizer_cbox)
-        self.ui.note_filters_table.setCellWidget(row, 4, morph_priority_cbox)
-        self.ui.note_filters_table.setCellWidget(row, 5, read_checkbox)
-        self.ui.note_filters_table.setCellWidget(row, 6, modify_checkbox)
+        self.ui.note_filters_table.setCellWidget(
+            row, self._note_filter_note_type_column, note_type_cbox
+        )
+        self.ui.note_filters_table.setItem(
+            row,
+            self._note_filter_tags_column,
+            QTableWidgetItem(json.dumps(config_filter.tags)),
+        )
+        self.ui.note_filters_table.setCellWidget(
+            row, self._note_filter_field_column, field_cbox
+        )
+        self.ui.note_filters_table.setCellWidget(
+            row, self._note_filter_morphemizer_column, morphemizer_cbox
+        )
+        self.ui.note_filters_table.setCellWidget(
+            row, self._note_filter_morph_priority_column, morph_priority_cbox
+        )
+        self.ui.note_filters_table.setCellWidget(
+            row, self._note_filter_read_column, read_checkbox
+        )
+        self.ui.note_filters_table.setCellWidget(
+            row, self._note_filter_modify_column, modify_checkbox
+        )
 
     def _setup_extra_fields_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
@@ -184,13 +223,15 @@ class SettingsDialog(QDialog):
 
         self.ui.extra_fields_table.setRowHeight(row, 35)
 
-        note_type_general_widget: Optional[
-            QWidget
-        ] = self.ui.note_filters_table.cellWidget(row, 0)
-        assert isinstance(note_type_general_widget, QComboBox)
-        note_type_widget: QComboBox = note_type_general_widget
-        note_type_text = note_type_widget.itemText(note_type_widget.currentIndex())
-        current_model_id = self.models[note_type_widget.currentIndex()].id
+        note_filter_note_type_widget: QComboBox = get_combobox_widget(
+            self.ui.note_filters_table.cellWidget(
+                row, self._note_filter_note_type_column
+            )
+        )
+        note_type_text = note_filter_note_type_widget.itemText(
+            note_filter_note_type_widget.currentIndex()
+        )
+        current_model_id = self.models[note_filter_note_type_widget.currentIndex()].id
         note_type = mw.col.models.get(NotetypeId(int(current_model_id)))
         assert note_type is not None
         fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
@@ -206,7 +247,7 @@ class SettingsDialog(QDialog):
         unknowns_cbox.addItems(fields)
 
         if matching_filter is not None:
-            unknowns_cbox_index = _get_cbox_index(
+            unknowns_cbox_index = get_combobox_index(
                 fields, matching_filter.unknowns_field
             )
             if unknowns_cbox_index is not None:
@@ -218,7 +259,7 @@ class SettingsDialog(QDialog):
         highlighted_cbox.addItems(fields)
 
         if matching_filter is not None:
-            highlighted_cbox_cbox_index = _get_cbox_index(
+            highlighted_cbox_cbox_index = get_combobox_index(
                 fields, matching_filter.highlighted_field
             )
             if highlighted_cbox_cbox_index is not None:
@@ -230,17 +271,25 @@ class SettingsDialog(QDialog):
         difficulty_cbox.addItems(fields)
 
         if matching_filter is not None:
-            difficulty_cbox_cbox_index = _get_cbox_index(
+            difficulty_cbox_cbox_index = get_combobox_index(
                 fields, matching_filter.difficulty_field
             )
             if difficulty_cbox_cbox_index is not None:
                 difficulty_cbox_cbox_index += 1  # to offset the added (none) item
                 difficulty_cbox.setCurrentIndex(difficulty_cbox_cbox_index)
 
-        self.ui.extra_fields_table.setItem(row, 0, QTableWidgetItem(note_type_text))
-        self.ui.extra_fields_table.setCellWidget(row, 1, unknowns_cbox)
-        self.ui.extra_fields_table.setCellWidget(row, 2, highlighted_cbox)
-        self.ui.extra_fields_table.setCellWidget(row, 3, difficulty_cbox)
+        self.ui.extra_fields_table.setItem(
+            row, self._extra_fields_note_type_column, QTableWidgetItem(note_type_text)
+        )
+        self.ui.extra_fields_table.setCellWidget(
+            row, self._extra_fields_unknowns_column, unknowns_cbox
+        )
+        self.ui.extra_fields_table.setCellWidget(
+            row, self._extra_fields_highlighted_column, highlighted_cbox
+        )
+        self.ui.extra_fields_table.setCellWidget(
+            row, self._extra_fields_difficulty_column, difficulty_cbox
+        )
 
     def _populate_tags_tab(self) -> None:
         self.ui.tagReadyLineEdit.setText(self._config.tag_ready)
@@ -521,39 +570,38 @@ class SettingsDialog(QDialog):
         filters: list[FilterTypeAlias] = []
         rows = self.ui.note_filters_table.rowCount()
         for row in range(rows):
-            note_type_cbox: QComboBox = _get_cbox_widget(
+            note_type_cbox: QComboBox = get_combobox_widget(
                 self.ui.note_filters_table.cellWidget(row, 0)
             )
-
-            tags_widget: Optional[QTableWidgetItem] = self.ui.note_filters_table.item(
-                row, 1
+            tags_widget: QTableWidgetItem = get_table_item(
+                self.ui.note_filters_table.item(row, 1)
             )
-            assert tags_widget
-            tags = tags_widget.text().split(",")
-            tags = [tag.strip() for tag in tags]
+            # tags = tags_widget.text().split(",")
+            # tags = [tag.strip() for tag in tags]
+            tags = json.loads(tags_widget.text())
 
-            field_cbox: QComboBox = _get_cbox_widget(
+            field_cbox: QComboBox = get_combobox_widget(
                 self.ui.note_filters_table.cellWidget(row, 2)
             )
-            morphemizer_widget: QComboBox = _get_cbox_widget(
+            morphemizer_widget: QComboBox = get_combobox_widget(
                 self.ui.note_filters_table.cellWidget(row, 3)
             )
-            morph_priority_widget: QComboBox = _get_cbox_widget(
+            morph_priority_widget: QComboBox = get_combobox_widget(
                 self.ui.note_filters_table.cellWidget(row, 4)
             )
-            read_widget: QCheckBox = _get_checkbox_widget(
+            read_widget: QCheckBox = get_checkbox_widget(
                 self.ui.note_filters_table.cellWidget(row, 5)
             )
-            modify_widget: QCheckBox = _get_checkbox_widget(
+            modify_widget: QCheckBox = get_checkbox_widget(
                 self.ui.note_filters_table.cellWidget(row, 6)
             )
-            unknowns_widget: QComboBox = _get_cbox_widget(
+            unknowns_widget: QComboBox = get_combobox_widget(
                 self.ui.extra_fields_table.cellWidget(row, 1)
             )
-            highlighted_widget: QComboBox = _get_cbox_widget(
+            highlighted_widget: QComboBox = get_combobox_widget(
                 self.ui.extra_fields_table.cellWidget(row, 2)
             )
-            difficulty_widget: QComboBox = _get_cbox_widget(
+            difficulty_widget: QComboBox = get_combobox_widget(
                 self.ui.extra_fields_table.cellWidget(row, 3)
             )
 
@@ -668,26 +716,23 @@ class SettingsDialog(QDialog):
             # tags cells are in column 1
             return
 
-        tags_widget: Optional[QTableWidgetItem] = self.ui.note_filters_table.item(
-            row, 1
+        tags_widget: QTableWidgetItem = get_table_item(
+            self.ui.note_filters_table.item(row, 1)
         )
-        assert tags_widget is not None
-
-        tags = tags_widget.text().split(",")
-        selected_tags = [tag.strip() for tag in tags]
-
         self.tag_selector.set_selected_tags_and_row(
-            selected_tags=selected_tags, row=row
+            selected_tags=tags_widget.text(), row=row
         )
         aqt.dialogs.open(
             name=ankimorphs_constants.TAG_SELECTOR_DIALOG_NAME,
         )
 
     def _update_note_filter_tags(self) -> None:
-        joined_tags: str = ", ".join(self.tag_selector.selected_tags)
         self.ui.note_filters_table.setItem(
-            self.tag_selector.current_row, 1, QTableWidgetItem(joined_tags)
+            self.tag_selector.current_note_filter_row,
+            1,
+            QTableWidgetItem(self.tag_selector.selected_tags),
         )
+        self.tag_selector.ui.tableWidget.clearContents()
         tooltip("Remember to save!", parent=self)
 
     def closeWithCallback(  # pylint:disable=invalid-name
@@ -705,15 +750,7 @@ class SettingsDialog(QDialog):
     def _warning_dialog(
         self, title: str, text: str, display_tooltip: bool = True
     ) -> bool:
-        warning_box = QMessageBox(self)
-        warning_box.setWindowTitle(title)
-        warning_box.setIcon(QMessageBox.Icon.Warning)
-        warning_box.setStandardButtons(
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
-        warning_box.setText(text)
-        warning_box.setTextFormat(Qt.TextFormat.MarkdownText)
-        answer = warning_box.exec()
+        answer = show_warning_box(title, text, parent=self)
         if answer == QMessageBox.StandardButton.Yes:
             if display_tooltip:
                 tooltip("Remember to save!", parent=self)
@@ -721,30 +758,13 @@ class SettingsDialog(QDialog):
         return False
 
 
-def _get_cbox_index(items: Iterable[str], filter_field: str) -> Optional[int]:
-    for index, field in enumerate(items):
-        if field == filter_field:
-            return index
-    return None
-
-
-def _get_model_cbox_index(
+def _get_model_combobox_index(
     items: Iterable[NotetypeNameId], filter_field: str
 ) -> Optional[int]:
     for index, model in enumerate(items):
         if model.name == filter_field:
             return index
     return None
-
-
-def _get_cbox_widget(widget: Optional[QWidget]) -> QComboBox:
-    assert isinstance(widget, QComboBox)
-    return widget
-
-
-def _get_checkbox_widget(widget: Optional[QWidget]) -> QCheckBox:
-    assert isinstance(widget, QCheckBox)
-    return widget
 
 
 def _get_frequency_files() -> list[str]:

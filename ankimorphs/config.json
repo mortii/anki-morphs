@@ -15,9 +15,10 @@
       "note_type": "",
       "note_type_id": null,
       "read": true,
-      "tags": [
-        ""
-      ],
+      "tags": {
+        "exclude": [],
+        "include": []
+      },
       "unknowns_field": "",
       "unknowns_field_index": null
     }

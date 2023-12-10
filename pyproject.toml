@@ -66,6 +66,7 @@ exclude = [
   "ankimorphs/ui/",
   "ankimorphs/util_external.py",
   "ankimorphs/debug_utils.py",
+  "ankimorphs/table_utils.py",
   "ankimorphs/mecab_wrapper.py"
 ]
 ignore_names = ["print_*", "_refresh_needed", "_v3", "reopen", "closeWithCallback"]
