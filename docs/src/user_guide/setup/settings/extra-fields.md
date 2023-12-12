@@ -13,6 +13,7 @@ The text found in the [note filter: field](../settings/note-filter.md#field) is 
 information about that text into dedicated fields on your cards. Here are what the options produce:
 
 - **Unknowns**: a list of the morphs that are still unknown to you that was found in the text
+- **Unknowns Count**: The number of unknowns found
 - **Highlighted**: an HTML version of the text that highlights the morphs based on learning status
 - **Difficulty**: the difficulty AnkiMorphs calculated the text to have
 
@@ -39,6 +40,14 @@ Adding this field to your card-template can give you a quick way to see which mo
 above uses the following card-template:
 
 ![unknown-morphs-template.png](../../../img/unknown-morphs-template.png)
+
+
+## Using Unknowns Count
+This is useful if you want to sort your cards in the browser based on how many unknowns they have.
+
+![unknowns-count-search-field.png](../../../img/unknowns-count-search-field.png)
+
+![unknowns-sort-browser-result.png](../../../img/unknowns-sort-browser-result.png)
 
 ## Using Highlighted
 

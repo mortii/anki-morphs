@@ -145,6 +145,11 @@
              </column>
              <column>
               <property name="text">
+               <string>Unknowns Count</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
                <string>Highlighted</string>
               </property>
              </column>

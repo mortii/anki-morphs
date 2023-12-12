@@ -69,8 +69,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
         self._extra_fields_note_type_column: int = 0
         self._extra_fields_unknowns_column: int = 1
-        self._extra_fields_highlighted_column: int = 2
-        self._extra_fields_difficulty_column: int = 3
+        self._extra_fields_unknowns_count_column: int = 2
+        self._extra_fields_highlighted_column: int = 3
+        self._extra_fields_difficulty_column: int = 4
 
         self._morphemizers = get_all_morphemizers()
         self._config = AnkiMorphsConfig()
@@ -98,7 +99,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.8.0-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.8.1-alpha")
 
         self.show()
 
@@ -128,7 +129,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
         note_type_cbox = QComboBox(self.ui.note_filters_table)
         note_type_cbox.addItems([model.name for model in self.models])
-        note_type_name_index = _get_model_combobox_index(
+        note_type_name_index = self._get_model_combobox_index(
             self.models, config_filter.note_type
         )
         if note_type_name_index is not None:
@@ -160,7 +161,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             morphemizer_cbox.setCurrentIndex(morphemizer_cbox_index)
 
         morph_priority_cbox = QComboBox(self.ui.note_filters_table)
-        frequency_files: list[str] = _get_frequency_files()
+        frequency_files: list[str] = self._get_frequency_files()
         morph_priority_cbox.addItems(["Collection frequency"])
         morph_priority_cbox.addItems(frequency_files)
         morph_priority_cbox_index = get_combobox_index(
@@ -205,9 +206,21 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
     def _setup_extra_fields_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
     ) -> None:
-        self.ui.extra_fields_table.setColumnWidth(0, 150)
-        self.ui.extra_fields_table.setColumnWidth(1, 120)
-        self.ui.extra_fields_table.setColumnWidth(2, 120)
+        self.ui.extra_fields_table.setColumnWidth(
+            self._extra_fields_note_type_column, 150
+        )
+        self.ui.extra_fields_table.setColumnWidth(
+            self._extra_fields_unknowns_column, 120
+        )
+        self.ui.extra_fields_table.setColumnWidth(
+            self._extra_fields_unknowns_count_column, 150
+        )
+        self.ui.extra_fields_table.setColumnWidth(
+            self._extra_fields_highlighted_column, 120
+        )
+        self.ui.extra_fields_table.setColumnWidth(
+            self._extra_fields_difficulty_column, 120
+        )
         self.ui.extra_fields_table.setAlternatingRowColors(True)
 
         note_filters_table_rows = self.ui.note_filters_table.rowCount()
@@ -236,53 +249,39 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         assert note_type is not None
         fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
 
-        matching_filter = None
+        matching_filter: Optional[AnkiMorphsConfigFilter] = None
         for config_filter in config_filters:
             if note_type_text == config_filter.note_type:
                 matching_filter = config_filter
                 break
 
-        unknowns_cbox = QComboBox(self.ui.extra_fields_table)
-        unknowns_cbox.addItems(["(none)"])
-        unknowns_cbox.addItems(fields)
+        unknowns_cbox: QComboBox = self.create_extra_field_cbox(fields)
+        unknowns_count_cbox: QComboBox = self.create_extra_field_cbox(fields)
+        highlighted_cbox: QComboBox = self.create_extra_field_cbox(fields)
+        difficulty_cbox: QComboBox = self.create_extra_field_cbox(fields)
 
         if matching_filter is not None:
-            unknowns_cbox_index = get_combobox_index(
-                fields, matching_filter.unknowns_field
+            self.set_extra_field_cbox_index(
+                unknowns_cbox, fields, matching_filter.unknowns_field
             )
-            if unknowns_cbox_index is not None:
-                unknowns_cbox_index += 1  # to offset the added (none) item
-                unknowns_cbox.setCurrentIndex(unknowns_cbox_index)
-
-        highlighted_cbox = QComboBox(self.ui.extra_fields_table)
-        highlighted_cbox.addItems(["(none)"])
-        highlighted_cbox.addItems(fields)
-
-        if matching_filter is not None:
-            highlighted_cbox_cbox_index = get_combobox_index(
-                fields, matching_filter.highlighted_field
+            self.set_extra_field_cbox_index(
+                unknowns_count_cbox, fields, matching_filter.unknowns_count_field
             )
-            if highlighted_cbox_cbox_index is not None:
-                highlighted_cbox_cbox_index += 1  # to offset the added (none) item
-                highlighted_cbox.setCurrentIndex(highlighted_cbox_cbox_index)
-
-        difficulty_cbox = QComboBox(self.ui.extra_fields_table)
-        difficulty_cbox.addItems(["(none)"])
-        difficulty_cbox.addItems(fields)
-
-        if matching_filter is not None:
-            difficulty_cbox_cbox_index = get_combobox_index(
-                fields, matching_filter.difficulty_field
+            self.set_extra_field_cbox_index(
+                highlighted_cbox, fields, matching_filter.highlighted_field
             )
-            if difficulty_cbox_cbox_index is not None:
-                difficulty_cbox_cbox_index += 1  # to offset the added (none) item
-                difficulty_cbox.setCurrentIndex(difficulty_cbox_cbox_index)
+            self.set_extra_field_cbox_index(
+                difficulty_cbox, fields, matching_filter.difficulty_field
+            )
 
         self.ui.extra_fields_table.setItem(
             row, self._extra_fields_note_type_column, QTableWidgetItem(note_type_text)
         )
         self.ui.extra_fields_table.setCellWidget(
             row, self._extra_fields_unknowns_column, unknowns_cbox
+        )
+        self.ui.extra_fields_table.setCellWidget(
+            row, self._extra_fields_unknowns_count_column, unknowns_count_cbox
         )
         self.ui.extra_fields_table.setCellWidget(
             row, self._extra_fields_highlighted_column, highlighted_cbox
@@ -568,47 +567,65 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         }
 
         filters: list[FilterTypeAlias] = []
-        rows = self.ui.note_filters_table.rowCount()
-        for row in range(rows):
+        for row in range(self.ui.note_filters_table.rowCount()):
             note_type_cbox: QComboBox = get_combobox_widget(
-                self.ui.note_filters_table.cellWidget(row, 0)
+                self.ui.note_filters_table.cellWidget(
+                    row, self._note_filter_note_type_column
+                )
             )
             tags_widget: QTableWidgetItem = get_table_item(
-                self.ui.note_filters_table.item(row, 1)
+                self.ui.note_filters_table.item(row, self._note_filter_tags_column)
             )
-            # tags = tags_widget.text().split(",")
-            # tags = [tag.strip() for tag in tags]
-            tags = json.loads(tags_widget.text())
-
             field_cbox: QComboBox = get_combobox_widget(
-                self.ui.note_filters_table.cellWidget(row, 2)
+                self.ui.note_filters_table.cellWidget(
+                    row, self._note_filter_field_column
+                )
             )
             morphemizer_widget: QComboBox = get_combobox_widget(
-                self.ui.note_filters_table.cellWidget(row, 3)
+                self.ui.note_filters_table.cellWidget(
+                    row, self._note_filter_morphemizer_column
+                )
             )
             morph_priority_widget: QComboBox = get_combobox_widget(
-                self.ui.note_filters_table.cellWidget(row, 4)
+                self.ui.note_filters_table.cellWidget(
+                    row, self._note_filter_morph_priority_column
+                )
             )
             read_widget: QCheckBox = get_checkbox_widget(
-                self.ui.note_filters_table.cellWidget(row, 5)
+                self.ui.note_filters_table.cellWidget(
+                    row, self._note_filter_read_column
+                )
             )
             modify_widget: QCheckBox = get_checkbox_widget(
-                self.ui.note_filters_table.cellWidget(row, 6)
+                self.ui.note_filters_table.cellWidget(
+                    row, self._note_filter_modify_column
+                )
             )
             unknowns_widget: QComboBox = get_combobox_widget(
-                self.ui.extra_fields_table.cellWidget(row, 1)
+                self.ui.extra_fields_table.cellWidget(
+                    row, self._extra_fields_unknowns_column
+                )
+            )
+            unknowns_count_widget: QComboBox = get_combobox_widget(
+                self.ui.extra_fields_table.cellWidget(
+                    row, self._extra_fields_unknowns_count_column
+                )
             )
             highlighted_widget: QComboBox = get_combobox_widget(
-                self.ui.extra_fields_table.cellWidget(row, 2)
+                self.ui.extra_fields_table.cellWidget(
+                    row, self._extra_fields_highlighted_column
+                )
             )
             difficulty_widget: QComboBox = get_combobox_widget(
-                self.ui.extra_fields_table.cellWidget(row, 3)
+                self.ui.extra_fields_table.cellWidget(
+                    row, self._extra_fields_difficulty_column
+                )
             )
 
             _filter: FilterTypeAlias = {
                 "note_type": note_type_cbox.itemText(note_type_cbox.currentIndex()),
                 "note_type_id": self.models[note_type_cbox.currentIndex()].id,
-                "tags": tags,
+                "tags": json.loads(tags_widget.text()),
                 "field": field_cbox.itemText(field_cbox.currentIndex()),
                 "field_index": field_cbox.currentIndex(),
                 "morphemizer_description": morphemizer_widget.itemText(
@@ -627,6 +644,10 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
                     unknowns_widget.currentIndex()
                 ),
                 "unknowns_field_index": unknowns_widget.currentIndex(),
+                "unknowns_count_field": unknowns_count_widget.itemText(
+                    unknowns_count_widget.currentIndex()
+                ),
+                "unknowns_count_field_index": unknowns_count_widget.currentIndex(),
                 "highlighted_field": highlighted_widget.itemText(
                     highlighted_widget.currentIndex()
                 ),
@@ -735,6 +756,42 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.tag_selector.ui.tableWidget.clearContents()
         tooltip("Remember to save!", parent=self)
 
+    def create_extra_field_cbox(
+        self,
+        fields: dict[str, tuple[int, FieldDict]],
+    ) -> QComboBox:
+        extra_fields_cbox = QComboBox(self.ui.extra_fields_table)
+        extra_fields_cbox.addItems(["(none)"])
+        extra_fields_cbox.addItems(fields)
+        return extra_fields_cbox
+
+    @staticmethod
+    def set_extra_field_cbox_index(
+        extra_fields_cbox: QComboBox,
+        fields: dict[str, tuple[int, FieldDict]],
+        cbox_filter_field: str,
+    ) -> None:
+        extra_fields_cbox_index = get_combobox_index(fields, cbox_filter_field)
+        if extra_fields_cbox_index is not None:
+            extra_fields_cbox_index += 1  # to offset the added (none) item
+            extra_fields_cbox.setCurrentIndex(extra_fields_cbox_index)
+
+    @staticmethod
+    def _get_frequency_files() -> list[str]:
+        assert mw is not None
+        path_generator = Path(mw.pm.profileFolder(), "frequency-files").glob("*.csv")
+        frequency_files = [file.name for file in path_generator if file.is_file()]
+        return frequency_files
+
+    @staticmethod
+    def _get_model_combobox_index(
+        items: Iterable[NotetypeNameId], filter_field: str
+    ) -> Optional[int]:
+        for index, model in enumerate(items):
+            if model.name == filter_field:
+                return index
+        return None
+
     def closeWithCallback(  # pylint:disable=invalid-name
         self, callback: Callable[[], None]
     ) -> None:
@@ -756,19 +813,3 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
                 tooltip("Remember to save!", parent=self)
             return True
         return False
-
-
-def _get_model_combobox_index(
-    items: Iterable[NotetypeNameId], filter_field: str
-) -> Optional[int]:
-    for index, model in enumerate(items):
-        if model.name == filter_field:
-            return index
-    return None
-
-
-def _get_frequency_files() -> list[str]:
-    assert mw is not None
-    path_generator = Path(mw.pm.profileFolder(), "frequency-files").glob("*.csv")
-    frequency_files = [file.name for file in path_generator if file.is_file()]
-    return frequency_files

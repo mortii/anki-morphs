@@ -34,6 +34,12 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
         self.unknowns_field_index: Optional[int] = _get_filter_optional_int(
             _filter, "unknowns_field_index"
         )
+        self.unknowns_count_field: str = _get_filter_str(
+            _filter, "unknowns_count_field"
+        )
+        self.unknowns_count_field_index: Optional[int] = _get_filter_optional_int(
+            _filter, "unknowns_count_field_index"
+        )
         self.highlighted_field: str = _get_filter_str(_filter, "highlighted_field")
         self.highlighted_field_index: Optional[int] = _get_filter_optional_int(
             _filter, "highlighted_field_index"

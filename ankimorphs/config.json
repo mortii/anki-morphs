@@ -19,6 +19,8 @@
         "exclude": [],
         "include": []
       },
+      "unknowns_count_field": "",
+      "unknowns_count_field_index": null,
       "unknowns_field": "",
       "unknowns_field_index": null
     }

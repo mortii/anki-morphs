@@ -39,8 +39,6 @@
 - [Performance](developer_guide/performance.md)
 - [Databases](developer_guide/databases.md)
 
-
-
 -----------
 
 [Contributors](contributors.md)

@@ -305,7 +305,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statemen
                     )
                 )
 
-            # check if card has already been handled in a previous note filter
+            # check if the card has already been handled in a previous note filter
             if card_id in handled_cards:
                 continue
 
@@ -331,7 +331,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statemen
                 )
 
                 card.due = card_difficulty
-                _update_unknowns_field(config_filter, note, card_unknown_morphs)
+                _update_unknowns_fields(config_filter, note, card_unknown_morphs)
                 _update_difficulty_field(config_filter, note, card_difficulty)
                 _update_tags_and_queue(
                     am_config,
@@ -584,7 +584,7 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
     return difficulty, unknown_morphs, has_learning_morph
 
 
-def _update_unknowns_field(
+def _update_unknowns_fields(
     config_filter: AnkiMorphsConfigFilter, note: Note, unknowns: list[str]
 ) -> None:
     if config_filter.unknowns_field_index is not None:
@@ -592,6 +592,11 @@ def _update_unknowns_field(
             focus_morph_string: str = "".join(f"{unknown}, " for unknown in unknowns)
             focus_morph_string = focus_morph_string[:-2]  # removes last comma
             note.fields[config_filter.unknowns_field_index - 1] = focus_morph_string
+    if config_filter.unknowns_count_field_index is not None:
+        if config_filter.unknowns_count_field_index > 0:
+            note.fields[config_filter.unknowns_count_field_index - 1] = str(
+                len(unknowns)
+            )
 
 
 def _update_difficulty_field(
