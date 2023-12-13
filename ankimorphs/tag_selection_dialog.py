@@ -17,7 +17,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
     QTableWidgetItem,
 )
 
-from . import ankimorphs_constants
+from . import ankimorphs_globals
 from .message_box_utils import show_error_box, show_warning_box
 from .table_utils import get_checkbox_widget, get_table_item
 from .ui.tag_selection_ui import Ui_TagSelectionDialog
@@ -296,5 +296,5 @@ class TagSelectionDialog(QDialog):  # pylint:disable=too-many-instance-attribute
     ) -> None:
         # This is used by the Anki dialog manager
         self.close()
-        aqt.dialogs.markClosed(ankimorphs_constants.TAG_SELECTOR_DIALOG_NAME)
+        aqt.dialogs.markClosed(ankimorphs_globals.TAG_SELECTOR_DIALOG_NAME)
         callback()

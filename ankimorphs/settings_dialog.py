@@ -18,7 +18,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from . import ankimorphs_constants
+from . import ankimorphs_globals
 from .config import (
     AnkiMorphsConfig,
     AnkiMorphsConfigFilter,
@@ -94,12 +94,12 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
         # Have the Anki dialog manager handle the tag selector dialog
         aqt.dialogs.register_dialog(
-            name=ankimorphs_constants.TAG_SELECTOR_DIALOG_NAME,
+            name=ankimorphs_globals.TAG_SELECTOR_DIALOG_NAME,
             creator=self.tag_selector.show,
         )
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.8.1-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.8.2-alpha")
 
         self.show()
 
@@ -744,7 +744,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             selected_tags=tags_widget.text(), row=row
         )
         aqt.dialogs.open(
-            name=ankimorphs_constants.TAG_SELECTOR_DIALOG_NAME,
+            name=ankimorphs_globals.TAG_SELECTOR_DIALOG_NAME,
         )
 
     def _update_note_filter_tags(self) -> None:
@@ -797,7 +797,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
     ) -> None:
         # This is used by the Anki dialog manager
         self.close()
-        aqt.dialogs.markClosed(ankimorphs_constants.SETTINGS_DIALOG_NAME)
+        aqt.dialogs.markClosed(ankimorphs_globals.SETTINGS_DIALOG_NAME)
         callback()
 
     def reopen(self) -> None:

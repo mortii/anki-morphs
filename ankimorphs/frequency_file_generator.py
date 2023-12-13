@@ -17,7 +17,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from . import ankimorphs_constants
+from . import ankimorphs_globals
 from .exceptions import CancelledOperationException, EmptyFileSelectionException
 from .morph_utils import (
     remove_names_morphemizer,
@@ -241,9 +241,7 @@ class FrequencyFileGeneratorDialog(QDialog):
     ) -> None:
         # This is used by the Anki dialog manager
         self.close()
-        aqt.dialogs.markClosed(
-            ankimorphs_constants.FREQUENCY_FILE_GENERATOR_DIALOG_NAME
-        )
+        aqt.dialogs.markClosed(ankimorphs_globals.FREQUENCY_FILE_GENERATOR_DIALOG_NAME)
         callback()
 
     def reopen(self) -> None:

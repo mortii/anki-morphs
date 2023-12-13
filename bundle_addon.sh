@@ -3,9 +3,9 @@
 cd ankimorphs || { echo "cd failed"; exit 1; }
 
 # If DEV_MODE = True, set it to False
-found_dev_mode=$(grep -cE "DEV_MODE: bool = (True|False)" ankimorphs_constants.py)
+found_dev_mode=$(grep -cE "DEV_MODE: bool = (True|False)" ankimorphs_globals.py)
 [ "$found_dev_mode" -eq 1 ] || { echo "grep result was not 1!"; exit 1; }
-sed -i 's/DEV_MODE: bool = True/DEV_MODE: bool = False/g' ankimorphs_constants.py
+sed -i 's/DEV_MODE: bool = True/DEV_MODE: bool = False/g' ankimorphs_globals.py
 
 # Find and store the AnkiMorphs version number. Will be used in .addon file name
 version="v$(grep -Po '(?<=version: )[^\"]*' settings_dialog.py)"

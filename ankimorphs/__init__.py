@@ -33,7 +33,7 @@ from aqt.utils import tooltip
 from aqt.webview import AnkiWebView
 
 from . import (
-    ankimorphs_constants,
+    ankimorphs_globals,
     browser_utils,
     frequency_file_generator,
     name_file_utils,
@@ -118,10 +118,10 @@ def register_addon_dialogs() -> None:
     # We use the Anki dialog manager to handle our dialogs
 
     aqt.dialogs.register_dialog(
-        name=ankimorphs_constants.SETTINGS_DIALOG_NAME, creator=SettingsDialog
+        name=ankimorphs_globals.SETTINGS_DIALOG_NAME, creator=SettingsDialog
     )
     aqt.dialogs.register_dialog(
-        name=ankimorphs_constants.FREQUENCY_FILE_GENERATOR_DIALOG_NAME,
+        name=ankimorphs_globals.FREQUENCY_FILE_GENERATOR_DIALOG_NAME,
         creator=FrequencyFileGeneratorDialog,
     )
 
@@ -172,7 +172,7 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
 
-    if ankimorphs_constants.DEV_MODE:
+    if ankimorphs_globals.DEV_MODE:
         test_action = create_test_action()
         am_tool_menu.addAction(test_action)
 
@@ -288,7 +288,7 @@ def rebuild_seen_morphs(changes: OpChangesAfterUndo) -> None:
 
     AnkiMorphsDB.rebuild_seen_morphs_today()
 
-    if ankimorphs_constants.DEV_MODE:
+    if ankimorphs_globals.DEV_MODE:
         print("Seen_Morphs:")
         am_db = AnkiMorphsDB()
         am_db.print_table("Seen_Morphs")
@@ -319,7 +319,7 @@ def create_settings_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Settings", mw)
     action.setShortcut(am_config.shortcut_settings)
     action.triggered.connect(
-        partial(aqt.dialogs.open, name=ankimorphs_constants.SETTINGS_DIALOG_NAME)
+        partial(aqt.dialogs.open, name=ankimorphs_globals.SETTINGS_DIALOG_NAME)
     )
     return action
 
@@ -399,7 +399,7 @@ def create_frequency_file_action() -> QAction:
     action.triggered.connect(
         partial(
             aqt.dialogs.open,
-            name=ankimorphs_constants.FREQUENCY_FILE_GENERATOR_DIALOG_NAME,
+            name=ankimorphs_globals.FREQUENCY_FILE_GENERATOR_DIALOG_NAME,
         )
     )
     return action
