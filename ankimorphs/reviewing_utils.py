@@ -181,6 +181,13 @@ def _show_card(
     assert mw is not None
     assert mw.reviewer is not None
 
+    if mw.reviewer.card is None:
+        # On Reviewer.cleanup() the card is set to None, this
+        # can hopefully just be ignored since a new reviewer will
+        # take over.
+        print("AnkiMorphs: mw.reviewer.card is None!")
+        return
+
     if mw.reviewer._reps is None:
         mw.reviewer._initWeb()
 
