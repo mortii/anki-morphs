@@ -10,7 +10,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from ankimorphs import ankimorphs_globals
+from . import ankimorphs_globals
 
 # Unfortunately, 'TypeAlias' is introduced in python 3.10 so for now
 # we can only create implicit type aliases.
