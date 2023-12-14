@@ -1,38 +1,27 @@
 # Extra Fields
 
-> **CAUTION!** Create a backup of your cards before you change selected fields. The content of the selected fields are
-> overwritten every [Recalc](../usage/recalc.md). Make sure you don't accidentally select a
-> field that has data you care about!
-
 ![extra-fields.png](../../../img/extra-fields.png)
 
-These are potentially destructive options, and they might not do what you think they do at first glance, so be extra
-careful. What happens here is the following:
-
 The text found in the [note filter: field](../settings/note-filter.md#field) is extracted and analyzed by AnkiMorphs. AnkiMorphs can then place
-information about that text into dedicated fields on your cards. Here are what the options produce:
+information about that text into dedicated fields on your cards. 
 
-- **Unknowns**: a list of the morphs that are still unknown to you that was found in the text
-- **Unknowns Count**: The number of unknowns found
-- **Highlighted**: an HTML version of the text that highlights the morphs based on learning status
-- **Difficulty**: the difficulty AnkiMorphs calculated the text to have
+The fields contain the following:
 
-All of these are completely optional, you can leave them to be `(none)` and AnkiMorphs will work just fine.
+- **am-unknowns**:  
+  A list of the morphs that are still unknown to you that was found in the text
+- **am-unknowns-count**:  
+  The number of unknowns found
+- **am-highlighted**:  
+   An HTML version of the text that highlights the morphs based on learning status
+- **am-difficulty**:  
+   The difficulty AnkiMorphs calculated the text to have
+  
+<br>
+Here is an example where all the extra-fields have been selected:
 
-## Adding Extra Fields To Your Cards
+![extra_fields_example_output.png](../../../img/extra_fields_example_output.png)
 
-<video autoplay loop muted controls>
-    <source src="../../../img/adding-extra-fields.mp4" type="video/mp4">
-</video>
-
-1. Go to Browse
-2. Find the note type in the left sidebar
-3. Click "Fields..." on the right side
-4. Click "Add"
-5. Name the field
-6. Click "Save"
-
-## Using Unknowns
+## Using am-unknowns
 
 ![unknown-morphs.png](../../../img/unknown-morphs.png)
 
@@ -42,14 +31,14 @@ above uses the following card-template:
 ![unknown-morphs-template.png](../../../img/unknown-morphs-template.png)
 
 
-## Using Unknowns Count
+## Using am-unknowns-count
 This is useful if you want to sort your cards in the browser based on how many unknowns they have.
 
 ![unknowns-count-search-field.png](../../../img/unknowns-count-search-field.png)
 
 ![unknowns-sort-browser-result.png](../../../img/unknowns-sort-browser-result.png)
 
-## Using Highlighted
+## Using am-highlighted
 
 <video autoplay loop muted controls>
     <source src="../../../img/highlighting.mp4" type="video/mp4">
@@ -63,7 +52,7 @@ results, you want your SRS experience to simulate real life as much as possible.
 going to be told which words you know and which you don’t. So, it makes sense to have your sentence cards reflect this.
 
 Here is a simplified example of some of the changes you need to make to your card template to get the results shown
-above. Notice that the `highlighted-version`-field is substituted for the `Japanese`-field on the back of the card.
+above. Notice that the `am-highlighted`-field is substituted for the `Japanese`-field on the back of the card.
 
 ![highlight-front-template.png](../../../img/highlight-front-template.png)
 
@@ -99,7 +88,7 @@ press "Show Answer". To prevent both playing you can do the following:
 2. Scroll down to the "Audio" section
 3. Activate "Skip question when replaying answer"
 
-## Using Difficulty
+## Using am-difficulty
 
 This field is really just for debugging purposes, so I recommend that you **don't** add this field to your card-template
 to make it visible--it would just end up making your cards more cluttered.
