@@ -1,12 +1,12 @@
 {
+  "extra_difficulty": false,
+  "extra_highlighted": false,
+  "extra_unknowns": false,
+  "extra_unknowns_count": false,
   "filters": [
     {
-      "difficulty_field": "",
-      "difficulty_field_index": null,
       "field": "",
       "field_index": null,
-      "highlighted_field": "",
-      "highlighted_field_index": null,
       "modify": true,
       "morph_priority": "",
       "morph_priority_index": null,
@@ -18,11 +18,7 @@
       "tags": {
         "exclude": [],
         "include": []
-      },
-      "unknowns_count_field": "",
-      "unknowns_count_field_index": null,
-      "unknowns_field": "",
-      "unknowns_field_index": null
+      }
     }
   ],
   "parse_ignore_bracket_contents": false,

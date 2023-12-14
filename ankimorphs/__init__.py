@@ -449,5 +449,18 @@ def test_function() -> None:
     # card.queue = -1  # suspend
     # mw.col.update_card(card)
 
+    # print(f"card: {Card}")
+    # mid: NotetypeId = card.note().mid
+    #
+    # model_manager = mw.col.models
+    # note_type_dict: Optional[NotetypeDict] = model_manager.get(mid)
+    # assert note_type_dict is not None
+    # new_field: FieldDict = model_manager.new_field("am-unknowns")
+    #
+    # model_manager.add_field(note_type_dict, new_field)
+    # model_manager.update_dict(note_type_dict)
+
+    # mw.col.update_note(note)
+
 
 main()

@@ -51,7 +51,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.models: Sequence[NotetypeNameId] = mw.col.models.all_names_and_ids()
         self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
-        self.ui.tabWidget.currentChanged.connect(self._tab_change)
         self.ui.note_filters_table.cellClicked.connect(self._tags_cell_clicked)
 
         # disables manual editing of in note filter table
@@ -67,17 +66,11 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self._note_filter_read_column: int = 5
         self._note_filter_modify_column: int = 6
 
-        self._extra_fields_note_type_column: int = 0
-        self._extra_fields_unknowns_column: int = 1
-        self._extra_fields_unknowns_count_column: int = 2
-        self._extra_fields_highlighted_column: int = 3
-        self._extra_fields_difficulty_column: int = 4
-
         self._morphemizers = get_all_morphemizers()
         self._config = AnkiMorphsConfig()
         self._default_config = AnkiMorphsConfig(is_default=True)
         self._setup_note_filters_table(self._config.filters)
-        self._setup_extra_fields_table(self._config.filters)
+        self._populate_extra_fields_tab()
         self._populate_tags_tab()
         self._populate_parse_tab()
         self._populate_skip_tab()
@@ -99,7 +92,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.8.3-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.9.0-alpha")
 
         self.show()
 
@@ -203,91 +196,30 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             row, self._note_filter_modify_column, modify_checkbox
         )
 
-    def _setup_extra_fields_table(
-        self, config_filters: list[AnkiMorphsConfigFilter]
-    ) -> None:
-        self.ui.extra_fields_table.setColumnWidth(
-            self._extra_fields_note_type_column, 150
-        )
-        self.ui.extra_fields_table.setColumnWidth(
-            self._extra_fields_unknowns_column, 120
-        )
-        self.ui.extra_fields_table.setColumnWidth(
-            self._extra_fields_unknowns_count_column, 150
-        )
-        self.ui.extra_fields_table.setColumnWidth(
-            self._extra_fields_highlighted_column, 120
-        )
-        self.ui.extra_fields_table.setColumnWidth(
-            self._extra_fields_difficulty_column, 120
-        )
-        self.ui.extra_fields_table.setAlternatingRowColors(True)
+    def _populate_extra_fields_tab(self) -> None:
+        self.ui.extraUnknownsCheckBox.setChecked(self._config.extra_unknowns)
+        self.ui.extraUnknownsCountCheckBox.setChecked(self._config.extra_unknowns_count)
+        self.ui.extraHighlightedCheckBox.setChecked(self._config.extra_highlighted)
+        self.ui.extraDifficultyCheckBox.setChecked(self._config.extra_difficulty)
 
-        note_filters_table_rows = self.ui.note_filters_table.rowCount()
-        self.ui.extra_fields_table.setRowCount(note_filters_table_rows)
+    def _restore_extra_fields_defaults(self, skip_confirmation: bool = False) -> None:
+        if not skip_confirmation:
+            title = "Confirmation"
+            text = "Are you sure you want to restore default extra fields settings?"
+            confirmed = self._warning_dialog(title, text)
 
-        for row in range(note_filters_table_rows):
-            self._set_extra_fields_table_row(row, config_filters)
+            if not confirmed:
+                return
 
-    def _set_extra_fields_table_row(  # pylint:disable=too-many-locals
-        self, row: int, config_filters: list[AnkiMorphsConfigFilter]
-    ) -> None:
-        assert mw
-
-        self.ui.extra_fields_table.setRowHeight(row, 35)
-
-        note_filter_note_type_widget: QComboBox = get_combobox_widget(
-            self.ui.note_filters_table.cellWidget(
-                row, self._note_filter_note_type_column
-            )
+        self.ui.extraUnknownsCheckBox.setChecked(self._default_config.extra_unknowns)
+        self.ui.extraUnknownsCountCheckBox.setChecked(
+            self._default_config.extra_unknowns_count
         )
-        note_type_text = note_filter_note_type_widget.itemText(
-            note_filter_note_type_widget.currentIndex()
+        self.ui.extraHighlightedCheckBox.setChecked(
+            self._default_config.extra_highlighted
         )
-        current_model_id = self.models[note_filter_note_type_widget.currentIndex()].id
-        note_type = mw.col.models.get(NotetypeId(int(current_model_id)))
-        assert note_type is not None
-        fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
-
-        matching_filter: Optional[AnkiMorphsConfigFilter] = None
-        for config_filter in config_filters:
-            if note_type_text == config_filter.note_type:
-                matching_filter = config_filter
-                break
-
-        unknowns_cbox: QComboBox = self.create_extra_field_cbox(fields)
-        unknowns_count_cbox: QComboBox = self.create_extra_field_cbox(fields)
-        highlighted_cbox: QComboBox = self.create_extra_field_cbox(fields)
-        difficulty_cbox: QComboBox = self.create_extra_field_cbox(fields)
-
-        if matching_filter is not None:
-            self.set_extra_field_cbox_index(
-                unknowns_cbox, fields, matching_filter.unknowns_field
-            )
-            self.set_extra_field_cbox_index(
-                unknowns_count_cbox, fields, matching_filter.unknowns_count_field
-            )
-            self.set_extra_field_cbox_index(
-                highlighted_cbox, fields, matching_filter.highlighted_field
-            )
-            self.set_extra_field_cbox_index(
-                difficulty_cbox, fields, matching_filter.difficulty_field
-            )
-
-        self.ui.extra_fields_table.setItem(
-            row, self._extra_fields_note_type_column, QTableWidgetItem(note_type_text)
-        )
-        self.ui.extra_fields_table.setCellWidget(
-            row, self._extra_fields_unknowns_column, unknowns_cbox
-        )
-        self.ui.extra_fields_table.setCellWidget(
-            row, self._extra_fields_unknowns_count_column, unknowns_count_cbox
-        )
-        self.ui.extra_fields_table.setCellWidget(
-            row, self._extra_fields_highlighted_column, highlighted_cbox
-        )
-        self.ui.extra_fields_table.setCellWidget(
-            row, self._extra_fields_difficulty_column, difficulty_cbox
+        self.ui.extraDifficultyCheckBox.setChecked(
+            self._default_config.extra_difficulty
         )
 
     def _populate_tags_tab(self) -> None:
@@ -480,7 +412,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         if confirmed:
             default_filters = self._default_config.filters
             self._setup_note_filters_table(default_filters)
-            self._setup_extra_fields_table(default_filters)
+            self._restore_extra_fields_defaults(skip_confirmation=True)
             self._restore_tags_defaults(skip_confirmation=True)
             self._restore_parse_defaults(skip_confirmation=True)
             self._restore_skip_defaults(skip_confirmation=True)
@@ -501,6 +433,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.cancelPushButton.setAutoDefault(False)
         self.ui.addNewRowPushButton.setAutoDefault(False)
         self.ui.deleteRowPushButton.setAutoDefault(False)
+        self.ui.restoreExtraFieldsPushButton.setAutoDefault(False)
         self.ui.restoreTagsPushButton.setAutoDefault(False)
         self.ui.restoreRecalcPushButton.setAutoDefault(False)
         self.ui.restoreShortcutsPushButton.setAutoDefault(False)
@@ -512,6 +445,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.cancelPushButton.clicked.connect(self.close)
         self.ui.addNewRowPushButton.clicked.connect(self._add_new_row)
         self.ui.deleteRowPushButton.clicked.connect(self._delete_row)
+        self.ui.restoreExtraFieldsPushButton.clicked.connect(
+            self._restore_extra_fields_defaults
+        )
         self.ui.restoreTagsPushButton.clicked.connect(self._restore_tags_defaults)
         self.ui.restoreRecalcPushButton.clicked.connect(self._restore_recalc_defaults)
         self.ui.restoreShortcutsPushButton.clicked.connect(
@@ -536,10 +472,13 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         config_filter = self._default_config.filters[0]
         row = self.ui.note_filters_table.rowCount() - 1
         self._set_note_filters_table_row(row, config_filter)
-        self._setup_extra_fields_table(self._config.filters)
 
     def _save_to_config(self) -> None:  # pylint:disable=too-many-locals
         new_config = {
+            "extra_difficulty": self.ui.extraDifficultyCheckBox.isChecked(),
+            "extra_highlighted": self.ui.extraHighlightedCheckBox.isChecked(),
+            "extra_unknowns": self.ui.extraUnknownsCheckBox.isChecked(),
+            "extra_unknowns_count": self.ui.extraUnknownsCountCheckBox.isChecked(),
             "tag_ready": self.ui.tagReadyLineEdit.text(),
             "tag_not_ready": self.ui.tagNotReadyLineEdit.text(),
             "tag_known_automatically": self.ui.tagKnownAutomaticallyLineEdit.text(),
@@ -601,26 +540,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
                     row, self._note_filter_modify_column
                 )
             )
-            unknowns_widget: QComboBox = get_combobox_widget(
-                self.ui.extra_fields_table.cellWidget(
-                    row, self._extra_fields_unknowns_column
-                )
-            )
-            unknowns_count_widget: QComboBox = get_combobox_widget(
-                self.ui.extra_fields_table.cellWidget(
-                    row, self._extra_fields_unknowns_count_column
-                )
-            )
-            highlighted_widget: QComboBox = get_combobox_widget(
-                self.ui.extra_fields_table.cellWidget(
-                    row, self._extra_fields_highlighted_column
-                )
-            )
-            difficulty_widget: QComboBox = get_combobox_widget(
-                self.ui.extra_fields_table.cellWidget(
-                    row, self._extra_fields_difficulty_column
-                )
-            )
 
             _filter: FilterTypeAlias = {
                 "note_type": note_type_cbox.itemText(note_type_cbox.currentIndex()),
@@ -640,79 +559,13 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
                 "morph_priority_index": morph_priority_widget.currentIndex(),
                 "read": read_widget.isChecked(),
                 "modify": modify_widget.isChecked(),
-                "unknowns_field": unknowns_widget.itemText(
-                    unknowns_widget.currentIndex()
-                ),
-                "unknowns_field_index": unknowns_widget.currentIndex(),
-                "unknowns_count_field": unknowns_count_widget.itemText(
-                    unknowns_count_widget.currentIndex()
-                ),
-                "unknowns_count_field_index": unknowns_count_widget.currentIndex(),
-                "highlighted_field": highlighted_widget.itemText(
-                    highlighted_widget.currentIndex()
-                ),
-                "highlighted_field_index": highlighted_widget.currentIndex(),
-                "difficulty_field": difficulty_widget.itemText(
-                    difficulty_widget.currentIndex()
-                ),
-                "difficulty_field_index": difficulty_widget.currentIndex(),
             }
             filters.append(_filter)
         new_config["filters"] = filters
 
-        if self._extra_fields_changed(filters):
-            _title = "AnkiMorphs Warning"
-            _text = (
-                "You have changed your **Extra Fields** settings.\n"
-                "This can potentially destroy your cards.\n\n"
-                "Before saving, make sure you have done the following:\n"
-                "- Read and understood the <a href='https://mortii.github.io/anki-morphs/user_guide/setup/settings/extra-fields.html'>guide</a>\n"
-                "- Created a backup of your cards.\n\n"
-                "Are you sure you want to save the settings?"
-            )
-            accepted = self._warning_dialog(
-                title=_title, text=_text, display_tooltip=False
-            )
-            if not accepted:
-                return
-
         update_configs(new_config)
         self._config = AnkiMorphsConfig()
         tooltip("Please recalc to avoid unexpected behaviour", parent=self)
-
-    def _extra_fields_changed(self, new_filters: list[FilterTypeAlias]) -> bool:
-        extra_fields: list[str] = [
-            "unknowns_field",
-            "highlighted_field",
-            "difficulty_field",
-        ]
-        has_active_extra_fields = False
-
-        for _filter in new_filters:
-            for field in extra_fields:
-                if _filter[field] != "(none)":
-                    has_active_extra_fields = True
-
-        if not has_active_extra_fields:
-            # if all extra fields are (none) return False
-            return False
-
-        for index, old_filter in enumerate(self._config.filters):
-            if (len(new_filters) - 1) < index:
-                # if existing note filters are deleted then this occurs
-                break
-
-            if new_filters[index]["unknowns_field"] != old_filter.unknowns_field:
-                if new_filters[index]["unknowns_field"] != "(none)":
-                    return True
-            if new_filters[index]["highlighted_field"] != old_filter.highlighted_field:
-                if new_filters[index]["highlighted_field"] != "(none)":
-                    return True
-            if new_filters[index]["difficulty_field"] != old_filter.difficulty_field:
-                if new_filters[index]["difficulty_field"] != "(none)":
-                    return True
-
-        return False
 
     def _update_fields_cbox(
         self, field_cbox: QComboBox, note_type_cbox: QComboBox
@@ -724,13 +577,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
         field_cbox.clear()
         field_cbox.addItems(fields)
-
-    def _tab_change(self, tab_index: int) -> None:
-        # The extra fields settings are dependent on the note filters, so
-        # everytime the extra fields tab is opened we just re-populate it
-        # in case the note filters have changed.
-        if tab_index == 1:
-            self._setup_extra_fields_table(self._config.filters)
 
     def _tags_cell_clicked(self, row: int, column: int) -> None:
         if column != 1:
@@ -755,26 +601,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
         self.tag_selector.ui.tableWidget.clearContents()
         tooltip("Remember to save!", parent=self)
-
-    def create_extra_field_cbox(
-        self,
-        fields: dict[str, tuple[int, FieldDict]],
-    ) -> QComboBox:
-        extra_fields_cbox = QComboBox(self.ui.extra_fields_table)
-        extra_fields_cbox.addItems(["(none)"])
-        extra_fields_cbox.addItems(fields)
-        return extra_fields_cbox
-
-    @staticmethod
-    def set_extra_field_cbox_index(
-        extra_fields_cbox: QComboBox,
-        fields: dict[str, tuple[int, FieldDict]],
-        cbox_filter_field: str,
-    ) -> None:
-        extra_fields_cbox_index = get_combobox_index(fields, cbox_filter_field)
-        if extra_fields_cbox_index is not None:
-            extra_fields_cbox_index += 1  # to offset the added (none) item
-            extra_fields_cbox.setCurrentIndex(extra_fields_cbox_index)
 
     @staticmethod
     def _get_frequency_files() -> list[str]:

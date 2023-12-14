@@ -118,10 +118,7 @@
               <string notr="true">margin-bottom: 10px;</string>
              </property>
              <property name="text">
-              <string>**CHANGING EXTRA FIELDS CAN COMPLETELY DESTORY YOUR CARDS!**  
- Do the following before making any changes here: 
- - Read the &lt;a href=&quot;https://mortii.github.io/anki-morphs/user_guide/setup/settings/extra-fields.html&quot;&gt;guide&lt;/a&gt;, these options probably work differently from what you expect. 
- - Create a backup of your card collection.</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;AnkiMorphs can automatically add the following fields to your cards and populate them.&lt;/p&gt;&lt;p&gt;Read the &lt;a href=&quot;https://mortii.github.io/anki-morphs/user_guide/setup/settings/extra-fields.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#aaaaff;&quot;&gt;guide&lt;/span&gt;&lt;/a&gt; for more info.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="textFormat">
               <enum>Qt::MarkdownText</enum>
@@ -132,33 +129,69 @@
             </widget>
            </item>
            <item>
-            <widget class="QTableWidget" name="extra_fields_table">
-             <column>
-              <property name="text">
-               <string>Note Type</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Unknowns</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Unknowns Count</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Highlighted</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Difficulty</string>
-              </property>
-             </column>
+            <widget class="QCheckBox" name="extraUnknownsCheckBox">
+             <property name="text">
+              <string>am-unknowns</string>
+             </property>
             </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="extraUnknownsCountCheckBox">
+             <property name="text">
+              <string>am-unknowns-count</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="extraHighlightedCheckBox">
+             <property name="text">
+              <string>am-highlighted</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="extraDifficultyCheckBox">
+             <property name="text">
+              <string>am-difficulty</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_6">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QPushButton" name="restoreExtraFieldsPushButton">
+               <property name="text">
+                <string>Restore Default Extra Fields Settings</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_9">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </item>
           </layout>
          </item>

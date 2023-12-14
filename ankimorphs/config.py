@@ -41,24 +41,7 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
             )
             self.read: bool = _get_filter_bool(_filter, "read")
             self.modify: bool = _get_filter_bool(_filter, "modify")
-            self.unknowns_field: str = _get_filter_str(_filter, "unknowns_field")
-            self.unknowns_field_index: Optional[int] = _get_filter_optional_int(
-                _filter, "unknowns_field_index"
-            )
-            self.unknowns_count_field: str = _get_filter_str(
-                _filter, "unknowns_count_field"
-            )
-            self.unknowns_count_field_index: Optional[int] = _get_filter_optional_int(
-                _filter, "unknowns_count_field_index"
-            )
-            self.highlighted_field: str = _get_filter_str(_filter, "highlighted_field")
-            self.highlighted_field_index: Optional[int] = _get_filter_optional_int(
-                _filter, "highlighted_field_index"
-            )
-            self.difficulty_field: str = _get_filter_str(_filter, "difficulty_field")
-            self.difficulty_field_index: Optional[int] = _get_filter_optional_int(
-                _filter, "difficulty_field_index"
-            )
+
         except (KeyError, AssertionError):
             self.has_error = True
             if not ankimorphs_globals.ankimorphs_broken:
@@ -140,7 +123,19 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
             self.tag_learn_card_now: str = _get_string_config(
                 "tag_learn_card_now", is_default
             )
+            self.extra_unknowns: bool = _get_bool_config("extra_unknowns", is_default)
+            self.extra_unknowns_count: bool = _get_bool_config(
+                "extra_unknowns_count", is_default
+            )
+            self.extra_highlighted: bool = _get_bool_config(
+                "extra_highlighted", is_default
+            )
+            self.extra_difficulty: bool = _get_bool_config(
+                "extra_difficulty", is_default
+            )
+
             self.filters: list[AnkiMorphsConfigFilter] = _get_filters_config(is_default)
+
         except (KeyError, AssertionError):
             if not ankimorphs_globals.ankimorphs_broken:
                 show_critical_config_error()

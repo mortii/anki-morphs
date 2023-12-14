@@ -11,6 +11,7 @@ from typing import Any, Optional, Union
 from anki.cards import Card
 from anki.collection import Collection
 from anki.consts import CARD_TYPE_NEW, CardQueue
+from anki.models import FieldDict, ModelManager, NotetypeDict, NotetypeId
 from anki.notes import Note
 from anki.tags import TagManager
 from anki.utils import ids2str
@@ -19,6 +20,7 @@ from aqt.operations import QueryOp
 from aqt.qt import QMessageBox  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
+from . import ankimorphs_globals
 from .anki_data_utils import AnkiCardData, AnkiDBRowData, AnkiMorphsCardData
 from .ankimorphs_db import AnkiMorphsDB
 from .config import (
@@ -261,13 +263,14 @@ def _get_card_morphs(
         return None
 
 
-def _update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statements
+def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-statements, too-many-branches
     am_config: AnkiMorphsConfig,
 ) -> None:
     assert mw is not None
     assert mw.col.db is not None
     assert mw.progress is not None
 
+    model_manager: ModelManager = mw.col.models
     am_db = AnkiMorphsDB()
     modify_config_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
     card_morph_map_cache: dict[int, list[SimplifiedMorph]] = _get_card_morph_map_cache(
@@ -284,6 +287,12 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statemen
 
     for config_filter in modify_config_filters:
         assert config_filter.note_type_id is not None
+        note_type_id: NotetypeId = NotetypeId(config_filter.note_type_id)
+
+        _add_extra_fields(am_config, note_type_id, model_manager)
+        note_type_dict = model_manager.get(note_type_id)
+        assert note_type_dict is not None
+        note_type_field_name_dict = model_manager.field_map(note_type_dict)
 
         morph_priority: dict[str, int] = _get_morph_priority(am_db, config_filter)
         cards_data_dict: dict[int, AnkiMorphsCardData] = _get_am_cards_data_dict(
@@ -331,8 +340,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statemen
                 )
 
                 card.due = card_difficulty
-                _update_unknowns_fields(config_filter, note, card_unknown_morphs)
-                _update_difficulty_field(config_filter, note, card_difficulty)
+
                 _update_tags_and_queue(
                     am_config,
                     note,
@@ -341,13 +349,28 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statemen
                     card_has_learning_morphs,
                 )
 
-            _update_highlighted_field(
-                am_config,
-                config_filter,
-                card_morph_map_cache,
-                card.id,
-                note,
-            )
+                if am_config.extra_unknowns:
+                    _update_unknowns_field(
+                        note_type_field_name_dict, note, card_unknown_morphs
+                    )
+                if am_config.extra_unknowns_count:
+                    _update_unknowns_count_field(
+                        note_type_field_name_dict, note, card_unknown_morphs
+                    )
+                if am_config.extra_difficulty:
+                    _update_difficulty_field(
+                        note_type_field_name_dict, note, card_difficulty
+                    )
+
+            if am_config.extra_highlighted:
+                _update_highlighted_field(
+                    am_config,
+                    config_filter,
+                    note_type_field_name_dict,
+                    card_morph_map_cache,
+                    card.id,
+                    note,
+                )
 
             # We cannot check if due is different from the original here
             # because due is recalculated later.
@@ -400,6 +423,47 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals,too-many-statemen
 
     mw.col.update_cards(modified_cards)
     mw.col.update_notes(modified_notes)
+
+
+def _add_extra_fields(
+    am_config: AnkiMorphsConfig,
+    note_type_id: NotetypeId,
+    model_manager: ModelManager,
+) -> None:
+    note_type_dict: Optional[NotetypeDict] = model_manager.get(note_type_id)
+    assert note_type_dict is not None
+    existing_field_names = model_manager.field_names(note_type_dict)
+    new_field: FieldDict
+
+    if am_config.extra_unknowns:
+        if ankimorphs_globals.EXTRA_FIELD_UNKNOWNS not in existing_field_names:
+            new_field = model_manager.new_field(ankimorphs_globals.EXTRA_FIELD_UNKNOWNS)
+            model_manager.add_field(note_type_dict, new_field)
+            model_manager.update_dict(note_type_dict)
+
+    if am_config.extra_unknowns_count:
+        if ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT not in existing_field_names:
+            new_field = model_manager.new_field(
+                ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT
+            )
+            model_manager.add_field(note_type_dict, new_field)
+            model_manager.update_dict(note_type_dict)
+
+    if am_config.extra_highlighted:
+        if ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED not in existing_field_names:
+            new_field = model_manager.new_field(
+                ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED
+            )
+            model_manager.add_field(note_type_dict, new_field)
+            model_manager.update_dict(note_type_dict)
+
+    if am_config.extra_difficulty:
+        if ankimorphs_globals.EXTRA_FIELD_DIFFICULTY not in existing_field_names:
+            new_field = model_manager.new_field(
+                ankimorphs_globals.EXTRA_FIELD_DIFFICULTY
+            )
+            model_manager.add_field(note_type_dict, new_field)
+            model_manager.update_dict(note_type_dict)
 
 
 def _card_is_modified(
@@ -584,32 +648,41 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
     return difficulty, unknown_morphs, has_learning_morph
 
 
-def _update_unknowns_fields(
-    config_filter: AnkiMorphsConfigFilter, note: Note, unknowns: list[str]
+def _update_unknowns_field(
+    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    note: Note,
+    unknowns: list[str],
 ) -> None:
-    if config_filter.unknowns_field_index is not None:
-        if config_filter.unknowns_field_index > 0:
-            focus_morph_string: str = "".join(f"{unknown}, " for unknown in unknowns)
-            focus_morph_string = focus_morph_string[:-2]  # removes last comma
-            note.fields[config_filter.unknowns_field_index - 1] = focus_morph_string
-    if config_filter.unknowns_count_field_index is not None:
-        if config_filter.unknowns_count_field_index > 0:
-            note.fields[config_filter.unknowns_count_field_index - 1] = str(
-                len(unknowns)
-            )
+    focus_morph_string: str = "".join(f"{unknown}, " for unknown in unknowns)
+    focus_morph_string = focus_morph_string[:-2]  # removes last comma
+    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_UNKNOWNS][0]
+    note.fields[index] = focus_morph_string
+
+
+def _update_unknowns_count_field(
+    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    note: Note,
+    unknowns: list[str],
+) -> None:
+    index: int = note_type_field_name_dict[
+        ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT
+    ][0]
+    note.fields[index] = str(len(unknowns))
 
 
 def _update_difficulty_field(
-    config_filter: AnkiMorphsConfigFilter, note: Note, difficulty: int
+    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    note: Note,
+    difficulty: int,
 ) -> None:
-    if config_filter.difficulty_field_index is not None:
-        if config_filter.difficulty_field_index > 0:
-            note.fields[config_filter.difficulty_field_index - 1] = str(difficulty)
+    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_DIFFICULTY][0]
+    note.fields[index] = str(difficulty)
 
 
-def _update_highlighted_field(
+def _update_highlighted_field(  # pylint:disable=too-many-arguments
     am_config: AnkiMorphsConfig,
     config_filter: AnkiMorphsConfigFilter,
+    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
     card_morph_map_cache: dict[int, list[SimplifiedMorph]],
     card_id: int,
     note: Note,
@@ -620,16 +693,18 @@ def _update_highlighted_field(
         # card does not have morphs or is buggy in some way
         return
 
-    if config_filter.highlighted_field_index is not None:
-        assert config_filter.field_index is not None
-        if config_filter.highlighted_field_index > 0:
-            text_to_highlight = note.fields[config_filter.field_index]
-            highlighted_text = _highlight_text(
-                am_config,
-                card_morphs,
-                text_to_highlight,
-            )
-            note.fields[config_filter.highlighted_field_index - 1] = highlighted_text
+    assert config_filter.field_index is not None
+    text_to_highlight = note.fields[config_filter.field_index]
+    highlighted_text = _highlight_text(
+        am_config,
+        card_morphs,
+        text_to_highlight,
+    )
+
+    highlighted_index: int = note_type_field_name_dict[
+        ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED
+    ][0]
+    note.fields[highlighted_index] = highlighted_text
 
 
 def _update_tags_and_queue(
