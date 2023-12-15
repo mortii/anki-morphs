@@ -24,12 +24,12 @@ available for selection in [note filters](../setup/settings/note-filter.md).
 
 ### Creating Your Own frequency.csv
 
-You can also use the [Frequency File Generator](../usage/frequency-file-generator.md) to generate your own frequency.csv
+You can also use the [Frequency File Generator](../usage/generators/frequency-file-generator.md) to generate your own frequency.csv
 file.
 
 ### Downloadable frequency.csv files
 
-If you have [generated a frequency file](../usage/frequency-file-generator.md) that you think other people might benefit
+If you have [generated a frequency file](../usage/generators/frequency-file-generator.md) that you think other people might benefit
 from using then please consider sharing
 it! Create a new ['Documentation request' issue](https://github.com/mortii/anki-morphs/issues/new/choose) where you let
 me

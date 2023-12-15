@@ -1,1 +1,0 @@
-# Readability Report Generator

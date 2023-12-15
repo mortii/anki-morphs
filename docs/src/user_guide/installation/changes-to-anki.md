@@ -4,15 +4,15 @@ After installing AnkiMorphs you will find that some changes have been made to An
 
 ## Toolbar
 
-![toolbar.png](../../img/new_toolbar.png)
+![toolbar.png](../../img/toolbar.png)
 
-The toolbar now has two new items, “U: 0" and "A: 0”.
+The toolbar now has three new items:
+- [Recalc](../usage/recalc.md)
+- “U”, which stands for Known Unique Morphs
+- "A", which stands for All Known Morphs
 
-* “U” stands for Known Unique Morphs
-* "A" stands for All Known Morphs
-
-For some lanuages U and A will always have the same number, but languages like japanese can have morphs with multiple
-variations and then they will eventually differ.
+For some languages, U and A will always have the same number, but languages like japanese can have morphs with multiple
+variations, and then they will eventually differ.
 
 <details>
   <summary style="display:list-item"> Examples </summary>
@@ -116,7 +116,7 @@ Knowing the morphs in the highlighted cells below would give you U: 2 and A: 3
 
 
 
-These numbers are updated after every [Recalc](../usage/recalc.md).
+The U and A numbers are updated after every [Recalc](../usage/recalc.md).
 
 ## Browse
 
@@ -136,7 +136,8 @@ A AnkiMorphs menu is added to "Tools" menu and has the options:
 
 * [“Settings”](../setup/settings.md)
 * [“Recalc”](../usage/recalc.md)
-* [“Frequency File Generator”](../usage/frequency-file-generator.md)
+* [“Frequency File Generator”](../usage/generators/frequency-file-generator.md)
+* [“Readability Report Generator”](../usage/generators/readability-report-generator.md)
 
 ## Morph Stats & Graphs
 
