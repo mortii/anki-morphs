@@ -72,3 +72,14 @@ class SimplifiedMorph:
         self.inflected: str = inflected
         self.highest_learning_interval: int = highest_learning_interval
         self.norm_and_inflected: str = self.norm + self.inflected
+
+
+class MorphOccurrence:
+    __slots__ = (
+        "morph",
+        "occurrence",
+    )
+
+    def __init__(self, morph: Morpheme) -> None:
+        self.morph: Morpheme = morph
+        self.occurrence: int = 1

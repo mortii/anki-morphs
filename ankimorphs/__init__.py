@@ -45,6 +45,7 @@ from . import (
 from .ankimorphs_db import AnkiMorphsDB
 from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter, get_read_enabled_filters
 from .frequency_file_generator import FrequencyFileGeneratorDialog
+from .readability_report_generator import ReadabilityReportGeneratorDialog
 from .settings_dialog import SettingsDialog
 from .tag_selection_dialog import TagSelectionDialog
 from .toolbar_stats import MorphToolbarStats
@@ -124,6 +125,10 @@ def register_addon_dialogs() -> None:
         name=ankimorphs_globals.FREQUENCY_FILE_GENERATOR_DIALOG_NAME,
         creator=FrequencyFileGeneratorDialog,
     )
+    aqt.dialogs.register_dialog(
+        name=ankimorphs_globals.READABILITY_REPORT_GENERATOR_DIALOG_NAME,
+        creator=ReadabilityReportGeneratorDialog,
+    )
 
 
 def init_db() -> None:
@@ -162,6 +167,7 @@ def init_tool_menu_and_actions() -> None:
     settings_action = create_settings_action(am_config)
     recalc_action = create_recalc_action(am_config)
     frequency_list_action = create_frequency_file_action()
+    readability_report_action = create_readability_report_action()
     guide_action = create_guide_action()
     changelog_action = create_changelog_action()
 
@@ -169,6 +175,7 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu.addAction(settings_action)
     am_tool_menu.addAction(recalc_action)
     am_tool_menu.addAction(frequency_list_action)
+    am_tool_menu.addAction(readability_report_action)
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
 
@@ -400,6 +407,17 @@ def create_frequency_file_action() -> QAction:
         partial(
             aqt.dialogs.open,
             name=ankimorphs_globals.FREQUENCY_FILE_GENERATOR_DIALOG_NAME,
+        )
+    )
+    return action
+
+
+def create_readability_report_action() -> QAction:
+    action = QAction("&Readability Report Generator", mw)
+    action.triggered.connect(
+        partial(
+            aqt.dialogs.open,
+            name=ankimorphs_globals.READABILITY_REPORT_GENERATOR_DIALOG_NAME,
         )
     )
     return action

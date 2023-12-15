@@ -25,6 +25,9 @@ pyuic6 -o ankimorphs/ui/frequency_file_generator_ui.py ankimorphs/ui/frequency_f
 ```bash
 pyuic6 -o ankimorphs/ui/tag_selection_ui.py ankimorphs/ui/tag_selection.ui
 ```
+```bash
+pyuic6 -o ankimorphs/ui/readability_report_generator_ui.py ankimorphs/ui/readability_report_generator.ui
+```
 
 Useful guides:
 - https://realpython.com/qt-designer-python/

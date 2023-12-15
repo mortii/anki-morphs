@@ -12,8 +12,8 @@ from .name_file_utils import get_names_from_file_as_morphs
 
 
 class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
-    # A card can have many morphs, morphs can be on many cards
-    # therefore we need a many-to-many db structure:
+    # A card can have many morphs, morphs can be on many cards,
+    # therefore, we need a many-to-many db structure:
     # Cards -> Card_Morph_Map <- Morphs
 
     def __init__(self) -> None:
@@ -261,6 +261,26 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         return card_ids
 
+    def get_highest_learning_interval(self, norm: str, inflected: str) -> Optional[int]:
+        with self.con:
+            highest_learning_interval = self.con.execute(
+                """
+                    SELECT highest_learning_interval
+                    FROM Morphs
+                    WHERE norm = ? And inflected = ?
+                    """,
+                (norm, inflected),
+            ).fetchone()
+
+            if highest_learning_interval is None:
+                return None
+
+            # un-tuple the result
+            highest_learning_interval = highest_learning_interval[0]
+
+            assert isinstance(highest_learning_interval, int)
+            return highest_learning_interval
+
     def print_table(self, table: str) -> None:
         try:
             # using f-string is terrible practice, but this is a trivial operation
@@ -290,10 +310,10 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
     @staticmethod
     def rebuild_seen_morphs_today() -> None:
-        # the duration of this operation can be long depending
+        # The duration of this operation can be long depending
         # on how many cards have been reviewed today and the
         # quality of the user hardware. To prevent long freezes
-        # with no feedback we run this on a background thread.
+        # with no feedback, we run this on a background thread.
         assert mw is not None
 
         mw.progress.start(label="Updating seen morphs...")
