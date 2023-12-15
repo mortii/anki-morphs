@@ -92,7 +92,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.9.0-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.10.0-alpha")
 
         self.show()
 
