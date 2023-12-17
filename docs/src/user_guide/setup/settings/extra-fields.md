@@ -2,8 +2,13 @@
 
 ![extra-fields.png](../../../img/extra-fields.png)
 
-The text found in the [note filter: field](../settings/note-filter.md#field) is extracted and analyzed by AnkiMorphs. AnkiMorphs can then place
-information about that text into dedicated fields on your cards. 
+The text found in the [note filter: field](../settings/note-filter.md#field) is extracted and analyzed by AnkiMorphs.
+AnkiMorphs can then place
+information about that text into dedicated fields on your cards.
+
+> **Note**: The first time you select an extra field you have to do a full sync upload to AnkiWeb. If you have _a lot_
+> of cards (500K+), then syncing might become a problem. Read more about it on
+> the [Anki FAQ](https://faqs.ankiweb.net/are-there-limits-on-file-sizes-on-ankiweb.html).
 
 The fields contain the following:
 
@@ -12,10 +17,10 @@ The fields contain the following:
 - **am-unknowns-count**:  
   The number of unknowns found
 - **am-highlighted**:  
-   An HTML version of the text that highlights the morphs based on learning status
+  An HTML version of the text that highlights the morphs based on learning status
 - **am-difficulty**:  
-   The difficulty AnkiMorphs calculated the text to have
-  
+  The difficulty AnkiMorphs calculated the text to have
+
 <br>
 Here is an example where all the extra-fields have been selected:
 
@@ -30,8 +35,8 @@ above uses the following card-template:
 
 ![unknown-morphs-template.png](../../../img/unknown-morphs-template.png)
 
-
 ## Using am-unknowns-count
+
 This is useful if you want to sort your cards in the browser based on how many unknowns they have.
 
 ![unknowns-count-search-field.png](../../../img/unknowns-count-search-field.png)
@@ -65,6 +70,7 @@ You also need to add the following to the "Styling" section (choose any color yo
 [morph-status=learning] { color: #8bb33d; } /* light-green */
 [morph-status=known] { color: green; }
 ```
+
 You don't have to add all three, if you only want the unknown morphs to be highlighted then just add the first line.
 
 It’s also possible to use “background-color”:

@@ -1,8 +1,6 @@
 # Recalc
 
-<video autoplay loop muted controls>
-    <source src="../../img/recalc.mp4" type="video/mp4">
-</video>
+![recalc_example.png](../../img/recalc_example.png)
 
 Recalc is short for “recalculate”, and is basically the command that tells AnkiMorphs to work all its
 magic. When you run Recalc, AnkiMorphs will go through
@@ -23,4 +21,6 @@ It's easy to forget to run recalc, so you can also
 check [the `Recalc on sync` settings option](../setup/settings/recalc.md), which will take care of recalc for you by
 running it automatically before Anki syncs your collection.
 
-
+> **Note**: Recalc can potentially reorganize all your cards, which can cause long sync times.
+> The [Anki FAQ](https://faqs.ankiweb.net/can-i-sync-only-some-of-my-decks.html) has some
+> tricks you can try if this poses a significant problem.
