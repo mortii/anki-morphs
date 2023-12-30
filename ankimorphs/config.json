@@ -21,12 +21,12 @@
       }
     }
   ],
-  "parse_ignore_bracket_contents": false,
-  "parse_ignore_names_morphemizer": true,
-  "parse_ignore_names_textfile": false,
-  "parse_ignore_round_bracket_contents": false,
-  "parse_ignore_slim_round_bracket_contents": false,
-  "parse_ignore_suspended_cards_content": false,
+  "preprocess_ignore_bracket_contents": false,
+  "preprocess_ignore_names_morphemizer": false,
+  "preprocess_ignore_names_textfile": false,
+  "preprocess_ignore_round_bracket_contents": false,
+  "preprocess_ignore_slim_round_bracket_contents": false,
+  "preprocess_ignore_suspended_cards_content": false,
   "recalc_interval_for_known": 21,
   "recalc_on_sync": false,
   "recalc_suspend_known_new_cards": false,

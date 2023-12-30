@@ -48,7 +48,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
     def __init__(self) -> None:
         super().__init__(parent=None)  # no parent makes the dialog modeless
         assert mw is not None
-        self.models: Sequence[NotetypeNameId] = mw.col.models.all_names_and_ids()
+        self._note_type_models: Sequence[
+            NotetypeNameId
+        ] = mw.col.models.all_names_and_ids()
         self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
         self.ui.note_filters_table.cellClicked.connect(self._tags_cell_clicked)
@@ -72,7 +74,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self._setup_note_filters_table(self._config.filters)
         self._populate_extra_fields_tab()
         self._populate_tags_tab()
-        self._populate_parse_tab()
+        self._populate_preprocess_tab()
         self._populate_skip_tab()
         self._populate_shortcuts_tab()
         self._populate_recalc_tab()
@@ -92,7 +94,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.10.0-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.11.0-alpha")
 
         self.show()
 
@@ -121,14 +123,14 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.note_filters_table.setRowHeight(row, 35)
 
         note_type_cbox = QComboBox(self.ui.note_filters_table)
-        note_type_cbox.addItems([model.name for model in self.models])
+        note_type_cbox.addItems([model.name for model in self._note_type_models])
         note_type_name_index = self._get_model_combobox_index(
-            self.models, config_filter.note_type
+            self._note_type_models, config_filter.note_type
         )
         if note_type_name_index is not None:
             note_type_cbox.setCurrentIndex(note_type_name_index)
 
-        current_model_id = self.models[note_type_cbox.currentIndex()].id
+        current_model_id = self._note_type_models[note_type_cbox.currentIndex()].id
         note_type = mw.col.models.get(NotetypeId(int(current_model_id)))
         assert note_type
 
@@ -250,24 +252,24 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
         self.ui.tagLearnCardNowLineEdit.setText(self._default_config.tag_learn_card_now)
 
-    def _populate_parse_tab(self) -> None:
-        self.ui.parseIgnoreSquareCheckBox.setChecked(
-            self._config.parse_ignore_bracket_contents
+    def _populate_preprocess_tab(self) -> None:
+        self.ui.preprocessIgnoreSquareCheckBox.setChecked(
+            self._config.preprocess_ignore_bracket_contents
         )
-        self.ui.parseIgnoreRoundCheckBox.setChecked(
-            self._config.parse_ignore_round_bracket_contents
+        self.ui.preprocessIgnoreRoundCheckBox.setChecked(
+            self._config.preprocess_ignore_round_bracket_contents
         )
-        self.ui.parseIgnoreSlimCheckBox.setChecked(
-            self._config.parse_ignore_slim_round_bracket_contents
+        self.ui.preprocessIgnoreSlimCheckBox.setChecked(
+            self._config.preprocess_ignore_slim_round_bracket_contents
         )
-        self.ui.parseIgnoreNamesMizerCheckBox.setChecked(
-            self._config.parse_ignore_names_morphemizer
+        self.ui.preprocessIgnoreNamesMizerCheckBox.setChecked(
+            self._config.preprocess_ignore_names_morphemizer
         )
-        self.ui.parseIgnoreNamesFileCheckBox.setChecked(
-            self._config.parse_ignore_names_textfile
+        self.ui.preprocessIgnoreNamesFileCheckBox.setChecked(
+            self._config.preprocess_ignore_names_textfile
         )
-        self.ui.parseIgnoreSuspendedCheckBox.setChecked(
-            self._config.parse_ignore_suspended_cards_content
+        self.ui.preprocessIgnoreSuspendedCheckBox.setChecked(
+            self._config.preprocess_ignore_suspended_cards_content
         )
 
     def _populate_shortcuts_tab(self) -> None:
@@ -293,32 +295,32 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             self._config.shortcut_view_morphemes.toString()
         )
 
-    def _restore_parse_defaults(self, skip_confirmation: bool = False) -> None:
+    def _restore_preprocess_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"
-            text = "Are you sure you want to restore default parse settings?"
+            text = "Are you sure you want to restore default preprocess settings?"
             confirmed = self._warning_dialog(title, text)
 
             if not confirmed:
                 return
 
-        self.ui.parseIgnoreSquareCheckBox.setChecked(
-            self._default_config.parse_ignore_bracket_contents
+        self.ui.preprocessIgnoreSquareCheckBox.setChecked(
+            self._default_config.preprocess_ignore_bracket_contents
         )
-        self.ui.parseIgnoreRoundCheckBox.setChecked(
-            self._default_config.parse_ignore_round_bracket_contents
+        self.ui.preprocessIgnoreRoundCheckBox.setChecked(
+            self._default_config.preprocess_ignore_round_bracket_contents
         )
-        self.ui.parseIgnoreSlimCheckBox.setChecked(
-            self._default_config.parse_ignore_slim_round_bracket_contents
+        self.ui.preprocessIgnoreSlimCheckBox.setChecked(
+            self._default_config.preprocess_ignore_slim_round_bracket_contents
         )
-        self.ui.parseIgnoreNamesMizerCheckBox.setChecked(
-            self._default_config.parse_ignore_names_morphemizer
+        self.ui.preprocessIgnoreNamesMizerCheckBox.setChecked(
+            self._default_config.preprocess_ignore_names_morphemizer
         )
-        self.ui.parseIgnoreNamesFileCheckBox.setChecked(
-            self._default_config.parse_ignore_names_textfile
+        self.ui.preprocessIgnoreNamesFileCheckBox.setChecked(
+            self._default_config.preprocess_ignore_names_textfile
         )
-        self.ui.parseIgnoreSuspendedCheckBox.setChecked(
-            self._default_config.parse_ignore_suspended_cards_content
+        self.ui.preprocessIgnoreSuspendedCheckBox.setChecked(
+            self._default_config.preprocess_ignore_suspended_cards_content
         )
 
     def _restore_shortcuts_defaults(self, skip_confirmation: bool = False) -> None:
@@ -414,7 +416,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             self._setup_note_filters_table(default_filters)
             self._restore_extra_fields_defaults(skip_confirmation=True)
             self._restore_tags_defaults(skip_confirmation=True)
-            self._restore_parse_defaults(skip_confirmation=True)
+            self._restore_preprocess_defaults(skip_confirmation=True)
             self._restore_skip_defaults(skip_confirmation=True)
             self._restore_recalc_defaults(skip_confirmation=True)
             self._restore_shortcuts_defaults(skip_confirmation=True)
@@ -437,7 +439,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.restoreTagsPushButton.setAutoDefault(False)
         self.ui.restoreRecalcPushButton.setAutoDefault(False)
         self.ui.restoreShortcutsPushButton.setAutoDefault(False)
-        self.ui.restoreParsePushButton.setAutoDefault(False)
+        self.ui.restorePreprocessPushButton.setAutoDefault(False)
         self.ui.restoreSkipPushButton.setAutoDefault(False)
         self.ui.restoreAllDefaultsPushButton.setAutoDefault(False)
 
@@ -453,7 +455,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.restoreShortcutsPushButton.clicked.connect(
             self._restore_shortcuts_defaults
         )
-        self.ui.restoreParsePushButton.clicked.connect(self._restore_parse_defaults)
+        self.ui.restorePreprocessPushButton.clicked.connect(
+            self._restore_preprocess_defaults
+        )
         self.ui.restoreSkipPushButton.clicked.connect(self._restore_skip_defaults)
         self.ui.restoreAllDefaultsPushButton.clicked.connect(self._restore_all_defaults)
 
@@ -494,12 +498,12 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             "recalc_interval_for_known": self.ui.recalcIntervalSpinBox.value(),
             "recalc_on_sync": self.ui.recalcBeforeSyncCheckBox.isChecked(),
             "recalc_suspend_known_new_cards": self.ui.recalcSuspendKnownCheckBox.isChecked(),
-            "parse_ignore_bracket_contents": self.ui.parseIgnoreSquareCheckBox.isChecked(),
-            "parse_ignore_round_bracket_contents": self.ui.parseIgnoreRoundCheckBox.isChecked(),
-            "parse_ignore_slim_round_bracket_contents": self.ui.parseIgnoreSlimCheckBox.isChecked(),
-            "parse_ignore_names_morphemizer": self.ui.parseIgnoreNamesMizerCheckBox.isChecked(),
-            "parse_ignore_names_textfile": self.ui.parseIgnoreNamesFileCheckBox.isChecked(),
-            "parse_ignore_suspended_cards_content": self.ui.parseIgnoreSuspendedCheckBox.isChecked(),
+            "preprocess_ignore_bracket_contents": self.ui.preprocessIgnoreSquareCheckBox.isChecked(),
+            "preprocess_ignore_round_bracket_contents": self.ui.preprocessIgnoreRoundCheckBox.isChecked(),
+            "preprocess_ignore_slim_round_bracket_contents": self.ui.preprocessIgnoreSlimCheckBox.isChecked(),
+            "preprocess_ignore_names_morphemizer": self.ui.preprocessIgnoreNamesMizerCheckBox.isChecked(),
+            "preprocess_ignore_names_textfile": self.ui.preprocessIgnoreNamesFileCheckBox.isChecked(),
+            "preprocess_ignore_suspended_cards_content": self.ui.preprocessIgnoreSuspendedCheckBox.isChecked(),
             "skip_only_known_morphs_cards": self.ui.skipKnownCheckBox.isChecked(),
             "skip_unknown_morph_seen_today_cards": self.ui.skipAlreadySeenCheckBox.isChecked(),
             "skip_show_num_of_skipped_cards": self.ui.skipNotificationsCheckBox.isChecked(),
@@ -543,7 +547,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
             _filter: FilterTypeAlias = {
                 "note_type": note_type_cbox.itemText(note_type_cbox.currentIndex()),
-                "note_type_id": self.models[note_type_cbox.currentIndex()].id,
+                "note_type_id": self._note_type_models[
+                    note_type_cbox.currentIndex()
+                ].id,
                 "tags": json.loads(tags_widget.text()),
                 "field": field_cbox.itemText(field_cbox.currentIndex()),
                 "field_index": field_cbox.currentIndex(),
@@ -571,7 +577,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self, field_cbox: QComboBox, note_type_cbox: QComboBox
     ) -> None:
         assert mw
-        current_model_id = self.models[note_type_cbox.currentIndex()].id
+        current_model_id = self._note_type_models[note_type_cbox.currentIndex()].id
         note_type = mw.col.models.get(NotetypeId(int(current_model_id)))
         assert note_type
         fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)

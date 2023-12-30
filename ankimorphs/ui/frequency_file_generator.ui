@@ -55,7 +55,7 @@
          <item alignment="Qt::AlignHCenter">
           <widget class="QLabel" name="label">
            <property name="text">
-            <string>Morphemizer:</string>
+            <string>Morphemizer</string>
            </property>
           </widget>
          </item>
@@ -186,7 +186,7 @@
        <item>
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>Parsing:</string>
+          <string>Preprocess:</string>
          </property>
         </widget>
        </item>

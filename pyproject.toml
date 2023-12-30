@@ -44,14 +44,14 @@ python_functions = "test_*"
 # required_plugins: plugins that must be present for pytest to run
 # pytest-qt: allows for writing tests for PyQt5, PyQt6, PySide2 and PySide6 applications.
 # pytest-xvfb: allows tests to be run without windows popping up during GUI tests or on systems without a display (like a CI).
-required_plugins = "pytest-qt pytest-xvfb"
+required_plugins = "pytest-qt pytest-xvfb pytest-expect pytest-sugar"
 # xfail_strict = True: tests marked with @pytest.mark.xfail that actually succeed will by default fail the test suite
 xfail_strict = "True"
 # addopts: set of command line arguments as if they had been specified by the user
 # --strict-markers: markers not registered in the `markers` section of the configuration file raise errors.
 # --durations=5: show N slowest setup/test durations (N=0 for all)
 # --maxfail=1: exit after first num failures or errors.
-addopts = "--strict-markers --durations=5 --maxfail=1"
+addopts = "--strict-markers --durations=5"
 # markers: whitelist custom markers
 # example with: pytest -m slow
 markers = [
@@ -64,9 +64,9 @@ paths = ["ankimorphs"]
 exclude = [
   "ankimorphs/deps/",
   "ankimorphs/ui/",
-  "ankimorphs/util_external.py",
   "ankimorphs/debug_utils.py",
   "ankimorphs/table_utils.py",
+  "ankimorphs/spacy_wrapper.py",
   "ankimorphs/mecab_wrapper.py"
 ]
 ignore_names = ["print_*", "_refresh_needed", "_v3", "reopen", "closeWithCallback"]

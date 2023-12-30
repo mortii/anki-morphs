@@ -14,6 +14,11 @@ class EmptyFileSelectionException(Exception):
     """No file(s) selected"""
 
 
+class SpacyNotInstalledException(Exception):
+    # TODO: this might be obsolete
+    """spaCy selected, but not installed"""
+
+
 class FrequencyFileNotFoundException(Exception):
     """Selected frequency files not found"""
 

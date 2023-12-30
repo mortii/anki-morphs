@@ -4,6 +4,12 @@ ci: # the pre-commit ci bot on github does not like repo: local
 
 default_language_version:
   python: python3.9
+exclude: |
+  (?x)^(
+      ankimorphs/ui/.*|
+      ankimorphs/deps/.*|
+      ankimorphs/mecab_wrapper.py|
+  )$
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -13,7 +19,6 @@ repos:
         args: ['--enforce-all']
         exclude: |
           (?x)^(
-              ankimorphs/deps/.*||
               docs/src/img/revert_changes.mp4|
               docs/src/img/note-type.mp4|
               docs/src/img/deck-options.mp4|
@@ -28,10 +33,6 @@ repos:
         args: ['--autofix']
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
-        exclude: |
-          (?x)^(
-              ankimorphs/deps/jieba/analyse/textrank.py|
-          )$
       - id: check-merge-conflict
       - id: check-toml
       - id: debug-statements
@@ -40,8 +41,6 @@ repos:
         exclude: |
           (?x)^(
               tests/data/.*|
-              tests/fake_config.py|
-              tests/fake_preferences.py|
           )$
       - id: requirements-txt-fixer
   - repo: https://github.com/pre-commit/pygrep-hooks
@@ -60,11 +59,6 @@ repos:
       - id: pyupgrade
         args: [--py39-plus]
         files: 'ankimorphs/|^tests/'
-        exclude: |
-          (?x)^(
-              ankimorphs/deps/.*|
-              tests/fake_preferences.py|
-          )$
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
@@ -86,9 +80,6 @@ repos:
         files: 'ankimorphs/|^tests/'
         exclude: |
           (?x)^(
-              ankimorphs/deps/.*|
-              ankimorphs/ui/.*|
-              ankimorphs/old_recalc.py|
               tests/.*|
           )$
       - id: black
@@ -99,8 +90,6 @@ repos:
         files: 'ankimorphs/|^tests/'
         exclude: |
           (?x)^(
-              ankimorphs/deps/.*|
-              ankimorphs/ui/.*|
               tests/.*|
           )$
       - id: mypy
@@ -111,19 +100,11 @@ repos:
         files: 'ankimorphs/|^tests/'
         exclude: |
           (?x)^(
-              ankimorphs/deps/.*|
-              ankimorphs/ui/.*|
-              ankimorphs/mecab_wrapper.py|
-              ankimorphs/morpheme.py|
-              ankimorphs/morphemizer.py|
-              ankimorphs/old_recalc.py|
-              ankimorphs/text_utils.py|
-              ankimorphs/util_external.py|
               tests/.*|
           )$
-#      - id: pytest
-#        name: pytest
-#        entry: pytest
-#        language: system
-#        pass_filenames: false
-#        always_run: true
+      - id: pytest
+        name: pytest
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true

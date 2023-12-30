@@ -4,7 +4,7 @@ You can have AnkiMorphs automatically filter out specified names found on your c
 won't have to learn the names of places or individuals, as these words lack
 inherent meaning that can be acquired.
 
-To activate this feature, navigate to ``Tool > AnkiMorphs > Settings > Skip > Parse`` and tick the option ``Ignore names
+To activate this feature, navigate to ``Tool > AnkiMorphs > Settings > Preprocess`` and tick the option ``Ignore names
 found in "names.txt"``
 
 ![ignore-names-option.png](../../img/ignore-names-option.png)

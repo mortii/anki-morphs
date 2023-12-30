@@ -5,12 +5,13 @@ the convenience/safety of accessing properties of an object.
 
 
 from collections.abc import Sequence
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import anki.utils
 from anki.tags import TagManager
 
 from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter
+from .morpheme import Morpheme
 
 
 class AnkiDBRowData:
@@ -55,6 +56,7 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         "fields",
         "tags",
         "note_id",
+        "morphs",
     )
 
     def __init__(
@@ -87,6 +89,9 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         self.fields = anki_row_data.note_fields
         self.tags = anki_row_data.note_tags
         self.note_id = anki_row_data.note_id
+
+        # this is set later when spacy is used
+        self.morphs: Optional[set[Morpheme]] = None
 
 
 class AnkiMorphsCardData:

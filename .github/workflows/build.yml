@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         python_version: ['3.9']
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
         anki: ['2.1.66']
     steps:
     - uses: actions/checkout@v3

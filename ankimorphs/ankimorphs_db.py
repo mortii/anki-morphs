@@ -51,10 +51,10 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                     CREATE TABLE IF NOT EXISTS Card_Morph_Map
                     (
                         card_id INTEGER,
-                        morph_norm TEXT,
+                        morph_base TEXT,
                         morph_inflected TEXT,
                         FOREIGN KEY(card_id) REFERENCES card(id),
-                        FOREIGN KEY(morph_norm, morph_inflected) REFERENCES morph(norm, inflected)
+                        FOREIGN KEY(morph_base, morph_inflected) REFERENCES morph(base, inflected)
                     )
                     """
             )
@@ -65,12 +65,11 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                 """
                     CREATE TABLE IF NOT EXISTS Morphs
                     (
-                        norm TEXT,
                         base TEXT,
                         inflected TEXT,
                         is_base INTEGER,
                         highest_learning_interval INTEGER,
-                        PRIMARY KEY (norm, inflected)
+                        PRIMARY KEY (base, inflected)
                     )
                     """
             )
@@ -81,9 +80,9 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                 """
                     CREATE TABLE IF NOT EXISTS Seen_Morphs
                     (
-                        norm TEXT,
+                        base TEXT,
                         inflected TEXT,
-                        PRIMARY KEY (norm, inflected)
+                        PRIMARY KEY (base, inflected)
                     )
                     """
             )
@@ -116,13 +115,12 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                     INSERT INTO Morphs 
                     VALUES
                     (
-                       :norm,
                        :base,
                        :inflected,
                        :is_base,
                        :highest_learning_interval
                     )
-                    ON CONFLICT(norm, inflected) DO UPDATE SET
+                    ON CONFLICT(base, inflected) DO UPDATE SET
                         highest_learning_interval = :highest_learning_interval
                     WHERE highest_learning_interval < :highest_learning_interval
                 """,
@@ -138,7 +136,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                     INSERT OR IGNORE INTO Card_Morph_Map VALUES
                     (
                        :card_id,
-                       :morph_norm,
+                       :morph_base,
                        :morph_inflected
                     )
                     """,
@@ -151,7 +149,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         with self.con:
             card_morphs_raw = self.con.execute(
                 """
-                    SELECT morph_norm, morph_inflected
+                    SELECT morph_base, morph_inflected
                     FROM Card_Morph_Map
                     WHERE card_id = ?
                     """,
@@ -170,7 +168,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         with self.con:
             card_morphs_raw = self.con.execute(
                 """
-                    SELECT norm, inflected
+                    SELECT base, inflected
                     FROM Seen_Morphs
                     """
             ).fetchall()
@@ -184,8 +182,8 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         with self.con:
             self.con.execute(
                 """
-                    INSERT OR IGNORE INTO Seen_Morphs (norm, inflected)
-                    SELECT morph_norm, morph_inflected
+                    INSERT OR IGNORE INTO Seen_Morphs (base, inflected)
+                    SELECT morph_base, morph_inflected
                     FROM Card_Morph_Map
                     WHERE card_id = ?
                     """,
@@ -205,10 +203,10 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         with self.con:
             card_morphs = self.con.execute(
                 """
-                    SELECT DISTINCT morph_norm, morph_inflected
+                    SELECT DISTINCT morph_base, morph_inflected
                     FROM Card_Morph_Map
                     INNER JOIN Morphs ON
-                        Card_Morph_Map.morph_norm = Morphs.norm AND Card_Morph_Map.morph_inflected = Morphs.inflected
+                        Card_Morph_Map.morph_base = Morphs.base AND Card_Morph_Map.morph_inflected = Morphs.inflected
                     """
                 + where_query_string,
                 (card_id,),
@@ -238,7 +236,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         where_query_string = "WHERE" + "".join(
             [
-                f" (morph_norm = '{morph[0]}' AND morph_inflected = '{morph[1]}') OR"
+                f" (morph_base = '{morph[0]}' AND morph_inflected = '{morph[1]}') OR"
                 for morph in card_morphs
             ]
         )
@@ -261,15 +259,16 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         return card_ids
 
-    def get_highest_learning_interval(self, norm: str, inflected: str) -> Optional[int]:
+    def get_highest_learning_interval(self, base: str, inflected: str) -> Optional[int]:
+        # todo update this usage!!!
         with self.con:
             highest_learning_interval = self.con.execute(
                 """
                     SELECT highest_learning_interval
                     FROM Morphs
-                    WHERE norm = ? And inflected = ?
+                    WHERE base = ? And inflected = ?
                     """,
-                (norm, inflected),
+                (base, inflected),
             ).fetchone()
 
             if highest_learning_interval is None:
@@ -322,6 +321,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             op=AnkiMorphsDB.rebuild_seen_morphs_today_background,
             success=_on_success,
         )
+        operation.failure(_on_failure)
         operation.with_progress().run_in_background()
 
     @staticmethod
@@ -345,12 +345,12 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         am_db.create_seen_morph_table()
 
         with am_db.con:
-            # if no cards are studied then don't insert any morphs
+            # if no cards are studied, then don't insert any morphs
             if where_query_string != "":
                 am_db.con.execute(
                     """
-                        INSERT OR IGNORE INTO Seen_Morphs (norm, inflected)
-                        SELECT morph_norm, morph_inflected
+                        INSERT OR IGNORE INTO Seen_Morphs (base, inflected)
+                        SELECT morph_base, morph_inflected
                         FROM Card_Morph_Map
                         """
                     + where_query_string
@@ -409,3 +409,24 @@ def _on_success(result: Any) -> None:
     assert mw is not None
     assert mw.progress is not None
     mw.progress.finish()
+
+
+def _on_failure(
+    error: Union[
+        Exception,
+        sqlite3.OperationalError,
+    ]
+) -> None:
+    # This function runs on the main thread.
+    assert mw is not None
+    assert mw.progress is not None
+    mw.progress.finish()
+
+    if isinstance(error, sqlite3.OperationalError):
+        # schema has been changed
+        am_db = AnkiMorphsDB()
+        am_db.drop_all_tables()
+        am_db.con.close()
+        return
+
+    raise error

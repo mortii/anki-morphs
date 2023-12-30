@@ -41,7 +41,7 @@ wide_alpha_num_rx = re.compile(r"[０-９Ａ-Ｚａ-ｚ]")
 mecab_source = ""  # pylint:disable=invalid-name
 
 
-def get_mecab_identity():
+def get_mecab_identity() -> str:
     # Initialize mecab before we get the identity
     _mecab = mecab()
 
@@ -72,7 +72,8 @@ def get_morpheme(  # pylint:disable=too-many-return-statements
         inflected = parts[2].strip()
         reading = parts[3].strip()
 
-        return Morpheme(norm, base, inflected, reading, pos, sub_pos)
+        # return Morpheme(norm, base, inflected, reading, pos, sub_pos)
+        return Morpheme(base, inflected)
 
     if len(parts) != MECAB_NODE_LENGTH_IPADIC:
         return None
@@ -88,14 +89,17 @@ def get_morpheme(  # pylint:disable=too-many-return-statements
     inflected = parts[1].strip()
     reading = parts[2].strip()
 
-    _morph = fix_reading(Morpheme(norm, base, inflected, reading, pos, sub_pos))
-    return _morph
+    # _morph = fix_reading(Morpheme(base, inflected, pos=pos, sub_pos=sub_pos))
+
+    # return _morph
+
+    return Morpheme(base, inflected)
 
 
 control_chars_re = re.compile("[\x00-\x1f\x7f-\x9f]")
 
 
-def get_morphemes_mecab(expression):
+def get_morphemes_mecab(expression) -> set[Morpheme]:
     # HACK: mecab sometimes does not produce the right morphs if there are no extra characters in the expression,
     # so we just add a whitespace and a japanese punctuation mark "。" the end to prevent the problem.
     expression += " 。"
@@ -105,7 +109,7 @@ def get_morphemes_mecab(expression):
 
     _morphs = [get_morpheme(m.split("\t")) for m in interact(expression).split("\r")]
 
-    _morphs = [_morph for _morph in _morphs if _morph is not None]
+    _morphs = {_morph for _morph in _morphs if _morph is not None}
     return _morphs
 
 
@@ -202,43 +206,43 @@ def mecab():  # pylint: disable=too-many-branches,too-many-statements
     # Search for mecab
     reading = None
 
-    # 1st priority - MecabUnidic
-    if importlib.util.find_spec("MecabUnidic"):
-        try:
-            reading = importlib.import_module("MecabUnidic.reading")
-            mecab_source = "MecabUnidic from addon MecabUnidic"
-        except ModuleNotFoundError:
-            pass
-
-    if importlib.util.find_spec("13462835"):
-        try:
-            reading = importlib.import_module("13462835.reading")
-            mecab_source = "MecabUnidic from addon 13462835"
-        except ModuleNotFoundError:
-            pass
-
-    # 2nd priority - Japanese Support
-    if (not reading) and importlib.util.find_spec("3918629684"):
-        try:
-            reading = importlib.import_module("3918629684.reading")
-            mecab_source = "Japanese Support from addon 3918629684"
-        except ModuleNotFoundError:
-            pass
-
-    # 3nd priority - MIAJapaneseSupport
-    if (not reading) and importlib.util.find_spec("MIAJapaneseSupport"):
-        try:
-            reading = importlib.import_module("MIAJapaneseSupport.reading")
-            mecab_source = "MIAJapaneseSupport from addon MIAJapaneseSupport"
-        except ModuleNotFoundError:
-            pass
-    # 4nd priority - MigakuJapaneseSupport via Anki code (278530045)
-    if (not reading) and importlib.util.find_spec("278530045"):
-        try:
-            reading = importlib.import_module("278530045.reading")
-            mecab_source = "Migaku Japanese support from addon 278530045"
-        except ModuleNotFoundError:
-            pass
+    # # 1st priority - MecabUnidic
+    # if importlib.util.find_spec("MecabUnidic"):
+    #     try:
+    #         reading = importlib.import_module("MecabUnidic.reading")
+    #         mecab_source = "MecabUnidic from addon MecabUnidic"
+    #     except ModuleNotFoundError:
+    #         pass
+    #
+    # if importlib.util.find_spec("13462835"):
+    #     try:
+    #         reading = importlib.import_module("13462835.reading")
+    #         mecab_source = "MecabUnidic from addon 13462835"
+    #     except ModuleNotFoundError:
+    #         pass
+    #
+    # # 2nd priority - Japanese Support
+    # if (not reading) and importlib.util.find_spec("3918629684"):
+    #     try:
+    #         reading = importlib.import_module("3918629684.reading")
+    #         mecab_source = "Japanese Support from addon 3918629684"
+    #     except ModuleNotFoundError:
+    #         pass
+    #
+    # # 3nd priority - MIAJapaneseSupport
+    # if (not reading) and importlib.util.find_spec("MIAJapaneseSupport"):
+    #     try:
+    #         reading = importlib.import_module("MIAJapaneseSupport.reading")
+    #         mecab_source = "MIAJapaneseSupport from addon MIAJapaneseSupport"
+    #     except ModuleNotFoundError:
+    #         pass
+    # # 4nd priority - MigakuJapaneseSupport via Anki code (278530045)
+    # if (not reading) and importlib.util.find_spec("278530045"):
+    #     try:
+    #         reading = importlib.import_module("278530045.reading")
+    #         mecab_source = "Migaku Japanese support from addon 278530045"
+    #     except ModuleNotFoundError:
+    #         pass
 
     # 5th priority - From Morphman
     if not reading:
@@ -246,7 +250,7 @@ def mecab():  # pylint: disable=too-many-branches,too-many-statements
         am_dir = file_path.split(os.sep)[-2]
         mecab_dir = am_dir + ".deps.mecab.reading"
         reading = importlib.import_module(mecab_dir)
-        mecab_source = "ankimorphs"
+        mecab_source = "AnkiMorphs"
 
     # 6th priority - system mecab
     # if not reading:
@@ -292,15 +296,3 @@ def interact(expr):  # Str -> IO Str
         entire_output += str(line.rstrip(b"\r\n"), mecab_encoding)
 
     return entire_output
-
-
-def fix_reading(_morph):  # Morpheme -> IO Morpheme
-    """
-    'mecab' prints the reading of the kanji in inflected forms (and strangely in katakana). So 歩い[て] will have アルイ as
-    reading. This function sets the reading to the reading of the base form (in the example it will be 'アルク').
-    """
-    if _morph.pos in ["動詞", "助動詞", "形容詞"]:  # verb, aux verb, i-adj
-        line = interact(_morph.base).split("\t")
-        if len(line) == MECAB_NODE_LENGTH_IPADIC:
-            _morph.read = line[MECAB_NODE_READING_INDEX].strip()
-    return _morph

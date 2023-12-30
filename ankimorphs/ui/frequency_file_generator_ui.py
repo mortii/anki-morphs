@@ -9,7 +9,7 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
-class Ui_FrequencyFileGeneratorDialog:
+class Ui_FrequencyFileGeneratorDialog(object):
     def setupUi(self, FrequencyFileGeneratorDialog):
         FrequencyFileGeneratorDialog.setObjectName("FrequencyFileGeneratorDialog")
         FrequencyFileGeneratorDialog.resize(459, 450)
@@ -132,14 +132,14 @@ class Ui_FrequencyFileGeneratorDialog:
         FrequencyFileGeneratorDialog.setWindowTitle(_translate("FrequencyFileGeneratorDialog", "Frequency File Generator"))
         self.inputButton.setText(_translate("FrequencyFileGeneratorDialog", "Select input"))
         self.outputButton.setText(_translate("FrequencyFileGeneratorDialog", "Select output"))
-        self.label.setText(_translate("FrequencyFileGeneratorDialog", "Morphemizer:"))
+        self.label.setText(_translate("FrequencyFileGeneratorDialog", "Morphemizer"))
         self.label_3.setText(_translate("FrequencyFileGeneratorDialog", "File formats:"))
         self.txtFilesCheckBox.setText(_translate("FrequencyFileGeneratorDialog", ".txt"))
         self.srtFilesCheckBox.setText(_translate("FrequencyFileGeneratorDialog", ".srt"))
         self.vttFilesCheckBox.setText(_translate("FrequencyFileGeneratorDialog", ".vtt"))
         self.mdFilesCheckBox.setText(_translate("FrequencyFileGeneratorDialog", ".md"))
         self.label_2.setText(_translate("FrequencyFileGeneratorDialog", "Minimum occurrence:"))
-        self.label_4.setText(_translate("FrequencyFileGeneratorDialog", "Parsing:"))
+        self.label_4.setText(_translate("FrequencyFileGeneratorDialog", "Preprocess:"))
         self.squareBracketsCheckBox.setText(_translate("FrequencyFileGeneratorDialog", "Ignore content in square brackets []"))
         self.roundBracketsCheckBox.setText(_translate("FrequencyFileGeneratorDialog", "ignore content in round brackets（）"))
         self.slimRoundBracketsCheckBox.setText(_translate("FrequencyFileGeneratorDialog", "ignore content in slim round brackets ()"))

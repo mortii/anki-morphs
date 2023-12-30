@@ -13,17 +13,20 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from . import ankimorphs_globals
-from .exceptions import CancelledOperationException, EmptyFileSelectionException
-from .morph_utils import (
-    remove_names_morphemizer,
+from . import ankimorphs_globals, morphemizer, text_preprocessing
+from .exceptions import (
+    CancelledOperationException,
+    EmptyFileSelectionException,
+    SpacyNotInstalledException,
+)
+from .morpheme import Morpheme
+from .morphemizer import Morphemizer
+from .text_preprocessing import (
     remove_names_textfile,
     round_brackets_regex,
     slim_round_brackets_regexp,
     square_brackets_regex,
 )
-from .morpheme import Morpheme
-from .morphemizer import Morphemizer, get_all_morphemizers
 from .ui.frequency_file_generator_ui import Ui_FrequencyFileGeneratorDialog
 from .ui.readability_report_generator_ui import Ui_ReadabilityReportGeneratorDialog
 
@@ -50,7 +53,7 @@ class GeneratorDialog(QDialog):
             self.ui = Ui_ReadabilityReportGeneratorDialog()
 
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
-        self._morphemizers = get_all_morphemizers()
+        self._morphemizers = morphemizer.get_all_morphemizers()
         self._populate_morphemizers()
         self._setup_checkboxes()
         self._input_dir_root: Path
@@ -129,15 +132,51 @@ class GeneratorDialog(QDialog):
 
         return expression
 
-    def _get_morphs_from_line(
-        self, morphemizer: Morphemizer, line: str
-    ) -> list[Morpheme]:
+    def _get_morphs_from_line(  # type: ignore[no-untyped-def]
+        self, _morphemizer: Morphemizer, nlp, line: str
+    ) -> set[Morpheme]:
+        # todo: this is horrible, create a callback or something
+        if nlp is None:
+            return self._get_morphs_from_line_morphemizer(_morphemizer, line)
+        return self._get_morphs_from_line_spacy(nlp, line)
+
+    def _get_morphs_from_line_spacy(self, nlp, line: str) -> set[Morpheme]:  # type: ignore[no-untyped-def]
+        # nlp: spacy.Language
+
+        morphs: set[Morpheme] = set()
         expression = self._filter_expression(line)
-        morphs: list[Morpheme] = morphemizer.get_morphemes_from_expr(expression)
-        if self.ui.namesMorphemizerCheckBox.isChecked():
-            morphs = remove_names_morphemizer(morphs)
+
+        doc = nlp(expression)
+
+        for w in doc:
+            if not w.is_alpha:
+                continue
+
+            if self.ui.namesMorphemizerCheckBox.isChecked():
+                if w.pos == 96:  # PROPN
+                    continue
+
+            morphs.add(
+                Morpheme(
+                    base=w.lemma_,
+                    inflected=w.text,
+                )
+            )
+
         if self.ui.namesFileCheckBox.isChecked():
             morphs = remove_names_textfile(morphs)
+
+        return morphs
+
+    def _get_morphs_from_line_morphemizer(
+        self, _morphemizer: Morphemizer, line: str
+    ) -> set[Morpheme]:
+        expression = self._filter_expression(line)
+        morphs: set[Morpheme] = _morphemizer.get_morphemes_from_expr(expression)
+        if self.ui.namesMorphemizerCheckBox.isChecked():
+            morphs = text_preprocessing.remove_names_morphemizer(morphs)
+        if self.ui.namesFileCheckBox.isChecked():
+            morphs = text_preprocessing.remove_names_textfile(morphs)
         return morphs
 
     def closeWithCallback(  # pylint:disable=invalid-name
@@ -179,6 +218,7 @@ class GeneratorDialog(QDialog):
             Exception,
             CancelledOperationException,
             EmptyFileSelectionException,
+            SpacyNotInstalledException,
         ],
     ) -> None:
         # This function runs on the main thread.
@@ -191,7 +231,10 @@ class GeneratorDialog(QDialog):
                 tooltip("Cancelled Frequency File Generator")
             elif self.child == "ReadabilityReportGeneratorDialog":
                 tooltip("Cancelled Readability Report Generator")
-        if isinstance(error, EmptyFileSelectionException):
+        elif isinstance(error, EmptyFileSelectionException):
             tooltip("No file/folder selected")
+        elif isinstance(error, SpacyNotInstalledException):
+            # todo display error window
+            tooltip("SpacyNotInstalledException")
         else:
             raise error

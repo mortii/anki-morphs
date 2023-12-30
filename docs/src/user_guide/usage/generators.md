@@ -52,9 +52,9 @@ use the files:
 - `episode_1.srt`
 - `The_Fellowship_of_the_Ring.vtt`
 
-### Parsing
+### Preprocess
 
-![generator-parsing-options.png](../../img/generator-parsing-options.png)
+![generator-parsing-options.png](../../img/generator-preprocess-options.png)
 
-The 'ignore'-options are equivalent to those found in ['Parse' settings](../setup/settings/parse.md).
+The 'ignore'-options are equivalent to those found in ['Preprocess' settings](../setup/settings/preprocess).
 

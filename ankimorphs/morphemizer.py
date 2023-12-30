@@ -1,9 +1,9 @@
+import functools
 import re
-from functools import lru_cache
+import subprocess
 from typing import Optional
 
-from .deps.jieba import posseg
-from .deps.zhon.hanzi import characters
+from . import spacy_wrapper
 from .mecab_wrapper import get_mecab_identity, get_morphemes_mecab
 from .morpheme import Morpheme
 
@@ -13,21 +13,22 @@ from .morpheme import Morpheme
 
 
 class Morphemizer:
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    @lru_cache(maxsize=131072)
-    def get_morphemes_from_expr(self, expression: str) -> list[Morpheme]:
+    # the cache needs to have a max size to maintain garbage collection
+    @functools.lru_cache(maxsize=131072)
+    def get_morphemes_from_expr(self, expression: str) -> set[Morpheme]:
         morphs = self._get_morphemes_from_expr(expression)
         return morphs
 
     def _get_morphemes_from_expr(  # pylint:disable=unused-argument
         self, expression: str
-    ) -> [Morpheme]:
+    ) -> set[Morpheme]:
         """
         The heart of this plugin: convert an expression to a list of its morphemes.
         """
-        return []
+        return set()
 
     def get_description(self) -> str:
         """
@@ -53,13 +54,11 @@ def get_all_morphemizers() -> list[Morphemizer]:
         morphemizers = [
             SpaceMorphemizer(),
             MecabMorphemizer(),
-            JiebaMorphemizer(),
-            CjkCharMorphemizer(),
         ]
-
+        for spacy_model in spacy_wrapper.get_installed_models():
+            morphemizers.append(SpacyMorphemizer(spacy_model))
         for morphemizer in morphemizers:
             morphemizers_by_name[morphemizer.get_name()] = morphemizer
-
     return morphemizers
 
 
@@ -81,19 +80,18 @@ class MecabMorphemizer(Morphemizer):
     a extra tool called 'mecab' has to be used.
     """
 
-    def _get_morphemes_from_expr(self, expression):
+    def _get_morphemes_from_expr(self, expression: str) -> set[Morpheme]:
         # Remove simple spaces that could be added by other add-ons and break the parsing.
         if space_char_regex.search(expression):
             expression = space_char_regex.sub("", expression)
-
         return get_morphemes_mecab(expression)
 
-    def get_description(self):
-        # try:
-        identity = get_mecab_identity()
-        # except:
-        #     identity = "UNAVAILABLE"
-        return "Japanese " + identity
+    def get_description(self) -> str:
+        try:
+            identity = get_mecab_identity()
+        except (ModuleNotFoundError, subprocess.TimeoutExpired):
+            identity = "UNAVAILABLE"
+        return f"{identity}: Japanese"
 
 
 ####################################################################################################
@@ -107,7 +105,7 @@ class SpaceMorphemizer(Morphemizer):
     a general-use-morphemizer, it can't generate the base form from inflection.
     """
 
-    def _get_morphemes_from_expr(self, expression):
+    def _get_morphemes_from_expr(self, expression: str) -> set[Morpheme]:
         # We want the expression: "At 3 o'clock that god-forsaken-man shows up..."
         # to produce: ['at', '3', "o'clock", 'that', 'god-forsaken-man', 'shows', 'up']
         #
@@ -128,61 +126,20 @@ class SpaceMorphemizer(Morphemizer):
             word.lower()
             for word in re.findall(r"\w+(?:[-']\w+)*", expression, re.UNICODE)
         ]
-        return [
-            Morpheme(word, word, word, word, "UNKNOWN", "UNKNOWN") for word in word_list
-        ]
+        return {Morpheme(base=word, inflected=word) for word in word_list}
 
-    def get_description(self):
-        return "Language w/ Spaces"
+    def get_description(self) -> str:
+        return "AnkiMoprhs: Language w/ Spaces"
 
 
-####################################################################################################
-# CJK Character Morphemizer
-####################################################################################################
+class SpacyMorphemizer(Morphemizer):
+    """Mostly a stub class for spaCy"""
 
+    # TODO, maybe move some implementation here from the spacy wrapper
 
-class CjkCharMorphemizer(Morphemizer):
-    """
-    Morphemizer that splits sentence into characters and filters for Chinese-Japanese-Korean logographic/idiographic
-    characters.
-    """
+    def __init__(self, spacy_model: str):
+        super().__init__()
+        self.spacy_model: str = spacy_model
 
-    def _get_morphemes_from_expr(self, expression):
-        return [
-            Morpheme(character, character, character, character, "CJK_CHAR", "UNKNOWN")
-            for character in re.findall(
-                "[%s]" % characters,  # pylint:disable=consider-using-f-string
-                expression,
-            )
-        ]
-
-    def get_description(self):
-        return "CJK Characters"
-
-
-####################################################################################################
-# Jieba Morphemizer (Chinese)
-####################################################################################################
-
-
-class JiebaMorphemizer(Morphemizer):
-    """
-    Jieba Chinese text segmentation: built to be the best Python Chinese word segmentation module.
-    https://github.com/fxsjy/jieba
-    """
-
-    def _get_morphemes_from_expr(self, expression):
-        # remove all punctuation
-        expression = "".join(
-            re.findall(
-                "[%s]" % characters,  # pylint:disable=consider-using-f-string
-                expression,
-            )
-        )
-        return [
-            Morpheme(m.word, m.word, m.word, m.word, m.flag, "UNKNOWN")
-            for m in posseg.cut(expression)
-        ]  # find morphemes using jieba's POS segmenter
-
-    def get_description(self):
-        return "Chinese"
+    def get_description(self) -> str:
+        return f"spaCy: {self.spacy_model}"

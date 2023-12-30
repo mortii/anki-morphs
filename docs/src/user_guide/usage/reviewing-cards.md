@@ -72,7 +72,7 @@ There are three scenarios where AnkiMorphs will automatically skip a card:
    Let's say you have three cards, `card1, card2, card3`, all of which have the same unknown morph. After you have
    answered `card1` then the cards `card2, card3` will be skipped.
 
-3. **You have selected the "ignore names found in names.txt"-option in parse settings**   
+3. **You have selected the "ignore names found in names.txt"-option in Preprocess settings**   
    Let's use the same example of three cards , `card1, card2, card3`. This time they all have the same unknown morph
    "Alexander". If you use the [Mark as name](../setup/names.md) feature to mark "Alexander" as a name on `card1`,
    then the cards `card2, card3` will be skipped.

@@ -135,7 +135,7 @@ Report</string>
        <item>
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Parsing:</string>
+          <string>Preprocess:</string>
          </property>
         </widget>
        </item>
@@ -190,11 +190,11 @@ Report</string>
        </property>
        <widget class="QWidget" name="tab">
         <attribute name="title">
-         <string>Absolute Numbers</string>
+         <string>Numerical</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
-          <widget class="QTableWidget" name="absoluteTableWidget">
+          <widget class="QTableWidget" name="numericalTableWidget">
            <column>
             <property name="text">
              <string>File</string>
@@ -226,7 +226,7 @@ Report</string>
        </widget>
        <widget class="QWidget" name="tab_2">
         <attribute name="title">
-         <string>Percentages</string>
+         <string>Percentage</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>

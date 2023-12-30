@@ -9,10 +9,11 @@ from aqt import mw
 from aqt.operations import QueryOp
 from aqt.qt import QFileDialog, QMainWindow  # pylint:disable=no-name-in-module
 
+from . import spacy_wrapper
 from .exceptions import CancelledOperationException, EmptyFileSelectionException
 from .generator_dialog import GeneratorDialog
 from .morpheme import Morpheme, MorphOccurrence
-from .morphemizer import Morphemizer
+from .morphemizer import Morphemizer, SpacyMorphemizer
 from .ui.frequency_file_generator_ui import Ui_FrequencyFileGeneratorDialog
 
 
@@ -82,8 +83,14 @@ class FrequencyFileGeneratorDialog(GeneratorDialog):
 
         input_files: list[Path] = self._gather_input_files()
         morph_frequency_dict: dict[str, MorphOccurrence] = {}
+        nlp = None  # spacy.Language
         morphemizer: Morphemizer = self._morphemizers[self.ui.comboBox.currentIndex()]
         assert morphemizer is not None
+
+        if isinstance(morphemizer, SpacyMorphemizer):
+            selected: str = self.ui.comboBox.itemText(self.ui.comboBox.currentIndex())
+            spacy_model = selected.removeprefix("spaCy: ")
+            nlp = spacy_wrapper.get_nlp(spacy_model)
 
         for input_file in input_files:
             if mw.progress.want_cancel():  # user clicked 'x'
@@ -92,18 +99,18 @@ class FrequencyFileGeneratorDialog(GeneratorDialog):
             mw.taskman.run_on_main(
                 partial(
                     mw.progress.update,
-                    label=f"Reading file:<br>{input_file}",
+                    label=f"Reading file: <br>{input_file.relative_to(self._input_dir_root)}",
                 )
             )
 
             with open(input_file, encoding="utf-8") as file:
                 # NB! Never use readlines(), it loads the entire file to memory
                 for line in file:
-                    morphs: list[Morpheme] = self._get_morphs_from_line(
-                        morphemizer, line
+                    morphs: set[Morpheme] = self._get_morphs_from_line(
+                        morphemizer, nlp, line
                     )
                     for morph in morphs:
-                        key = morph.norm + morph.inflected
+                        key = morph.base + morph.inflected
                         if key in morph_frequency_dict:
                             morph_frequency_dict[key].occurrence += 1
                         else:
@@ -132,4 +139,4 @@ class FrequencyFileGeneratorDialog(GeneratorDialog):
                 if morph_occurrence.occurrence < self.ui.minOccurrenceSpinBox.value():
                     break
                 morph = morph_occurrence.morph
-                morph_writer.writerow([morph.norm, morph.inflected])
+                morph_writer.writerow([morph.base, morph.inflected])

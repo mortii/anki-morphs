@@ -130,7 +130,8 @@ class MecabController(object):
         for node in expr.split(" "):
             if not node:
                 break
-            (kanji, reading) = re.match("(.+)\[(.*)\]", node).groups()
+            # (kanji, reading) = re.match("(.+)\[(.*)\]", node).groups()
+            (kanji, reading) = re.match("(.+)\\[(.*)]", node).groups()
             if kanji == reading or not reading:
                 out.append(kanji)
                 continue

@@ -118,7 +118,7 @@
               <string notr="true">margin-bottom: 10px;</string>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;AnkiMorphs can automatically add the following fields to your cards and populate them.&lt;/p&gt;&lt;p&gt;Read the &lt;a href=&quot;https://mortii.github.io/anki-morphs/user_guide/setup/settings/extra-fields.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#aaaaff;&quot;&gt;guide&lt;/span&gt;&lt;/a&gt; for more info.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;AnkiMorphs can automatically add the following fields to your cards and populate them.&lt;/p&gt;&lt;p&gt;Read the &lt;a href=&quot;https://mortii.github.io/anki-morphs/user_guide/setup/settings/extra-fields.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#8783ff;&quot;&gt;guide&lt;/span&gt;&lt;/a&gt; for more info.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="textFormat">
               <enum>Qt::MarkdownText</enum>
@@ -320,50 +320,50 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="parse_tab">
+       <widget class="QWidget" name="preprocess_tab">
         <attribute name="title">
-         <string>Parse</string>
+         <string>Preprocess</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_13">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_9">
            <item>
-            <widget class="QCheckBox" name="parseIgnoreSquareCheckBox">
+            <widget class="QCheckBox" name="preprocessIgnoreSquareCheckBox">
              <property name="text">
               <string>ignore content in square brackets []</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="parseIgnoreRoundCheckBox">
+            <widget class="QCheckBox" name="preprocessIgnoreRoundCheckBox">
              <property name="text">
               <string>ignore content in round brackets（）</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="parseIgnoreSlimCheckBox">
+            <widget class="QCheckBox" name="preprocessIgnoreSlimCheckBox">
              <property name="text">
               <string>ignore content in slim round brackets ()</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="parseIgnoreSuspendedCheckBox">
+            <widget class="QCheckBox" name="preprocessIgnoreSuspendedCheckBox">
              <property name="text">
               <string>Ignore content in suspended cards</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="parseIgnoreNamesMizerCheckBox">
+            <widget class="QCheckBox" name="preprocessIgnoreNamesMizerCheckBox">
              <property name="text">
               <string>Ignore names found by the morphemizer</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="parseIgnoreNamesFileCheckBox">
+            <widget class="QCheckBox" name="preprocessIgnoreNamesFileCheckBox">
              <property name="text">
               <string>Ignore names found in names.txt</string>
              </property>
@@ -387,9 +387,9 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_8">
            <item>
-            <widget class="QPushButton" name="restoreParsePushButton">
+            <widget class="QPushButton" name="restorePreprocessPushButton">
              <property name="text">
-              <string>Restore Default Parse Settings</string>
+              <string>Restore Default Preprocess Settings</string>
              </property>
             </widget>
            </item>

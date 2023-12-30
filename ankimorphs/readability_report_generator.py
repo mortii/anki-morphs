@@ -12,12 +12,13 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
     QTableWidgetItem,
 )
 
+from . import spacy_wrapper
 from .ankimorphs_db import AnkiMorphsDB
 from .config import AnkiMorphsConfig
 from .exceptions import CancelledOperationException, EmptyFileSelectionException
 from .generator_dialog import GeneratorDialog
 from .morpheme import Morpheme, MorphOccurrence
-from .morphemizer import Morphemizer
+from .morphemizer import Morphemizer, SpacyMorphemizer
 from .ui.readability_report_generator_ui import Ui_ReadabilityReportGeneratorDialog
 
 
@@ -42,23 +43,23 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
     def _setup_absolute_table(self) -> None:
         assert isinstance(self.ui, Ui_ReadabilityReportGeneratorDialog)
 
-        self.ui.absoluteTableWidget.setAlternatingRowColors(True)
-        self.ui.absoluteTableWidget.setColumnCount(self._number_of_columns)
+        self.ui.numericalTableWidget.setAlternatingRowColors(True)
+        self.ui.numericalTableWidget.setColumnCount(self._number_of_columns)
 
-        self.ui.absoluteTableWidget.setColumnWidth(self.file_name_column, 150)
-        self.ui.absoluteTableWidget.setColumnWidth(self._total_morphs, 120)
-        self.ui.absoluteTableWidget.setColumnWidth(self._known_column, 80)
-        self.ui.absoluteTableWidget.setColumnWidth(self._learning_column, 90)
-        self.ui.absoluteTableWidget.setColumnWidth(self._unknowns_column, 100)
+        self.ui.numericalTableWidget.setColumnWidth(self.file_name_column, 150)
+        self.ui.numericalTableWidget.setColumnWidth(self._total_morphs, 120)
+        self.ui.numericalTableWidget.setColumnWidth(self._known_column, 80)
+        self.ui.numericalTableWidget.setColumnWidth(self._learning_column, 90)
+        self.ui.numericalTableWidget.setColumnWidth(self._unknowns_column, 100)
 
         absolute_table_vertical_headers: Optional[
             QHeaderView
-        ] = self.ui.absoluteTableWidget.verticalHeader()
+        ] = self.ui.numericalTableWidget.verticalHeader()
         assert absolute_table_vertical_headers is not None
         absolute_table_vertical_headers.hide()
 
         # disables manual editing of the table
-        self.ui.absoluteTableWidget.setEditTriggers(
+        self.ui.numericalTableWidget.setEditTriggers(
             QAbstractItemView.EditTrigger.NoEditTriggers
         )
 
@@ -101,7 +102,9 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
         operation.failure(self._on_failure)
         operation.with_progress().run_in_background()
 
-    def _background_generate_report(self, col: Collection) -> None:
+    def _background_generate_report(  # pylint:disable=too-many-locals
+        self, col: Collection
+    ) -> None:
         del col  # unused
         assert mw is not None
         assert isinstance(self.ui, Ui_ReadabilityReportGeneratorDialog)
@@ -110,33 +113,39 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
             raise EmptyFileSelectionException
 
         input_files: list[Path] = self._gather_input_files()
+        nlp = None  # spacy.Language
         morphemizer: Morphemizer = self._morphemizers[self.ui.comboBox.currentIndex()]
         assert morphemizer is not None
 
+        if isinstance(morphemizer, SpacyMorphemizer):
+            selected: str = self.ui.comboBox.itemText(self.ui.comboBox.currentIndex())
+            spacy_model = selected.removeprefix("spaCy: ")
+            nlp = spacy_wrapper.get_nlp(spacy_model)
+
         # sorting has to be disabled before populating because bugs can occur
-        self.ui.absoluteTableWidget.setSortingEnabled(False)
+        self.ui.numericalTableWidget.setSortingEnabled(False)
         self.ui.percentTableWidget.setSortingEnabled(False)
 
         # clear previous results
-        self.ui.absoluteTableWidget.clearContents()
+        self.ui.numericalTableWidget.clearContents()
         self.ui.percentTableWidget.clearContents()
 
         files_morph_dicts: dict[Path, dict[str, MorphOccurrence]] = {}
 
         for input_file in input_files:
-            if mw.progress.want_cancel():  # user clicked 'x'
+            if mw.progress.want_cancel():  # user clicked 'x' button
                 raise CancelledOperationException
 
             mw.taskman.run_on_main(
                 partial(
                     mw.progress.update,
-                    label=f"Reading file: <br>{input_file.relative_to(self._input_dir_root)}",
+                    label=f"Reading file:<br>{input_file.relative_to(self._input_dir_root)}",
                 )
             )
 
             with open(input_file, encoding="utf-8") as file:
                 file_morphs: dict[str, MorphOccurrence] = self._create_file_morphs_dict(
-                    file, morphemizer
+                    file, morphemizer, nlp
                 )
                 files_morph_dicts[input_file] = file_morphs
 
@@ -150,7 +159,7 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
         am_config = AnkiMorphsConfig()
         am_db = AnkiMorphsDB()
 
-        self.ui.absoluteTableWidget.setRowCount(len(input_files))
+        self.ui.numericalTableWidget.setRowCount(len(input_files))
         self.ui.percentTableWidget.setRowCount(len(input_files))
 
         for _row, _input_file in enumerate(input_files):
@@ -177,19 +186,19 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
                 unknown_morphs,
             )
 
-        self.ui.absoluteTableWidget.setSortingEnabled(True)
+        self.ui.numericalTableWidget.setSortingEnabled(True)
         self.ui.percentTableWidget.setSortingEnabled(True)
 
         am_db.con.close()
 
-    def _create_file_morphs_dict(
-        self, file: TextIO, morphemizer: Morphemizer
-    ) -> dict[str, MorphOccurrence]:
+    def _create_file_morphs_dict(self, file: TextIO, morphemizer, nlp) -> dict[str, MorphOccurrence]:  # type: ignore[no-untyped-def]
+        # nlp: spacy.Language
+
         file_morphs: dict[str, MorphOccurrence] = {}
         for line in file:
-            morphs: list[Morpheme] = self._get_morphs_from_line(morphemizer, line)
+            morphs: set[Morpheme] = self._get_morphs_from_line(morphemizer, nlp, line)
             for morph in morphs:
-                key = morph.norm + morph.inflected
+                key = morph.base + morph.inflected
                 if key in file_morphs:
                     file_morphs[key].occurrence += 1
                 else:
@@ -211,7 +220,7 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
 
             highest_learning_interval: Optional[
                 int
-            ] = am_db.get_highest_learning_interval(morph.norm, morph.inflected)
+            ] = am_db.get_highest_learning_interval(morph.base, morph.inflected)
 
             if highest_learning_interval is None:
                 unknown_morphs += 1
@@ -250,11 +259,15 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
         learning_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         unknowns_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.ui.absoluteTableWidget.setItem(_row, self.file_name_column, file_name_item)
-        self.ui.absoluteTableWidget.setItem(_row, self._total_morphs, total_morphs_item)
-        self.ui.absoluteTableWidget.setItem(_row, self._known_column, known_item)
-        self.ui.absoluteTableWidget.setItem(_row, self._learning_column, learning_item)
-        self.ui.absoluteTableWidget.setItem(_row, self._unknowns_column, unknowns_item)
+        self.ui.numericalTableWidget.setItem(
+            _row, self.file_name_column, file_name_item
+        )
+        self.ui.numericalTableWidget.setItem(
+            _row, self._total_morphs, total_morphs_item
+        )
+        self.ui.numericalTableWidget.setItem(_row, self._known_column, known_item)
+        self.ui.numericalTableWidget.setItem(_row, self._learning_column, learning_item)
+        self.ui.numericalTableWidget.setItem(_row, self._unknowns_column, unknowns_item)
 
     def _populate_percentage_table(
         self,

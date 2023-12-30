@@ -90,23 +90,23 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
             self.recalc_interval_for_known: int = _get_int_config(
                 "recalc_interval_for_known", is_default
             )
-            self.parse_ignore_bracket_contents: bool = _get_bool_config(
-                "parse_ignore_bracket_contents", is_default
+            self.preprocess_ignore_bracket_contents: bool = _get_bool_config(
+                "preprocess_ignore_bracket_contents", is_default
             )
-            self.parse_ignore_round_bracket_contents: bool = _get_bool_config(
-                "parse_ignore_round_bracket_contents", is_default
+            self.preprocess_ignore_round_bracket_contents: bool = _get_bool_config(
+                "preprocess_ignore_round_bracket_contents", is_default
             )
-            self.parse_ignore_slim_round_bracket_contents: bool = _get_bool_config(
-                "parse_ignore_slim_round_bracket_contents", is_default
+            self.preprocess_ignore_slim_round_bracket_contents: bool = _get_bool_config(
+                "preprocess_ignore_slim_round_bracket_contents", is_default
             )
-            self.parse_ignore_names_morphemizer: bool = _get_bool_config(
-                "parse_ignore_names_morphemizer", is_default
+            self.preprocess_ignore_names_morphemizer: bool = _get_bool_config(
+                "preprocess_ignore_names_morphemizer", is_default
             )
-            self.parse_ignore_names_textfile: bool = _get_bool_config(
-                "parse_ignore_names_textfile", is_default
+            self.preprocess_ignore_names_textfile: bool = _get_bool_config(
+                "preprocess_ignore_names_textfile", is_default
             )
-            self.parse_ignore_suspended_cards_content: bool = _get_bool_config(
-                "parse_ignore_suspended_cards_content", is_default
+            self.preprocess_ignore_suspended_cards_content: bool = _get_bool_config(
+                "preprocess_ignore_suspended_cards_content", is_default
             )
             self.recalc_on_sync: bool = _get_bool_config("recalc_on_sync", is_default)
             self.recalc_suspend_known_new_cards: bool = _get_bool_config(

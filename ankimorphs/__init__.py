@@ -13,7 +13,7 @@
 ################################################################
 
 from functools import partial
-from typing import Literal, Optional
+from typing import Literal
 
 import aqt
 from anki.cards import Card
@@ -35,7 +35,6 @@ from aqt.webview import AnkiWebView
 from . import (
     ankimorphs_globals,
     browser_utils,
-    frequency_file_generator,
     name_file_utils,
     recalc,
     reviewing_utils,
@@ -450,12 +449,6 @@ def test_function() -> None:
     # print(f"result?: {result}")
     #
     # am_db.con.close()
-
-    # morphemizer = MecabMorphemizer()
-    # expression = "うん あ カフェ モカ お願い おかわり"
-    # morphs = get_morphemes(morphemizer, expression, am_config=AnkiMorphsConfig())
-    # morph_list = [morph.inflected for morph in morphs]
-    # print(f"morphs: {morph_list}")
 
     # print("Seen_Morphs:")
     # am_db = AnkiMorphsDB()
