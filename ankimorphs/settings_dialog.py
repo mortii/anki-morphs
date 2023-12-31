@@ -272,29 +272,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             self._config.preprocess_ignore_suspended_cards_content
         )
 
-    def _populate_shortcuts_tab(self) -> None:
-        self.ui.shortcutRecalcKeySequenceEdit.setKeySequence(
-            self._config.shortcut_recalc
-        )
-        self.ui.shortcutSettingsKeySequenceEdit.setKeySequence(
-            self._config.shortcut_settings
-        )
-        self.ui.shortcutBrowseReadyKeySequenceEdit.setKeySequence(
-            self._config.shortcut_browse_ready_same_unknown.toString()
-        )
-        self.ui.shortcutBrowseAllKeySequenceEdit.setKeySequence(
-            self._config.shortcut_browse_all_same_unknown.toString()
-        )
-        self.ui.shortcutKnownAndSkipKeySequenceEdit.setKeySequence(
-            self._config.shortcut_set_known_and_skip.toString()
-        )
-        self.ui.shortcutLearnNowKeySequenceEdit.setKeySequence(
-            self._config.shortcut_learn_now.toString()
-        )
-        self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
-            self._config.shortcut_view_morphemes.toString()
-        )
-
     def _restore_preprocess_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"
@@ -321,6 +298,35 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
         self.ui.preprocessIgnoreSuspendedCheckBox.setChecked(
             self._default_config.preprocess_ignore_suspended_cards_content
+        )
+
+    def _populate_shortcuts_tab(self) -> None:
+        self.ui.shortcutRecalcKeySequenceEdit.setKeySequence(
+            self._config.shortcut_recalc
+        )
+        self.ui.shortcutSettingsKeySequenceEdit.setKeySequence(
+            self._config.shortcut_settings
+        )
+        self.ui.shortcutBrowseReadyKeySequenceEdit.setKeySequence(
+            self._config.shortcut_browse_ready_same_unknown.toString()
+        )
+        self.ui.shortcutBrowseAllKeySequenceEdit.setKeySequence(
+            self._config.shortcut_browse_all_same_unknown.toString()
+        )
+        self.ui.shortcutKnownAndSkipKeySequenceEdit.setKeySequence(
+            self._config.shortcut_set_known_and_skip.toString()
+        )
+        self.ui.shortcutLearnNowKeySequenceEdit.setKeySequence(
+            self._config.shortcut_learn_now.toString()
+        )
+        self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
+            self._config.shortcut_view_morphemes.toString()
+        )
+        self.ui.shortcutFrequencyFileGeneratorKeySequenceEdit.setKeySequence(
+            self._config.shortcut_frequency_file_generator.toString()
+        )
+        self.ui.shortcutReadabilityReportGeneratorKeySequenceEdit.setKeySequence(
+            self._config.shortcut_readability_report_generator.toString()
         )
 
     def _restore_shortcuts_defaults(self, skip_confirmation: bool = False) -> None:
@@ -352,6 +358,12 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
         self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
             self._default_config.shortcut_view_morphemes
+        )
+        self.ui.shortcutFrequencyFileGeneratorKeySequenceEdit.setKeySequence(
+            self._default_config.shortcut_frequency_file_generator.toString()
+        )
+        self.ui.shortcutReadabilityReportGeneratorKeySequenceEdit.setKeySequence(
+            self._default_config.shortcut_readability_report_generator.toString()
         )
 
     def _populate_recalc_tab(self) -> None:
@@ -495,6 +507,8 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             "shortcut_set_known_and_skip": self.ui.shortcutKnownAndSkipKeySequenceEdit.keySequence().toString(),
             "shortcut_learn_now": self.ui.shortcutLearnNowKeySequenceEdit.keySequence().toString(),
             "shortcut_view_morphemes": self.ui.shortcutViewMorphsKeySequenceEdit.keySequence().toString(),
+            "shortcut_readability_report_generator": self.ui.shortcutReadabilityReportGeneratorKeySequenceEdit.keySequence().toString(),
+            "shortcut_frequency_file_generator": self.ui.shortcutFrequencyFileGeneratorKeySequenceEdit.keySequence().toString(),
             "recalc_interval_for_known": self.ui.recalcIntervalSpinBox.value(),
             "recalc_on_sync": self.ui.recalcBeforeSyncCheckBox.isChecked(),
             "recalc_suspend_known_new_cards": self.ui.recalcSuspendKnownCheckBox.isChecked(),

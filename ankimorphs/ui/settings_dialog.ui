@@ -640,6 +640,20 @@
                </property>
               </widget>
              </item>
+             <item>
+              <widget class="QLabel" name="label_7">
+               <property name="text">
+                <string>Frequency File Generator</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_15">
+               <property name="text">
+                <string>Readability Report Generator</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </item>
            <item>
@@ -664,6 +678,12 @@
              </item>
              <item>
               <widget class="QKeySequenceEdit" name="shortcutViewMorphsKeySequenceEdit"/>
+             </item>
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcutFrequencyFileGeneratorKeySequenceEdit"/>
+             </item>
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcutReadabilityReportGeneratorKeySequenceEdit"/>
              </item>
             </layout>
            </item>

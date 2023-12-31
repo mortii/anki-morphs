@@ -165,8 +165,8 @@ def init_tool_menu_and_actions() -> None:
 
     settings_action = create_settings_action(am_config)
     recalc_action = create_recalc_action(am_config)
-    frequency_list_action = create_frequency_file_action()
-    readability_report_action = create_readability_report_action()
+    frequency_list_action = create_frequency_file_action(am_config)
+    readability_report_action = create_readability_report_action(am_config)
     guide_action = create_guide_action()
     changelog_action = create_changelog_action()
 
@@ -400,8 +400,9 @@ def add_name_action(web_view: AnkiWebView, menu: QMenu) -> None:
     menu.addAction(action)
 
 
-def create_frequency_file_action() -> QAction:
+def create_frequency_file_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Frequency File Generator", mw)
+    action.setShortcut(am_config.shortcut_frequency_file_generator)
     action.triggered.connect(
         partial(
             aqt.dialogs.open,
@@ -411,8 +412,9 @@ def create_frequency_file_action() -> QAction:
     return action
 
 
-def create_readability_report_action() -> QAction:
+def create_readability_report_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Readability Report Generator", mw)
+    action.setShortcut(am_config.shortcut_readability_report_generator)
     action.triggered.connect(
         partial(
             aqt.dialogs.open,
