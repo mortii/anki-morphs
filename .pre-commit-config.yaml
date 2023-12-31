@@ -1,5 +1,5 @@
 ci: # the pre-commit ci bot on github does not like repo: local
-    skip: [pylint, black, mypy]
+    skip: [pylint, black, mypy, pytest]
     autofix_prs: false
 
 default_language_version:
