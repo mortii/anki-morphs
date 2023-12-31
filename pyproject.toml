@@ -41,6 +41,10 @@ testpaths = "tests"
 python_files = "*_test.py"
 # python_functions: which test functions and methods are considered tests
 python_functions = "test_*"
+# spaCy uses some libs that give deprocated warnings, disable these to prevent tests from failing
+filterwarnings = [
+  "ignore::DeprecationWarning:pymorphy3"
+]
 # required_plugins: plugins that must be present for pytest to run
 # pytest-qt: allows for writing tests for PyQt5, PyQt6, PySide2 and PySide6 applications.
 # pytest-xvfb: allows tests to be run without windows popping up during GUI tests or on systems without a display (like a CI).

@@ -25,11 +25,11 @@
    global environment (your pc) because you might end up with package conflicts or accidentally downgrading packages,
    etc; a virtual environment also makes sure the dependencies are consistent for all developers.
     ``` bash
-    python3.9 -m pip install --upgrade pip
-    python3.9 -m pip install virtualenv
+    python3.9 -m pip install --upgrade pip virtualenv
     python3.9 -m virtualenv venv
     source venv/bin/activate  # <--- this activates the virtual environment
-    python3.9 -m pip install -r requirements.txt
+    python -m pip install --upgrade pip
+    python -m pip install -r requirements.txt
     pre-commit install
     ```
    Remember to activate the virtual environment any time before you start working on the project, some IDEs do this
