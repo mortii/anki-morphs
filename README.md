@@ -7,12 +7,10 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
 
-A MorphMan fork rebuilt from the ground up with a focus on performance and a clean codebase with minimal technical debt.
+A MorphMan fork rebuilt from the ground up with a focus on performance and a codebase with minimal technical debt.
 
 Alpha version download: https://ankiweb.net/shared/info/472573498
 
 Guide and docs (much is outdated, updates are ongoing): https://mortii.github.io/anki-morphs/
 
 Roadmap: https://github.com/users/mortii/projects/1/views/1
-
-Will eventually implement https://spacy.io/
