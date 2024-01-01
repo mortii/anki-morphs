@@ -22,3 +22,16 @@
 Redoing, i.e. undoing an undo (Ctrl+Shift+Z), is a nightmare to handle with the current Anki API. Since it is a rarely
 used feature it is not worth the required time and effort to make sure it always works. Redo _might_ work just fine, but
 it also might not. Use it at your own risk.
+
+### Freezing when reviewing
+
+AnkiMorphs uses the Anki API to run in the background after you answer a card, which then
+displays a progress bar of how many cards have been skipped:
+
+<img src="../img/skipping-progress.png" alt="image" width="40%" height="auto">
+
+The Anki API has a rare bug where it sometimes gets in a deadlock and just says 'Processing...' forever.
+
+<img src="../img/skipping-freeze.png" alt="image" width="40%" height="auto">
+
+When this happens you have to restart Anki.
