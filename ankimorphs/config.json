@@ -1,10 +1,10 @@
 {
-  "extra_difficulty": false,
-  "extra_highlighted": false,
-  "extra_unknowns": false,
-  "extra_unknowns_count": false,
   "filters": [
     {
+      "extra_difficulty": false,
+      "extra_highlighted": false,
+      "extra_unknowns": false,
+      "extra_unknowns_count": false,
       "field": "",
       "field_index": null,
       "modify": true,

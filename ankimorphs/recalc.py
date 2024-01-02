@@ -315,7 +315,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
         assert config_filter.note_type_id is not None
         note_type_id: NotetypeId = NotetypeId(config_filter.note_type_id)
 
-        _add_extra_fields(am_config, note_type_id, model_manager)
+        _add_extra_fields(config_filter, note_type_id, model_manager)
         note_type_dict = model_manager.get(note_type_id)
         assert note_type_dict is not None
         note_type_field_name_dict = model_manager.field_map(note_type_dict)
@@ -368,20 +368,20 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                     card_has_learning_morphs,
                 )
 
-                if am_config.extra_unknowns:
+                if config_filter.extra_unknowns:
                     _update_unknowns_field(
                         note_type_field_name_dict, note, card_unknown_morphs
                     )
-                if am_config.extra_unknowns_count:
+                if config_filter.extra_unknowns_count:
                     _update_unknowns_count_field(
                         note_type_field_name_dict, note, card_unknown_morphs
                     )
-                if am_config.extra_difficulty:
+                if config_filter.extra_difficulty:
                     _update_difficulty_field(
                         note_type_field_name_dict, note, card_difficulty
                     )
 
-            if am_config.extra_highlighted:
+            if config_filter.extra_highlighted:
                 _update_highlighted_field(
                     am_config,
                     config_filter,
@@ -418,7 +418,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
     # the due with the index the card has in the list.
     ################################################################
 
-    # if the due is the same then the secondary sort is by id
+    # if the due is the same, then the secondary sort is by id
     modified_cards.sort(key=lambda _card: (_card.due, _card.id))
 
     end_of_queue = _get_end_of_new_cards_queue(modified_cards)
@@ -445,7 +445,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
 
 
 def _add_extra_fields(
-    am_config: AnkiMorphsConfig,
+    config_filter: AnkiMorphsConfigFilter,
     note_type_id: NotetypeId,
     model_manager: ModelManager,
 ) -> None:
@@ -454,13 +454,13 @@ def _add_extra_fields(
     existing_field_names = model_manager.field_names(note_type_dict)
     new_field: FieldDict
 
-    if am_config.extra_unknowns:
+    if config_filter.extra_unknowns:
         if ankimorphs_globals.EXTRA_FIELD_UNKNOWNS not in existing_field_names:
             new_field = model_manager.new_field(ankimorphs_globals.EXTRA_FIELD_UNKNOWNS)
             model_manager.add_field(note_type_dict, new_field)
             model_manager.update_dict(note_type_dict)
 
-    if am_config.extra_unknowns_count:
+    if config_filter.extra_unknowns_count:
         if ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT not in existing_field_names:
             new_field = model_manager.new_field(
                 ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT
@@ -468,7 +468,7 @@ def _add_extra_fields(
             model_manager.add_field(note_type_dict, new_field)
             model_manager.update_dict(note_type_dict)
 
-    if am_config.extra_highlighted:
+    if config_filter.extra_highlighted:
         if ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED not in existing_field_names:
             new_field = model_manager.new_field(
                 ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED
@@ -476,7 +476,7 @@ def _add_extra_fields(
             model_manager.add_field(note_type_dict, new_field)
             model_manager.update_dict(note_type_dict)
 
-    if am_config.extra_difficulty:
+    if config_filter.extra_difficulty:
         if ankimorphs_globals.EXTRA_FIELD_DIFFICULTY not in existing_field_names:
             new_field = model_manager.new_field(
                 ankimorphs_globals.EXTRA_FIELD_DIFFICULTY
@@ -614,16 +614,16 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
     #                                      ALGORITHM
     ####################################################################################
     # We want our algorithm to determine difficulty based on the following importance:
-    #     1. if the card has unknown morphs (unknown_morph_penalty)
-    #     2. the priority of the card's morphs (morph_priority_penalty)
+    #     1. If the card has unknown morphs (unknown_morph_penalty)
+    #     2. The priority of the card's morphs (morph_priority_penalty)
     #
-    # Stated a different way: one unknown morph must be more punishing than any amount
-    # of known morphs with low priority. To achieve the behaviour we get the constraint:
-    #     unknown_morph_penalty > sum(morph_priority_penalty)  #(1.1)
+    # Stated in a different way: one unknown morph must be penalized more than any number
+    # of known morphs with low priorities. To achieve this, we get the constraint:
+    #     unknown_morph_penalty > sum(morph_priority_penalty) #(1.1)
     #
     # We need to set some arbitrary limits to make the algorithm practical:
-    #     1. Assume max(morph_priority_penalty) = 50k (a frequency list of 50k morphs)  #(2.1)
-    #     2. Limit max(sum(morph_priority_penalty)) = max(morph_priority_penalty) * 10  #(2.2)
+    #     1. Assume max(morph_priority_penalty) = 50k (a frequency list of 50k morphs) #(2.1)
+    #     2. Limit max(sum(morph_priority_penalty)) = max(morph_priority_penalty) * 10 #(2.2)
     #
     # With the equations #(1.1), #(2.1), and #(2.2) we get:
     #     morph_unknown_penalty = 500,000

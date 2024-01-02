@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>925</width>
-    <height>408</height>
+    <width>923</width>
+    <height>420</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -118,7 +118,7 @@
               <string notr="true">margin-bottom: 10px;</string>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;AnkiMorphs can automatically add the following fields to your cards and populate them.&lt;/p&gt;&lt;p&gt;Read the &lt;a href=&quot;https://mortii.github.io/anki-morphs/user_guide/setup/settings/extra-fields.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#8783ff;&quot;&gt;guide&lt;/span&gt;&lt;/a&gt; for more info.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;AnkiMorphs can automatically add special fields to your cards and populate them.&lt;/p&gt;&lt;p&gt;Read the &lt;a href=&quot;https://mortii.github.io/anki-morphs/user_guide/setup/settings/extra-fields.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#8783ff;&quot;&gt;guide&lt;/span&gt;&lt;/a&gt; for more info.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="textFormat">
               <enum>Qt::MarkdownText</enum>
@@ -129,69 +129,16 @@
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="extraUnknownsCheckBox">
-             <property name="text">
-              <string>am-unknowns</string>
-             </property>
+            <widget class="QTreeWidget" name="treeWidget">
+             <column>
+              <property name="text">
+               <string notr="true">1</string>
+              </property>
+             </column>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="extraUnknownsCountCheckBox">
-             <property name="text">
-              <string>am-unknowns-count</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="extraHighlightedCheckBox">
-             <property name="text">
-              <string>am-highlighted</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="extraDifficultyCheckBox">
-             <property name="text">
-              <string>am-difficulty</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_6">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
-             <item>
-              <widget class="QPushButton" name="restoreExtraFieldsPushButton">
-               <property name="text">
-                <string>Restore Default Extra Fields Settings</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_9">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
+            <layout class="QHBoxLayout" name="horizontalLayout_3"/>
            </item>
           </layout>
          </item>
