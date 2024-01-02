@@ -21,7 +21,7 @@ the packages of a language to see which models are avilable.
 # Installing spaCy
 
 There is, unfortunately, no super simple way to integrate spaCy with Anki, so we have to use perform a little bit of
-terminal magic. This is because spaCy has is a relatively large size (up to ~400 MB), so it can't be included as part of
+terminal magic. This is because spaCy has a relatively large size (up to ~400 MB), so it can't be included as part of
 AnkiMorphs itself. Another problem is that Anki uses Python 3.9, which is considered an outdated version of python.
 
 To get around these problems, we can create a separate instance of Anki that uses a newer version of python and has
