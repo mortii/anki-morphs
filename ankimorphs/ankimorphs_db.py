@@ -260,7 +260,6 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         return card_ids
 
     def get_highest_learning_interval(self, base: str, inflected: str) -> Optional[int]:
-        # todo update this usage!!!
         with self.con:
             highest_learning_interval = self.con.execute(
                 """

@@ -14,11 +14,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
 from . import ankimorphs_globals, morphemizer, text_preprocessing
-from .exceptions import (
-    CancelledOperationException,
-    EmptyFileSelectionException,
-    SpacyNotInstalledException,
-)
+from .exceptions import CancelledOperationException, EmptyFileSelectionException
 from .morpheme import Morpheme
 from .morphemizer import Morphemizer
 from .text_preprocessing import (
@@ -218,7 +214,6 @@ class GeneratorDialog(QDialog):
             Exception,
             CancelledOperationException,
             EmptyFileSelectionException,
-            SpacyNotInstalledException,
         ],
     ) -> None:
         # This function runs on the main thread.
@@ -233,8 +228,5 @@ class GeneratorDialog(QDialog):
                 tooltip("Cancelled Readability Report Generator")
         elif isinstance(error, EmptyFileSelectionException):
             tooltip("No file/folder selected")
-        elif isinstance(error, SpacyNotInstalledException):
-            # todo display error window
-            tooltip("SpacyNotInstalledException")
         else:
             raise error

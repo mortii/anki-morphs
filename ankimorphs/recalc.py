@@ -33,7 +33,6 @@ from .exceptions import (
     CancelledOperationException,
     DefaultSettingsException,
     FrequencyFileNotFoundException,
-    SpacyNotInstalledException,
 )
 from .morpheme import Morpheme
 from .morphemizer import SpacyMorphemizer, get_morphemizer_by_name
@@ -857,7 +856,6 @@ def _on_failure(
         DefaultSettingsException,
         CancelledOperationException,
         FrequencyFileNotFoundException,
-        SpacyNotInstalledException,
     ]
 ) -> None:
     # This function runs on the main thread.
@@ -875,9 +873,6 @@ def _on_failure(
     elif isinstance(error, FrequencyFileNotFoundException):
         title = "AnkiMorphs Error"
         text = f"Frequency file: {error.path} not found!"
-    elif isinstance(error, SpacyNotInstalledException):
-        title = "AnkiMorphs Error"
-        text = "Spacy is not installed, do xyz"
     else:
         raise error
 

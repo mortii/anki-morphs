@@ -7,7 +7,7 @@ line_length = "88"
 warn_return_any = "True"
 warn_unused_configs = "True"
 ignore_missing_imports = "True"
-follow_imports = "silent" # TODO change this eventually
+follow_imports = "silent"
 disable_error_code = ["method-assign"]
 strict = "True"
 

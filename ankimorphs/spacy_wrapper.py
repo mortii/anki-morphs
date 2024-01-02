@@ -14,7 +14,6 @@ def get_nlp(spacy_model_name: str):  # type: ignore[no-untyped-def] # pylint:dis
         )
     except ModuleNotFoundError:
         # spacy not installed
-        # todo display error
         return None
 
     ################################################################
