@@ -1,3 +1,23 @@
+# Choosing spaCy Models
+
+First you need to find out which spaCy model(s) you want to download. A spaCy model determines which language is used and
+how
+to interpret that language. Find the names of the models you want to use from
+the [spaCy website](https://spacy.io/usage/models),
+e.g., `en_core_web_sm`.
+
+Note that there are usually four different models to choose from, each with their distinct suffixes:
+
+- sm (small model)
+- md (medium model)
+- lg (large model)
+- trf (transformer model) <span style="color:red">NOT SUPPORTED BY ANKIMORPHS!</span>
+
+Larger models are slower, but they might produce better results.
+
+If you go to the [spaCy website: Language support](https://spacy.io/usage/models#languages) section, you can click on
+the packages of a language to see which models are avilable.
+
 # Installing spaCy
 
 There is, unfortunately, no super simple way to integrate spaCy with Anki, so we have to use perform a little bit of
@@ -37,10 +57,6 @@ Install with the default settings ("Install Now").
 After the installation, go back to the command prompt and type in `py --list` again. You should now see the new Python
 version you installed.
 </details>
-
-Now you need to find out which spaCy models you want to download. A spaCy model determines which language is used and how
-to interpret that language. Find the names of the models you want to use from the [spaCy website](https://spacy.io/usage/models),
-e.g., `en_core_web_sm`.
 
 Now we are ready to install spaCy, spacy models, and Anki (aqt). I have installed Python 3.12, so my example below will
 use the `py -3.12` command. I also want to use Korean and Russian, so I'm going to download the spaCy
@@ -95,10 +111,6 @@ After the installation, open a new terminal and type in `python --version` again
 version you installed.
 </details>
 
-Now you need to find out which spaCy models you want to download. A spaCy model determines which language is used and how
-to interpret that language. Find the names of the models you want to use from the [spaCy website](https://spacy.io/usage/models),
-e.g., `en_core_web_sm`.
-
 Now we are ready to install spaCy, spacy models, and Anki (aqt). I have installed Python 3.12, so my example below will
 use the `python3.12` command. I also want to use Korean and Russian, so I'm going to download the spaCy
 models `ko_core_news_sm` and `ru_core_news_sm`. In the command prompt I will type:
@@ -148,10 +160,6 @@ After the installation, open a new terminal and type in `python --version` again
 version you installed.
 </details>
 
-Now you need to find out which spaCy models you want to download. A spaCy model determines which language is used and how
-to interpret that language. Find the names of the models you want to use from the [spaCy website](https://spacy.io/usage/models),
-e.g., `en_core_web_sm`.
-
 Now we are ready to install spaCy, spacy models, and Anki (aqt). I have installed Python 3.12, so my example below will
 use the `python3.12` command. I also want to use Korean and Russian, so I'm going to download the spaCy
 models `ko_core_news_sm` and `ru_core_news_sm`. In the command prompt I will type:
@@ -174,4 +182,27 @@ spacyenv/bin/anki
 ```
 
 Now you should be good to go!
+</details>
+
+<br>
+<details>
+  <summary>Potential problems</summary>
+
+### PowerShell Execution Policy Error
+
+![group-policy-error.png](../../img/group-policy-error.png)
+
+This is a safeguard against running malicious scripts, which is generally a good thing. To allow an exception for this
+one time, you can use the command:
+
+````powershell
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
+````
+
+If you want to permanently remove this restriction for your user, then use the command:
+
+````powershell
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
+````
+
 </details>
