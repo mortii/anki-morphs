@@ -43,6 +43,14 @@ repos:
               tests/data/.*|
           )$
       - id: requirements-txt-fixer
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.6
+    hooks:
+      - id: codespell
+        exclude: |
+          (?x)^(
+              tests/.*|
+          )$
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:

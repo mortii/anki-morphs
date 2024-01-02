@@ -22,7 +22,7 @@ def get_nlp(spacy_model_name: str):  # type: ignore[no-untyped-def] # pylint:dis
     ################################################################
     # The infixes rules tell the tokenizer where to split the text
     # segments. We want to split on everything that is not alphanum (\w),
-    # hypen (-), and apostrophes ('), french: (’)
+    # hyphen (-), and apostrophes ('), french: (’)
     # Since the text can be malformed, e.g. "los?«Harry", we have to split
     # before AND after the non-alpha characters.
     # If you only split before, then you get: los ? «Harry

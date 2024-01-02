@@ -16,7 +16,7 @@ Note that there are usually four different models to choose from, each with thei
 Larger models are slower, but they might produce better results.
 
 If you go to the [spaCy website: Language support](https://spacy.io/usage/models#languages) section, you can click on
-the packages of a language to see which models are avilable.
+the packages of a language to see which models are available.
 
 # Installing spaCy
 
