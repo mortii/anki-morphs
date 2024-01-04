@@ -129,7 +129,7 @@ deactivate
 To run Anki, type this in the terminal:
 
 ```
-spacyenv/bin/anki
+open spacyenv/bin/anki
 ```
 
 Now you should be good to go!

@@ -86,7 +86,14 @@ In my case the field I'm interested in is `Japanese`
 
 ## Morphemizer
 
-This is the [parsing dictionary](../../installation/parsing-dictionary.md) AnkiMorphs uses to find morphs.
+This is the tool AnkiMorphs uses to find morphs. This can either be a spacy model e.g:
+```
+spaCy: ko_core_news_sm
+ ```
+or it can be one of the built-in on tools, e.g:
+```
+AnkiMorphs: Japanese
+```
 
 ## Morph Priority
 
