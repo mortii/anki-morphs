@@ -25,7 +25,7 @@ repos:
               docs/src/img/learn-now.mp4|
               docs/src/img/adding-extra-fields.mp4|
               tests/data/collection.anki2|
-              tests/data/frequency.txt|
+              tests/data/populated_ankimorphs.db|
           )$
       - id: check-case-conflict
       - id: check-json
@@ -86,20 +86,12 @@ repos:
         require_serial: true
         types: [ python ]
         files: 'ankimorphs/|^tests/'
-        exclude: |
-          (?x)^(
-              tests/.*|
-          )$
       - id: black
         name: black
         entry: black
         language: system
         types: [ python ]
         files: 'ankimorphs/|^tests/'
-        exclude: |
-          (?x)^(
-              tests/.*|
-          )$
       - id: mypy
         name: mypy
         entry: mypy

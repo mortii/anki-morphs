@@ -3,7 +3,7 @@
 .venv
 .designer-venv
 .DS_Store
-meta.json
+ankimorphs/meta.json
 .idea
 docs/book
 ankimorphs.db

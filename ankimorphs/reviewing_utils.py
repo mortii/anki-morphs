@@ -112,7 +112,7 @@ def _get_next_card_background(
         am_config_filter = get_matching_modify_filter(note)
 
         if am_config_filter is None:
-            break  # card did not match note type and tags set in preferences GUI
+            break  # card did not match any (note type and tags) set in the settings GUI
 
         card_unknown_morphs: Optional[set[tuple[str, str]]] = am_db.get_morphs_of_card(
             reviewer.card.id, search_unknowns=True

@@ -1,0 +1,59 @@
+{
+  "branch_index": 0,
+  "config": {
+    "filters": [
+      {
+        "extra_difficulty": true,
+        "extra_highlighted": true,
+        "extra_unknowns": true,
+        "extra_unknowns_count": true,
+        "field": "Japanese",
+        "field_index": 0,
+        "modify": true,
+        "morph_priority": "Collection frequency",
+        "morph_priority_index": 0,
+        "morphemizer_description": "AnkiMorphs: Japanese",
+        "morphemizer_name": "MecabMorphemizer",
+        "note_type": "japanese_sub2srs",
+        "note_type_id": 1691076536776,
+        "read": true,
+        "tags": {
+          "exclude": [],
+          "include": []
+        }
+      }
+    ],
+    "preprocess_ignore_bracket_contents": true,
+    "preprocess_ignore_names_morphemizer": true,
+    "preprocess_ignore_names_textfile": true,
+    "preprocess_ignore_round_bracket_contents": true,
+    "preprocess_ignore_slim_round_bracket_contents": true,
+    "preprocess_ignore_suspended_cards_content": true,
+    "recalc_interval_for_known": 21,
+    "recalc_on_sync": false,
+    "recalc_suspend_known_new_cards": false,
+    "shortcut_browse_all_same_unknown": "Shift+L",
+    "shortcut_browse_ready_same_unknown": "L",
+    "shortcut_frequency_file_generator": "Ctrl+Shift+F",
+    "shortcut_learn_now": "Ctrl+Alt+N",
+    "shortcut_readability_report_generator": "Ctrl+Shift+R",
+    "shortcut_recalc": "Ctrl+M",
+    "shortcut_set_known_and_skip": "K",
+    "shortcut_settings": "Ctrl+O",
+    "shortcut_view_morphemes": "Ctrl+Alt+V",
+    "skip_only_known_morphs_cards": true,
+    "skip_show_num_of_skipped_cards": true,
+    "skip_unknown_morph_seen_today_cards": true,
+    "tag_known_automatically": "am-known-automatically",
+    "tag_known_manually": "am-known-manually",
+    "tag_learn_card_now": "am-learn-card-now",
+    "tag_not_ready": "am-not-ready",
+    "tag_ready": "am-ready"
+  },
+  "conflicts": [],
+  "disabled": false,
+  "max_point_version": 0,
+  "min_point_version": 0,
+  "mod": 0,
+  "update_enabled": true
+}

@@ -8,15 +8,13 @@ from csv_diff import compare, load_csv
 from ankimorphs import FrequencyFileGeneratorDialog
 from ankimorphs import frequency_file_generator as ffg
 from ankimorphs import generator_dialog as gd
-from ankimorphs.morphemizer import SpacyMorphemizer
 
 
 @pytest.fixture(
     scope="module"  # module-scope: created and destroyed once per module. Cached.
 )
 def fake_environment():
-    print("fake environment initiated")
-    mock_mw = mock.Mock(spec=aqt.mw)  # can use any mw to spec
+    mock_mw = mock.Mock(spec=aqt.mw)
 
     mock_mw.pm.profileFolder.return_value = os.path.join("tests", "data")
     mock_mw.progress.want_cancel.return_value = False
@@ -33,7 +31,9 @@ def fake_environment():
     patch_ffg_mw.stop()
 
 
-def test_frequency_file_generator(fake_environment, qtbot):
+def test_frequency_file_generator(  # pylint:disable=unused-argument
+    fake_environment, qtbot
+):
     ffgd = FrequencyFileGeneratorDialog()
 
     input_folder = os.path.join("tests", "data", "ja_subs")
@@ -53,12 +53,12 @@ def test_frequency_file_generator(fake_environment, qtbot):
     ffgd._background_generate_frequency_file(col=None)
     output_file = os.path.join("tests", "data", "ja_subs_correct_output.csv")
 
-    diff: dict[str, list] = compare(
-        load_csv(open(output_file, encoding="utf8")),
-        load_csv(open(result_output_file, encoding="utf8")),
-    )
-
-    for changes in diff.values():
-        assert len(changes) == 0
+    with open(output_file, encoding="utf8") as a, open(
+        result_output_file, encoding="utf8"
+    ) as b:
+        diff: dict[str, list] = compare(load_csv(a), load_csv(b))
+        assert len(diff) != 0
+        for changes in diff.values():
+            assert len(changes) == 0
 
     os.remove(result_output_file)
