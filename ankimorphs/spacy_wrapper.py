@@ -1,3 +1,13 @@
+import os.path
+import sys
+
+from anki.utils import is_win
+from aqt import mw
+
+updated_python_path: bool = False
+testing_environment: bool = False
+
+
 def get_nlp(spacy_model_name: str):  # type: ignore[no-untyped-def] # pylint:disable=too-many-branches, too-many-statements
     # -> Optional[spacy.Language]
     try:
@@ -26,7 +36,7 @@ def get_nlp(spacy_model_name: str):  # type: ignore[no-untyped-def] # pylint:dis
     # before AND after the non-alpha characters.
     # If you only split before, then you get: los ? «Harry
     # if you only split after: los? « Harry
-    # if you do both: lost ? « Harry
+    # if you do both: los ? « Harry
     #
     # Regex explanation:
     # ?! <- This means inverse match, i.e., don't match
@@ -311,6 +321,33 @@ def get_nlp(spacy_model_name: str):  # type: ignore[no-untyped-def] # pylint:dis
 
 def get_installed_models() -> list[str]:
     try:
+        global updated_python_path
+
+        if not updated_python_path and not testing_environment:
+            # Anki only looks into its own directories for python packages,
+            # to add other lookup folders we have to change the sys path.
+            # In the guide we instruct the users to install the spacy
+            # virtual environment into the addons21 folder as 'spacyenv'.
+            # That way we can get the path based on the anki mw.pm.
+            assert mw is not None
+
+            spacy_path = os.path.join(mw.pm.addonFolder(), "spacyenv")
+
+            if is_win is True:
+                spacy_bin_path = os.path.join(spacy_path, "Scripts")
+                spacy_site_packages_path = os.path.join(
+                    spacy_path, "Lib", "site-packages"
+                )
+            else:
+                spacy_bin_path = os.path.join(spacy_path, "bin")
+                spacy_site_packages_path = os.path.join(
+                    spacy_path, "lib", "python3.9", "site-packages"
+                )
+
+            sys.path.append(spacy_bin_path)
+            sys.path.append(spacy_site_packages_path)
+            updated_python_path = True
+
         import spacy.util  # pylint:disable=import-outside-toplevel
 
         return [f"{model_name}" for model_name in spacy.util.get_installed_models()]

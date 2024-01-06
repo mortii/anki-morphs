@@ -19,6 +19,7 @@ from ankimorphs import (
     config,
     name_file_utils,
     recalc,
+    spacy_wrapper,
 )
 
 
@@ -99,11 +100,15 @@ def fake_environment():
     morph_db_mw = mock.patch.object(ankimorphs_db, "mw", mock_mw)
     patch_config_mw = mock.patch.object(config, "mw", mock_mw)
     patch_name_file_utils_mw = mock.patch.object(name_file_utils, "mw", mock_mw)
+    patch_testing_variable = mock.patch.object(
+        spacy_wrapper, "testing_environment", True
+    )
 
     patch_recalc_mw.start()
     morph_db_mw.start()
     patch_config_mw.start()
     patch_name_file_utils_mw.start()
+    patch_testing_variable.start()
 
     yield mock_mw.col, Collection(collection_path_original)
 
@@ -113,6 +118,7 @@ def fake_environment():
     morph_db_mw.stop()
     patch_config_mw.stop()
     patch_name_file_utils_mw.stop()
+    patch_testing_variable.stop()
 
     os.remove(collection_path_duplicate)
     shutil.rmtree(collection_path_duplicate_media)

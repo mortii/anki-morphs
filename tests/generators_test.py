@@ -8,6 +8,7 @@ from csv_diff import compare, load_csv
 from ankimorphs import FrequencyFileGeneratorDialog
 from ankimorphs import frequency_file_generator as ffg
 from ankimorphs import generator_dialog as gd
+from ankimorphs import spacy_wrapper
 
 
 @pytest.fixture(
@@ -21,14 +22,19 @@ def fake_environment():
 
     patch_gd_mw = mock.patch.object(gd, "mw", mock_mw)
     patch_ffg_mw = mock.patch.object(ffg, "mw", mock_mw)
+    patch_testing_variable = mock.patch.object(
+        spacy_wrapper, "testing_environment", True
+    )
 
     patch_gd_mw.start()
     patch_ffg_mw.start()
+    patch_testing_variable.start()
 
     yield
 
     patch_gd_mw.stop()
     patch_ffg_mw.stop()
+    patch_testing_variable.stop()
 
 
 def test_frequency_file_generator(  # pylint:disable=unused-argument

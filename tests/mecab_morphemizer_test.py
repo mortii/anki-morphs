@@ -1,8 +1,25 @@
+from unittest import mock
+
+import pytest
+
+from ankimorphs import spacy_wrapper
 from ankimorphs.morpheme import Morpheme
 from ankimorphs.morphemizer import get_morphemizer_by_name
 
 
-def test_morpheme_generation():
+@pytest.fixture(
+    scope="module"  # module-scope: created and destroyed once per module. Cached.
+)
+def fake_environment():
+    patch_testing_variable = mock.patch.object(
+        spacy_wrapper, "testing_environment", True
+    )
+    patch_testing_variable.start()
+    yield
+    patch_testing_variable.stop()
+
+
+def test_morpheme_generation(fake_environment):  # pylint:disable=unused-argument
     morphemizer = get_morphemizer_by_name("MecabMorphemizer")
 
     sentence = "本当に重要な任務の時しか 動かない"
