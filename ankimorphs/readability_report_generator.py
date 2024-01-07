@@ -198,7 +198,7 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
         for line in file:
             morphs: set[Morpheme] = self._get_morphs_from_line(morphemizer, nlp, line)
             for morph in morphs:
-                key = morph.base + morph.inflected
+                key = morph.lemma + morph.inflection
                 if key in file_morphs:
                     file_morphs[key].occurrence += 1
                 else:
@@ -220,7 +220,7 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
 
             highest_learning_interval: Optional[
                 int
-            ] = am_db.get_highest_learning_interval(morph.base, morph.inflected)
+            ] = am_db.get_highest_learning_interval(morph.lemma, morph.inflection)
 
             if highest_learning_interval is None:
                 unknown_morphs += 1

@@ -110,7 +110,7 @@ class FrequencyFileGeneratorDialog(GeneratorDialog):
                         morphemizer, nlp, line
                     )
                     for morph in morphs:
-                        key = morph.base + morph.inflected
+                        key = morph.lemma + morph.inflection
                         if key in morph_frequency_dict:
                             morph_frequency_dict[key].occurrence += 1
                         else:
@@ -139,4 +139,4 @@ class FrequencyFileGeneratorDialog(GeneratorDialog):
                 if morph_occurrence.occurrence < self.ui.minOccurrenceSpinBox.value():
                     break
                 morph = morph_occurrence.morph
-                morph_writer.writerow([morph.base, morph.inflected])
+                morph_writer.writerow([morph.lemma, morph.inflection])

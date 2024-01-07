@@ -126,7 +126,7 @@ class SpaceMorphemizer(Morphemizer):
             word.lower()
             for word in re.findall(r"\w+(?:[-']\w+)*", expression, re.UNICODE)
         ]
-        return {Morpheme(base=word, inflected=word) for word in word_list}
+        return {Morpheme(lemma=word, inflection=word) for word in word_list}
 
     def get_description(self) -> str:
         return "AnkiMoprhs: Language w/ Spaces"

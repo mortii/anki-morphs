@@ -12,10 +12,10 @@ from ankimorphs.text_preprocessing import get_processed_spacy_morphs
 
 
 class SpacyMorph:
-    def __init__(self, base: str, inflected: str, pos: str) -> None:
-        self.base = base
-        self.inflected = inflected
-        self.pos = pos
+    def __init__(self, lemma: str, inflection: str, part_of_speech: str) -> None:
+        self.lemma = lemma
+        self.inflection = inflection
+        self.part_of_speech = part_of_speech
 
 
 @pytest.fixture(
@@ -48,20 +48,20 @@ def test_ja_model(fake_environment) -> None:  # pylint:disable=unused-argument
     nlp: spacy.Language = get_nlp(spacy_model_name="ja_core_news_sm")
     expression = "半田さん　朝代わってよ"
     correct_spacy_morphs: list[SpacyMorph] = [
-        SpacyMorph(base="半田", inflected="半田", pos="PROPN"),
-        SpacyMorph(base="さん", inflected="さん", pos="NOUN"),
-        SpacyMorph(base="　", inflected="　", pos="X"),
-        SpacyMorph(base="朝", inflected="朝", pos="NOUN"),
-        SpacyMorph(base="代わる", inflected="代わっ", pos="VERB"),
-        SpacyMorph(base="て", inflected="て", pos="SCONJ"),
-        SpacyMorph(base="よ", inflected="よ", pos="PART"),
+        SpacyMorph(lemma="半田", inflection="半田", part_of_speech="PROPN"),
+        SpacyMorph(lemma="さん", inflection="さん", part_of_speech="NOUN"),
+        SpacyMorph(lemma="　", inflection="　", part_of_speech="X"),
+        SpacyMorph(lemma="朝", inflection="朝", part_of_speech="NOUN"),
+        SpacyMorph(lemma="代わる", inflection="代わっ", part_of_speech="VERB"),
+        SpacyMorph(lemma="て", inflection="て", part_of_speech="SCONJ"),
+        SpacyMorph(lemma="よ", inflection="よ", part_of_speech="PART"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="さん", inflected="さん"),
-        Morpheme(base="朝", inflected="朝"),
-        Morpheme(base="代わる", inflected="代わっ"),
-        Morpheme(base="て", inflected="て"),
-        Morpheme(base="よ", inflected="よ"),
+        Morpheme(lemma="さん", inflection="さん"),
+        Morpheme(lemma="朝", inflection="朝"),
+        Morpheme(lemma="代わる", inflection="代わっ"),
+        Morpheme(lemma="て", inflection="て"),
+        Morpheme(lemma="よ", inflection="よ"),
     }
 
     doc = nlp(expression)
@@ -69,9 +69,9 @@ def test_ja_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_spacy_morphs[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -86,14 +86,14 @@ def test_nb_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "Gikk Harald nå?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="gå", inflected="gikk", pos="VERB"),
-        SpacyMorph(base="harald", inflected="harald", pos="PROPN"),
-        SpacyMorph(base="nå", inflected="nå", pos="ADV"),
-        SpacyMorph(base="$?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="gå", inflection="gikk", part_of_speech="VERB"),
+        SpacyMorph(lemma="harald", inflection="harald", part_of_speech="PROPN"),
+        SpacyMorph(lemma="nå", inflection="nå", part_of_speech="ADV"),
+        SpacyMorph(lemma="$?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="gå", inflected="gikk"),
-        Morpheme(base="nå", inflected="nå"),
+        Morpheme(lemma="gå", inflection="gikk"),
+        Morpheme(lemma="nå", inflection="nå"),
     }
 
     doc = nlp(expression)
@@ -101,9 +101,9 @@ def test_nb_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -118,34 +118,36 @@ def test_en_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "At 3 o'clock, Harry's mother-in-law walked away.".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="at", inflected="at", pos="ADP"),
-        SpacyMorph(base="3", inflected="3", pos="NUM"),
-        SpacyMorph(base="o'clock", inflected="o'clock", pos="NOUN"),
-        SpacyMorph(base=",", inflected=",", pos="PUNCT"),
-        SpacyMorph(base="harry", inflected="harry", pos="PROPN"),
-        SpacyMorph(base="'s", inflected="'s", pos="PART"),
-        SpacyMorph(base="mother-in-law", inflected="mother-in-law", pos="NOUN"),
-        SpacyMorph(base="walk", inflected="walked", pos="VERB"),
-        SpacyMorph(base="away", inflected="away", pos="ADV"),
-        SpacyMorph(base=".", inflected=".", pos="PUNCT"),
+        SpacyMorph(lemma="at", inflection="at", part_of_speech="ADP"),
+        SpacyMorph(lemma="3", inflection="3", part_of_speech="NUM"),
+        SpacyMorph(lemma="o'clock", inflection="o'clock", part_of_speech="NOUN"),
+        SpacyMorph(lemma=",", inflection=",", part_of_speech="PUNCT"),
+        SpacyMorph(lemma="harry", inflection="harry", part_of_speech="PROPN"),
+        SpacyMorph(lemma="'s", inflection="'s", part_of_speech="PART"),
+        SpacyMorph(
+            lemma="mother-in-law", inflection="mother-in-law", part_of_speech="NOUN"
+        ),
+        SpacyMorph(lemma="walk", inflection="walked", part_of_speech="VERB"),
+        SpacyMorph(lemma="away", inflection="away", part_of_speech="ADV"),
+        SpacyMorph(lemma=".", inflection=".", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="at", inflected="at"),
-        Morpheme(base="3", inflected="3"),
-        Morpheme(base="o'clock", inflected="o'clock"),
-        Morpheme(base="'s", inflected="'s"),
-        Morpheme(base="mother-in-law", inflected="mother-in-law"),
-        Morpheme(base="walk", inflected="walked"),
-        Morpheme(base="away", inflected="away"),
+        Morpheme(lemma="at", inflection="at"),
+        Morpheme(lemma="3", inflection="3"),
+        Morpheme(lemma="o'clock", inflection="o'clock"),
+        Morpheme(lemma="'s", inflection="'s"),
+        Morpheme(lemma="mother-in-law", inflection="mother-in-law"),
+        Morpheme(lemma="walk", inflection="walked"),
+        Morpheme(lemma="away", inflection="away"),
     }
     doc = nlp(expression)
     assert len(doc) == 10
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -168,29 +170,29 @@ def test_de_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "»Was ist los?«Harry schüttelte den Kopf und spähte.".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="--", inflected="»", pos="PUNCT"),
-        SpacyMorph(base="was", inflected="was", pos="PRON"),  # wrong...
-        SpacyMorph(base="sein", inflected="ist", pos="AUX"),
-        SpacyMorph(base="los", inflected="los", pos="ADV"),
-        SpacyMorph(base="--", inflected="?", pos="PUNCT"),
-        SpacyMorph(base="--", inflected="«", pos="PUNCT"),
-        SpacyMorph(base="Harry", inflected="harry", pos="PROPN"),
-        SpacyMorph(base="schüttelen", inflected="schüttelte", pos="VERB"),
-        SpacyMorph(base="der", inflected="den", pos="DET"),
-        SpacyMorph(base="Kopf", inflected="kopf", pos="NOUN"),
-        SpacyMorph(base="und", inflected="und", pos="CCONJ"),
-        SpacyMorph(base="spähen", inflected="spähte", pos="VERB"),
-        SpacyMorph(base="--", inflected=".", pos="PUNCT"),
+        SpacyMorph(lemma="--", inflection="»", part_of_speech="PUNCT"),
+        SpacyMorph(lemma="was", inflection="was", part_of_speech="PRON"),  # wrong...
+        SpacyMorph(lemma="sein", inflection="ist", part_of_speech="AUX"),
+        SpacyMorph(lemma="los", inflection="los", part_of_speech="ADV"),
+        SpacyMorph(lemma="--", inflection="?", part_of_speech="PUNCT"),
+        SpacyMorph(lemma="--", inflection="«", part_of_speech="PUNCT"),
+        SpacyMorph(lemma="Harry", inflection="harry", part_of_speech="PROPN"),
+        SpacyMorph(lemma="schüttelen", inflection="schüttelte", part_of_speech="VERB"),
+        SpacyMorph(lemma="der", inflection="den", part_of_speech="DET"),
+        SpacyMorph(lemma="Kopf", inflection="kopf", part_of_speech="NOUN"),
+        SpacyMorph(lemma="und", inflection="und", part_of_speech="CCONJ"),
+        SpacyMorph(lemma="spähen", inflection="spähte", part_of_speech="VERB"),
+        SpacyMorph(lemma="--", inflection=".", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="was", inflected="was"),
-        Morpheme(base="sein", inflected="ist"),
-        Morpheme(base="los", inflected="los"),
-        Morpheme(base="schüttelen", inflected="schüttelte"),
-        Morpheme(base="der", inflected="den"),
-        Morpheme(base="Kopf", inflected="kopf"),
-        Morpheme(base="und", inflected="und"),
-        Morpheme(base="spähen", inflected="spähte"),
+        Morpheme(lemma="was", inflection="was"),
+        Morpheme(lemma="sein", inflection="ist"),
+        Morpheme(lemma="los", inflection="los"),
+        Morpheme(lemma="schüttelen", inflection="schüttelte"),
+        Morpheme(lemma="der", inflection="den"),
+        Morpheme(lemma="Kopf", inflection="kopf"),
+        Morpheme(lemma="und", inflection="und"),
+        Morpheme(lemma="spähen", inflection="spähte"),
     }
 
     doc = nlp(expression)
@@ -198,9 +200,9 @@ def test_de_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -216,17 +218,17 @@ def test_ca_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "va caminar en Guillem?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="anar", inflected="va", pos="AUX"),
-        SpacyMorph(base="caminar", inflected="caminar", pos="VERB"),
-        SpacyMorph(base="en", inflected="en", pos="ADP"),
-        SpacyMorph(base="guillem", inflected="guillem", pos="NOUN"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="anar", inflection="va", part_of_speech="AUX"),
+        SpacyMorph(lemma="caminar", inflection="caminar", part_of_speech="VERB"),
+        SpacyMorph(lemma="en", inflection="en", part_of_speech="ADP"),
+        SpacyMorph(lemma="guillem", inflection="guillem", part_of_speech="NOUN"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="anar", inflected="va"),
-        Morpheme(base="caminar", inflected="caminar"),
-        Morpheme(base="en", inflected="en"),
-        Morpheme(base="guillem", inflected="guillem"),
+        Morpheme(lemma="anar", inflection="va"),
+        Morpheme(lemma="caminar", inflection="caminar"),
+        Morpheme(lemma="en", inflection="en"),
+        Morpheme(lemma="guillem", inflection="guillem"),
     }
 
     doc = nlp(expression)
@@ -234,9 +236,9 @@ def test_ca_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     processed_morphs: set[Morpheme] = get_processed_spacy_morphs(am_config, doc)
@@ -250,15 +252,15 @@ def test_es_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "¿Pedro ya comió?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="¿", inflected="¿", pos="PUNCT"),
-        SpacyMorph(base="pedro", inflected="pedro", pos="PROPN"),
-        SpacyMorph(base="ya", inflected="ya", pos="ADV"),
-        SpacyMorph(base="comer", inflected="comió", pos="VERB"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="¿", inflection="¿", part_of_speech="PUNCT"),
+        SpacyMorph(lemma="pedro", inflection="pedro", part_of_speech="PROPN"),
+        SpacyMorph(lemma="ya", inflection="ya", part_of_speech="ADV"),
+        SpacyMorph(lemma="comer", inflection="comió", part_of_speech="VERB"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="ya", inflected="ya"),
-        Morpheme(base="comer", inflected="comió"),
+        Morpheme(lemma="ya", inflection="ya"),
+        Morpheme(lemma="comer", inflection="comió"),
     }
 
     doc = nlp(expression)
@@ -266,9 +268,9 @@ def test_es_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -283,15 +285,15 @@ def test_fr_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "Ça m’est égal?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="cela", inflected="ça", pos="PRON"),
-        SpacyMorph(base="m’est", inflected="m’est", pos="NOUN"),
-        SpacyMorph(base="égal", inflected="égal", pos="ADJ"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="cela", inflection="ça", part_of_speech="PRON"),
+        SpacyMorph(lemma="m’est", inflection="m’est", part_of_speech="NOUN"),
+        SpacyMorph(lemma="égal", inflection="égal", part_of_speech="ADJ"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="cela", inflected="ça"),
-        Morpheme(base="m’est", inflected="m’est"),
-        Morpheme(base="égal", inflected="égal"),
+        Morpheme(lemma="cela", inflection="ça"),
+        Morpheme(lemma="m’est", inflection="m’est"),
+        Morpheme(lemma="égal", inflection="égal"),
     }
 
     doc = nlp(expression)
@@ -299,9 +301,9 @@ def test_fr_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     processed_morphs: set[Morpheme] = get_processed_spacy_morphs(am_config, doc)
@@ -315,14 +317,14 @@ def test_da_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "gik Diederik nu?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="gå", inflected="gik", pos="VERB"),
-        SpacyMorph(base="diederik", inflected="diederik", pos="PROPN"),
-        SpacyMorph(base="nu", inflected="nu", pos="ADV"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="gå", inflection="gik", part_of_speech="VERB"),
+        SpacyMorph(lemma="diederik", inflection="diederik", part_of_speech="PROPN"),
+        SpacyMorph(lemma="nu", inflection="nu", part_of_speech="ADV"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="gå", inflected="gik"),
-        Morpheme(base="nu", inflected="nu"),
+        Morpheme(lemma="gå", inflection="gik"),
+        Morpheme(lemma="nu", inflection="nu"),
     }
 
     doc = nlp(expression)
@@ -330,9 +332,9 @@ def test_da_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -347,15 +349,15 @@ def test_sv_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "gick Astrid nu?".lower()  # the sv model is terrible at proper nouns
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="gå", inflected="gick", pos="VERB"),
-        SpacyMorph(base="astrid", inflected="astrid", pos="NOUN"),
-        SpacyMorph(base="nu", inflected="nu", pos="ADV"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="gå", inflection="gick", part_of_speech="VERB"),
+        SpacyMorph(lemma="astrid", inflection="astrid", part_of_speech="NOUN"),
+        SpacyMorph(lemma="nu", inflection="nu", part_of_speech="ADV"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="gå", inflected="gick"),
-        Morpheme(base="astrid", inflected="astrid"),
-        Morpheme(base="nu", inflected="nu"),
+        Morpheme(lemma="gå", inflection="gick"),
+        Morpheme(lemma="astrid", inflection="astrid"),
+        Morpheme(lemma="nu", inflection="nu"),
     }
 
     doc = nlp(expression)
@@ -363,9 +365,9 @@ def test_sv_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     processed_morphs: set[Morpheme] = get_processed_spacy_morphs(am_config, doc)
@@ -379,14 +381,14 @@ def test_nl_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "Is Lucas weggelopen?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="zijn", inflected="is", pos="AUX"),
-        SpacyMorph(base="lucas", inflected="lucas", pos="PROPN"),
-        SpacyMorph(base="weggelopen", inflected="weggelopen", pos="VERB"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="zijn", inflection="is", part_of_speech="AUX"),
+        SpacyMorph(lemma="lucas", inflection="lucas", part_of_speech="PROPN"),
+        SpacyMorph(lemma="weggelopen", inflection="weggelopen", part_of_speech="VERB"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="zijn", inflected="is"),
-        Morpheme(base="weggelopen", inflected="weggelopen"),
+        Morpheme(lemma="zijn", inflection="is"),
+        Morpheme(lemma="weggelopen", inflection="weggelopen"),
     }
 
     doc = nlp(expression)
@@ -394,9 +396,9 @@ def test_nl_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -412,17 +414,17 @@ def test_hr_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "Je li Krunoslav otišao?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="biti", inflected="je", pos="AUX"),
-        SpacyMorph(base="li", inflected="li", pos="PART"),
-        SpacyMorph(base="krunoslav", inflected="krunoslav", pos="NOUN"),
-        SpacyMorph(base="otići", inflected="otišao", pos="VERB"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="biti", inflection="je", part_of_speech="AUX"),
+        SpacyMorph(lemma="li", inflection="li", part_of_speech="PART"),
+        SpacyMorph(lemma="krunoslav", inflection="krunoslav", part_of_speech="NOUN"),
+        SpacyMorph(lemma="otići", inflection="otišao", part_of_speech="VERB"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="biti", inflected="je"),
-        Morpheme(base="li", inflected="li"),
-        Morpheme(base="krunoslav", inflected="krunoslav"),
-        Morpheme(base="otići", inflected="otišao"),
+        Morpheme(lemma="biti", inflection="je"),
+        Morpheme(lemma="li", inflection="li"),
+        Morpheme(lemma="krunoslav", inflection="krunoslav"),
+        Morpheme(lemma="otići", inflection="otišao"),
     }
 
     doc = nlp(expression)
@@ -430,9 +432,9 @@ def test_hr_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     processed_morphs: set[Morpheme] = get_processed_spacy_morphs(am_config, doc)
@@ -446,14 +448,14 @@ def test_fi_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "kävelikö Aarne pois?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="kävelikö", inflected="kävelikö", pos="VERB"),
-        SpacyMorph(base="aarne", inflected="aarne", pos="PROPN"),
-        SpacyMorph(base="pois", inflected="pois", pos="ADV"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="kävelikö", inflection="kävelikö", part_of_speech="VERB"),
+        SpacyMorph(lemma="aarne", inflection="aarne", part_of_speech="PROPN"),
+        SpacyMorph(lemma="pois", inflection="pois", part_of_speech="ADV"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="kävelikö", inflected="kävelikö"),
-        Morpheme(base="pois", inflected="pois"),
+        Morpheme(lemma="kävelikö", inflection="kävelikö"),
+        Morpheme(lemma="pois", inflection="pois"),
     }
 
     doc = nlp(expression)
@@ -461,9 +463,9 @@ def test_fi_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -479,14 +481,14 @@ def test_el_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "έφυγε ο Άλεξ".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="έφυγε", inflected="έφυγε", pos="VERB"),
-        SpacyMorph(base="ο", inflected="ο", pos="DET"),
-        SpacyMorph(base="άλεξ", inflected="άλεξ", pos="NOUN"),
+        SpacyMorph(lemma="έφυγε", inflection="έφυγε", part_of_speech="VERB"),
+        SpacyMorph(lemma="ο", inflection="ο", part_of_speech="DET"),
+        SpacyMorph(lemma="άλεξ", inflection="άλεξ", part_of_speech="NOUN"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="έφυγε", inflected="έφυγε"),
-        Morpheme(base="ο", inflected="ο"),
-        Morpheme(base="άλεξ", inflected="άλεξ"),
+        Morpheme(lemma="έφυγε", inflection="έφυγε"),
+        Morpheme(lemma="ο", inflection="ο"),
+        Morpheme(lemma="άλεξ", inflection="άλεξ"),
     }
 
     doc = nlp(expression)
@@ -494,9 +496,9 @@ def test_el_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     processed_morphs: set[Morpheme] = get_processed_spacy_morphs(am_config, doc)
@@ -511,15 +513,15 @@ def test_it_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "Leonardo ha camminato?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="leonardo", inflected="leonardo", pos="NOUN"),
-        SpacyMorph(base="avere", inflected="ha", pos="AUX"),
-        SpacyMorph(base="camminare", inflected="camminato", pos="VERB"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="leonardo", inflection="leonardo", part_of_speech="NOUN"),
+        SpacyMorph(lemma="avere", inflection="ha", part_of_speech="AUX"),
+        SpacyMorph(lemma="camminare", inflection="camminato", part_of_speech="VERB"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="leonardo", inflected="leonardo"),
-        Morpheme(base="avere", inflected="ha"),
-        Morpheme(base="camminare", inflected="camminato"),
+        Morpheme(lemma="leonardo", inflection="leonardo"),
+        Morpheme(lemma="avere", inflection="ha"),
+        Morpheme(lemma="camminare", inflection="camminato"),
     }
 
     doc = nlp(expression)
@@ -527,9 +529,9 @@ def test_it_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     processed_morphs: set[Morpheme] = get_processed_spacy_morphs(am_config, doc)
@@ -543,15 +545,15 @@ def test_lt_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "Kur jūs dirbate?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="kur", inflected="kur", pos="ADV"),
-        SpacyMorph(base="jūs", inflected="jūs", pos="PRON"),
-        SpacyMorph(base="dirbate", inflected="dirbate", pos="VERB"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="kur", inflection="kur", part_of_speech="ADV"),
+        SpacyMorph(lemma="jūs", inflection="jūs", part_of_speech="PRON"),
+        SpacyMorph(lemma="dirbate", inflection="dirbate", part_of_speech="VERB"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="kur", inflected="kur"),
-        Morpheme(base="jūs", inflected="jūs"),
-        Morpheme(base="dirbate", inflected="dirbate"),
+        Morpheme(lemma="kur", inflection="kur"),
+        Morpheme(lemma="jūs", inflection="jūs"),
+        Morpheme(lemma="dirbate", inflection="dirbate"),
     }
 
     doc = nlp(expression)
@@ -559,9 +561,9 @@ def test_lt_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     processed_morphs: set[Morpheme] = get_processed_spacy_morphs(am_config, doc)
@@ -575,14 +577,14 @@ def test_mk_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "дали Александар одеше?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="дали", inflected="дали", pos="SCONJ"),
-        SpacyMorph(base="александар", inflected="александар", pos="PROPN"),
-        SpacyMorph(base="одеше", inflected="одеше", pos="SPACE"),
-        SpacyMorph(base="?", inflected="?", pos="SPACE"),
+        SpacyMorph(lemma="дали", inflection="дали", part_of_speech="SCONJ"),
+        SpacyMorph(lemma="александар", inflection="александар", part_of_speech="PROPN"),
+        SpacyMorph(lemma="одеше", inflection="одеше", part_of_speech="SPACE"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="SPACE"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="дали", inflected="дали"),
-        Morpheme(base="одеше", inflected="одеше"),
+        Morpheme(lemma="дали", inflection="дали"),
+        Morpheme(lemma="одеше", inflection="одеше"),
     }
 
     doc = nlp(expression)
@@ -590,9 +592,9 @@ def test_mk_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -607,14 +609,14 @@ def test_pl_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "czy Zofia chodziła?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="czy", inflected="czy", pos="PART"),
-        SpacyMorph(base="zofia", inflected="zofia", pos="PROPN"),
-        SpacyMorph(base="chodzić", inflected="chodziła", pos="VERB"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="czy", inflection="czy", part_of_speech="PART"),
+        SpacyMorph(lemma="zofia", inflection="zofia", part_of_speech="PROPN"),
+        SpacyMorph(lemma="chodzić", inflection="chodziła", part_of_speech="VERB"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="czy", inflected="czy"),
-        Morpheme(base="chodzić", inflected="chodziła"),
+        Morpheme(lemma="czy", inflection="czy"),
+        Morpheme(lemma="chodzić", inflection="chodziła"),
     }
 
     doc = nlp(expression)
@@ -622,9 +624,9 @@ def test_pl_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -640,13 +642,13 @@ def test_pt_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "você caminhou?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="você", inflected="você", pos="PRON"),
-        SpacyMorph(base="caminhar", inflected="caminhou", pos="VERB"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="você", inflection="você", part_of_speech="PRON"),
+        SpacyMorph(lemma="caminhar", inflection="caminhou", part_of_speech="VERB"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="você", inflected="você"),
-        Morpheme(base="caminhar", inflected="caminhou"),
+        Morpheme(lemma="você", inflection="você"),
+        Morpheme(lemma="caminhar", inflection="caminhou"),
     }
 
     doc = nlp(expression)
@@ -654,9 +656,9 @@ def test_pt_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     processed_morphs: set[Morpheme] = get_processed_spacy_morphs(am_config, doc)
@@ -670,14 +672,14 @@ def test_ro_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "a mers Maria?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="avea", inflected="a", pos="AUX"),
-        SpacyMorph(base="merge", inflected="mers", pos="VERB"),
-        SpacyMorph(base="Maria", inflected="maria", pos="PROPN"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="avea", inflection="a", part_of_speech="AUX"),
+        SpacyMorph(lemma="merge", inflection="mers", part_of_speech="VERB"),
+        SpacyMorph(lemma="Maria", inflection="maria", part_of_speech="PROPN"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="avea", inflected="a"),
-        Morpheme(base="merge", inflected="mers"),
+        Morpheme(lemma="avea", inflection="a"),
+        Morpheme(lemma="merge", inflection="mers"),
     }
 
     doc = nlp(expression)
@@ -685,9 +687,9 @@ def test_ro_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -702,14 +704,14 @@ def test_sl_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "je Luka hodil?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="biti", inflected="je", pos="AUX"),
-        SpacyMorph(base="luka", inflected="luka", pos="PROPN"),
-        SpacyMorph(base="hoditi", inflected="hodil", pos="VERB"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="biti", inflection="je", part_of_speech="AUX"),
+        SpacyMorph(lemma="luka", inflection="luka", part_of_speech="PROPN"),
+        SpacyMorph(lemma="hoditi", inflection="hodil", part_of_speech="VERB"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="biti", inflected="je"),
-        Morpheme(base="hoditi", inflected="hodil"),
+        Morpheme(lemma="biti", inflection="je"),
+        Morpheme(lemma="hoditi", inflection="hodil"),
     }
 
     doc = nlp(expression)
@@ -717,9 +719,9 @@ def test_sl_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -734,12 +736,12 @@ def test_ru_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "Дмитрий ходил?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="дмитрий", inflected="дмитрий", pos="PROPN"),
-        SpacyMorph(base="ходить", inflected="ходил", pos="VERB"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="дмитрий", inflection="дмитрий", part_of_speech="PROPN"),
+        SpacyMorph(lemma="ходить", inflection="ходил", part_of_speech="VERB"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="ходить", inflected="ходил"),
+        Morpheme(lemma="ходить", inflection="ходил"),
     }
 
     doc = nlp(expression)
@@ -747,9 +749,9 @@ def test_ru_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -764,12 +766,12 @@ def test_uk_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "Дмитро ходив?".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="дмитро", inflected="дмитро", pos="PROPN"),
-        SpacyMorph(base="ходити", inflected="ходив", pos="VERB"),
-        SpacyMorph(base="?", inflected="?", pos="PUNCT"),
+        SpacyMorph(lemma="дмитро", inflection="дмитро", part_of_speech="PROPN"),
+        SpacyMorph(lemma="ходити", inflection="ходив", part_of_speech="VERB"),
+        SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="ходити", inflected="ходив"),
+        Morpheme(lemma="ходити", inflection="ходив"),
     }
 
     doc = nlp(expression)
@@ -777,9 +779,9 @@ def test_uk_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -795,14 +797,14 @@ def test_ko_model(fake_environment) -> None:  # pylint:disable=unused-argument
     # expression = "눌러".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="한동", inflected="한동훈", pos="PROPN"),
-        SpacyMorph(base="장관", inflected="장관을", pos="NOUN"),
-        SpacyMorph(base="추대", inflected="추대했다", pos="VERB"),
-        SpacyMorph(base=".", inflected=".", pos="PUNCT"),
+        SpacyMorph(lemma="한동", inflection="한동훈", part_of_speech="PROPN"),
+        SpacyMorph(lemma="장관", inflection="장관을", part_of_speech="NOUN"),
+        SpacyMorph(lemma="추대", inflection="추대했다", part_of_speech="VERB"),
+        SpacyMorph(lemma=".", inflection=".", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="장관", inflected="장관을"),
-        Morpheme(base="추대", inflected="추대했다"),
+        Morpheme(lemma="장관", inflection="장관을"),
+        Morpheme(lemma="추대", inflection="추대했다"),
     }
 
     doc = nlp(expression)
@@ -810,9 +812,9 @@ def test_ko_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
@@ -827,17 +829,17 @@ def test_zh_model(fake_environment) -> None:  # pylint:disable=unused-argument
     expression = "你能肯定吗？".lower()
 
     correct_output: list[SpacyMorph] = [
-        SpacyMorph(base="你", inflected="你", pos="PRON"),
-        SpacyMorph(base="能", inflected="能", pos="VERB"),
-        SpacyMorph(base="肯定", inflected="肯定", pos="VERB"),
-        SpacyMorph(base="吗", inflected="吗", pos="PART"),
-        SpacyMorph(base="？", inflected="？", pos="PUNCT"),
+        SpacyMorph(lemma="你", inflection="你", part_of_speech="PRON"),
+        SpacyMorph(lemma="能", inflection="能", part_of_speech="VERB"),
+        SpacyMorph(lemma="肯定", inflection="肯定", part_of_speech="VERB"),
+        SpacyMorph(lemma="吗", inflection="吗", part_of_speech="PART"),
+        SpacyMorph(lemma="？", inflection="？", part_of_speech="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="你", inflected="你"),
-        Morpheme(base="能", inflected="能"),
-        Morpheme(base="肯定", inflected="肯定"),
-        Morpheme(base="吗", inflected="吗"),
+        Morpheme(lemma="你", inflection="你"),
+        Morpheme(lemma="能", inflection="能"),
+        Morpheme(lemma="肯定", inflection="肯定"),
+        Morpheme(lemma="吗", inflection="吗"),
     }
 
     doc = nlp(expression)
@@ -851,9 +853,9 @@ def test_zh_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = correct_output[index]
-        assert morph.inflected == w.text
-        assert morph.base == w.lemma_
-        assert morph.pos == w.pos_
+        assert morph.inflection == w.text
+        assert morph.lemma == w.lemma_
+        assert morph.part_of_speech == w.pos_
 
     am_config = AnkiMorphsConfig()
     processed_morphs: set[Morpheme] = get_processed_spacy_morphs(am_config, doc)

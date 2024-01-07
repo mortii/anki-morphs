@@ -154,8 +154,8 @@ class GeneratorDialog(QDialog):
 
             morphs.add(
                 Morpheme(
-                    base=w.lemma_,
-                    inflected=w.text,
+                    lemma=w.lemma_,
+                    inflection=w.text,
                 )
             )
 

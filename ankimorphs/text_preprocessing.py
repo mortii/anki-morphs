@@ -27,8 +27,8 @@ def get_processed_spacy_morphs(am_config: AnkiMorphsConfig, doc) -> set[Morpheme
 
         morphs.add(
             Morpheme(
-                base=w.lemma_,
-                inflected=w.text,
+                lemma=w.lemma_,
+                inflection=w.text,
             )
         )
 
@@ -77,7 +77,7 @@ def remove_names_textfile(morphs: set[Morpheme]) -> set[Morpheme]:
     non_name_morphs: set[Morpheme] = set()
 
     for morph in morphs:
-        if morph.inflected not in names:
+        if morph.inflection not in names:
             non_name_morphs.add(morph)
 
     return non_name_morphs

@@ -173,7 +173,7 @@ def run_view_morphs() -> None:
         else:
             title = "AnkiMorphs: Card Morphs"
             text = "".join(
-                [f"inflection: {morph[1]}, base: {morph[0]} \n" for morph in morphs]
+                [f"lemma: {morph[0]}, inflection: {morph[1]} \n" for morph in morphs]
             )
             info_box = QMessageBox(browser)
             info_box.setWindowTitle(title)

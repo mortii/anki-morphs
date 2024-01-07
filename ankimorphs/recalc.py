@@ -193,17 +193,17 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches
             for morph in card_data.morphs:
                 morph_table_data.append(
                     {
-                        "base": morph.base,
-                        "inflected": morph.inflected,
-                        "is_base": morph.base == morph.inflected,  # gives a bool
+                        "lemma": morph.lemma,
+                        "inflection": morph.inflection,
+                        "is_lemma": morph.lemma == morph.inflection,  # gives a bool
                         "highest_learning_interval": highest_interval,
                     }
                 )
                 card_morph_map_table_data.append(
                     {
                         "card_id": card_id,
-                        "morph_base": morph.base,
-                        "morph_inflected": morph.inflected,
+                        "morph_lemma": morph.lemma,
+                        "morph_inflection": morph.inflection,
                     }
                 )
 
@@ -503,18 +503,18 @@ def _get_card_morph_map_cache(am_db: AnkiMorphsDB) -> dict[int, list[Morpheme]]:
     # Sorting the morphs (ORDER BY) is crucial to avoid bugs
     card_morph_map_cache_raw = am_db.con.execute(
         """
-        SELECT Card_Morph_Map.card_id, Morphs.base, Morphs.inflected, Morphs.highest_learning_interval
+        SELECT Card_Morph_Map.card_id, Morphs.lemma, Morphs.inflection, Morphs.highest_learning_interval
         FROM Card_Morph_Map
         INNER JOIN Morphs ON
-            Card_Morph_Map.morph_base = Morphs.base AND Card_Morph_Map.morph_inflected = Morphs.inflected
-        ORDER BY Morphs.base, Morphs.inflected
+            Card_Morph_Map.morph_lemma = Morphs.lemma AND Card_Morph_Map.morph_inflection = Morphs.inflection
+        ORDER BY Morphs.lemma, Morphs.inflection
         """,
     ).fetchall()
 
     for row in card_morph_map_cache_raw:
         card_id = row[0]
         morph = Morpheme(
-            base=row[1], inflected=row[2], highest_learning_interval=row[3]
+            lemma=row[1], inflection=row[2], highest_learning_interval=row[3]
         )
 
         if card_id not in card_morph_map_cache:
@@ -543,9 +543,9 @@ def _get_morph_collection_priority(am_db: AnkiMorphsDB) -> dict[str, int]:
     # Sorting the morphs (ORDER BY) is crucial to avoid bugs
     morph_priority = am_db.con.execute(
         """
-        SELECT morph_base, morph_inflected
+        SELECT morph_lemma, morph_inflection
         FROM Card_Morph_Map
-        ORDER BY morph_base, morph_inflected
+        ORDER BY morph_lemma, morph_inflection
         """,
     ).fetchall()
 
@@ -555,7 +555,7 @@ def _get_morph_collection_priority(am_db: AnkiMorphsDB) -> dict[str, int]:
 
     card_morph_map_cache_sorted: dict[str, int] = dict(Counter(temp_list).most_common())
 
-    # reverse the values, the lower the priority number the more it is prioritized
+    # reverse the values, the lower the priority number is, the more it is prioritized
     for index, key in enumerate(card_morph_map_cache_sorted):
         card_morph_map_cache_sorted[key] = index
 
@@ -650,15 +650,15 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
         assert morph.highest_learning_interval is not None
 
         if morph.highest_learning_interval == 0:
-            unknown_morphs.append(morph.inflected)
+            unknown_morphs.append(morph.inflection)
         elif morph.highest_learning_interval <= am_config.recalc_interval_for_known:
             has_learning_morph = True
 
-        if morph.base_and_inflected not in morph_priority:
+        if morph.lemma_and_inflection not in morph_priority:
             # Heavily penalizes if a morph is not in frequency file
             difficulty = morph_unknown_penalty - 1
         else:
-            difficulty += morph_priority[morph.base_and_inflected]
+            difficulty += morph_priority[morph.lemma_and_inflection]
 
     if difficulty >= morph_unknown_penalty:
         # Cap morph priority penalties as described in #(2.2)
@@ -742,7 +742,7 @@ def _update_tags_and_queue(
     suspended = CardQueue(-1)
 
     if unknowns == 0:
-        # if a card has any learning morphs then we don't want to
+        # if a card has any learning morphs, then we don't want to
         # give it a 'known' tag because that would automatically
         # give the morph a 'known'-status instead of 'learning'
         if not has_learning_morphs:
@@ -776,7 +776,7 @@ def _highlight_text(
     # Avoid formatting a smaller morph contained in a bigger morph, reverse sort fixes this
     sorted_morphs = sorted(
         card_morphs,
-        key=lambda _simple_morph: len(_simple_morph.inflected),
+        key=lambda _simple_morph: len(_simple_morph.inflection),
         reverse=True,
     )
 
@@ -793,7 +793,7 @@ def _highlight_text(
 
         replacement = f'<span morph-status="{morph_status}">\\1</span>'
         highlighted_text = _create_highlight_span(
-            f"({morph.inflected})", replacement, highlighted_text
+            f"({morph.inflection})", replacement, highlighted_text
         )
 
     # print(f"highlighted_text: {highlighted_text}")

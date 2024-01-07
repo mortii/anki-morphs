@@ -51,10 +51,10 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                     CREATE TABLE IF NOT EXISTS Card_Morph_Map
                     (
                         card_id INTEGER,
-                        morph_base TEXT,
-                        morph_inflected TEXT,
+                        morph_lemma TEXT,
+                        morph_inflection TEXT,
                         FOREIGN KEY(card_id) REFERENCES card(id),
-                        FOREIGN KEY(morph_base, morph_inflected) REFERENCES morph(base, inflected)
+                        FOREIGN KEY(morph_lemma, morph_inflection) REFERENCES morph(lemma, inflection)
                     )
                     """
             )
@@ -65,11 +65,11 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                 """
                     CREATE TABLE IF NOT EXISTS Morphs
                     (
-                        base TEXT,
-                        inflected TEXT,
-                        is_base INTEGER,
+                        lemma TEXT,
+                        inflection TEXT,
+                        is_lemma INTEGER,
                         highest_learning_interval INTEGER,
-                        PRIMARY KEY (base, inflected)
+                        PRIMARY KEY (lemma, inflection)
                     )
                     """
             )
@@ -80,9 +80,9 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                 """
                     CREATE TABLE IF NOT EXISTS Seen_Morphs
                     (
-                        base TEXT,
-                        inflected TEXT,
-                        PRIMARY KEY (base, inflected)
+                        lemma TEXT,
+                        inflection TEXT,
+                        PRIMARY KEY (lemma, inflection)
                     )
                     """
             )
@@ -115,12 +115,12 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                     INSERT INTO Morphs 
                     VALUES
                     (
-                       :base,
-                       :inflected,
-                       :is_base,
+                       :lemma,
+                       :inflection,
+                       :is_lemma,
                        :highest_learning_interval
                     )
-                    ON CONFLICT(base, inflected) DO UPDATE SET
+                    ON CONFLICT(lemma, inflection) DO UPDATE SET
                         highest_learning_interval = :highest_learning_interval
                     WHERE highest_learning_interval < :highest_learning_interval
                 """,
@@ -136,8 +136,8 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                     INSERT OR IGNORE INTO Card_Morph_Map VALUES
                     (
                        :card_id,
-                       :morph_base,
-                       :morph_inflected
+                       :morph_lemma,
+                       :morph_inflection
                     )
                     """,
                 card_morph_list,
@@ -149,7 +149,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         with self.con:
             card_morphs_raw = self.con.execute(
                 """
-                    SELECT morph_base, morph_inflected
+                    SELECT morph_lemma, morph_inflection
                     FROM Card_Morph_Map
                     WHERE card_id = ?
                     """,
@@ -168,7 +168,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         with self.con:
             card_morphs_raw = self.con.execute(
                 """
-                    SELECT base, inflected
+                    SELECT lemma, inflection
                     FROM Seen_Morphs
                     """
             ).fetchall()
@@ -182,8 +182,8 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         with self.con:
             self.con.execute(
                 """
-                    INSERT OR IGNORE INTO Seen_Morphs (base, inflected)
-                    SELECT morph_base, morph_inflected
+                    INSERT OR IGNORE INTO Seen_Morphs (lemma, inflection)
+                    SELECT morph_lemma, morph_inflection
                     FROM Card_Morph_Map
                     WHERE card_id = ?
                     """,
@@ -203,10 +203,10 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         with self.con:
             card_morphs = self.con.execute(
                 """
-                    SELECT DISTINCT morph_base, morph_inflected
+                    SELECT DISTINCT morph_lemma, morph_inflection
                     FROM Card_Morph_Map
                     INNER JOIN Morphs ON
-                        Card_Morph_Map.morph_base = Morphs.base AND Card_Morph_Map.morph_inflected = Morphs.inflected
+                        Card_Morph_Map.morph_lemma = Morphs.lemma AND Card_Morph_Map.morph_inflection = Morphs.inflection
                     """
                 + where_query_string,
                 (card_id,),
@@ -236,7 +236,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         where_query_string = "WHERE" + "".join(
             [
-                f" (morph_base = '{morph[0]}' AND morph_inflected = '{morph[1]}') OR"
+                f" (morph_lemma = '{morph[0]}' AND morph_inflection = '{morph[1]}') OR"
                 for morph in card_morphs
             ]
         )
@@ -265,7 +265,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                 """
                     SELECT highest_learning_interval
                     FROM Morphs
-                    WHERE base = ? And inflected = ?
+                    WHERE lemma = ? And inflection = ?
                     """,
                 (base, inflected),
             ).fetchone()
@@ -348,8 +348,8 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             if where_query_string != "":
                 am_db.con.execute(
                     """
-                        INSERT OR IGNORE INTO Seen_Morphs (base, inflected)
-                        SELECT morph_base, morph_inflected
+                        INSERT OR IGNORE INTO Seen_Morphs (lemma, inflection)
+                        SELECT morph_lemma, morph_inflection
                         FROM Card_Morph_Map
                         """
                     + where_query_string
