@@ -135,8 +135,6 @@ class SpaceMorphemizer(Morphemizer):
 class SpacyMorphemizer(Morphemizer):
     """Mostly a stub class for spaCy"""
 
-    # TODO, maybe move some implementation here from the spacy wrapper
-
     def __init__(self, spacy_model: str):
         super().__init__()
         self.spacy_model: str = spacy_model

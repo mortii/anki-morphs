@@ -129,15 +129,17 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches
         all_keys: list[int] = []
 
         for key, _card_data in card_data_dict.items():
-            # lower case all letters to increase spacy sensitivity
-            # todo: lower casing everything might be bad.
+            # Some spaCy models label all capitalized words as proper nouns,
+            # which is pretty bad. To prevent this, we lower case everything.
+            # This in turn makes some models not label proper nouns correctly,
+            # but this is preferable because we also have the 'Mark as Name'
+            # feature that can be used in that case.
             expression = get_processed_expression(
                 am_config, _card_data.expression.lower()
             )
             all_text.append(expression)
             all_keys.append(key)
 
-        # todo: make this better
         if nlp is not None:
             for index, doc in enumerate(nlp.pipe(all_text)):
                 update_progress_potentially_cancel(
@@ -412,8 +414,8 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
     #                          UNIQUE DUE
     ################################################################
     # When multiple cards have the same due (difficulty), then anki
-    # chooses one for review and ignores the others, therefore we
-    # need to make sure all cards have a unique due. To achieve this
+    # chooses one for review and ignores the others, therefore, we
+    # need to make sure all cards have a unique due. To achieve this,
     # we sort modified_cards based on due, and then we replace
     # the due with the index the card has in the list.
     ################################################################
@@ -771,8 +773,7 @@ def _highlight_text(
 ) -> str:
     highlighted_text = text_to_highlight
 
-    # TODO: sorting might be redundant now since morphs are ordered on sqlite query
-    # Avoid formatting a smaller morph that is contained in a bigger morph, reverse sort fixes this
+    # Avoid formatting a smaller morph contained in a bigger morph, reverse sort fixes this
     sorted_morphs = sorted(
         card_morphs,
         key=lambda _simple_morph: len(_simple_morph.inflected),

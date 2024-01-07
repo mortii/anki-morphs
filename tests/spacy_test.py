@@ -183,7 +183,7 @@ def test_de_model(fake_environment) -> None:  # pylint:disable=unused-argument
         SpacyMorph(base="--", inflected=".", pos="PUNCT"),
     ]
     correct_am_morphs: set[Morpheme] = {
-        Morpheme(base="was", inflected="was"),  # TODO wrong?
+        Morpheme(base="was", inflected="was"),
         Morpheme(base="sein", inflected="ist"),
         Morpheme(base="los", inflected="los"),
         Morpheme(base="schüttelen", inflected="schüttelte"),

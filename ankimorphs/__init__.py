@@ -254,7 +254,6 @@ def replace_reviewer_functions() -> None:
     )
 
 
-# TODO: move to reviewing utils?
 def insert_seen_morphs(
     reviewer: Reviewer, card: Card, ease: Literal[1, 2, 3, 4]
 ) -> None:
@@ -264,7 +263,6 @@ def insert_seen_morphs(
     am_db.con.close()
 
 
-# TODO: move to reviewing utils?
 def rebuild_seen_morphs(changes: OpChangesAfterUndo) -> None:
     ################################################################
     #                      TRACKING SEEN MORPHS
@@ -274,16 +272,16 @@ def rebuild_seen_morphs(changes: OpChangesAfterUndo) -> None:
     #
     # When a card is answered/set known, we insert all the card's
     # morphs into the 'Seen_Morphs'-table, if a morph is already
-    # in the table we just ignore the insert error. This makes
+    # in the table, we just ignore the insert error. This makes
     # it tricky to remove morphs from the table  when undo is used
     # because we don't track if the morphs were already in the table
     # or not. To not have to deal with this removal problem, we just
     # drop the entire table and rebuild it with the morphs of all
     # the studied cards. This is admittedly costly, but it only
-    # happens on 'undo' which should be a rare occurrence.
+    # happens on 'undo,' which should be a rare occurrence.
     #
     # REDO:
-    # Redoing, i.e. undoing an undo (Ctrl+Shift+Z), is almost
+    # Redoing, i.e., undoing an undo (Ctrl+Shift+Z), is almost
     # impossible to distinguish from a regular forward operation.
     # Since this is such a nightmare to deal with, and is hopefully
     # a rare occurrence, this will just be left as unexpected behavior.
