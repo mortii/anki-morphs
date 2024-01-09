@@ -269,7 +269,7 @@ def mecab():  # pylint: disable=too-many-branches,too-many-statements
     _mecab = reading.MecabController()
     _mecab.setup()
     # m.mecabCmd[1:4] are assumed to be the format arguments.
-    print(f"Using ankimorphs: {mecab_source} with command line {_mecab.mecabCmd}")
+    # print(f"Using ankimorphs: {mecab_source} with command line {_mecab.mecabCmd}")
 
     return (
         spawn_mecab(_mecab.mecabCmd[:1] + _mecab.mecabCmd[4:], startup_info),

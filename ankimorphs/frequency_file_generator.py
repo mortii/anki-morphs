@@ -70,7 +70,9 @@ class FrequencyFileGeneratorDialog(GeneratorDialog):
         operation.failure(self._on_failure)
         operation.with_progress().run_in_background()
 
-    def _background_generate_frequency_file(self, col: Collection) -> None:
+    def _background_generate_frequency_file(  # pylint:disable=too-many-locals
+        self, col: Collection
+    ) -> None:
         del col  # unused
         assert mw is not None
         assert isinstance(self.ui, Ui_FrequencyFileGeneratorDialog)
@@ -105,7 +107,8 @@ class FrequencyFileGeneratorDialog(GeneratorDialog):
 
             with open(input_file, encoding="utf-8") as file:
                 # NB! Never use readlines(), it loads the entire file to memory
-                for line in file:
+                for counter, line in enumerate(file):
+                    print(f"line: {counter}")
                     morphs: set[Morpheme] = self._get_morphs_from_line(
                         morphemizer, nlp, line
                     )
@@ -134,7 +137,7 @@ class FrequencyFileGeneratorDialog(GeneratorDialog):
 
         with open(output_file, mode="w+", encoding="utf-8", newline="") as csvfile:
             morph_writer = csv.writer(csvfile)
-            morph_writer.writerow(["Morph-base", "Morph-inflected"])
+            morph_writer.writerow(["Morph-lemma", "Morph-inflection"])
             for morph_occurrence in sorted_morph_frequency.values():
                 if morph_occurrence.occurrence < self.ui.minOccurrenceSpinBox.value():
                     break

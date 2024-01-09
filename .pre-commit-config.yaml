@@ -19,6 +19,7 @@ repos:
         args: ['--enforce-all']
         exclude: |
           (?x)^(
+              docs/src/frequency_lists/.*|
               docs/src/img/revert_changes.mp4|
               docs/src/img/note-type.mp4|
               docs/src/img/deck-options.mp4|
@@ -50,6 +51,7 @@ repos:
         exclude: |
           (?x)^(
               tests/.*|
+              docs/src/frequency_lists/.*|
           )$
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0

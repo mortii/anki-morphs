@@ -204,7 +204,7 @@ class GeneratorDialog(QDialog):
         mw.progress.finish()
 
         if self.child == "FrequencyFileGeneratorDialog":
-            tooltip("Frequency list generated", parent=self)
+            tooltip("Frequency file generated", parent=self)
         elif self.child == "ReadabilityReportGeneratorDialog":
             tooltip("Readability report generated", parent=self)
 

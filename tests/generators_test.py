@@ -1,4 +1,5 @@
 import os
+import pprint
 from unittest import mock
 
 import aqt
@@ -63,6 +64,7 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument
         result_output_file, encoding="utf8"
     ) as b:
         diff: dict[str, list] = compare(load_csv(a), load_csv(b))
+        pprint.pprint(diff)
         assert len(diff) != 0
         for changes in diff.values():
             assert len(changes) == 0
