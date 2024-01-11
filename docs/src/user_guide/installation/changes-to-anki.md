@@ -132,12 +132,13 @@ These features are explained in [here](../usage/browser.md).
 
 ## Tools Menu
 
-A AnkiMorphs menu is added to "Tools" menu and has the options:
+An AnkiMorphs menu is added to "Tools" menu and has the options:
 
 * [“Settings”](../setup/settings.md)
 * [“Recalc”](../usage/recalc.md)
 * [“Frequency File Generator”](../usage/generators/frequency-file-generator.md)
 * [“Readability Report Generator”](../usage/generators/readability-report-generator.md)
+* [“Known Morphs Exporter”](../usage/known-morphs-exporter.md)
 
 ## Morph Stats & Graphs
 

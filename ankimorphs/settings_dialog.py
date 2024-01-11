@@ -109,7 +109,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.14.0-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.15.0-alpha")
 
         self.show()
 
@@ -384,6 +384,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.shortcutReadabilityReportGeneratorKeySequenceEdit.setKeySequence(
             self._config.shortcut_readability_report_generator.toString()
         )
+        self.ui.shortcutKnownMorphsExporterKeySequenceEdit.setKeySequence(
+            self._config.shortcut_known_morphs_exporter.toString()
+        )
 
     def _restore_shortcuts_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -421,12 +424,18 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.shortcutReadabilityReportGeneratorKeySequenceEdit.setKeySequence(
             self._default_config.shortcut_readability_report_generator.toString()
         )
+        self.ui.shortcutKnownMorphsExporterKeySequenceEdit.setKeySequence(
+            self._default_config.shortcut_known_morphs_exporter.toString()
+        )
 
     def _populate_recalc_tab(self) -> None:
         self.ui.recalcIntervalSpinBox.setValue(self._config.recalc_interval_for_known)
         self.ui.recalcBeforeSyncCheckBox.setChecked(self._config.recalc_on_sync)
         self.ui.recalcSuspendKnownCheckBox.setChecked(
             self._config.recalc_suspend_known_new_cards
+        )
+        self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
+            self._config.recalc_read_known_morphs_folder
         )
 
     def _restore_recalc_defaults(self, skip_confirmation: bool = False) -> None:
@@ -444,6 +453,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.recalcBeforeSyncCheckBox.setChecked(self._default_config.recalc_on_sync)
         self.ui.recalcSuspendKnownCheckBox.setChecked(
             self._default_config.recalc_suspend_known_new_cards
+        )
+        self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
+            self._default_config.recalc_read_known_morphs_folder
         )
 
     def _populate_skip_tab(self) -> None:
@@ -564,9 +576,11 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             "shortcut_view_morphemes": self.ui.shortcutViewMorphsKeySequenceEdit.keySequence().toString(),
             "shortcut_readability_report_generator": self.ui.shortcutReadabilityReportGeneratorKeySequenceEdit.keySequence().toString(),
             "shortcut_frequency_file_generator": self.ui.shortcutFrequencyFileGeneratorKeySequenceEdit.keySequence().toString(),
+            "shortcut_known_morphs_exporter": self.ui.shortcutKnownMorphsExporterKeySequenceEdit.keySequence().toString(),
             "recalc_interval_for_known": self.ui.recalcIntervalSpinBox.value(),
             "recalc_on_sync": self.ui.recalcBeforeSyncCheckBox.isChecked(),
             "recalc_suspend_known_new_cards": self.ui.recalcSuspendKnownCheckBox.isChecked(),
+            "recalc_read_known_morphs_folder": self.ui.recalcReadKnownMorphsFolderCheckBox.isChecked(),
             "preprocess_ignore_bracket_contents": self.ui.preprocessIgnoreSquareCheckBox.isChecked(),
             "preprocess_ignore_round_bracket_contents": self.ui.preprocessIgnoreRoundCheckBox.isChecked(),
             "preprocess_ignore_slim_round_bracket_contents": self.ui.preprocessIgnoreSlimCheckBox.isChecked(),

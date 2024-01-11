@@ -14,6 +14,7 @@ from anki.notes import Note
 from aqt import setupLangAndBackend
 
 from ankimorphs import (
+    AnkiMorphsDB,
     ankimorphs_db,
     ankimorphs_globals,
     config,
@@ -199,6 +200,14 @@ def test_recalc(fake_environment):  # pylint:disable=too-many-locals
         )
 
         assert card_due_dict[card_id] == new_card_data
+
+    # we check if the morphs from 'known-morphs' dir is correctly inserted into the db
+    known_morphs_test: list[tuple[str, str]] = AnkiMorphsDB.get_known_morphs(
+        highest_learning_interval=21
+    )
+    known_morphs_correct = [("æ", "æ"), ("ø", "ø")]
+
+    assert known_morphs_test == known_morphs_correct
 
 
 @pytest.mark.xfail

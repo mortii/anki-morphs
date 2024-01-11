@@ -44,6 +44,7 @@ from . import (
 from .ankimorphs_db import AnkiMorphsDB
 from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter, get_read_enabled_filters
 from .frequency_file_generator import FrequencyFileGeneratorDialog
+from .known_morphs_exporter import KnownMorphsExporterDialog
 from .readability_report_generator import ReadabilityReportGeneratorDialog
 from .settings_dialog import SettingsDialog
 from .tag_selection_dialog import TagSelectionDialog
@@ -128,6 +129,10 @@ def register_addon_dialogs() -> None:
         name=ankimorphs_globals.READABILITY_REPORT_GENERATOR_DIALOG_NAME,
         creator=ReadabilityReportGeneratorDialog,
     )
+    aqt.dialogs.register_dialog(
+        name=ankimorphs_globals.KNOWN_MORPHS_EXPORTER_DIALOG_NAME,
+        creator=KnownMorphsExporterDialog,
+    )
 
 
 def init_db() -> None:
@@ -167,6 +172,7 @@ def init_tool_menu_and_actions() -> None:
     recalc_action = create_recalc_action(am_config)
     frequency_list_action = create_frequency_file_action(am_config)
     readability_report_action = create_readability_report_action(am_config)
+    known_morphs_exporter_action = create_known_morphs_exporter_action(am_config)
     guide_action = create_guide_action()
     changelog_action = create_changelog_action()
 
@@ -175,6 +181,7 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu.addAction(recalc_action)
     am_tool_menu.addAction(frequency_list_action)
     am_tool_menu.addAction(readability_report_action)
+    am_tool_menu.addAction(known_morphs_exporter_action)
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
 
@@ -417,6 +424,18 @@ def create_readability_report_action(am_config: AnkiMorphsConfig) -> QAction:
         partial(
             aqt.dialogs.open,
             name=ankimorphs_globals.READABILITY_REPORT_GENERATOR_DIALOG_NAME,
+        )
+    )
+    return action
+
+
+def create_known_morphs_exporter_action(am_config: AnkiMorphsConfig) -> QAction:
+    action = QAction("&Known Morphs Exporter", mw)
+    action.setShortcut(am_config.shortcut_known_morphs_exporter)
+    action.triggered.connect(
+        partial(
+            aqt.dialogs.open,
+            name=ankimorphs_globals.KNOWN_MORPHS_EXPORTER_DIALOG_NAME,
         )
     )
     return action

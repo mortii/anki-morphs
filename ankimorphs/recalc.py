@@ -6,6 +6,7 @@ import time
 from collections import Counter
 from collections.abc import Sequence
 from functools import partial
+from pathlib import Path
 from typing import Any, Optional, Union
 
 from anki.cards import Card
@@ -82,7 +83,7 @@ def _recalc_background_op(collection: Collection) -> None:
     _update_cards_and_notes(am_config)
 
 
-def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches
+def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-many-statements
     am_config: AnkiMorphsConfig,
 ) -> None:
     # Extracting morphs from cards is expensive, so caching them yields a significant
@@ -207,13 +208,58 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches
                     }
                 )
 
+    morphs_from_files: list[dict[str, Any]] = []
+    if am_config.recalc_read_known_morphs_folder is True:
+        morphs_from_files = _get_morphs_from_files(am_config)
+
     mw.taskman.run_on_main(partial(mw.progress.update, label="Saving to ankimorphs.db"))
 
-    am_db.insert_many_into_morph_table(morph_table_data)
+    am_db.insert_many_into_morph_table(morph_table_data + morphs_from_files)
     am_db.insert_many_into_card_table(card_table_data)
     am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
     # am_db.print_table("Cards")
     am_db.con.close()
+
+
+def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:
+    assert mw is not None
+
+    morphs_from_files: list[dict[str, Any]] = []
+    known_morphs_dir: str = os.path.join(mw.pm.profileFolder(), "known-morphs")
+    known_morphs_dir_path: Path = Path(known_morphs_dir)
+    input_files: list[Path] = []
+
+    for path in known_morphs_dir_path.rglob("*.csv"):
+        input_files.append(path)
+
+    for input_file in input_files:
+        if mw.progress.want_cancel():  # user clicked 'x'
+            raise CancelledOperationException
+
+        mw.taskman.run_on_main(
+            partial(
+                mw.progress.update,
+                label=f"Importing known morphs from file: <br>{input_file.relative_to(known_morphs_dir_path)}",
+            )
+        )
+
+        with open(input_file, encoding="utf-8") as csvfile:
+            morph_reader = csv.reader(csvfile, delimiter=",")
+            next(morph_reader, None)  # skip the headers
+            for row in morph_reader:
+                lemma: str = row[0]
+                inflection: str = row[1]
+
+                morphs_from_files.append(
+                    {
+                        "lemma": lemma,
+                        "inflection": inflection,
+                        "is_lemma": lemma == inflection,  # gives a bool
+                        "highest_learning_interval": am_config.recalc_interval_for_known,
+                    }
+                )
+
+    return morphs_from_files
 
 
 def _create_card_data_dict(

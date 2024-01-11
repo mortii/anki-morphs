@@ -9,5 +9,7 @@
 * **Suspend new cards with only known morphs**:  
   Cards that have either the ['All morphs known' tag](tags.md) or the ['Set known and skip' tag](tags.md) will be
   suspended on Recalc.
+*  **Read files in 'known-morphs' folder and register morphs as known**:  
+   Import known morphs from the known-morphs folder. Read more in [Settings Known Morphs](../setting-known-morphs.md).
 * **Minimum interval for known morphs**:  
-  This is used when text is [highlighted](../../setup/settings/extra-fields.md#using-highlighted).
+  This is used when text is [highlighted](../../setup/settings/extra-fields.md#using-am-highlighted).

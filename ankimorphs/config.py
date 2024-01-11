@@ -93,6 +93,9 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
                     "shortcut_readability_report_generator", is_default
                 )
             )
+            self.shortcut_known_morphs_exporter: QKeySequence = (
+                _get_key_sequence_config("shortcut_known_morphs_exporter", is_default)
+            )
             self.skip_only_known_morphs_cards: bool = _get_bool_config(
                 "skip_only_known_morphs_cards", is_default
             )
@@ -126,6 +129,9 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
             self.recalc_on_sync: bool = _get_bool_config("recalc_on_sync", is_default)
             self.recalc_suspend_known_new_cards: bool = _get_bool_config(
                 "recalc_suspend_known_new_cards", is_default
+            )
+            self.recalc_read_known_morphs_folder: bool = _get_bool_config(
+                "recalc_read_known_morphs_folder", is_default
             )
             self.tag_ready: str = _get_string_config("tag_ready", is_default)
             self.tag_not_ready: str = _get_string_config("tag_not_ready", is_default)

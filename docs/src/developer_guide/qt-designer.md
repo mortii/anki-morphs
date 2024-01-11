@@ -28,6 +28,9 @@ pyuic6 -o ankimorphs/ui/tag_selection_ui.py ankimorphs/ui/tag_selection.ui
 ```bash
 pyuic6 -o ankimorphs/ui/readability_report_generator_ui.py ankimorphs/ui/readability_report_generator.ui
 ```
+```bash
+pyuic6 -o ankimorphs/ui/known_morphs_exporter_ui.py ankimorphs/ui/known_morphs_exporter.ui
+```
 
 Useful guides:
 - https://realpython.com/qt-designer-python/

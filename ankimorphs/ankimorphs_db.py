@@ -401,6 +401,27 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             )
         am_db.con.close()
 
+    @staticmethod
+    def get_known_morphs(highest_learning_interval: int) -> list[tuple[str, str]]:
+        known_morphs: list[tuple[str, str]] = []
+        am_db = AnkiMorphsDB()
+
+        with am_db.con:
+            card_morphs_raw = am_db.con.execute(
+                """
+                    SELECT lemma, inflection
+                    FROM Morphs
+                    WHERE highest_learning_interval >= ?
+                    ORDER BY lemma, inflection
+                    """,
+                (highest_learning_interval,),
+            ).fetchall()
+
+            for row in card_morphs_raw:
+                known_morphs.append((row[0], row[1]))
+
+        return known_morphs
+
 
 def _on_success(result: Any) -> None:
     # This function runs on the main thread.
