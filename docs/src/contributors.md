@@ -7,10 +7,10 @@ If you have contributed, but you are not on the list, create an issue on github 
 mortii, Vilhelm-Ian.
 
 ### Docs contribution
-Matt Vs Japan, mortii, Vilhelm-Ian.
+Matt Vs Japan, mortii, Vilhelm-Ian, cocowash.
 
 ### Bugs reports, feature requests, or other helpful guidance
-Vilhelm-Ian, CodeWithMa, ashprice, Aleksej, HQYang1979, soliviantar, buster-blue, rymiel, BorisNA, wrinkledeth.
+Vilhelm-Ian, CodeWithMa, ashprice, Aleksej, HQYang1979, soliviantar, buster-blue, rymiel, BorisNA, wrinkledeth, cocowash.
 
 
 ### MorphMan (v5.0-qt6-alpha.1)
