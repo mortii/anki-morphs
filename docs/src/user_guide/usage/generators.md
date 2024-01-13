@@ -56,5 +56,5 @@ use the files:
 
 ![generator-parsing-options.png](../../img/generator-preprocess-options.png)
 
-The 'ignore'-options are equivalent to those found in ['Preprocess' settings](../setup/settings/preprocess).
+The 'ignore'-options are equivalent to those found in ['Preprocess' settings](../setup/settings/preprocess.md).
 
