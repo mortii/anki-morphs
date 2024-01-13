@@ -11,11 +11,131 @@ The toolbar now has three new items:
 - “U”, which stands for Known Unique Morphs
 - "A", which stands for All Known Morphs
 
-For some languages, U and A will always have the same number, but languages like japanese can have morphs with multiple
-variations, and then they will eventually differ.
+For languages that don't have inflections (Chinese, etc.), U and A will always have the same number, 
+
 
 <details>
-  <summary style="display:list-item"> Examples </summary>
+  <summary style="display:list-item">English examples of U and A</summary>
+
+
+<blockquote>
+
+**Each column in the table contains variations of the same morph.**
+
+Knowing the morph in the highlighted cell below would give you U: 1 and A: 1
+<div class='morph-variation'>
+<table>
+    <colgroup>
+    <col>
+    <col>
+    <col>
+  </colgroup>
+<tr>
+    <td>go</td>
+    <td>break</td>
+    <td>read</td>
+    <td>walk</td>
+</tr>
+<tr>
+    <td>went</td>
+    <td>broke</td>
+    <td>read</td>
+    <td>walked</td>
+</tr>
+<tr>
+    <td>going</td>
+    <td class="morph-variation-selected_cell">breaking</td>
+    <td>reading</td>
+    <td>walking</td>
+</tr>
+<tr>
+    <td>gone</td>
+    <td>broken</td>
+    <td>read</td>
+    <td>walked</td>
+</tr>
+</table>
+</div>
+
+Knowing the morphs in the highlighted cells below would give you U: 1 and A: 2
+
+<div class='morph-variation'>
+<table>
+    <colgroup>
+    <col>
+    <col>
+    <col>
+  </colgroup>
+<tr>
+    <td>go</td>
+    <td class="morph-variation-selected_cell">break</td>
+    <td>read</td>
+    <td>walk</td>
+</tr>
+<tr>
+    <td>went</td>
+    <td>broke</td>
+    <td>read</td>
+    <td>walked</td>
+</tr>
+<tr>
+    <td>going</td>
+    <td class="morph-variation-selected_cell">breaking</td>
+    <td>reading</td>
+    <td>walking</td>
+</tr>
+<tr>
+    <td>gone</td>
+    <td>broken</td>
+    <td>read</td>
+    <td>walked</td>
+</tr>
+</table>
+</div>
+
+Knowing the morphs in the highlighted cells below would give you U: 2 and A: 3
+
+<div class='morph-variation'>
+<table>
+    <colgroup>
+    <col>
+    <col>
+    <col>
+  </colgroup>
+<tr>
+    <td>go</td>
+    <td class="morph-variation-selected_cell">break</td>
+    <td>read</td>
+    <td>walk</td>
+</tr>
+<tr>
+    <td>went</td>
+    <td>broke</td>
+    <td>read</td>
+    <td class="morph-variation-selected_cell">walked</td>
+</tr>
+<tr>
+    <td>going</td>
+    <td class="morph-variation-selected_cell">breaking</td>
+    <td>reading</td>
+    <td>walking</td>
+</tr>
+<tr>
+    <td>gone</td>
+    <td>broken</td>
+    <td>read</td>
+    <td>walked</td>
+</tr>
+</table>
+</div>
+
+<br>
+</blockquote>
+</details>
+
+
+<details>
+  <summary style="display:list-item"> Japanese examples of U and A</summary>
 
 
 <blockquote>
@@ -139,8 +259,3 @@ An AnkiMorphs menu is added to "Tools" menu and has the options:
 * [“Frequency File Generator”](../usage/generators/frequency-file-generator.md)
 * [“Readability Report Generator”](../usage/generators/readability-report-generator.md)
 * [“Known Morphs Exporter”](../usage/known-morphs-exporter.md)
-
-## Morph Stats & Graphs
-
-In the "Shift"-click version of the Stats window, you can
-see [stats ands graphs over your learned morphs](../usage/statistics.md).

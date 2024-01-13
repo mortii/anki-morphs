@@ -27,7 +27,6 @@
     - [Frequency File Generator](user_guide/usage/generators/frequency-file-generator.md)
     - [Readability Report Generator](user_guide/usage/generators/readability-report-generator.md)
   - [Exporting Known Morphs](user_guide/usage/known-morphs-exporter.md)
-  - [Statistics](user_guide/usage/statistics.md)
 - [Tips & Tricks](user_guide/setup/tips-and-tricks.md)
 - [Known Problems](user_guide/known-problems.md)
 - [Changelog](user_guide/changelog.md)
