@@ -66,19 +66,28 @@ above. Notice that the `am-highlighted`-field is substituted for the `Japanese`-
 You also need to add the following to the "Styling" section (choose any color you want):
 
 ``` css
-[morph-status=unknown] { color: #f75464; } /* red */
+[morph-status=unknown] { color: blue; }
 [morph-status=learning] { color: #8bb33d; } /* light-green */
 [morph-status=known] { color: green; }
+
+.nightMode [morph-status=unknown] { color: red; } 
+.nightMode [morph-status=learning] { color: #ffff99; } /* yellow */
+.nightMode [morph-status=known] { color: #8bb33d; } /* light-green */
 ```
 
-You don't have to add all three, if you only want the unknown morphs to be highlighted then just add the first line.
+You can pick and choose among these; if you only want unknown morphs to be highlighted, and you don't care about
+dark-mode, then only adding the first line would be enough.
 
 It’s also possible to use “background-color”:
 
 ``` css
-[morph-status=unknown] { background-color: #ffff99; } /* yellow */
-[morph-status=learning] { background-color: #f2f2f2; } /* gray */
-[morph-status=known] { background-color: #b3e6cc; } /* green */
+[morph-status=unknown] { background-color: #f7867e; } /* red */
+[morph-status=learning] { background-color: #ffff99; } /* yellow */
+[morph-status=known] { background-color: #49f53e; } /* green */
+
+.nightMode [morph-status=unknown] { background-color: #b74d4d; } /* red */
+.nightMode [morph-status=learning] { background-color: #ccad50; } /* yellow */
+.nightMode [morph-status=known] { background-color: #27961f; } /* green */
 ```
 
 ![styling.png](../../../img/styling.png)
