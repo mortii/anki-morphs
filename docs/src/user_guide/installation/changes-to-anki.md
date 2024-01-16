@@ -135,7 +135,7 @@ Knowing the morphs in the highlighted cells below would give you U: 2 and A: 3
 
 
 <details>
-  <summary style="display:list-item"> Japanese examples of U and A</summary>
+  <summary style="display:list-item">Japanese examples of U and A</summary>
 
 
 <blockquote>
