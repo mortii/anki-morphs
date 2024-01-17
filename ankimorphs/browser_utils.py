@@ -5,12 +5,18 @@ from anki.notes import Note
 from anki.utils import ids2str
 from aqt import dialogs, mw
 from aqt.browser.browser import Browser
-from aqt.qt import QLineEdit, QMessageBox  # pylint:disable=no-name-in-module
+from aqt.qt import (  # pylint:disable=no-name-in-module
+    QAbstractItemView,
+    QDialog,
+    QLineEdit,
+    QTableWidgetItem,
+)
 from aqt.reviewer import RefreshNeeded
 from aqt.utils import tooltip
 
 from .ankimorphs_db import AnkiMorphsDB
 from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter, get_matching_read_filter
+from .ui.view_morphs_dialog_ui import Ui_ViewMorphsDialog
 
 browser: Optional[Browser] = None
 
@@ -149,7 +155,7 @@ def run_learn_card_now() -> None:
     tooltip(f"Next new card(s) will be {selected_cards}")
 
 
-def run_view_morphs() -> None:
+def run_view_morphs() -> None:  # pylint:disable=too-many-locals
     assert mw is not None
     assert browser is not None
 
@@ -171,13 +177,27 @@ def run_view_morphs() -> None:
         if len(morphs) == 0:
             tooltip("No morphs found")
         else:
-            title = "AnkiMorphs: Card Morphs"
-            text = "".join(
-                [f"lemma: {morph[0]}, inflection: {morph[1]} \n" for morph in morphs]
-            )
-            info_box = QMessageBox(browser)
-            info_box.setWindowTitle(title)
-            info_box.setIcon(QMessageBox.Icon.Information)
-            info_box.setStandardButtons(QMessageBox.StandardButton.Ok)
-            info_box.setText(text)
-            info_box.exec()
+            dialog = QDialog(parent=None)
+            ui = Ui_ViewMorphsDialog()
+            ui.setupUi(dialog)  # type: ignore[no-untyped-call]
+
+            ui.tableWidget.setAlternatingRowColors(True)
+            ui.tableWidget.setRowCount(len(morphs))
+
+            # disables manual editing of the table
+            ui.tableWidget.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+
+            inflection_column = 0
+            lemma_column = 1
+
+            for row, morph in enumerate(morphs):
+                inflection = morph[1]
+                lemma = morph[0]
+
+                inflection_item = QTableWidgetItem(inflection)
+                lemma_item = QTableWidgetItem(lemma)
+
+                ui.tableWidget.setItem(row, inflection_column, inflection_item)
+                ui.tableWidget.setItem(row, lemma_column, lemma_item)
+
+            dialog.exec()

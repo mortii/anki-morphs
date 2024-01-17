@@ -31,6 +31,10 @@ pyuic6 -o ankimorphs/ui/readability_report_generator_ui.py ankimorphs/ui/readabi
 ```bash
 pyuic6 -o ankimorphs/ui/known_morphs_exporter_ui.py ankimorphs/ui/known_morphs_exporter.ui
 ```
+```bash
+pyuic6 -o ankimorphs/ui/view_morphs_dialog_ui.py ankimorphs/ui/view_morphs_dialog.ui
+```
+
 
 Useful guides:
 - https://realpython.com/qt-designer-python/
