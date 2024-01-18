@@ -1,13 +1,10 @@
 import sqlite3
 
 from .ankimorphs_db import AnkiMorphsDB
+from .config import AnkiMorphsConfig
 
 
 class MorphToolbarStats:
-    # TODO: have a settings option to
-    #  see the true 'known' morphs
-    #  instead of seen morphs like
-    #  it is now?
     def __init__(self) -> None:
         self.unique_morphs = "U: ?"
         self.all_morphs = "A: ?"
@@ -22,23 +19,32 @@ class MorphToolbarStats:
             # be found, and we get a type error.
             return
 
+        # this is only reached after the profile is loaded
+
         am_db.create_morph_table()
+        am_config = AnkiMorphsConfig()
+        learning_interval: int = 1  # seen morphs
+
+        if am_config.recalc_toolbar_stats_use_known is True:
+            learning_interval = am_config.recalc_interval_for_known
 
         try:
             all_unique_morphs = am_db.con.execute(
                 """
                 SELECT COUNT(*)
                 FROM Morphs
-                WHERE highest_learning_interval > 0 AND is_lemma
-                """
+                WHERE highest_learning_interval >= ? AND is_lemma
+                """,
+                (learning_interval,),
             ).fetchone()[0]
 
             all_morphs = am_db.con.execute(
                 """
                 SELECT COUNT(*)
                 FROM Morphs
-                WHERE highest_learning_interval > 0
-                """
+                WHERE highest_learning_interval >= ?
+                """,
+                (learning_interval,),
             ).fetchone()[0]
             am_db.con.close()
         except sqlite3.OperationalError:

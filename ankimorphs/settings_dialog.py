@@ -109,7 +109,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.15.1-alpha")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 0.16.0-alpha")
 
         self.show()
 
@@ -437,6 +437,12 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
             self._config.recalc_read_known_morphs_folder
         )
+        self.ui.toolbarStatsUseSeenRadioButton.setChecked(
+            self._config.recalc_toolbar_stats_use_seen
+        )
+        self.ui.toolbarStatsUseKnownRadioButton.setChecked(
+            self._config.recalc_toolbar_stats_use_known
+        )
 
     def _restore_recalc_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -456,6 +462,12 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
         self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
             self._default_config.recalc_read_known_morphs_folder
+        )
+        self.ui.toolbarStatsUseSeenRadioButton.setChecked(
+            self._default_config.recalc_toolbar_stats_use_seen
+        )
+        self.ui.toolbarStatsUseKnownRadioButton.setChecked(
+            self._default_config.recalc_toolbar_stats_use_known
         )
 
     def _populate_skip_tab(self) -> None:
@@ -581,6 +593,8 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             "recalc_on_sync": self.ui.recalcBeforeSyncCheckBox.isChecked(),
             "recalc_suspend_known_new_cards": self.ui.recalcSuspendKnownCheckBox.isChecked(),
             "recalc_read_known_morphs_folder": self.ui.recalcReadKnownMorphsFolderCheckBox.isChecked(),
+            "recalc_toolbar_stats_use_seen": self.ui.toolbarStatsUseSeenRadioButton.isChecked(),
+            "recalc_toolbar_stats_use_known": self.ui.toolbarStatsUseKnownRadioButton.isChecked(),
             "preprocess_ignore_bracket_contents": self.ui.preprocessIgnoreSquareCheckBox.isChecked(),
             "preprocess_ignore_round_bracket_contents": self.ui.preprocessIgnoreRoundCheckBox.isChecked(),
             "preprocess_ignore_slim_round_bracket_contents": self.ui.preprocessIgnoreSlimCheckBox.isChecked(),

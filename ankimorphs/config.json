@@ -31,6 +31,8 @@
   "recalc_on_sync": false,
   "recalc_read_known_morphs_folder": false,
   "recalc_suspend_known_new_cards": false,
+  "recalc_toolbar_stats_use_known": false,
+  "recalc_toolbar_stats_use_seen": true,
   "shortcut_browse_all_same_unknown": "Shift+L",
   "shortcut_browse_ready_same_unknown": "L",
   "shortcut_frequency_file_generator": "Ctrl+Shift+F",

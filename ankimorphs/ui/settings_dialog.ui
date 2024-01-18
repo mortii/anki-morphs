@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>923</width>
-    <height>420</height>
+    <height>451</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -466,10 +466,13 @@
              <property name="topMargin">
               <number>10</number>
              </property>
+             <property name="bottomMargin">
+              <number>10</number>
+             </property>
              <item>
               <widget class="QLabel" name="label_16">
                <property name="text">
-                <string>Min. interval for known morphs:</string>
+                <string>Morphs are considered known when they have a learning interval of</string>
                </property>
               </widget>
              </item>
@@ -479,7 +482,7 @@
              <item>
               <widget class="QLabel" name="label_17">
                <property name="text">
-                <string>days</string>
+                <string>days or more</string>
                </property>
               </widget>
              </item>
@@ -495,6 +498,24 @@
                 </size>
                </property>
               </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_14">
+             <item>
+              <widget class="QRadioButton" name="toolbarStatsUseSeenRadioButton">
+               <property name="text">
+                <string>U and A shows seen morphs (reviewed at least once)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="toolbarStatsUseKnownRadioButton">
+               <property name="text">
+                <string>U and A shows known morphs (specified above)</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>

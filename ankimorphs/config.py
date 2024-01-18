@@ -133,6 +133,12 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
             self.recalc_read_known_morphs_folder: bool = _get_bool_config(
                 "recalc_read_known_morphs_folder", is_default
             )
+            self.recalc_toolbar_stats_use_seen: bool = _get_bool_config(
+                "recalc_toolbar_stats_use_seen", is_default
+            )
+            self.recalc_toolbar_stats_use_known: bool = _get_bool_config(
+                "recalc_toolbar_stats_use_known", is_default
+            )
             self.tag_ready: str = _get_string_config("tag_ready", is_default)
             self.tag_not_ready: str = _get_string_config("tag_not_ready", is_default)
             self.tag_known_automatically: str = _get_string_config(
