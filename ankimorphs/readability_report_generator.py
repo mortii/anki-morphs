@@ -165,25 +165,28 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
         for _row, _input_file in enumerate(input_files):
             file_morphs = files_morph_dicts[_input_file]
 
-            known_morphs, learning_morphs, unknown_morphs = self._get_morph_statuses(
+            unique_morphs, total_morphs = self._get_morph_statuses(
                 am_config, am_db, file_morphs
             )
+            print(unique_morphs,total_morphs)
 
+            known_morphs_total, learning_morphs_total, unknown_morphs_total = total_morphs
             self._populate_absolute_table(
                 _input_file,
                 file_morphs,
                 _row,
-                known_morphs,
-                learning_morphs,
-                unknown_morphs,
+                known_morphs_total,
+                learning_morphs_total,
+                unknown_morphs_total,
             )
+            known_morphs_unique, learning_morphs_unique, unknown_morphs_unique = unique_morphs
             self._populate_percentage_table(
                 _input_file,
                 file_morphs,
                 _row,
-                known_morphs,
-                learning_morphs,
-                unknown_morphs,
+                known_morphs_unique,
+                learning_morphs_unique,
+                unknown_morphs_unique,
             )
 
         self.ui.numericalTableWidget.setSortingEnabled(True)
@@ -210,30 +213,38 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
         am_config: AnkiMorphsConfig,
         am_db: AnkiMorphsDB,
         file_morphs: dict[str, MorphOccurrence],
-    ) -> tuple[int, int, int]:
-        known_morphs: int = 0
-        learning_morphs: int = 0
-        unknown_morphs: int = 0
+    ) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+        known_morphs_unique: int = 0
+        learning_morphs_unique: int = 0
+        unknown_morphs_unique: int = 0
+        known_morphs_total: int = 0
+        learning_morphs_total: int = 0
+        unknown_morphs_total: int = 0
 
         for morph_occurrence_object in file_morphs.values():
             morph = morph_occurrence_object.morph
+            occurrence = morph_occurrence_object.occurrence
 
             highest_learning_interval: Optional[
                 int
             ] = am_db.get_highest_learning_interval(morph.lemma, morph.inflection)
 
             if highest_learning_interval is None:
-                unknown_morphs += 1
+                unknown_morphs_total += occurrence
+                unknown_morphs_unique += 1
                 continue
 
             if highest_learning_interval == 0:
-                unknown_morphs += 1
+                unknown_morphs_total += occurrence
+                unknown_morphs_unique += 1
             elif highest_learning_interval < am_config.recalc_interval_for_known:
-                learning_morphs += 1
+                learning_morphs_total += occurrence
+                learning_morphs_unique += 1
             else:
-                known_morphs += 1
+                known_morphs_total += occurrence
+                known_morphs_unique += 1
 
-        return known_morphs, learning_morphs, unknown_morphs
+        return ((known_morphs_total, learning_morphs_total, unknown_morphs_total), (known_morphs_unique, learning_morphs_unique, unknown_morphs_unique))
 
     def _populate_absolute_table(
         self,
@@ -280,7 +291,7 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
     ) -> None:
         assert isinstance(self.ui, Ui_ReadabilityReportGeneratorDialog)
 
-        total_morphs = len(file_morphs)
+        total_morphs = known_morphs+learning_morphs+unknown_morphs
         known_morphs_percent = (known_morphs / total_morphs) * 100
         learning_morphs_percent = (learning_morphs / total_morphs) * 100
         unknown_morphs_percent = (unknown_morphs / total_morphs) * 100
