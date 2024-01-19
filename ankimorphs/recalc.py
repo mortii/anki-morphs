@@ -196,7 +196,6 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
                     {
                         "lemma": morph.lemma,
                         "inflection": morph.inflection,
-                        "is_lemma": morph.lemma == morph.inflection,  # gives a bool
                         "highest_learning_interval": highest_interval,
                     }
                 )
@@ -254,7 +253,6 @@ def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:
                     {
                         "lemma": lemma,
                         "inflection": inflection,
-                        "is_lemma": lemma == inflection,  # gives a bool
                         "highest_learning_interval": am_config.recalc_interval_for_known,
                     }
                 )

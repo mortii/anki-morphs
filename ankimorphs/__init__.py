@@ -453,31 +453,10 @@ def test_function() -> None:
     assert mw is not None
     assert mw.col.db is not None
 
-    # am_db = AnkiMorphsDB()
-    #
-    # with am_db.con:
-    #     result = am_db.con.execute(
-    #         """
-    #             SELECT morph_norm, morph_inflected, highest_learning_interval
-    #             FROM Card_Morph_Map
-    #             INNER JOIN Morphs ON
-    #                     Card_Morph_Map.morph_norm = Morphs.norm AND Card_Morph_Map.morph_inflected = Morphs.inflected
-    #             WHERE card_id = 1691325367067
-    #             """
-    #     ).fetchall()
-    # print(f"result?: {result}")
-    #
-    # am_db.con.close()
+    am_db = AnkiMorphsDB()
 
-    # print("Seen_Morphs:")
-    # am_db = AnkiMorphsDB()
-    # am_db.print_table("Seen_Morphs")
-    # am_db.con.close()
-
-    # card_id = 1691326508940
-    # card: Card = mw.col.get_card(card_id)
-    # card.queue = -1  # suspend
-    # mw.col.update_card(card)
+    # print("Morphs:")
+    # am_db.print_table("Morphs")
 
     # print(f"card: {Card}")
     # mid: NotetypeId = card.note().mid
@@ -491,6 +470,8 @@ def test_function() -> None:
     # model_manager.update_dict(note_type_dict)
 
     # mw.col.update_note(note)
+
+    am_db.con.close()
 
 
 main()

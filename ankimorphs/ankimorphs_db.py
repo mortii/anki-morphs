@@ -67,7 +67,6 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                     (
                         lemma TEXT,
                         inflection TEXT,
-                        is_lemma INTEGER,
                         highest_learning_interval INTEGER,
                         PRIMARY KEY (lemma, inflection)
                     )
@@ -117,7 +116,6 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                     (
                        :lemma,
                        :inflection,
-                       :is_lemma,
                        :highest_learning_interval
                     )
                     ON CONFLICT(lemma, inflection) DO UPDATE SET
