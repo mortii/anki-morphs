@@ -77,6 +77,9 @@ class KnownMorphsExporterDialog(QDialog):
         _datetime = datetime.datetime.now().strftime("%Y-%m-%d@%H-%M-%S")
         _output_file = os.path.join(_output_dir, f"known_morphs-{_datetime}.csv")
 
+        # create the parent directories if they don't exist
+        Path(_output_file).parent.mkdir(parents=True, exist_ok=True)
+
         with open(_output_file, mode="w+", encoding="utf-8", newline="") as csvfile:
             morph_writer = csv.writer(csvfile)
             morph_writer.writerow(["Morph-lemma", "Morph-inflection"])
