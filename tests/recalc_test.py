@@ -199,7 +199,38 @@ def test_recalc(fake_environment):  # pylint:disable=too-many-locals
             tags=note.tags,
         )
 
-        assert card_due_dict[card_id] == new_card_data
+        original_card_data = card_due_dict[card_id]
+
+        # print("original card data")
+        # print(f"card_id: {card_id}")
+        # print(f"due: {original_card_data.due}")
+        # print(f"extra_field_unknowns: {original_card_data.extra_field_unknowns}")
+        # print(
+        #     f"extra_field_unknowns_count: {original_card_data.extra_field_unknowns_count}"
+        # )
+        # print(f"extra_field_highlighted: {original_card_data.extra_field_highlighted}")
+        # print(f"extra_field_difficulty: {original_card_data.extra_field_difficulty}")
+        # print(f"tags: {original_card_data.tags}")
+
+        assert card_id == card.id
+        assert original_card_data.due == new_card_data.due
+        assert (
+            original_card_data.extra_field_unknowns
+            == new_card_data.extra_field_unknowns
+        )
+        assert (
+            original_card_data.extra_field_unknowns_count
+            == new_card_data.extra_field_unknowns_count
+        )
+        assert (
+            original_card_data.extra_field_highlighted
+            == new_card_data.extra_field_highlighted
+        )
+        assert (
+            original_card_data.extra_field_difficulty
+            == new_card_data.extra_field_difficulty
+        )
+        assert original_card_data.tags == new_card_data.tags
 
     # we check if the morphs from 'known-morphs' dir is correctly inserted into the db
     known_morphs_test: list[tuple[str, str]] = AnkiMorphsDB.get_known_morphs(

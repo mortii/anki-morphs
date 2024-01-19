@@ -53,9 +53,9 @@ required_plugins = "pytest-qt pytest-xvfb pytest-expect pytest-sugar"
 xfail_strict = "True"
 # addopts: set of command line arguments as if they had been specified by the user
 # --strict-markers: markers not registered in the `markers` section of the configuration file raise errors.
-# --durations=5: show N slowest setup/test durations (N=0 for all)
+# --durations=5: show the N slowest setup/test durations (N=0 for all)
 # --maxfail=1: exit after first num failures or errors.
-addopts = "--strict-markers --durations=5"
+addopts = "--strict-markers --durations=5 --maxfail=1000000"
 # markers: whitelist custom markers
 # example with: pytest -m slow
 markers = [

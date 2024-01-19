@@ -18,17 +18,17 @@ class Morphemizer:
 
     # the cache needs to have a max size to maintain garbage collection
     @functools.lru_cache(maxsize=131072)
-    def get_morphemes_from_expr(self, expression: str) -> set[Morpheme]:
+    def get_morphemes_from_expr(self, expression: str) -> list[Morpheme]:
         morphs = self._get_morphemes_from_expr(expression)
         return morphs
 
     def _get_morphemes_from_expr(  # pylint:disable=unused-argument
         self, expression: str
-    ) -> set[Morpheme]:
+    ) -> list[Morpheme]:
         """
         The heart of this plugin: convert an expression to a list of its morphemes.
         """
-        return set()
+        return []
 
     def get_description(self) -> str:
         """
@@ -80,7 +80,7 @@ class MecabMorphemizer(Morphemizer):
     a extra tool called 'mecab' has to be used.
     """
 
-    def _get_morphemes_from_expr(self, expression: str) -> set[Morpheme]:
+    def _get_morphemes_from_expr(self, expression: str) -> list[Morpheme]:
         # Remove simple spaces that could be added by other add-ons and break the parsing.
         if space_char_regex.search(expression):
             expression = space_char_regex.sub("", expression)
@@ -105,7 +105,7 @@ class SpaceMorphemizer(Morphemizer):
     a general-use-morphemizer, it can't generate the base form from inflection.
     """
 
-    def _get_morphemes_from_expr(self, expression: str) -> set[Morpheme]:
+    def _get_morphemes_from_expr(self, expression: str) -> list[Morpheme]:
         # We want the expression: "At 3 o'clock that god-forsaken-man shows up..."
         # to produce: ['at', '3', "o'clock", 'that', 'god-forsaken-man', 'shows', 'up']
         #
@@ -126,7 +126,7 @@ class SpaceMorphemizer(Morphemizer):
             word.lower()
             for word in re.findall(r"\w+(?:[-']\w+)*", expression, re.UNICODE)
         ]
-        return {Morpheme(lemma=word, inflection=word) for word in word_list}
+        return [Morpheme(lemma=word, inflection=word) for word in word_list]
 
     def get_description(self) -> str:
         return "AnkiMoprhs: Language w/ Spaces"

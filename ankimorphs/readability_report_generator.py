@@ -19,6 +19,7 @@ from .exceptions import CancelledOperationException, EmptyFileSelectionException
 from .generator_dialog import GeneratorDialog
 from .morpheme import Morpheme, MorphOccurrence
 from .morphemizer import Morphemizer, SpacyMorphemizer
+from .table_utils import QTableWidgetIntegerItem, QTableWidgetPercentItem
 from .ui.readability_report_generator_ui import Ui_ReadabilityReportGeneratorDialog
 
 
@@ -36,7 +37,7 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
         self._unknowns_column = 4
         self._number_of_columns = 5
         self._setup_absolute_table()
-        self._setup_perecentages_table()
+        self._setup_percentages_table()
         self._setup_buttons()
         self.show()
 
@@ -63,7 +64,7 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
             QAbstractItemView.EditTrigger.NoEditTriggers
         )
 
-    def _setup_perecentages_table(self) -> None:
+    def _setup_percentages_table(self) -> None:
         assert isinstance(self.ui, Ui_ReadabilityReportGeneratorDialog)
 
         self.ui.percentTableWidget.setAlternatingRowColors(True)
@@ -169,9 +170,8 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
                 am_config, am_db, file_morphs
             )
 
-            self._populate_absolute_table(
+            self._populate_numerical_table(
                 _input_file,
-                file_morphs,
                 _row,
                 known_morphs,
                 learning_morphs,
@@ -179,7 +179,6 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
             )
             self._populate_percentage_table(
                 _input_file,
-                file_morphs,
                 _row,
                 known_morphs,
                 learning_morphs,
@@ -196,7 +195,7 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
 
         file_morphs: dict[str, MorphOccurrence] = {}
         for line in file:
-            morphs: set[Morpheme] = self._get_morphs_from_line(morphemizer, nlp, line)
+            morphs: list[Morpheme] = self._get_morphs_from_line(morphemizer, nlp, line)
             for morph in morphs:
                 key = morph.lemma + morph.inflection
                 if key in file_morphs:
@@ -217,28 +216,28 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
 
         for morph_occurrence_object in file_morphs.values():
             morph = morph_occurrence_object.morph
+            occurrence = morph_occurrence_object.occurrence
 
             highest_learning_interval: Optional[
                 int
             ] = am_db.get_highest_learning_interval(morph.lemma, morph.inflection)
 
             if highest_learning_interval is None:
-                unknown_morphs += 1
+                unknown_morphs += occurrence
                 continue
 
             if highest_learning_interval == 0:
-                unknown_morphs += 1
+                unknown_morphs += occurrence
             elif highest_learning_interval < am_config.recalc_interval_for_known:
-                learning_morphs += 1
+                learning_morphs += occurrence
             else:
-                known_morphs += 1
+                known_morphs += occurrence
 
         return known_morphs, learning_morphs, unknown_morphs
 
-    def _populate_absolute_table(
+    def _populate_numerical_table(
         self,
         _input_file: Path,
-        file_morphs: dict[str, MorphOccurrence],
         _row: int,
         known_morphs: int,
         learning_morphs: int,
@@ -248,11 +247,13 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
 
         relative_path = _input_file.relative_to(self._input_dir_root)
 
+        total_morphs: int = known_morphs + learning_morphs + unknown_morphs
+
         file_name_item = QTableWidgetItem(str(relative_path))
-        total_morphs_item = QTableWidgetItem(str(len(file_morphs)))
-        known_item = QTableWidgetItem(str(known_morphs))
-        learning_item = QTableWidgetItem(str(learning_morphs))
-        unknowns_item = QTableWidgetItem(str(unknown_morphs))
+        total_morphs_item = QTableWidgetIntegerItem(total_morphs)
+        known_item = QTableWidgetIntegerItem(known_morphs)
+        learning_item = QTableWidgetIntegerItem(learning_morphs)
+        unknowns_item = QTableWidgetIntegerItem(unknown_morphs)
 
         total_morphs_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         known_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -272,7 +273,6 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
     def _populate_percentage_table(
         self,
         _input_file: Path,
-        file_morphs: dict[str, MorphOccurrence],
         _row: int,
         known_morphs: int,
         learning_morphs: int,
@@ -280,18 +280,23 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
     ) -> None:
         assert isinstance(self.ui, Ui_ReadabilityReportGeneratorDialog)
 
-        total_morphs = len(file_morphs)
-        known_morphs_percent = (known_morphs / total_morphs) * 100
-        learning_morphs_percent = (learning_morphs / total_morphs) * 100
-        unknown_morphs_percent = (unknown_morphs / total_morphs) * 100
+        total_morphs: int = known_morphs + learning_morphs + unknown_morphs
+        known_morphs_percent: float = 0
+        learning_morphs_percent: float = 0
+        unknown_morphs_percent: float = 0
+
+        if total_morphs != 0:
+            known_morphs_percent = (known_morphs / total_morphs) * 100
+            learning_morphs_percent = (learning_morphs / total_morphs) * 100
+            unknown_morphs_percent = (unknown_morphs / total_morphs) * 100
 
         relative_path = _input_file.relative_to(self._input_dir_root)
 
         file_name_item = QTableWidgetItem(str(relative_path))
-        total_morphs_item = QTableWidgetItem(str(len(file_morphs)))
-        known_item = QTableWidgetItem(f"{round(known_morphs_percent, 1)} %")
-        learning_item = QTableWidgetItem(f"{round(learning_morphs_percent, 1)} %")
-        unknowns_item = QTableWidgetItem(f"{round(unknown_morphs_percent, 1)} %")
+        total_morphs_item = QTableWidgetIntegerItem(total_morphs)
+        known_item = QTableWidgetPercentItem(round(known_morphs_percent, 1))
+        learning_item = QTableWidgetPercentItem(round(learning_morphs_percent, 1))
+        unknowns_item = QTableWidgetPercentItem(round(unknown_morphs_percent, 1))
 
         total_morphs_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         known_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)

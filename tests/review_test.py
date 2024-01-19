@@ -118,6 +118,9 @@ def test_custom_review(fake_environment):
 
     # the reviewer uses the 'Demon Slayer' deck because gather order has
     # not been changed in the deck options
+    # IMPORTANT: the collection.anki2 file actually stores reviewer info,
+    # which means we have to initiate a review (click study now on the deck),
+    # and then place the collection.anki2 file in tests/data...
     first_card = 1608533847165
     second_card = 1691325165708
     third_card = 1691325165785

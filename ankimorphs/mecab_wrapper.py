@@ -99,7 +99,7 @@ def get_morpheme(  # pylint:disable=too-many-return-statements
 control_chars_re = re.compile("[\x00-\x1f\x7f-\x9f]")
 
 
-def get_morphemes_mecab(expression) -> set[Morpheme]:
+def get_morphemes_mecab(expression) -> list[Morpheme]:
     # HACK: mecab sometimes does not produce the right morphs if there are no extra characters in the expression,
     # so we just add a whitespace and a japanese punctuation mark "。" the end to prevent the problem.
     expression += " 。"
@@ -109,7 +109,7 @@ def get_morphemes_mecab(expression) -> set[Morpheme]:
 
     _morphs = [get_morpheme(m.split("\t")) for m in interact(expression).split("\r")]
 
-    _morphs = {_morph for _morph in _morphs if _morph is not None}
+    _morphs = [_morph for _morph in _morphs if _morph is not None]
     return _morphs
 
 
@@ -203,68 +203,11 @@ def mecab():  # pylint: disable=too-many-branches,too-many-statements
     else:
         startup_info = None
 
-    # Search for mecab
-    reading = None
-
-    # # 1st priority - MecabUnidic
-    # if importlib.util.find_spec("MecabUnidic"):
-    #     try:
-    #         reading = importlib.import_module("MecabUnidic.reading")
-    #         mecab_source = "MecabUnidic from addon MecabUnidic"
-    #     except ModuleNotFoundError:
-    #         pass
-    #
-    # if importlib.util.find_spec("13462835"):
-    #     try:
-    #         reading = importlib.import_module("13462835.reading")
-    #         mecab_source = "MecabUnidic from addon 13462835"
-    #     except ModuleNotFoundError:
-    #         pass
-    #
-    # # 2nd priority - Japanese Support
-    # if (not reading) and importlib.util.find_spec("3918629684"):
-    #     try:
-    #         reading = importlib.import_module("3918629684.reading")
-    #         mecab_source = "Japanese Support from addon 3918629684"
-    #     except ModuleNotFoundError:
-    #         pass
-    #
-    # # 3nd priority - MIAJapaneseSupport
-    # if (not reading) and importlib.util.find_spec("MIAJapaneseSupport"):
-    #     try:
-    #         reading = importlib.import_module("MIAJapaneseSupport.reading")
-    #         mecab_source = "MIAJapaneseSupport from addon MIAJapaneseSupport"
-    #     except ModuleNotFoundError:
-    #         pass
-    # # 4nd priority - MigakuJapaneseSupport via Anki code (278530045)
-    # if (not reading) and importlib.util.find_spec("278530045"):
-    #     try:
-    #         reading = importlib.import_module("278530045.reading")
-    #         mecab_source = "Migaku Japanese support from addon 278530045"
-    #     except ModuleNotFoundError:
-    #         pass
-
-    # 5th priority - From Morphman
-    if not reading:
-        file_path = os.path.realpath(__file__)
-        am_dir = file_path.split(os.sep)[-2]
-        mecab_dir = am_dir + ".deps.mecab.reading"
-        reading = importlib.import_module(mecab_dir)
-        mecab_source = "AnkiMorphs"
-
-    # 6th priority - system mecab
-    # if not reading:
-    #     try:
-    #         return spawn_mecab(["mecab"], startup_info), "System"
-    #     except Exception as error:
-    #         raise OSError(
-    #             """
-    #         Mecab Japanese analyzer could not be found.
-    #         Please install one of the following Anki add-ons:
-    #              https://ankiweb.net/shared/info/3918629684
-    #              https://ankiweb.net/shared/info/13462835
-    #              https://ankiweb.net/shared/info/278530045"""
-    #         ) from error
+    file_path = os.path.realpath(__file__)
+    am_dir = file_path.split(os.sep)[-2]
+    mecab_dir = am_dir + ".deps.mecab.reading"
+    reading = importlib.import_module(mecab_dir)
+    mecab_source = "AnkiMorphs"
 
     _mecab = reading.MecabController()
     _mecab.setup()

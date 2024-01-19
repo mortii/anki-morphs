@@ -11,10 +11,10 @@ slim_round_brackets_regexp = re.compile(r"\([^)]*\)")
 non_alpha_regexp = re.compile(r"[-'\w]")
 
 
-def get_processed_spacy_morphs(am_config: AnkiMorphsConfig, doc) -> set[Morpheme]:  # type: ignore[no-untyped-def]
+def get_processed_spacy_morphs(am_config: AnkiMorphsConfig, doc) -> list[Morpheme]:  # type: ignore[no-untyped-def]
     # doc: spacy.tokens.Doc
 
-    morphs: set[Morpheme] = set()
+    morphs: list[Morpheme] = []
 
     for w in doc:
         # print(f"w: {w}")
@@ -25,7 +25,7 @@ def get_processed_spacy_morphs(am_config: AnkiMorphsConfig, doc) -> set[Morpheme
             if w.pos == 96:  # PROPN
                 continue
 
-        morphs.add(
+        morphs.append(
             Morpheme(
                 lemma=w.lemma_,
                 inflection=w.text,
@@ -40,14 +40,14 @@ def get_processed_spacy_morphs(am_config: AnkiMorphsConfig, doc) -> set[Morpheme
 
 def get_processed_morphemizer_morphs(
     morphemizer: Morphemizer, expression: str, am_config: AnkiMorphsConfig
-) -> set[Morpheme]:
-    morphs: set[Morpheme] = morphemizer.get_morphemes_from_expr(expression)
+) -> list[Morpheme]:
+    morphs: list[Morpheme] = morphemizer.get_morphemes_from_expr(expression)
 
     if am_config.preprocess_ignore_names_morphemizer:
         morphs = remove_names_morphemizer(morphs)
 
     if am_config.preprocess_ignore_names_textfile:
-        morphs = remove_names_textfile(set(morphs))
+        morphs = remove_names_textfile(morphs)
 
     return morphs
 
@@ -68,16 +68,16 @@ def get_processed_expression(am_config: AnkiMorphsConfig, expression: str) -> st
     return expression
 
 
-def remove_names_morphemizer(morphs: set[Morpheme]) -> set[Morpheme]:
-    return {morph for morph in morphs if not morph.is_proper_noun()}
+def remove_names_morphemizer(morphs: list[Morpheme]) -> list[Morpheme]:
+    return [morph for morph in morphs if not morph.is_proper_noun()]
 
 
-def remove_names_textfile(morphs: set[Morpheme]) -> set[Morpheme]:
+def remove_names_textfile(morphs: list[Morpheme]) -> list[Morpheme]:
     names = name_file_utils.get_names_from_file()
-    non_name_morphs: set[Morpheme] = set()
+    non_name_morphs: list[Morpheme] = []
 
     for morph in morphs:
         if morph.inflection not in names:
-            non_name_morphs.add(morph)
+            non_name_morphs.append(morph)
 
     return non_name_morphs

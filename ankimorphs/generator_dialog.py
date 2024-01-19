@@ -130,16 +130,16 @@ class GeneratorDialog(QDialog):
 
     def _get_morphs_from_line(  # type: ignore[no-untyped-def]
         self, _morphemizer: Morphemizer, nlp, line: str
-    ) -> set[Morpheme]:
+    ) -> list[Morpheme]:
         # todo: this is horrible, create a callback or something
         if nlp is None:
             return self._get_morphs_from_line_morphemizer(_morphemizer, line)
         return self._get_morphs_from_line_spacy(nlp, line)
 
-    def _get_morphs_from_line_spacy(self, nlp, line: str) -> set[Morpheme]:  # type: ignore[no-untyped-def]
+    def _get_morphs_from_line_spacy(self, nlp, line: str) -> list[Morpheme]:  # type: ignore[no-untyped-def]
         # nlp: spacy.Language
 
-        morphs: set[Morpheme] = set()
+        morphs: list[Morpheme] = []
         expression = self._filter_expression(line)
 
         doc = nlp(expression)
@@ -152,7 +152,7 @@ class GeneratorDialog(QDialog):
                 if w.pos == 96:  # PROPN
                     continue
 
-            morphs.add(
+            morphs.append(
                 Morpheme(
                     lemma=w.lemma_,
                     inflection=w.text,
@@ -166,9 +166,9 @@ class GeneratorDialog(QDialog):
 
     def _get_morphs_from_line_morphemizer(
         self, _morphemizer: Morphemizer, line: str
-    ) -> set[Morpheme]:
+    ) -> list[Morpheme]:
         expression = self._filter_expression(line)
-        morphs: set[Morpheme] = _morphemizer.get_morphemes_from_expr(expression)
+        morphs: list[Morpheme] = _morphemizer.get_morphemes_from_expr(expression)
         if self.ui.namesMorphemizerCheckBox.isChecked():
             morphs = text_preprocessing.remove_names_morphemizer(morphs)
         if self.ui.namesFileCheckBox.isChecked():

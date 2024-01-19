@@ -109,7 +109,7 @@ class FrequencyFileGeneratorDialog(GeneratorDialog):
                 # NB! Never use readlines(), it loads the entire file to memory
                 for counter, line in enumerate(file):
                     print(f"line: {counter}")
-                    morphs: set[Morpheme] = self._get_morphs_from_line(
+                    morphs: list[Morpheme] = self._get_morphs_from_line(
                         morphemizer, nlp, line
                     )
                     for morph in morphs:
