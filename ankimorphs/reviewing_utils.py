@@ -181,17 +181,24 @@ def _show_card(
     assert mw is not None
     assert mw.reviewer is not None
 
-    if mw.reviewer.card is None:
-        # On Reviewer.cleanup() the card is set to None, this
-        # can hopefully just be ignored since a new reviewer will
-        # take over.
+    # The lifecycle of the reviewer and its properties
+    # are somewhat mysterious and inconsistent, so using
+    # normal 'is None' checks are not enough to prevent
+    # runtime errors. We therefore have to use try catch
+    # and just silently ignore the errors, everything
+    # usually works regardless, so it's just noise.
+    try:
+        if mw.reviewer._reps is None:
+            mw.reviewer._initWeb()
+        mw.reviewer._showQuestion()
+
+    except AttributeError:
+        # This triggers on NoneType exceptions.
+        # On Reviewer.cleanup() the card is set to None.
+        # Usually a new reviewer object will take over,
+        # so everything should still work, and we can just
+        # ignore the error.
         print("AnkiMorphs: mw.reviewer.card is None!")
-        return
-
-    if mw.reviewer._reps is None:
-        mw.reviewer._initWeb()
-
-    mw.reviewer._showQuestion()
 
     if am_config.skip_show_num_of_skipped_cards:
         if skipped_cards.total_skipped_cards > 0:
