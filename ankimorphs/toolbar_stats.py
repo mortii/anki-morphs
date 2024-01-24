@@ -31,7 +31,7 @@ class MorphToolbarStats:
         try:
             all_unique_morphs = am_db.con.execute(
                 """
-                SELECT COUNT(*)
+                SELECT COUNT(DISTINCT lemma)
                 FROM Morphs
                 WHERE highest_learning_interval >= ?
                 """,
@@ -40,7 +40,7 @@ class MorphToolbarStats:
 
             all_morphs = am_db.con.execute(
                 """
-                SELECT COUNT(DISTINCT inflection)
+                SELECT COUNT(*)
                 FROM Morphs
                 WHERE highest_learning_interval >= ?
                 """,
