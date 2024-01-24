@@ -9,7 +9,7 @@ They both have some options in common:
 
 - [File formats](#file-formats)
 - [Selecting input directory](#selecting-input-directory)
-- [Parsing options](#parsing)
+- [Preprocess options](#preprocess)
 
 ### File Formats
 
@@ -56,5 +56,5 @@ use the files:
 
 ![generator-parsing-options.png](../../img/generator-preprocess-options.png)
 
-The 'ignore'-options are equivalent to those found in ['Preprocess' settings](../setup/settings/preprocess.md).
+These options are equivalent to those found in [`Preprocess` settings](../setup/settings/preprocess.md).
 

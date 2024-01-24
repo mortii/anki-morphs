@@ -1,13 +1,11 @@
 # Choosing spaCy Models
 
 First you need to find out which spaCy model(s) you want to download. A spaCy model determines which language is used
-and
-how
-to interpret that language. Find the names of the models you want to use from
+and how to interpret that language. Find the names of the models you want to use from
 the [spaCy website](https://spacy.io/usage/models),
 e.g., `en_core_web_sm`.
 
-Note that there are usually four different models to choose from, each with their distinct suffixes:
+Note that there are usually four different types of models to choose from, each with their distinct suffixes:
 
 - sm (small model)
 - md (medium model)

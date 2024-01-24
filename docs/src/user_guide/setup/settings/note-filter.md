@@ -2,7 +2,7 @@
 
 ![settings-note-filter.png](../../../img/settings-note-filter.png)
 
-AnkiMorphs only analyzes and sorts cards that matches at least one "note filter"; if you don't specify any note filters
+AnkiMorphs only analyzes and sorts cards that match at least one `note filter`; if you don't specify any note filters,
 then AnkiMorphs won't do anything, so this is a necessary step. This can seem overly complicated and overwhelming, but
 hopefully things will make sense after reading to the end of this page. This is really the heart of the add-on, and it
 has some powerful options (notably [tags](note-filter.md#tags)), so having a good understanding of note filters work
@@ -29,7 +29,7 @@ To find a card's note type do the following:
 2. Find a card you want AnkiMorphs to analyze and sort
 3. Right-click the card
 4. Click Info
-5. See Note Type
+5. See `Note Type`
 
 All the cards in my `Japanese Sentences` deck (and sub-decks) have the same note type, but that might not be the case
 for your decks.
@@ -86,36 +86,37 @@ In my case the field I'm interested in is `Japanese`
 
 ## Morphemizer
 
-This is the tool AnkiMorphs uses to find morphs. This can either be a spacy model e.g:
-```
-spaCy: ko_core_news_sm
- ```
-or it can be one of the built-in on tools, e.g:
-```
-AnkiMorphs: Japanese
-```
+This is the tool AnkiMorphs uses to split text into morphs. AnkiMorphs comes bundled with two morphemizers:
+
+- `AnkiMorphs: Japanese`
+- `AnkiMorphs: Languages w/ Spaces`
+
+Any [installed spaCy models](../../installation/installing-spacy.md) will also show up in this list.
+
+![morphemizer-selection.png](../../../img/morphemizer-selection.png)
+
+> **Note**: `AnkiMorphs: Languages w/ Spaces` is bad, it simply splits all text on whitespace. It's much better to use
+> spaCy models if you are able to install them.
 
 ## Morph Priority
 
-The calculated difficulty of the card, and as a result, the sorting of the card, depends on
-the [priority](../prioritizing.md) you give the morphs. You can either set the priorities to be `Collection frequency` (
-how often the morphs occur in your card collection), or you could use
-a [custom .csv file](../prioritizing.md#frequencycsv) that specifies the priorities of the
-morphs.
+The calculated [difficulty](../../usage/recalc.md#difficulty-algorithm) of the card, and as a result, the sorting of the card, depends on
+the [priority](../prioritizing.md) you give the morphs. You can either set the priorities to be `Collection frequency` (how often the morphs occur in your card collection), or you could use
+a [custom .csv file](../prioritizing.md#frequencycsv) that specifies the priorities of the morphs.
 
 AnkiMorphs automatically finds .csv files placed
 in [[anki profile folder](../../glossary.md#profile-folder)]`/frequency-files/`.
 
-> **Note:** using 'Collection frequency' is not recommended because it is more volatile; if you make any changes to your
-> cards (delete, suspend, move, etc.), then that might cause a cascade of sorting changes.
+> **Note:** using `Collection frequency` is not recommended because it can be volatile; if you make any changes to your
+> cards (delete, suspend, move, etc.), then it can cause a cascade of sorting changes.
 
 ## Read & Modify
 
-If for whatever reason you don't want AnkiMorphs to read one of the note filters you have set up then you
-can uncheck the "Read" option.
+If, for whatever reason, you don't want AnkiMorphs to read one of the note filters you have set up, then you
+can uncheck the `Read` option.
 
-If you uncheck “Modify”, AnkiMorphs will analyze the
-specified fields of cards (and update the database of learned/mature Morphs based on them), but won’t actually reorder
+If you uncheck `Modify`, AnkiMorphs will analyze the
+specified fields of cards (and update the database of known morphs based on them), but won’t reorder
 or change the cards in any way.
 
 <br>
@@ -139,15 +140,15 @@ the difficulty of that text.
 
 ### Overlapping filters
 
-If a card matches multiple filters then it will **only** be analyzed and sorted based on the **first matching filter**.
-Any subsequent filters will skip analyzing and sorting the card.
+If a card matches multiple filters, then it will **only** be analyzed and sorted based on the **first matching filter**.
+Any subsequent filters will not analyze and sort the card.
 
 If you were to do something like this:
 ![overlapping-filters.png](../../../img/overlapping-filters.png)
 
-Then the 2nd filter would do nothing because all the cards would have already been used by the 1st filter.
+Then the second filter would do nothing because all the cards would have already been used by the first filter.
 
-If you find yourself in a situation where you have overlapping note filters then there are two things you can do:
+If you find yourself in a situation where you have overlapping note filters, then there are two things you can do:
 
 - Make the filters more restrictive by using [tags](#tags)
 - Create a new note type.

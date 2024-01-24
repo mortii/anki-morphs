@@ -63,7 +63,7 @@ above. Notice that the `am-highlighted`-field is substituted for the `Japanese`-
 
 ![highlight-back-template.png](../../../img/highlight-back-template.png)
 
-You also need to add the following to the "Styling" section (choose any color you want):
+You also need to add the following to the `Styling` section (choose any color you want):
 
 ``` css
 [morph-status=unknown] { color: blue; }
@@ -78,7 +78,7 @@ You also need to add the following to the "Styling" section (choose any color yo
 You can pick and choose among these; if you only want unknown morphs to be highlighted, and you don't care about
 dark-mode, then only adding the first line would be enough.
 
-It’s also possible to use “background-color”:
+It’s also possible to use `background-color`:
 
 ``` css
 [morph-status=unknown] { background-color: #f7867e; } /* red */
@@ -97,11 +97,11 @@ It’s also possible to use “background-color”:
 ![duplicate-audio.png](../../../img/duplicate-audio.png)
 
 When the back of a card also has an audio field and not just the front, then both might play after each other when you
-press "Show Answer". To prevent both playing you can do the following:
+press `Show Answer` on the card. To prevent both playing you can do the following:
 
 1. Go to deck-options
-2. Scroll down to the "Audio" section
-3. Activate "Skip question when replaying answer"
+2. Scroll down to the `Audio` section
+3. Activate `Skip question when replaying answer`
 
 ## Using am-difficulty
 

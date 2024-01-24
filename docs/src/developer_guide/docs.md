@@ -30,7 +30,7 @@ mdbook serve docs/ --open
 
 To make github automatically deploy the generated book to github pages do the following:
 1. [Activate Github Actions](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site#publishing-with-a-custom-github-actions-workflow): <br> Github repo settings &rarr; Code and automation &rarr; Pages &rarr; Build and deployment &rarr; Github Actions
-2. [Make any necessary adjustments](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site#creating-a-custom-github-actions-workflow-to-publish-your-site) to branch names or paths in:<br> ```MorphMan/.github/workflows/deploy.yml```
+2. [Make any necessary adjustments](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site#creating-a-custom-github-actions-workflow-to-publish-your-site) to branch names or paths in:<br> ```anki-morphs/.github/workflows/deploy.yml```
 
 Project sites will be available at:
 ```

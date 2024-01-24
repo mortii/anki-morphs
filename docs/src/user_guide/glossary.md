@@ -7,7 +7,7 @@ or structure is referred to as the “target word” or “target structure”.
 
 Learning through 1T sentences can be thought of as “picking low-hanging fruit”. It makes the target word/structure easy
 to understand and retain. As you continue to learn, sentences that were previously one-target will become zero-target,
-and sentences that were previously multi-target will become one-target. In this way, one-target sentences can take you
+and sentences that were previously [multi-target](glossary.md#mt-sentence) will become one-target. In this way, one-target sentences can take you
 all the way to fluency.
 
 [Learn about the "Input Hypothesis"](https://en.wikipedia.org/wiki/Input_hypothesis)
@@ -25,8 +25,7 @@ Short for the word "morpheme." A morpheme is the smallest grammatical unit of sp
 ### sub2srs
 
 You can get automatically generated Anki cards from tv-shows or movies by using a tool called sub2srs. Generating decks
-with sub2srs is pretty technical so I recommend finding sub2srs decks other people
-have already made.
+with sub2srs is pretty technical, so I recommend finding sub2srs decks other people have already made.
 
 [You can download many different anime sub2srs decks from this site.](https://www.mediafire.com/folder/p17g5uk4phb41/User_Uploaded_Anki_Decks)
 
@@ -34,9 +33,13 @@ have already made.
 
 ### Profile folder
 
-AnkiMorphs places `ankimorphs.db`, `names.txt`, and the `frequency-files` folder here.
+For AnkiMorphs to work, it needs to use some dedicated files and folders, namely:
+- `ankimorphs.db`
+- `names.txt`
+- `frequency-files/`
+- `known-morphs/`
 
-These are the paths for the respective operating systems:
+Those can be found in the Anki profile folder. The path to the Anki profile folder depends on your operating system:
 
 * Windows: `C:\Users\[user]\AppData\Roaming\Anki2\[profile_name]`
 * Mac: `/Users/[user]/Library/Application Support/Anki2/[profile_name]`

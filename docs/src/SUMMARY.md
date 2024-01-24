@@ -30,7 +30,6 @@
 - [Tips & Tricks](user_guide/setup/tips-and-tricks.md)
 - [Known Problems](user_guide/known-problems.md)
 - [Changelog](user_guide/changelog.md)
-- [Roadmap](user_guide/roadmap.md)
 - [FAQ](user_guide/faq.md)
 
 # Developer Guide
@@ -38,7 +37,6 @@
 - [Docs](developer_guide/docs.md)
 - [Qt Designer](developer_guide/qt-designer.md)
 - [Tests](developer_guide/tests.md)
-- [Performance](developer_guide/performance.md)
 - [Databases](developer_guide/databases.md)
 
 -----------

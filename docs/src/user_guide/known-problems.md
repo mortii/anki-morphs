@@ -53,7 +53,7 @@ displays a progress bar of how many cards have been skipped:
 > Most morphemizers don't split text on punctuation marks because it would split phrases like `10 a.m.`
 into `[10, a, m]`, which would be unideal.
 >
->This can cause problems if there are line breaks in the Anki text:
+>This can cause problems when there are line breaks on Anki cards:
 >
 >```plaintext
 >Hello.
@@ -78,7 +78,7 @@ into `[10, a, m]`, which would be unideal.
 >. <br>
 >```
 >This can be done in bulk with
-the `find and replace` feature in the anki browser:
+the `find and replace` feature in the Anki browser:
 ![find_and_replace_split.png](../img/find_and_replace_split.png)
 
 

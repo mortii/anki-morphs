@@ -18,16 +18,16 @@ Lemma : Inflection
 或る    ある
 ```
 
-To prevent misinterpretation of the inflected morphs we also store the lemmas.
+To prevent misinterpretation of the inflected morphs, we also store the lemmas.
 
 
 ### Select Output
 
 The output file is automatically set to
 be [[anki profile folder](../../glossary.md#profile-folder)]`/frequency-files/frequency.csv`. You can name it whatever you
-want, e.g. `jp-freq.csv`, `chinese_hieroglyphs_frequencies.csv`, etc.
+want, e.g. `ja-freq.csv`.
 
-### Minimum Occurrence
+### Minimum Occurrence Option
 
-You can limit the morphs to only those that occur at least this many times.
+You can limit the morphs to only those that occur at least `x` many times.
 

@@ -2,7 +2,7 @@
 
 ## ankimorphs.db
 
-This is an sqlite database with 3 tables:
+This is an sqlite database with three tables:
 
 ```
 'Cards'
@@ -21,36 +21,35 @@ Cards -> Card_Morph_Map <- Morphs
 ### Card table
 
 ```roomsql
-id INTEGER PRIMARY KEY ASC,  
-type INTEGER,
-interval INTEGER
+card_id INTEGER PRIMARY KEY ASC,
+note_id INTEGER,
+note_type_id INTEGER,
+card_type INTEGER,
+fields TEXT,
+tags TEXT
 ```
 
 ### Card_Morph_Map table
 
 ```roomsql 
 card_id INTEGER,
-morph_norm TEXT,
-morph_inflected TEXT,
+morph_lemma TEXT,
+morph_inflection TEXT,
 FOREIGN KEY(card_id) REFERENCES card(id),
-FOREIGN KEY(morph_norm, morph_inflected) REFERENCES morph(norm, inflected)
+FOREIGN KEY(morph_lemma, morph_inflection) REFERENCES morph(lemma, inflection)
 ```
 
 ### Morph table
 
-```SQL
-norm TEXT,
-base TEXT,
-inflected TEXT,
-read TEXT,
-pos TEXT,
-sub_pos TEXT,
-is_base INTEGER,
-PRIMARY KEY (norm, inflected)
+```roomsql
+lemma TEXT,
+inflection TEXT,
+highest_learning_interval INTEGER,
+PRIMARY KEY (lemma, inflection)
 ```
 
-To make sure the morphs are unique we make the primary key norm (base) AND inflection (derivative), since inflections
-can be identical even if they are derived from two different base, eg:
+To make sure the morphs are unique, we make the primary key the lemma AND inflection, since inflections
+can be identical even if they are derived from two different bases, eg:
 
 ```
 Inflection : Base

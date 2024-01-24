@@ -3,9 +3,9 @@
 The more frequently a morph occurs in a language, the more useful it is to learn. This is the fundamental principle
 behind AnkiMorphs--learn a language in the order that will be the most useful.
 
-AnkiMorphs is a general purpose language learning tool, therefore it has to be told which morphs occur most often. You
+AnkiMorphs is a general purpose language learning tool, therefore, it has to be told which morphs occur most often. You
 can do this in two ways, either have AnkiMorphs calculate the morph frequencies found in your
-cards (`Collection frequency`), or you can specify a [custom .csv file](#frequencycsv) that contains that information.
+cards (`Collection frequency`), or you can specify a custom .csv file that contains that information.
 
 ## frequency.csv
 
@@ -14,13 +14,14 @@ cards (`Collection frequency`), or you can specify a [custom .csv file](#frequen
 Your custom .csv file needs to follow this format:
 
 - The first row is assumed to contain column headers and will be ignored.
-- Rows 2 and down are assumed to contain morphs in descending order of frequency, i.e., the morph on the second row is the
-  most occurring morph, the morph on the third row is the second most occurring, etc.
+- Rows 2 and down are assumed to contain morphs in descending order of frequency, i.e., the morph on the second row is
+  the most frequently occurring morph, the morph on the third row is the second most frequently occurring, etc.
 
-Keep the files to 50K rows or fewer, any rows after that are ignored for practical purposes.
+Keep the files to 50K rows or fewer, any rows after that are ignored. The [algorithm that calculates the difficulty](../usage/recalc.md#difficulty-algorithm) of
+cards needs to have a max limit on morph priorities to make it practical, hence this 50K limit.
 
 Any .csv file located in the folder [[anki profile folder](../glossary.md#profile-folder)]`/frequency-files/` is
-available for selection in [note filters](../setup/settings/note-filter.md).
+available for selection in [note filters: morph priority](../setup/settings/note-filter.md#morph-priority).
 
 ### Creating Your Own frequency.csv
 

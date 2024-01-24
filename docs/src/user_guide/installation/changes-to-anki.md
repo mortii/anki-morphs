@@ -7,12 +7,10 @@ After installing AnkiMorphs you will find that some changes have been made to An
 ![toolbar.png](../../img/toolbar.png)
 
 The toolbar now has three new items:
+
 - [Recalc](../usage/recalc.md)
-- “U”, which stands for Known Unique Morphs
-- "A", which stands for All Known Morphs
-
-For languages that don't have inflections (Chinese, etc.), U and A will always have the same number, 
-
+- `U`, which stands for `Known Unique Morphs`
+- `A`, which stands for `All Known Morphs`
 
 <details>
   <summary style="display:list-item">English examples of U and A</summary>
@@ -234,28 +232,34 @@ Knowing the morphs in the highlighted cells below would give you U: 2 and A: 3
 </blockquote>
 </details>
 
+The `U` and `A` numbers are updated after every [Recalc](../usage/recalc.md).
 
+> **Note**: Chinese and other languages that don't have inflections will result in `U` and `A` having equal numbers.
 
-The U and A numbers are updated after every [Recalc](../usage/recalc.md).
 
 ## Browse
 
-AnkiMorphs adds new options in the Browse window that can be accessed either from the "AnkiMorphs" menu at the top or when
-right-clicking cards:
+AnkiMorphs adds new options in the `Browse` window
 
-* “View Morphemes”
-* “Learn Card Now”
-* “Browse Same Morphs”
-* “Tag As Known”
+![browser-right-click.png](../../img/browser-right-click.png)
 
-These features are explained in [here](../usage/browser.md).
+These options can be accessed either from the context menu when right-clicking cards, or from the `AnkiMorphs` menu at
+the top of the `Browse` window:
+
+![browse-toolbar.png](../../img/browse-toolbar.png)
+
+These features are explained [here](../usage/browser.md).
 
 ## Tools Menu
 
-An AnkiMorphs menu is added to "Tools" menu and has the options:
+An AnkiMorphs submenu is added to the Anki `Tools` menu:
 
-* [“Settings”](../setup/settings.md)
-* [“Recalc”](../usage/recalc.md)
-* [“Frequency File Generator”](../usage/generators/frequency-file-generator.md)
-* [“Readability Report Generator”](../usage/generators/readability-report-generator.md)
-* [“Known Morphs Exporter”](../usage/known-morphs-exporter.md)
+![tools_menu.png](../../img/tools_menu.png)
+
+You can find info about the options here:
+
+* [Settings](../setup/settings.md)
+* [Recalc](../usage/recalc.md)
+* [Frequency File Generator](../usage/generators/frequency-file-generator.md)
+* [Readability Report Generator](../usage/generators/readability-report-generator.md)
+* [Known Morphs Exporter](../usage/known-morphs-exporter.md)

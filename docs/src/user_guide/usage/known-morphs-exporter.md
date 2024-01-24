@@ -2,7 +2,7 @@
 
 ![known-morphs-exporter.png](../../img/known-morphs-exporter.png)
 
-Exports all the morphs from ankimorphs.db that have the specified interval or above. Useful
+Exports all the morphs from `ankimorphs.db` that have the specified interval or above. Useful
 for [setting known morphs](../setup/setting-known-morphs.md), which allows you to trim down your card collection.
 
 ### Select Output

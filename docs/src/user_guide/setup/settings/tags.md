@@ -2,18 +2,17 @@
 
 ![tags-tab.png](../../../img/tags-tab.png)
 
-As AnkiMorphs handles cards it also automatically adds/removes various tags to those cards. You can customize the names
-of the different tags if you want, or you can just leave them as they are and move on.
+As AnkiMorphs handles cards, it also automatically adds/removes various tags to those cards. You can customize the names
+of the different tags if you want, or you can leave them as they are and move on.
 
 * **One unknown morph**:  
-  Cards that only have 1 unknown morph will be given this tag
+  Cards that only have one unknown morph will be given this tag
 * **Multiple unknown morphs**:  
-  Cards that have more than 1 unknown morph will be given this tag
+  Cards that have more than one unknown morph will be given this tag
 * **Learn card now**:  
   When you use the [Learn Card Now](../../usage/browser.md) feature on a card, it will be given this tag. The purpose of
   this tag is to make the internal process of the `Learn Card Now` feature simpler. Don't give this tag to cards
-  manually, it
-  will do nothing.
+  manually, nothing will happen.
 * **Set known and skip**:  
   When you use the [Set known and skip](../../usage/reviewing-cards.md#encountering-morphs-you-already-know) feature on
   a card, it will be given this tag. Cards with this tag should not be deleted; AnkiMorphs might lose track of which
