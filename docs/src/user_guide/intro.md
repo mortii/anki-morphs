@@ -8,8 +8,9 @@ A huge thank you to Matt Vs Japan (<a href="https://www.youtube.com/@mattvsjapan
 
 # Intro
 
-AnkiMorphs is an Anki add-on that can reorder your cards based on how well you know the words on them and how important
-the words are to learn. This makes it so your cards are in the ideal order for optimal language learning.
+AnkiMorphs is an Anki add-on that can rearrange your cards based on how well you know the words on them and how
+important the words are to learn. This ensures that your cards are arranged in the best order for optimal language
+learning.
 
 AnkiMorphs goes through the text on the cards you specify, and parses the text
 into [morphs](user_guide/glossary.md#morph) (basically words). It assumes you already know all the morphs
