@@ -10,7 +10,7 @@
 AnkiMorphs was originally a fork of [MorphMan](https://github.com/kaegi/MorphMan), and has since been rebuilt from the
 ground up with a focus on simplicity, performance, and a codebase with minimal technical debt.
 
-Alpha version download: https://ankiweb.net/shared/info/472573498
+Download: https://ankiweb.net/shared/info/472573498
 
 Guide and docs: https://mortii.github.io/anki-morphs/
 
