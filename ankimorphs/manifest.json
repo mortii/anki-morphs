@@ -2,6 +2,6 @@
   "conflicts": [
     "MorphMan"
   ],
-  "name": "ankimorphs-alpha",
-  "package": "ankimorphs-alpha"
+  "name": "ankimorphs",
+  "package": "ankimorphs"
 }
