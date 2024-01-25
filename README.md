@@ -7,10 +7,11 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
 
-A MorphMan fork rebuilt from the ground up with a focus on performance and a codebase with minimal technical debt.
+AnkiMorphs was originally a fork of [MorphMan](https://github.com/kaegi/MorphMan), and has since been rebuilt from the
+ground up with a focus on simplicity, performance, and a codebase with minimal technical debt.
 
 Alpha version download: https://ankiweb.net/shared/info/472573498
 
-Guide and docs (much is outdated, updates are ongoing): https://mortii.github.io/anki-morphs/
+Guide and docs: https://mortii.github.io/anki-morphs/
 
-Roadmap: https://github.com/users/mortii/projects/1/views/1
+Project roadmap: https://github.com/users/mortii/projects/1/views/1
