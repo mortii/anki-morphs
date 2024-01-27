@@ -91,7 +91,7 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         self.note_id = anki_row_data.note_id
 
         # this is set later when spacy is used
-        self.morphs: Optional[list[Morpheme]] = None
+        self.morphs: Optional[set[Morpheme]] = None
 
 
 class AnkiMorphsCardData:

@@ -141,6 +141,15 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
             all_text.append(expression)
             all_keys.append(key)
 
+        # Since function overloading isn't a thing in python, we use
+        # this ugly branching with near identical code. An alternative
+        # approach of using variable number of arguments (*args) would
+        # require an extra function call, so this is faster.
+        #
+        # We don't want to store duplicate morphs, because it can lead
+        # to the same morph being counted twice, which is bad for the
+        # difficulty algorithm, therefore, we convert the lists of morphs
+        # we receive from the morphemizers into sets.
         if nlp is not None:
             for index, doc in enumerate(nlp.pipe(all_text)):
                 update_progress_potentially_cancel(
@@ -148,7 +157,7 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
                     counter=index,
                     max_value=card_amount,
                 )
-                morphs = get_processed_spacy_morphs(am_config, doc)
+                morphs = set(get_processed_spacy_morphs(am_config, doc))
                 key = all_keys[index]
                 card_data_dict[key].morphs = morphs
         else:
@@ -158,8 +167,10 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
                     counter=index,
                     max_value=card_amount,
                 )
-                morphs = get_processed_morphemizer_morphs(
-                    morphemizer, _expression, am_config
+                morphs = set(
+                    get_processed_morphemizer_morphs(
+                        morphemizer, _expression, am_config
+                    )
                 )
                 key = all_keys[index]
                 card_data_dict[key].morphs = morphs
