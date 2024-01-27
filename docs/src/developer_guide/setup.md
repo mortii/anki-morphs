@@ -40,7 +40,7 @@
 3. **Create a soft symbolic link** from the cloned repo to the anki add-ons folder so anki starts using the cloned
    AnkiMorphs:
    ``` bash
-   ln -s ~/path/to/cloned/repo/anki-morphs/ankimorphs  ~/.local/share/Anki2/addons21/ankimorphs-dev
+   ln -s ~/path/to/cloned/repo/anki-morphs/ankimorphs  ~/.local/share/Anki2/addons21/ankimorphs
    ```
 4. **Using pre-commit**:
 
