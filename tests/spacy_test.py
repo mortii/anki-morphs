@@ -171,7 +171,7 @@ def test_de_model(fake_environment) -> None:  # pylint:disable=unused-argument
 
     correct_output: list[SpacyMorph] = [
         SpacyMorph(lemma="--", inflection="»", part_of_speech="PUNCT"),
-        SpacyMorph(lemma="was", inflection="was", part_of_speech="PRON"),  # wrong...
+        SpacyMorph(lemma="was", inflection="was", part_of_speech="PRON"),
         SpacyMorph(lemma="sein", inflection="ist", part_of_speech="AUX"),
         SpacyMorph(lemma="los", inflection="los", part_of_speech="ADV"),
         SpacyMorph(lemma="--", inflection="?", part_of_speech="PUNCT"),
