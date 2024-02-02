@@ -3,7 +3,6 @@ By using a class with slots we get the speed of a dict and also
 the convenience/safety of accessing properties of an object.
 """
 
-
 from collections.abc import Sequence
 from typing import Any, Optional, Union
 

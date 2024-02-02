@@ -53,9 +53,9 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
         self.ui.numericalTableWidget.setColumnWidth(self._learning_column, 90)
         self.ui.numericalTableWidget.setColumnWidth(self._unknowns_column, 100)
 
-        absolute_table_vertical_headers: Optional[
-            QHeaderView
-        ] = self.ui.numericalTableWidget.verticalHeader()
+        absolute_table_vertical_headers: Optional[QHeaderView] = (
+            self.ui.numericalTableWidget.verticalHeader()
+        )
         assert absolute_table_vertical_headers is not None
         absolute_table_vertical_headers.hide()
 
@@ -76,9 +76,9 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
         self.ui.percentTableWidget.setColumnWidth(self._learning_column, 90)
         self.ui.percentTableWidget.setColumnWidth(self._unknowns_column, 100)
 
-        percent_table_vertical_headers: Optional[
-            QHeaderView
-        ] = self.ui.percentTableWidget.verticalHeader()
+        percent_table_vertical_headers: Optional[QHeaderView] = (
+            self.ui.percentTableWidget.verticalHeader()
+        )
         assert percent_table_vertical_headers is not None
         percent_table_vertical_headers.hide()
 
@@ -218,9 +218,9 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
             morph = morph_occurrence_object.morph
             occurrence = morph_occurrence_object.occurrence
 
-            highest_learning_interval: Optional[
-                int
-            ] = am_db.get_highest_learning_interval(morph.lemma, morph.inflection)
+            highest_learning_interval: Optional[int] = (
+                am_db.get_highest_learning_interval(morph.lemma, morph.inflection)
+            )
 
             if highest_learning_interval is None:
                 unknown_morphs += occurrence

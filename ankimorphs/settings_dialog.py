@@ -51,9 +51,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
     def __init__(self) -> None:
         super().__init__(parent=None)  # no parent makes the dialog modeless
         assert mw is not None
-        self._note_type_models: Sequence[
-            NotetypeNameId
-        ] = mw.col.models.all_names_and_ids()
+        self._note_type_models: Sequence[NotetypeNameId] = (
+            mw.col.models.all_names_and_ids()
+        )
         self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
         self.ui.note_filters_table.cellClicked.connect(self._tags_cell_clicked)
