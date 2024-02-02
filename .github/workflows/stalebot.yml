@@ -16,7 +16,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v8
+      - uses: actions/stale@v9
         with:
           operations-per-run: 50
           stale-issue-message: 'This issue is stale because no answers have been provided in the last 14 days. If there are still no answers within 7 days then the issue will be closed.'

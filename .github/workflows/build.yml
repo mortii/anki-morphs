@@ -10,10 +10,10 @@ jobs:
         python_version: ['3.9']
         os: [ubuntu-latest, macOS-latest, windows-latest]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: tlambert03/setup-qt-libs@v1  # installs libraries necessary to run a Qt desktop environment on linux runners
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version:  ${{ matrix.python_version }}
     - name: Install dependencies
