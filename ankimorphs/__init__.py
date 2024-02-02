@@ -11,8 +11,9 @@
 # Incorrect:
 # from ankimorphs import browser_utils
 ################################################################
-
+import json
 from functools import partial
+from pathlib import Path
 from typing import Literal
 
 import aqt
@@ -33,6 +34,7 @@ from aqt.utils import tooltip
 from aqt.webview import AnkiWebView
 
 from . import (
+    ankimorphs_config,
     ankimorphs_globals,
     browser_utils,
     name_file_utils,
@@ -41,8 +43,8 @@ from . import (
     settings_dialog,
     toolbar_stats,
 )
+from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
-from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter, get_read_enabled_filters
 from .frequency_file_generator import FrequencyFileGeneratorDialog
 from .known_morphs_exporter import KnownMorphsExporterDialog
 from .readability_report_generator import ReadabilityReportGeneratorDialog
@@ -63,6 +65,7 @@ def main() -> None:
 
     gui_hooks.top_toolbar_did_init_links.append(init_toolbar_items)
 
+    gui_hooks.profile_did_open.append(load_am_profile_configs)
     gui_hooks.profile_did_open.append(init_db)
     gui_hooks.profile_did_open.append(register_addon_dialogs)
     gui_hooks.profile_did_open.append(redraw_toolbar)
@@ -115,6 +118,41 @@ def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
     )
 
 
+def load_am_profile_configs() -> None:
+    assert mw is not None
+
+    profile_settings_path = Path(
+        mw.pm.profileFolder(), ankimorphs_globals.PROFILE_SETTINGS_FILE_NAME
+    )
+    try:
+        with open(profile_settings_path, encoding="utf-8") as file:
+            profile_settings = json.load(file)
+            ankimorphs_config.update_configs(profile_settings)
+    except FileNotFoundError:
+        # the profile settings file gets created when clicking
+        # the save button on the settings dialog
+        pass
+
+
+def init_db() -> None:
+    read_config_filters: list[AnkiMorphsConfigFilter] = (
+        ankimorphs_config.get_read_enabled_filters()
+    )
+    has_active_note_filter = False
+
+    for config_filter in read_config_filters:
+        if config_filter.note_type != "":
+            has_active_note_filter = True
+
+    am_db = AnkiMorphsDB()
+    am_db.create_all_tables()
+
+    if has_active_note_filter:
+        AnkiMorphsDB.rebuild_seen_morphs_today()
+
+    am_db.con.close()
+
+
 def register_addon_dialogs() -> None:
     # We use the Anki dialog manager to handle our dialogs
 
@@ -133,23 +171,6 @@ def register_addon_dialogs() -> None:
         name=ankimorphs_globals.KNOWN_MORPHS_EXPORTER_DIALOG_NAME,
         creator=KnownMorphsExporterDialog,
     )
-
-
-def init_db() -> None:
-    read_config_filters: list[AnkiMorphsConfigFilter] = get_read_enabled_filters()
-    has_active_note_filter = False
-
-    for config_filter in read_config_filters:
-        if config_filter.note_type != "":
-            has_active_note_filter = True
-
-    am_db = AnkiMorphsDB()
-    am_db.create_all_tables()
-
-    if has_active_note_filter:
-        AnkiMorphsDB.rebuild_seen_morphs_today()
-
-    am_db.con.close()
 
 
 def redraw_toolbar() -> None:

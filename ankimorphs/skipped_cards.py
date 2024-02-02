@@ -2,8 +2,8 @@ from anki.notes import Note
 from aqt import mw
 from aqt.utils import tooltip
 
+from .ankimorphs_config import AnkiMorphsConfig
 from .ankimorphs_db import AnkiMorphsDB
-from .config import AnkiMorphsConfig
 
 
 class SkippedCards:

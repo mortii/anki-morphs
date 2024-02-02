@@ -1,7 +1,7 @@
 import re
 
 from . import name_file_utils
-from .config import AnkiMorphsConfig
+from .ankimorphs_config import AnkiMorphsConfig
 from .morpheme import Morpheme
 from .morphemizer import Morphemizer
 

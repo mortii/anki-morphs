@@ -21,15 +21,10 @@ from aqt.operations import QueryOp
 from aqt.qt import QMessageBox  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
-from . import ankimorphs_globals, spacy_wrapper
+from . import ankimorphs_config, ankimorphs_globals, spacy_wrapper
 from .anki_data_utils import AnkiCardData, AnkiDBRowData, AnkiMorphsCardData
+from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
-from .config import (
-    AnkiMorphsConfig,
-    AnkiMorphsConfigFilter,
-    get_modify_enabled_filters,
-    get_read_enabled_filters,
-)
 from .exceptions import (
     CancelledOperationException,
     DefaultSettingsException,
@@ -98,7 +93,9 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
     am_db.drop_all_tables()
     am_db.create_all_tables()
 
-    read_config_filters: list[AnkiMorphsConfigFilter] = get_read_enabled_filters()
+    read_config_filters: list[AnkiMorphsConfigFilter] = (
+        ankimorphs_config.get_read_enabled_filters()
+    )
     card_table_data: list[dict[str, Any]] = []
     morph_table_data: list[dict[str, Any]] = []
     card_morph_map_table_data: list[dict[str, Any]] = []
@@ -357,7 +354,9 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
 
     model_manager: ModelManager = mw.col.models
     am_db = AnkiMorphsDB()
-    modify_config_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
+    modify_config_filters: list[AnkiMorphsConfigFilter] = (
+        ankimorphs_config.get_modify_enabled_filters()
+    )
     card_morph_map_cache: dict[int, list[Morpheme]] = _get_card_morph_map_cache(am_db)
     original_due: dict[int, int] = {}
     original_queue: dict[int, int] = {}

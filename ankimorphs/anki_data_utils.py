@@ -9,7 +9,7 @@ from typing import Any, Optional, Union
 import anki.utils
 from anki.tags import TagManager
 
-from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter
+from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .morpheme import Morpheme
 
 

@@ -15,9 +15,9 @@ from aqt import setupLangAndBackend
 
 from ankimorphs import (
     AnkiMorphsDB,
+    ankimorphs_config,
     ankimorphs_db,
     ankimorphs_globals,
-    config,
     name_file_utils,
     recalc,
     spacy_wrapper,
@@ -99,7 +99,7 @@ def fake_environment():
 
     patch_recalc_mw = mock.patch.object(recalc, "mw", mock_mw)
     morph_db_mw = mock.patch.object(ankimorphs_db, "mw", mock_mw)
-    patch_config_mw = mock.patch.object(config, "mw", mock_mw)
+    patch_config_mw = mock.patch.object(ankimorphs_config, "mw", mock_mw)
     patch_name_file_utils_mw = mock.patch.object(name_file_utils, "mw", mock_mw)
     patch_testing_variable = mock.patch.object(
         spacy_wrapper, "testing_environment", True

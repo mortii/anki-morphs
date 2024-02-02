@@ -1,7 +1,7 @@
 import sqlite3
 
+from .ankimorphs_config import AnkiMorphsConfig
 from .ankimorphs_db import AnkiMorphsDB
-from .config import AnkiMorphsConfig
 
 
 class MorphToolbarStats:

@@ -15,8 +15,8 @@ from aqt.reviewer import Reviewer
 from ankimorphs import (
     AnkiMorphsConfig,
     AnkiMorphsDB,
+    ankimorphs_config,
     ankimorphs_db,
-    config,
     reviewing_utils,
 )
 from ankimorphs.skipped_cards import SkippedCards
@@ -68,7 +68,7 @@ def fake_environment():
     mock_tooltip = mock.Mock(spec=aqt.utils.tooltip)
 
     patch_am_db_mw_mw = mock.patch.object(ankimorphs_db, "mw", mock_mw)
-    patch_config_mw = mock.patch.object(config, "mw", mock_mw)
+    patch_config_mw = mock.patch.object(ankimorphs_config, "mw", mock_mw)
     patch_reviewing_mw = mock.patch.object(reviewing_utils, "mw", mock_mw)
     patch_am_db = mock.patch.object(reviewing_utils, "AnkiMorphsDB", MockDB)
     patch_tooltip = mock.patch.object(reviewing_utils, "tooltip", mock_tooltip)

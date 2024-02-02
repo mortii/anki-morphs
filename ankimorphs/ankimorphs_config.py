@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 from typing import Any, Optional, Union
 
 from anki.notes import Note
@@ -192,7 +194,15 @@ def update_configs(new_configs: dict[str, object]) -> None:
     assert config is not None
     for key, value in new_configs.items():
         config[key] = value
+
     mw.addonManager.writeConfig(__name__, config)
+
+    # also write to the profile settings file
+    profile_settings_path = Path(
+        mw.pm.profileFolder(), ankimorphs_globals.PROFILE_SETTINGS_FILE_NAME
+    )
+    with open(profile_settings_path, mode="w", encoding="utf-8") as file:
+        json.dump(config, file)
 
 
 def _reset_all_configs() -> None:

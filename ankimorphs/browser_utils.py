@@ -14,8 +14,9 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 from aqt.reviewer import RefreshNeeded
 from aqt.utils import tooltip
 
+from . import ankimorphs_config
+from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
-from .config import AnkiMorphsConfig, AnkiMorphsConfigFilter, get_matching_read_filter
 from .ui.view_morphs_dialog_ui import Ui_ViewMorphsDialog
 
 browser: Optional[Browser] = None
@@ -64,7 +65,7 @@ def browse_same_morphs(
         note = mw.reviewer.card.note()
 
     am_db = AnkiMorphsDB()
-    am_filter = get_matching_read_filter(note)
+    am_filter = ankimorphs_config.get_matching_read_filter(note)
 
     if am_filter is None:
         tooltip(
@@ -165,8 +166,8 @@ def run_view_morphs() -> None:  # pylint:disable=too-many-locals
         card = mw.col.get_card(cid)
         note = card.note()
 
-        am_config_filter: Optional[AnkiMorphsConfigFilter] = get_matching_read_filter(
-            note
+        am_config_filter: Optional[AnkiMorphsConfigFilter] = (
+            ankimorphs_config.get_matching_read_filter(note)
         )
         if am_config_filter is None:
             tooltip("Card does not match any 'Note Filters' that has 'Read' enabled")

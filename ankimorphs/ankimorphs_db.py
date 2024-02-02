@@ -7,7 +7,7 @@ from anki.collection import Collection, SearchNode
 from aqt import mw
 from aqt.operations import QueryOp
 
-from .config import AnkiMorphsConfig
+from .ankimorphs_config import AnkiMorphsConfig
 from .name_file_utils import get_names_from_file_as_morphs
 
 

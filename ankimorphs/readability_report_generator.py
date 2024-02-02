@@ -13,8 +13,8 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 
 from . import spacy_wrapper
+from .ankimorphs_config import AnkiMorphsConfig
 from .ankimorphs_db import AnkiMorphsDB
-from .config import AnkiMorphsConfig
 from .exceptions import CancelledOperationException, EmptyFileSelectionException
 from .generator_dialog import GeneratorDialog
 from .morpheme import Morpheme, MorphOccurrence

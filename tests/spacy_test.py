@@ -5,7 +5,7 @@ import aqt
 import pytest
 import spacy
 
-from ankimorphs import AnkiMorphsConfig, config, spacy_wrapper
+from ankimorphs import AnkiMorphsConfig, ankimorphs_config, spacy_wrapper
 from ankimorphs.morpheme import Morpheme
 from ankimorphs.spacy_wrapper import get_nlp
 from ankimorphs.text_preprocessing import get_processed_spacy_morphs
@@ -30,7 +30,7 @@ def fake_environment():
         _config_data = json.load(file)
 
     mock_mw.addonManager.getConfig.return_value = _config_data
-    patch_config_mw = mock.patch.object(config, "mw", mock_mw)
+    patch_config_mw = mock.patch.object(ankimorphs_config, "mw", mock_mw)
     patch_testing_variable = mock.patch.object(
         spacy_wrapper, "testing_environment", True
     )

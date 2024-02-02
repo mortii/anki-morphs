@@ -11,9 +11,10 @@ from aqt.qt import QKeySequence, QMessageBox, Qt  # pylint:disable=no-name-in-mo
 from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
 
+from . import ankimorphs_config
+from .ankimorphs_config import AnkiMorphsConfig
 from .ankimorphs_db import AnkiMorphsDB
 from .browser_utils import browse_same_morphs
-from .config import AnkiMorphsConfig, get_matching_modify_filter
 from .exceptions import CancelledOperationException, CardQueueEmptyException
 from .skipped_cards import SkippedCards
 
@@ -109,7 +110,7 @@ def _get_next_card_background(
             break
 
         note: Note = reviewer.card.note()
-        am_config_filter = get_matching_modify_filter(note)
+        am_config_filter = ankimorphs_config.get_matching_modify_filter(note)
 
         if am_config_filter is None:
             break  # card did not match any (note type and tags) set in the settings GUI
@@ -254,7 +255,7 @@ def _set_card_as_known_and_skip(am_config: AnkiMorphsConfig) -> None:
 
     card: Card = mw.reviewer.card
     note: Note = card.note()
-    am_config_filter = get_matching_modify_filter(note)
+    am_config_filter = ankimorphs_config.get_matching_modify_filter(note)
 
     if am_config_filter is None:
         tooltip("Card does not match any note filter...")

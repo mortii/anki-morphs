@@ -21,13 +21,8 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from . import ankimorphs_globals
-from .config import (
-    AnkiMorphsConfig,
-    AnkiMorphsConfigFilter,
-    FilterTypeAlias,
-    update_configs,
-)
+from . import ankimorphs_config, ankimorphs_globals
+from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter, FilterTypeAlias
 from .message_box_utils import show_warning_box
 from .morphemizer import get_all_morphemizers
 from .table_utils import (
@@ -109,7 +104,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 1.0.1")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 1.1.0")
 
         self.show()
 
@@ -688,7 +683,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             filters.append(_filter)
 
         new_config["filters"] = filters
-        update_configs(new_config)
+        ankimorphs_config.update_configs(new_config)
         self._config = AnkiMorphsConfig()
 
         # delete cache between saving because it might have been updated
