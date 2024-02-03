@@ -1,3 +1,4 @@
+import os
 import re
 from functools import partial
 from pathlib import Path
@@ -80,35 +81,38 @@ class GeneratorDialog(QDialog):
         self._input_dir_root = Path(input_dir)
         extensions = self._get_checked_extensions()
 
-        for extension in extensions:
-            if mw.progress.want_cancel():  # user clicked 'x'
-                raise CancelledOperationException
-            mw.taskman.run_on_main(
-                partial(
-                    mw.progress.update,
-                    label=f"Gathering {extension} files",
-                )
+        mw.taskman.run_on_main(
+            partial(
+                mw.progress.update,
+                label="Gathering input files",
             )
-            for path in Path(input_dir).rglob(extension):
+        )
+
+        # os.walk goes through all the sub-dirs recursively
+        for dir_path, _, file_names in os.walk(input_dir):
+            for file_name in file_names:
                 if mw.progress.want_cancel():  # user clicked 'x'
                     raise CancelledOperationException
-                input_files.append(path)
+                if file_name.lower().endswith(extensions):
+                    file_path = Path(dir_path, file_name)
+                    input_files.append(file_path)
 
         return input_files
 
-    def _get_checked_extensions(self) -> list[str]:
+    def _get_checked_extensions(self) -> tuple[str, ...]:
         extensions = []
 
         if self.ui.txtFilesCheckBox.isChecked():
-            extensions.append("*.txt")
+            extensions.append(".txt")
         if self.ui.srtFilesCheckBox.isChecked():
-            extensions.append("*.srt")
+            extensions.append(".srt")
         if self.ui.vttFilesCheckBox.isChecked():
-            extensions.append("*.vtt")
+            extensions.append(".vtt")
         if self.ui.mdFilesCheckBox.isChecked():
-            extensions.append("*.md")
+            extensions.append(".md")
 
-        return extensions
+        # we return a tuple to make it compatible with .endswith()
+        return tuple(extensions)
 
     def _filter_expression(self, expression: str) -> str:
         if self.ui.squareBracketsCheckBox.isChecked():
