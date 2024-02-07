@@ -55,6 +55,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                         morph_inflection TEXT,
                         FOREIGN KEY(card_id) REFERENCES card(id),
                         FOREIGN KEY(morph_lemma, morph_inflection) REFERENCES morph(lemma, inflection)
+                        PRIMARY KEY(card_id, morph_lemma, morph_inflection)
                     )
                     """
             )
