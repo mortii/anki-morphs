@@ -5,6 +5,8 @@
 As AnkiMorphs handles cards, it also automatically adds/removes various tags to those cards. You can customize the names
 of the different tags if you want, or you can leave them as they are and move on.
 
+> **Note:** Avoid reusing tags from other sources. Mixing different tags can quickly become complicated and confusing. 
+
 * **One unknown morph**:  
   Cards that only have one unknown morph will be given this tag
 * **Multiple unknown morphs**:  

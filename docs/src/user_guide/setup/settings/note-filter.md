@@ -84,6 +84,9 @@ This is the field on the card AnkiMorphs reads and analyzes, which is then used 
 
 In my case the field I'm interested in is `Japanese`
 
+> **Note**: Fields with complete sentences are preferable over fields that only have isolated words. The more context 
+> the morphemizers are given, the less likely they are to produce false positives.
+
 ## Morphemizer
 
 This is the tool AnkiMorphs uses to split text into morphs. AnkiMorphs comes bundled with two morphemizers:
