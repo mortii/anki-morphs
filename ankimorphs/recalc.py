@@ -84,41 +84,38 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
     # Extracting morphs from cards is expensive, so caching them yields a significant
     # performance gain.
     #
-    # Rebuilding the entire ankimorphs db every time is faster and much simpler than
-    # updating it since we can bulk queries to the anki db.
+    # Note: this function is a monstrosity, but at some point it's better to have
+    # most of the logic in the same function in a way that gives a better overview
+    # of all the things that are happening. Refactoring this into even smaller pieces
+    # will in effect lead to spaghetti code.
 
     assert mw is not None
 
+    # Rebuilding the entire ankimorphs db every time is faster and much simpler than
+    # updating it since we can bulk queries to the anki db.
     am_db = AnkiMorphsDB()
     am_db.drop_all_tables()
     am_db.create_all_tables()
 
-    read_config_filters: list[AnkiMorphsConfigFilter] = (
+    # We only want to cache the morphs on the note-filter that have 'read' enabled
+    read_enabled_config_filters: list[AnkiMorphsConfigFilter] = (
         ankimorphs_config.get_read_enabled_filters()
     )
+
+    # These lists contain data that will be inserted into ankimorphs.db
     card_table_data: list[dict[str, Any]] = []
     morph_table_data: list[dict[str, Any]] = []
     card_morph_map_table_data: list[dict[str, Any]] = []
 
-    for config_filter in read_config_filters:
+    for config_filter in read_enabled_config_filters:
         if config_filter.note_type == "":
             raise DefaultSettingsException  # handled in on_failure()
 
-        nlp = None  # spacy.Language
-        morphemizer = get_morphemizer_by_name(config_filter.morphemizer_name)
-        assert morphemizer is not None
-
-        if isinstance(morphemizer, SpacyMorphemizer):
-            spacy_model = config_filter.morphemizer_description.removeprefix("spaCy: ")
-            nlp = spacy_wrapper.get_nlp(spacy_model)
-
-        card_data_dict: dict[int, AnkiCardData] = _create_card_data_dict(
+        cards_data_dict: dict[int, AnkiCardData] = _create_card_data_dict(
             am_config,
             config_filter,
-            config_filter.note_type_id,
-            config_filter.tags,
         )
-        card_amount = len(card_data_dict)
+        card_amount = len(cards_data_dict)
 
         # Batching the text makes spacy much faster, so we flatten the data into the all_text list.
         # To get back to the card_id for every entry in the all_text list, we create a separate list with the keys.
@@ -126,7 +123,7 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
         all_text: list[str] = []
         all_keys: list[int] = []
 
-        for key, _card_data in card_data_dict.items():
+        for key, _card_data in cards_data_dict.items():
             # Some spaCy models label all capitalized words as proper nouns,
             # which is pretty bad. To prevent this, we lower case everything.
             # This in turn makes some models not label proper nouns correctly,
@@ -138,14 +135,22 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
             all_text.append(expression)
             all_keys.append(key)
 
+        nlp = None  # spacy.Language
+        morphemizer = get_morphemizer_by_name(config_filter.morphemizer_name)
+        assert morphemizer is not None
+
+        if isinstance(morphemizer, SpacyMorphemizer):
+            spacy_model = config_filter.morphemizer_description.removeprefix("spaCy: ")
+            nlp = spacy_wrapper.get_nlp(spacy_model)
+
         # Since function overloading isn't a thing in python, we use
         # this ugly branching with near identical code. An alternative
         # approach of using variable number of arguments (*args) would
         # require an extra function call, so this is faster.
         #
-        # We don't want to store duplicate morphs, because it can lead
+        # We don't want to store duplicate morphs because it can lead
         # to the same morph being counted twice, which is bad for the
-        # difficulty algorithm, therefore, we convert the lists of morphs
+        # difficulty algorithm. We therefore convert the lists of morphs
         # we receive from the morphemizers into sets.
         if nlp is not None:
             for index, doc in enumerate(nlp.pipe(all_text)):
@@ -156,7 +161,7 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
                 )
                 morphs = set(get_processed_spacy_morphs(am_config, doc))
                 key = all_keys[index]
-                card_data_dict[key].morphs = morphs
+                cards_data_dict[key].morphs = morphs
         else:
             for index, _expression in enumerate(all_text):
                 update_progress_potentially_cancel(
@@ -170,15 +175,15 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
                     )
                 )
                 key = all_keys[index]
-                card_data_dict[key].morphs = morphs
+                cards_data_dict[key].morphs = morphs
 
-        for counter, card_id in enumerate(card_data_dict):
+        for counter, card_id in enumerate(cards_data_dict):
             update_progress_potentially_cancel(
                 label=f"Caching {config_filter.note_type} cards\n card: {counter} of {card_amount}",
                 counter=counter,
                 max_value=card_amount,
             )
-            card_data: AnkiCardData = card_data_dict[card_id]
+            card_data: AnkiCardData = cards_data_dict[card_id]
 
             if card_data.automatically_known_tag or card_data.manually_known_tag:
                 highest_interval = am_config.recalc_interval_for_known
@@ -271,13 +276,13 @@ def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:
 def _create_card_data_dict(
     am_config: AnkiMorphsConfig,
     config_filter: AnkiMorphsConfigFilter,
-    model_id: Optional[int],
-    tags: dict[str, str],
 ) -> dict[int, AnkiCardData]:
     assert mw is not None
 
-    card_data_dict: dict[int, AnkiCardData] = {}
     tag_manager = TagManager(mw.col)
+    tags: dict[str, str] = config_filter.tags
+    model_id: Optional[int] = config_filter.note_type_id
+    card_data_dict: dict[int, AnkiCardData] = {}
 
     for anki_row_data in _get_anki_data(am_config, model_id, tags).values():
         card_data = AnkiCardData(am_config, config_filter, tag_manager, anki_row_data)
