@@ -431,7 +431,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
 
                 if config_filter.extra_unknowns:
                     _update_unknowns_field(
-                        note_type_field_name_dict, note, card_unknown_morphs
+                        am_config, note_type_field_name_dict, note, card_unknown_morphs
                     )
                 if config_filter.extra_unknowns_count:
                     _update_unknowns_count_field(
@@ -670,7 +670,7 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
     card_id: int,
     card_morph_map_cache: dict[int, list[Morpheme]],
     morph_priority: dict[str, int],
-) -> tuple[int, list[str], bool]:
+) -> tuple[int, list[Morpheme], bool]:
     ####################################################################################
     #                                      ALGORITHM
     ####################################################################################
@@ -694,7 +694,7 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
     # 2147483647 is therefore the max value before overflow.
     default_difficulty = 2147483647
     morph_unknown_penalty = 500000
-    unknown_morphs: list[str] = []
+    unknown_morphs: list[Morpheme] = []
     has_learning_morph: bool = False
 
     try:
@@ -709,7 +709,7 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
         assert morph.highest_learning_interval is not None
 
         if morph.highest_learning_interval == 0:
-            unknown_morphs.append(morph.inflection)
+            unknown_morphs.append(morph)
         elif morph.highest_learning_interval <= am_config.recalc_interval_for_known:
             has_learning_morph = True
 
@@ -733,12 +733,19 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
 
 
 def _update_unknowns_field(
+    am_config: AnkiMorphsConfig,
     note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
-    unknowns: list[str],
+    unknowns: list[Morpheme],
 ) -> None:
-    focus_morph_string: str = "".join(f"{unknown}, " for unknown in unknowns)
-    focus_morph_string = focus_morph_string[:-2]  # removes last comma
+    focus_morph_string: str
+
+    if am_config.recalc_unknowns_field_shows_inflections:
+        focus_morph_string = "".join(f"{unknown.inflection}, " for unknown in unknowns)
+    else:
+        focus_morph_string = "".join(f"{unknown.lemma}, " for unknown in unknowns)
+
+    focus_morph_string = focus_morph_string[:-2]  # removes last comma and whitespace
     index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_UNKNOWNS][0]
     note.fields[index] = focus_morph_string
 
@@ -746,7 +753,7 @@ def _update_unknowns_field(
 def _update_unknowns_count_field(
     note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
-    unknowns: list[str],
+    unknowns: list[Morpheme],
 ) -> None:
     index: int = note_type_field_name_dict[
         ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT

@@ -104,7 +104,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 1.1.1")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 1.2.0")
 
         self.show()
 
@@ -438,6 +438,12 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.toolbarStatsUseKnownRadioButton.setChecked(
             self._config.recalc_toolbar_stats_use_known
         )
+        self.ui.unknownsFieldShowsInflectionsRadioButton.setChecked(
+            self._config.recalc_unknowns_field_shows_inflections
+        )
+        self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
+            self._config.recalc_unknowns_field_shows_lemmas
+        )
 
     def _restore_recalc_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -463,6 +469,12 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
         self.ui.toolbarStatsUseKnownRadioButton.setChecked(
             self._default_config.recalc_toolbar_stats_use_known
+        )
+        self.ui.unknownsFieldShowsInflectionsRadioButton.setChecked(
+            self._default_config.recalc_unknowns_field_shows_inflections
+        )
+        self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
+            self._default_config.recalc_unknowns_field_shows_lemmas
         )
 
     def _populate_skip_tab(self) -> None:
@@ -590,6 +602,8 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             "recalc_read_known_morphs_folder": self.ui.recalcReadKnownMorphsFolderCheckBox.isChecked(),
             "recalc_toolbar_stats_use_seen": self.ui.toolbarStatsUseSeenRadioButton.isChecked(),
             "recalc_toolbar_stats_use_known": self.ui.toolbarStatsUseKnownRadioButton.isChecked(),
+            "recalc_unknowns_field_shows_inflections": self.ui.unknownsFieldShowsInflectionsRadioButton.isChecked(),
+            "recalc_unknowns_field_shows_lemmas": self.ui.unknownsFieldShowsLemmasRadioButton.isChecked(),
             "preprocess_ignore_bracket_contents": self.ui.preprocessIgnoreSquareCheckBox.isChecked(),
             "preprocess_ignore_round_bracket_contents": self.ui.preprocessIgnoreRoundCheckBox.isChecked(),
             "preprocess_ignore_slim_round_bracket_contents": self.ui.preprocessIgnoreSlimCheckBox.isChecked(),

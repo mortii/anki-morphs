@@ -107,9 +107,6 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
             self.skip_show_num_of_skipped_cards: bool = _get_bool_config(
                 "skip_show_num_of_skipped_cards", is_default
             )
-            self.recalc_interval_for_known: int = _get_int_config(
-                "recalc_interval_for_known", is_default
-            )
             self.preprocess_ignore_bracket_contents: bool = _get_bool_config(
                 "preprocess_ignore_bracket_contents", is_default
             )
@@ -128,6 +125,9 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
             self.preprocess_ignore_suspended_cards_content: bool = _get_bool_config(
                 "preprocess_ignore_suspended_cards_content", is_default
             )
+            self.recalc_interval_for_known: int = _get_int_config(
+                "recalc_interval_for_known", is_default
+            )
             self.recalc_on_sync: bool = _get_bool_config("recalc_on_sync", is_default)
             self.recalc_suspend_known_new_cards: bool = _get_bool_config(
                 "recalc_suspend_known_new_cards", is_default
@@ -140,6 +140,12 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
             )
             self.recalc_toolbar_stats_use_known: bool = _get_bool_config(
                 "recalc_toolbar_stats_use_known", is_default
+            )
+            self.recalc_unknowns_field_shows_inflections: bool = _get_bool_config(
+                "recalc_unknowns_field_shows_inflections", is_default
+            )
+            self.recalc_unknowns_field_shows_lemmas: bool = _get_bool_config(
+                "recalc_unknowns_field_shows_lemmas", is_default
             )
             self.tag_ready: str = _get_string_config("tag_ready", is_default)
             self.tag_not_ready: str = _get_string_config("tag_not_ready", is_default)

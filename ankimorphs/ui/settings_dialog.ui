@@ -467,7 +467,7 @@
               <number>10</number>
              </property>
              <property name="bottomMargin">
-              <number>10</number>
+              <number>0</number>
              </property>
              <item>
               <widget class="QLabel" name="label_16">
@@ -503,11 +503,17 @@
            </item>
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_14">
+             <property name="topMargin">
+              <number>10</number>
+             </property>
              <item>
               <widget class="QRadioButton" name="toolbarStatsUseSeenRadioButton">
                <property name="text">
                 <string>U and A shows seen morphs (reviewed at least once)</string>
                </property>
+               <attribute name="buttonGroup">
+                <string notr="true">recalcToolbarKnownRadioButtonGroup</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -515,6 +521,36 @@
                <property name="text">
                 <string>U and A shows known morphs (specified above)</string>
                </property>
+               <attribute name="buttonGroup">
+                <string notr="true">recalcToolbarKnownRadioButtonGroup</string>
+               </attribute>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_22">
+             <property name="topMargin">
+              <number>10</number>
+             </property>
+             <item>
+              <widget class="QRadioButton" name="unknownsFieldShowsInflectionsRadioButton">
+               <property name="text">
+                <string>am-unknowns field shows morph inflections</string>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">recalcUnknownFieldRadioButtonGroup</string>
+               </attribute>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="unknownsFieldShowsLemmasRadioButton">
+               <property name="text">
+                <string>am-unknowns field shows morph lemmas</string>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">recalcUnknownFieldRadioButtonGroup</string>
+               </attribute>
               </widget>
              </item>
             </layout>
@@ -795,4 +831,8 @@
  </widget>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="recalcToolbarKnownRadioButtonGroup"/>
+  <buttongroup name="recalcUnknownFieldRadioButtonGroup"/>
+ </buttongroups>
 </ui>
