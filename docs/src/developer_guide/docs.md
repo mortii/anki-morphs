@@ -38,4 +38,17 @@ http(s)://<username>.github.io/<repository>
 ```
 
 
+### Styling
+
+For additional spacing between bullet points, you have to add a space between at least one of the points, e.g.:
+``` text
+* **a**:  
+    a
+    
+* **b**:  
+    b
+* **c**:  
+    c
+```
+
 

@@ -7,7 +7,7 @@ your cards based on how well you know its content; the more you know, the sooner
 this is that it might take a long time before you see a cards with any unknown morphs, i.e., you don't learn anything
 new.
 
-To overcome this problem and speed up the learning process we can use the options found here.
+To overcome this problem and speed up the learning process, we can use the options found here.
 
 * **Skip cards with only known morphs**:  
   If AnkiMorph has determined that you know all the morphs on the card, then it will be buried and skipped.

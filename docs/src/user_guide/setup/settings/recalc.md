@@ -6,6 +6,7 @@
   Recalc automatically runs before Anki syncs your card collection.
   > **Note**: If you use the [FSRS4Anki Helper add-on](https://ankiweb.net/shared/info/759844606) with an `Auto [...]
   after sync`-option enabled, then this can cause a bug where sync and recalc occur at the same time.
+
 * **Suspend new cards with only known morphs**:  
   Cards that have either the ['All morphs known' tag](tags.md) or the ['Set known and skip' tag](tags.md) will be
   suspended on Recalc.
@@ -19,3 +20,13 @@
   confidence.
 * **U and A shows known morphs**:  
   [U and A](../../installation/changes-to-anki.md#toolbar) only show known morphs (uses the `Learning interval of known morphs` setting above).
+* **am-unknowns field shows morph inflections**:  
+  The [Extra Field](../../setup/settings/extra-fields.md#using-am-unknowns) `am-unknowns` shows morphs in their inflected forms.
+   ``` text
+  "walking and talking" -> [walking, and, talking]
+   ```
+*  **am-unknowns field shows morph lemmas**:  
+   The [Extra Field](../../setup/settings/extra-fields.md#using-am-unknowns) `am-unknowns` shows morphs in their lemma (base) forms.
+   ``` text
+   "walking and talking" -> [walk, and, talk]
+   ```

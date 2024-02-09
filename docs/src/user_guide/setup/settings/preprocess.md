@@ -6,6 +6,7 @@ Here are some options that can preprocess the text on your cards, potentially re
 
 * **Ignore content in square brackets []**:  
   Ignore content such as furigana readings and pitch
+
 * **Ignore content in round brackets ()**:  
   Ignore content such as character names and readings in scripts
 * **Ignore content in slim round brackets（ ）**:  
