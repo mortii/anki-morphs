@@ -364,6 +364,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.shortcutBrowseAllKeySequenceEdit.setKeySequence(
             self._config.shortcut_browse_all_same_unknown.toString()
         )
+        self.ui.shortcutBrowseReadyLemmaKeySequenceEdit.setKeySequence(
+            self._config.shortcut_browse_ready_same_unknown_lemma.toString()
+        )
         self.ui.shortcutKnownAndSkipKeySequenceEdit.setKeySequence(
             self._config.shortcut_set_known_and_skip.toString()
         )
@@ -403,6 +406,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
         self.ui.shortcutBrowseAllKeySequenceEdit.setKeySequence(
             self._default_config.shortcut_browse_all_same_unknown
+        )
+        self.ui.shortcutBrowseReadyLemmaKeySequenceEdit.setKeySequence(
+            self._default_config.shortcut_browse_ready_same_unknown_lemma.toString()
         )
         self.ui.shortcutKnownAndSkipKeySequenceEdit.setKeySequence(
             self._default_config.shortcut_set_known_and_skip
@@ -590,6 +596,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             "shortcut_settings": self.ui.shortcutSettingsKeySequenceEdit.keySequence().toString(),
             "shortcut_browse_ready_same_unknown": self.ui.shortcutBrowseReadyKeySequenceEdit.keySequence().toString(),
             "shortcut_browse_all_same_unknown": self.ui.shortcutBrowseAllKeySequenceEdit.keySequence().toString(),
+            "shortcut_browse_ready_same_unknown_lemma": self.ui.shortcutBrowseReadyLemmaKeySequenceEdit.keySequence().toString(),
             "shortcut_set_known_and_skip": self.ui.shortcutKnownAndSkipKeySequenceEdit.keySequence().toString(),
             "shortcut_learn_now": self.ui.shortcutLearnNowKeySequenceEdit.keySequence().toString(),
             "shortcut_view_morphemes": self.ui.shortcutViewMorphsKeySequenceEdit.keySequence().toString(),

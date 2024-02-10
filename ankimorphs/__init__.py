@@ -218,6 +218,9 @@ def init_browser_menus_and_actions() -> None:
     learn_now_action = create_learn_now_action(am_config)
     browse_morph_action = create_browse_same_morph_action()
     browse_morph_unknowns_action = create_browse_same_morph_unknowns_action(am_config)
+    browse_morph_unknowns_lemma_action = create_browse_same_morph_unknowns_lemma_action(
+        am_config
+    )
     already_known_tagger_action = create_already_known_tagger_action(am_config)
 
     def setup_browser_menu(_browser: Browser) -> None:
@@ -237,6 +240,7 @@ def init_browser_menus_and_actions() -> None:
         am_browse_menu.addAction(learn_now_action)
         am_browse_menu.addAction(browse_morph_action)
         am_browse_menu.addAction(browse_morph_unknowns_action)
+        am_browse_menu.addAction(browse_morph_unknowns_lemma_action)
         am_browse_menu.addAction(already_known_tagger_action)
 
     def setup_context_menu(_browser: Browser, context_menu: QMenu) -> None:
@@ -250,6 +254,7 @@ def init_browser_menus_and_actions() -> None:
         context_menu.addAction(learn_now_action)
         context_menu.addAction(browse_morph_action)
         context_menu.addAction(browse_morph_unknowns_action)
+        context_menu.addAction(browse_morph_unknowns_lemma_action)
         context_menu.addAction(already_known_tagger_action)
         context_menu_creation_action.setObjectName(CONTEXT_MENU)
 
@@ -396,6 +401,19 @@ def create_browse_same_morph_unknowns_action(am_config: AnkiMorphsConfig) -> QAc
     action.setShortcut(am_config.shortcut_browse_ready_same_unknown)
     action.triggered.connect(
         partial(browser_utils.run_browse_morph, search_unknowns=True)
+    )
+    return action
+
+
+def create_browse_same_morph_unknowns_lemma_action(
+    am_config: AnkiMorphsConfig,
+) -> QAction:
+    action = QAction("&Browse Same Unknown Morphs (Lemma)", mw)
+    action.setShortcut(am_config.shortcut_browse_ready_same_unknown_lemma)
+    action.triggered.connect(
+        partial(
+            browser_utils.run_browse_morph, search_unknowns=True, search_lemma_only=True
+        )
     )
     return action
 

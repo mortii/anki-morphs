@@ -76,6 +76,11 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
             self.shortcut_browse_all_same_unknown: QKeySequence = (
                 _get_key_sequence_config("shortcut_browse_all_same_unknown", is_default)
             )
+            self.shortcut_browse_ready_same_unknown_lemma: QKeySequence = (
+                _get_key_sequence_config(
+                    "shortcut_browse_ready_same_unknown_lemma", is_default
+                )
+            )
             self.shortcut_set_known_and_skip: QKeySequence = _get_key_sequence_config(
                 "shortcut_set_known_and_skip", is_default
             )

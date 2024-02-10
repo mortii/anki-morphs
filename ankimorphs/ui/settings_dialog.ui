@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>923</width>
-    <height>451</height>
+    <height>497</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -600,166 +600,208 @@
         <attribute name="title">
          <string>Shortcuts</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_19">
+        <layout class="QVBoxLayout" name="verticalLayout_25">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <layout class="QVBoxLayout" name="verticalLayout_24">
            <item>
-            <layout class="QVBoxLayout" name="verticalLayout_16">
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
              <item>
-              <widget class="QLabel" name="label_14">
-               <property name="text">
-                <string>Run recalc</string>
-               </property>
-              </widget>
+              <layout class="QVBoxLayout" name="verticalLayout_16">
+               <item>
+                <widget class="QLabel" name="label_14">
+                 <property name="text">
+                  <string>Run recalc</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_13">
+                 <property name="text">
+                  <string>Open settings</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_10">
+                 <property name="text">
+                  <string>Set card as known and skip</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_11">
+                 <property name="text">
+                  <string>Learn card now</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_12">
+                 <property name="text">
+                  <string>View card morphemes</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_7">
+                 <property name="text">
+                  <string>Frequency File Generator</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_15">
+                 <property name="text">
+                  <string>Readability Report Generator</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_18">
+                 <property name="text">
+                  <string>Known Morphs Exporter</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
              <item>
-              <widget class="QLabel" name="label_13">
-               <property name="text">
-                <string>Open settings</string>
-               </property>
-              </widget>
+              <layout class="QVBoxLayout" name="verticalLayout_15">
+               <item>
+                <widget class="QKeySequenceEdit" name="shortcutRecalcKeySequenceEdit"/>
+               </item>
+               <item>
+                <widget class="QKeySequenceEdit" name="shortcutSettingsKeySequenceEdit"/>
+               </item>
+               <item>
+                <widget class="QKeySequenceEdit" name="shortcutKnownAndSkipKeySequenceEdit"/>
+               </item>
+               <item>
+                <widget class="QKeySequenceEdit" name="shortcutLearnNowKeySequenceEdit"/>
+               </item>
+               <item>
+                <widget class="QKeySequenceEdit" name="shortcutViewMorphsKeySequenceEdit"/>
+               </item>
+               <item>
+                <widget class="QKeySequenceEdit" name="shortcutFrequencyFileGeneratorKeySequenceEdit"/>
+               </item>
+               <item>
+                <widget class="QKeySequenceEdit" name="shortcutReadabilityReportGeneratorKeySequenceEdit"/>
+               </item>
+               <item>
+                <widget class="QKeySequenceEdit" name="shortcutKnownMorphsExporterKeySequenceEdit"/>
+               </item>
+              </layout>
              </item>
              <item>
-              <widget class="QLabel" name="label_8">
-               <property name="text">
-                <string>Browse ready cards with same unknown morph</string>
+              <spacer name="horizontalSpacer_6">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
                </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_9">
-               <property name="text">
-                <string>Browse all cards with same unknown morph</string>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
                </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_10">
-               <property name="text">
-                <string>Set card as known and skip</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_11">
-               <property name="text">
-                <string>Learn card now</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_12">
-               <property name="text">
-                <string>View card morphemes</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_7">
-               <property name="text">
-                <string>Frequency File Generator</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_15">
-               <property name="text">
-                <string>Readability Report Generator</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_18">
-               <property name="text">
-                <string>Known Morphs Exporter</string>
-               </property>
-              </widget>
+              </spacer>
              </item>
             </layout>
            </item>
            <item>
-            <layout class="QVBoxLayout" name="verticalLayout_15">
+            <layout class="QHBoxLayout" name="horizontalLayout_12">
+             <property name="topMargin">
+              <number>10</number>
+             </property>
              <item>
-              <widget class="QKeySequenceEdit" name="shortcutRecalcKeySequenceEdit"/>
+              <layout class="QVBoxLayout" name="verticalLayout_19">
+               <item>
+                <widget class="QLabel" name="label_8">
+                 <property name="text">
+                  <string>Browse ready cards with same unknown morph (inflection)</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_9">
+                 <property name="text">
+                  <string>Browse all cards with same unknown morph (inflection)</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_19">
+                 <property name="text">
+                  <string>Browse ready cards with the same unknown morph (lemma)</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
              <item>
-              <widget class="QKeySequenceEdit" name="shortcutSettingsKeySequenceEdit"/>
+              <layout class="QVBoxLayout" name="verticalLayout_23">
+               <item>
+                <widget class="QKeySequenceEdit" name="shortcutBrowseReadyKeySequenceEdit"/>
+               </item>
+               <item>
+                <widget class="QKeySequenceEdit" name="shortcutBrowseAllKeySequenceEdit"/>
+               </item>
+               <item>
+                <widget class="QKeySequenceEdit" name="shortcutBrowseReadyLemmaKeySequenceEdit"/>
+               </item>
+              </layout>
              </item>
              <item>
-              <widget class="QKeySequenceEdit" name="shortcutBrowseReadyKeySequenceEdit"/>
-             </item>
-             <item>
-              <widget class="QKeySequenceEdit" name="shortcutBrowseAllKeySequenceEdit"/>
-             </item>
-             <item>
-              <widget class="QKeySequenceEdit" name="shortcutKnownAndSkipKeySequenceEdit"/>
-             </item>
-             <item>
-              <widget class="QKeySequenceEdit" name="shortcutLearnNowKeySequenceEdit"/>
-             </item>
-             <item>
-              <widget class="QKeySequenceEdit" name="shortcutViewMorphsKeySequenceEdit"/>
-             </item>
-             <item>
-              <widget class="QKeySequenceEdit" name="shortcutFrequencyFileGeneratorKeySequenceEdit"/>
-             </item>
-             <item>
-              <widget class="QKeySequenceEdit" name="shortcutReadabilityReportGeneratorKeySequenceEdit"/>
-             </item>
-             <item>
-              <widget class="QKeySequenceEdit" name="shortcutKnownMorphsExporterKeySequenceEdit"/>
+              <spacer name="horizontalSpacer_9">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
              </item>
             </layout>
            </item>
            <item>
-            <spacer name="horizontalSpacer_6">
+            <spacer name="verticalSpacer_5">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>40</width>
-               <height>20</height>
+               <width>20</width>
+               <height>40</height>
               </size>
              </property>
             </spacer>
            </item>
-          </layout>
-         </item>
-         <item>
-          <spacer name="verticalSpacer_5">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_10">
            <item>
-            <widget class="QPushButton" name="restoreShortcutsPushButton">
-             <property name="text">
-              <string>Restore Default Shortcut Settings</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_11">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
+            <layout class="QHBoxLayout" name="horizontalLayout_10">
+             <item>
+              <widget class="QPushButton" name="restoreShortcutsPushButton">
+               <property name="text">
+                <string>Restore Default Shortcut Settings</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_11">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </item>
           </layout>
          </item>

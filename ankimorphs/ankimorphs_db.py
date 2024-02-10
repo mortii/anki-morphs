@@ -220,7 +220,10 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         return morphs
 
     def get_ids_of_cards_with_same_morphs(
-        self, card_id: int, search_unknowns: bool = False
+        self,
+        card_id: int,
+        search_unknowns: bool = False,
+        search_lemma_only: bool = False,
     ) -> Optional[set[int]]:
         # The where_query_string is a necessary hack to overcome the sqlite problem
         # of not allowing variable length parameters
@@ -229,16 +232,21 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         card_morphs: Optional[set[tuple[str, str]]] = self.get_morphs_of_card(
             card_id, search_unknowns
         )
-
         if card_morphs is None:
             return None
 
-        where_query_string = "WHERE" + "".join(
-            [
-                f" (morph_lemma = '{morph[0]}' AND morph_inflection = '{morph[1]}') OR"
-                for morph in card_morphs
-            ]
-        )
+        if search_lemma_only:
+            where_query_string = "WHERE" + "".join(
+                [f" (morph_lemma = '{morph[0]}') OR" for morph in card_morphs]
+            )
+        else:
+            where_query_string = "WHERE" + "".join(
+                [
+                    f" (morph_lemma = '{morph[0]}' AND morph_inflection = '{morph[1]}') OR"
+                    for morph in card_morphs
+                ]
+            )
+
         where_query_string = where_query_string[:-3]  # removes last ' OR'
 
         with self.con:
@@ -325,7 +333,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
     @staticmethod
     def rebuild_seen_morphs_today_background(collection: Collection) -> None:
         # sqlite can only use a db instance in the same thread it was created
-        # on, that is why this function is static.
+        # on, which is why this function is static.
         del collection  # unused
         assert mw is not None
 
@@ -343,7 +351,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         am_db.create_seen_morph_table()
 
         with am_db.con:
-            # if no cards are studied, then don't insert any morphs
+            # don't insert any morphs if no cards have been studied
             if where_query_string != "":
                 am_db.con.execute(
                     """

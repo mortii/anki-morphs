@@ -215,10 +215,10 @@ def _set_card_as_known_and_skip(am_config: AnkiMorphsConfig) -> None:
     # operation takes place before or after, e.g. answering a card,
     # THEN you can undo it...
     #
-    # So for example if you start reviewing a deck, and you press
+    # So for example, if you start reviewing a deck, and you press
     # 'K' on the first card you see, it gets set as known and is
-    # skipped. At that point you cannot undo. If you answer the
-    # next card that is shown (or bury it or change it in any way)
+    # skipped. At that point, you cannot undo. If you answer the
+    # next card that is shown (or bury it or change it in any way),
     # you can now undo twice and the previous 'set known and skip'
     # will be undone.
     #
@@ -231,7 +231,7 @@ def _set_card_as_known_and_skip(am_config: AnkiMorphsConfig) -> None:
     ################################################################
     # Every undo entry/undo status has a 'last_step' value. This
     # is an incremented value assigned when the operation is created.
-    # When merging undo entries this is the value that is used as
+    # When merging undo entries, this is the value that is used as
     # a pointer/id to the undo entry.
     #
     # Let's say we have 3 undo entries:
@@ -242,7 +242,7 @@ def _set_card_as_known_and_skip(am_config: AnkiMorphsConfig) -> None:
     # If we now merged the second and third entries into the first
     # entry, e.g. col.merge_undo_entries(1), we cannot later merge
     # entries into 2 or 3, because they don't 'exist' anymore. If we
-    # want to merge into those then we need to merge into 1 instead.
+    # want to merge into those, then we need to merge into 1 instead.
     # This is why we need to store set_known_and_skip_undo as a global
     # variable--to keep track of where the entries were merged into,
     # so we can merge into this point later in am_next_card.
@@ -296,6 +296,9 @@ def am_reviewer_shortcut_keys(
     am_config = AnkiMorphsConfig()
 
     key_browse_ready: QKeySequence = am_config.shortcut_browse_ready_same_unknown
+    key_browse_ready_lemma: QKeySequence = (
+        am_config.shortcut_browse_ready_same_unknown_lemma
+    )
     key_browse_all: QKeySequence = am_config.shortcut_browse_all_same_unknown
     key_skip: QKeySequence = am_config.shortcut_set_known_and_skip
 
@@ -306,6 +309,15 @@ def am_reviewer_shortcut_keys(
                 key_browse_ready.toString(),
                 lambda: browse_same_morphs(
                     am_config, search_unknowns=True, search_ready_tag=True
+                ),
+            ),
+            (
+                key_browse_ready_lemma.toString(),
+                lambda: browse_same_morphs(
+                    am_config,
+                    search_unknowns=True,
+                    search_ready_tag=True,
+                    search_lemma_only=True,
                 ),
             ),
             (

@@ -22,7 +22,10 @@ from .ui.view_morphs_dialog_ui import Ui_ViewMorphsDialog
 browser: Optional[Browser] = None
 
 
-def run_browse_morph(search_unknowns: bool = False) -> None:
+def run_browse_morph(
+    search_unknowns: bool = False,
+    search_lemma_only: bool = False,
+) -> None:
     assert mw is not None
     assert browser is not None
 
@@ -32,23 +35,28 @@ def run_browse_morph(search_unknowns: bool = False) -> None:
         card = mw.col.get_card(cid)
         note = card.note()
         browse_same_morphs(
-            am_config, card_id=cid, note=note, search_unknowns=search_unknowns
+            am_config,
+            card_id=cid,
+            note=note,
+            search_unknowns=search_unknowns,
+            search_lemma_only=search_lemma_only,
         )
         return  # Only use one card since note-types can be different
 
 
-def browse_same_morphs(
+def browse_same_morphs(  # pylint:disable=too-many-arguments
     am_config: AnkiMorphsConfig,
     card_id: Optional[int] = None,
     note: Optional[Note] = None,
     search_unknowns: bool = False,
     search_ready_tag: bool = False,
+    search_lemma_only: bool = False,
 ) -> None:
     # Opens browser and displays all notes with the same focus morph.
     # Useful to quickly find alternative notes to learn focus from.
     #
     # The query is a list of card ids. This might seem unnecessarily complicated, but
-    # if we were to only query the text on the cards themselves we can get false positives
+    # if we were to only query the text on the cards themselves, we can get false positives
     # because inflected morphs with different bases can be identical to each-other.
 
     global browser
@@ -74,10 +82,30 @@ def browse_same_morphs(
         return
 
     card_ids: Optional[set[int]]
-    if search_unknowns:
-        card_ids = am_db.get_ids_of_cards_with_same_morphs(card_id, search_unknowns)
+
+    # These branches are simplified by the fact that we have not exhaustively
+    # added all combinations of known/unknown and inflection/lemma.
+    # If someone searched for lemma only, then they also are only searching
+    # through unknowns.
+    #
+    # It's implemented in a non-exhaustive manner like this mainly because
+    # the menus get cluttered and the modifier keys combinations get unwieldy.
+
+    if search_lemma_only:
+        card_ids = am_db.get_ids_of_cards_with_same_morphs(
+            card_id,
+            search_unknowns=True,
+            search_lemma_only=True,
+        )
+        error_text = "No unknown morphs"
+    elif search_unknowns:
+        # only matches morph inflections
+        card_ids = am_db.get_ids_of_cards_with_same_morphs(
+            card_id, search_unknowns=True
+        )
         error_text = "No unknown morphs"
     else:
+        # only matches morph inflections
         card_ids = am_db.get_ids_of_cards_with_same_morphs(card_id)
         error_text = "No morphs"
 

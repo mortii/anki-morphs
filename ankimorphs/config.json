@@ -37,6 +37,7 @@
   "recalc_unknowns_field_shows_lemmas": false,
   "shortcut_browse_all_same_unknown": "Shift+L",
   "shortcut_browse_ready_same_unknown": "L",
+  "shortcut_browse_ready_same_unknown_lemma": "Ctrl+Shift+L",
   "shortcut_frequency_file_generator": "Ctrl+Shift+F",
   "shortcut_known_morphs_exporter": "Ctrl+Shift+E",
   "shortcut_learn_now": "Ctrl+Alt+N",
