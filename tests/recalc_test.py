@@ -14,6 +14,7 @@ from anki.notes import Note
 from aqt import setupLangAndBackend
 
 from ankimorphs import (
+    AnkiMorphsConfig,
     AnkiMorphsDB,
     ankimorphs_config,
     ankimorphs_db,
@@ -21,7 +22,9 @@ from ankimorphs import (
     name_file_utils,
     recalc,
     spacy_wrapper,
+    text_highlighting,
 )
+from ankimorphs.morpheme import Morpheme
 
 
 class CardData:
@@ -155,7 +158,7 @@ def test_recalc(fake_environment):  # pylint:disable=too-many-locals
     card_due_dict: dict[int, CardData] = {}
 
     original_collection_cards = original_collection.find_cards("")
-    card_collection_length = 37323
+    card_collection_length = 37322
     assert len(original_collection_cards) == card_collection_length
 
     for card_id in original_collection_cards:
@@ -239,6 +242,59 @@ def test_recalc(fake_environment):  # pylint:disable=too-many-locals
     known_morphs_correct = [("æ", "æ"), ("ø", "ø")]
 
     assert known_morphs_test == known_morphs_correct
+
+
+def test_highlighting(fake_environment):  # pylint:disable=unused-argument
+    # this example has a couple of good nuances:
+    #   1.  空[あ]い has a ruby character in the middle of the morph
+    #   2. お 前[まえ] does not match any morphs, so this checks the non-span highlighting branch
+    #   3. the final [b] at the end is to make sure the final ranges work
+    input_text: str = (
+        "珍[めずら]しく 時間[じかん]が 空[あ]いたので　お 前[まえ]たちの 顔[かお]を 見[み]に な[b]"
+    )
+    correct_result: str = (
+        '<span morph-status="unknown">珍[めずら]しく</span> <span morph-status="unknown">時間[じかん]</span><span morph-status="unknown">が</span> <span morph-status="unknown">空[あ]い</span><span morph-status="unknown">た</span><span morph-status="unknown">ので</span>　お 前[まえ]<span morph-status="unknown">たち</span><span morph-status="unknown">の</span> <span morph-status="unknown">顔[かお]</span><span morph-status="unknown">を</span> <span morph-status="unknown">見[み]</span><span morph-status="unknown">に</span> <span morph-status="unknown">な[b]</span>'
+    )
+
+    am_config = AnkiMorphsConfig()
+    card_morphs: list[Morpheme] = [
+        Morpheme(lemma="お前", inflection="お前", highest_learning_interval=0),
+        Morpheme(lemma="が", inflection="が", highest_learning_interval=0),
+        Morpheme(lemma="た", inflection="た", highest_learning_interval=0),
+        Morpheme(lemma="たち", inflection="たち", highest_learning_interval=0),
+        Morpheme(lemma="な", inflection="な", highest_learning_interval=0),
+        Morpheme(lemma="に", inflection="に", highest_learning_interval=0),
+        Morpheme(lemma="の", inflection="の", highest_learning_interval=0),
+        Morpheme(lemma="ので", inflection="ので", highest_learning_interval=0),
+        Morpheme(lemma="を", inflection="を", highest_learning_interval=0),
+        Morpheme(lemma="時間", inflection="時間", highest_learning_interval=0),
+        Morpheme(lemma="珍しい", inflection="珍しく", highest_learning_interval=0),
+        Morpheme(lemma="空く", inflection="空い", highest_learning_interval=0),
+        Morpheme(lemma="見る", inflection="見", highest_learning_interval=0),
+        Morpheme(lemma="顔", inflection="顔", highest_learning_interval=0),
+    ]
+
+    highlighted_text: str = text_highlighting.get_highlighted_text(
+        am_config, card_morphs, input_text
+    )
+
+    assert highlighted_text == correct_result
+
+    # This second example the morphemizer finds the correct morph. However, the regex does
+    # not match the morph because of the whitespace between 'す ね', which means that no
+    # spans are made, potentially causing an 'index out of range' error immediately.
+    input_text: str = "そうです ね"
+    card_morphs: list[Morpheme] = [
+        Morpheme(
+            lemma="そうですね", inflection="そうですね", highest_learning_interval=0
+        ),
+    ]
+    correct_result: str = "そうです ね"
+    highlighted_text: str = text_highlighting.get_highlighted_text(
+        am_config, card_morphs, input_text
+    )
+
+    assert highlighted_text == correct_result
 
 
 @pytest.mark.xfail

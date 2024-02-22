@@ -1,7 +1,6 @@
 import csv
 import functools
 import os
-import re
 import time
 from collections import Counter
 from collections.abc import Sequence
@@ -21,7 +20,7 @@ from aqt.operations import QueryOp
 from aqt.qt import QMessageBox  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
-from . import ankimorphs_config, ankimorphs_globals, spacy_wrapper
+from . import ankimorphs_config, ankimorphs_globals, spacy_wrapper, text_highlighting
 from .anki_data_utils import AnkiCardData, AnkiDBRowData, AnkiMorphsCardData
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
@@ -786,7 +785,7 @@ def _update_highlighted_field(  # pylint:disable=too-many-arguments
 
     assert config_filter.field_index is not None
     text_to_highlight = note.fields[config_filter.field_index]
-    highlighted_text = _highlight_text(
+    highlighted_text = text_highlighting.get_highlighted_text(
         am_config,
         card_morphs,
         text_to_highlight,
@@ -853,56 +852,6 @@ def remove_exclusive_tags(note: Note, mutually_exclusive_tags: list[str]) -> Non
             note.tags.remove(tag)
 
 
-def _highlight_text(
-    am_config: AnkiMorphsConfig,
-    card_morphs: list[Morpheme],
-    text_to_highlight: str,
-) -> str:
-    highlighted_text = text_to_highlight
-
-    # Avoid formatting a smaller morph contained in a bigger morph, reverse sort fixes this
-    sorted_morphs = sorted(
-        card_morphs,
-        key=lambda _simple_morph: len(_simple_morph.inflection),
-        reverse=True,
-    )
-
-    for morph in sorted_morphs:
-        # print(f"morph: {morph.base}, {morph.inflected}")
-        assert morph.highest_learning_interval is not None
-
-        if morph.highest_learning_interval == 0:
-            morph_status = "unknown"
-        elif morph.highest_learning_interval < am_config.recalc_interval_for_known:
-            morph_status = "learning"
-        else:
-            morph_status = "known"
-
-        replacement = f'<span morph-status="{morph_status}">\\1</span>'
-        highlighted_text = _create_highlight_span(
-            f"({morph.inflection})", replacement, highlighted_text
-        )
-
-    # print(f"highlighted_text: {highlighted_text}")
-    return highlighted_text
-
-
-def _create_highlight_span(sub: str, repl: str, string: str) -> str:
-    txt = ""
-    for span in re.split("(<span.*?</span>)", string):
-        if span.startswith("<span"):
-            txt += span
-        else:
-            try:
-                txt += "".join(re.sub(sub, repl, span, flags=re.IGNORECASE))
-            except re.error as error:
-                # malformed text like this: "え工ｴｴｪｪ(´д｀)ｪｪｴｴ工" causes an error
-                txt += f"this text is broken: {error}"
-
-    # print(f"non_span_sub: {txt}")
-    return txt
-
-
 def _get_end_of_new_cards_queue(modified_cards: list[Card]) -> int:
     assert mw is not None
     assert mw.col.db is not None
@@ -917,7 +866,7 @@ def _get_end_of_new_cards_queue(modified_cards: list[Card]) -> int:
     try:
         highest_due: int = int(mw.col.db.scalar(end_of_queue_query_string))
     except TypeError:
-        # if all your cards match the note filters then the query will return None
+        # if all your cards match the note filters, then the query will return None
         highest_due = 0
     return highest_due + 1
 
