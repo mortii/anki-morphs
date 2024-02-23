@@ -93,6 +93,21 @@ It’s also possible to use `background-color`:
 
 ![styling.png](../../../img/styling.png)
 
+### Furigana and other ruby characters
+
+![ruby_characters_preserved.png](../../../img/ruby_characters_preserved.png)
+
+The `am-highlighted` field supports [ruby characters](https://docs.ankiweb.net/templates/fields.html#ruby-characters)
+such as furigana. To have furigana displayed properly, you have to prepend `furigana:` to the field in the card
+template, e.g:
+
+``` text
+{{furigana:am-highlighted}}
+```
+
+This does not always work flawlessly, unfortunately. The [known problems](../../known-problems.md) section has more
+details.
+
 ### Duplicate Audio Problem
 
 ![duplicate-audio.png](../../../img/duplicate-audio.png)

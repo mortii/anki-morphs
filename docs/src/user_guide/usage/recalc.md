@@ -27,21 +27,22 @@ running it automatically before Anki syncs your collection.
 
 ### Difficulty Algorithm
 
-$$$ \text{Difficulty} = \left(\prod^{U} U_p\right) + \left(\sum^M{M_p}\right)$$$
+$$$ \large \text{Difficulty} = U_n \times U_p + \sum_{m \in M}{m_p} $$$
 
 where
 $$$
 \begin{align*}
-& U = \text{Number of unknown morphs} \\
+& U_n = \text{The number of unknown morphs} \\
 & U_p = \text{Unknown morph penalty} = 5 \times 10^5\\
-& M = \text{Number of morphs}\\
-& M_p = \text{Morph priority}\\
+& M = \text{The set of morphs}\\
+& m_p = \text{The priority given to morph } m\\
 \end{align*}
 $$$
 
 Note that the sum of [morph priorities](../setup/prioritizing.md) is capped to be less than the unknown morph penalty,
 which gives us the inequality:
 
-$$$ 0 \le \left(\sum^M{M_p}\right) < U_p $$$
+$$$ \large 0 \le \left(\sum_{m \in M}{m_p}\right) < U_p $$$
 
 This makes sure that one unknown morph is calculated to be more difficult than any number of known rare morphs.
+
