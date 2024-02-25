@@ -71,6 +71,12 @@ class TagSelectionDialog(QDialog):  # pylint:disable=too-many-instance-attribute
         excluded: list[str] = tag_object["exclude"]
         included: list[str] = tag_object["include"]
 
+        # the user could have deleted the tags from anki after they made
+        # the note filter, which would mean that we look up non-existing
+        # tags, causing assertion errors and crashes.
+        excluded = [tag for tag in excluded if tag in all_tags]
+        included = [tag for tag in included if tag in all_tags]
+
         for tag in excluded:
             _row = self._find_row_with_tag(tag)
             _exclude_checkbox: QCheckBox = get_checkbox_widget(
