@@ -98,7 +98,11 @@ def _get_next_card_background(
 
         reviewer._get_next_v3_card()
         reviewer._previous_card_info.set_card(reviewer.previous_card)
-        reviewer._card_info.set_card(reviewer.card)
+
+        # the _card_info.set_card function updates the card info window (gui)
+        # if it is open, which you can't do in a background thread (it crashes),
+        # so we have to run the function on the main thread
+        mw.taskman.run_on_main(partial(reviewer._card_info.set_card, reviewer.card))
 
         if not reviewer.card:
             raise CardQueueEmptyException  # handled in _on_failure()
