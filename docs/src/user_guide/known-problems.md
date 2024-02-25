@@ -105,7 +105,7 @@
 > split:
 > 錬金術[れんきんじゅ]師[つし]
 > ```
-> then you get this:
+> then `am-highlighted` will produce this instead:
 > 
 > <img src="../img/furigana-bug-fixed.png" alt="image" width="60%" height="auto">
 
