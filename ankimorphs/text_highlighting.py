@@ -185,7 +185,9 @@ def _extract_span_elements_and_filter_string(
         else:
             morph_status = "known"
 
-        regex_pattern: str = f"{morph.inflection}"
+        # escaping special regex characters is crucial because morphs from malformed text
+        # sometimes can include them, e.g. "?몇"
+        regex_pattern: str = f"{re.escape(morph.inflection)}"
         morph_matches = re.finditer(regex_pattern, text_to_highlight)
 
         for morph_match in morph_matches:
