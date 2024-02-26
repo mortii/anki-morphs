@@ -9,9 +9,12 @@ from .morpheme import Morpheme
 class SpanElement:
 
     def __init__(
-        self, morph: Morpheme, morph_status: str, start_index: int, end_index: int
+        self, morph_group: str, morph_status: str, start_index: int, end_index: int
     ):
-        self.morph: Morpheme = morph
+        # it's crucial that the morph_group parameter originates from Match[str].group()
+        # because that maintains the original letter casing, which we want to preserve
+        # in the highlighted version of the text.
+        self.morph_group: str = morph_group
         self.morph_status: str = morph_status
         self.start_index: int = start_index
         self.end_index: int = end_index
@@ -78,7 +81,7 @@ def get_highlighted_text(
             span_element is not None
             and span_element.start_index <= index < span_element.end_index
         ):
-            span_string = span_element.morph.inflection
+            span_string = span_element.morph_group
 
             if len(ruby_character_dict) > 0:
                 # we need to do this in reverse order to preserve the indices
@@ -188,15 +191,20 @@ def _extract_span_elements_and_filter_string(
         # escaping special regex characters is crucial because morphs from malformed text
         # sometimes can include them, e.g. "?몇"
         regex_pattern: str = f"{re.escape(morph.inflection)}"
-        morph_matches = re.finditer(regex_pattern, text_to_highlight)
+        morph_matches = re.finditer(
+            regex_pattern, text_to_highlight, flags=re.IGNORECASE
+        )
 
         for morph_match in morph_matches:
             start_index = morph_match.start()
             end_index = morph_match.end()
             morph_len = end_index - start_index
 
+            # the morph_match.group() maintains the original letter casing of the
+            # morph found in the text, which is crucial because we want everything
+            # to be identical to the original text.
             span_elements.append(
-                SpanElement(morph, morph_status, start_index, end_index)
+                SpanElement(morph_match.group(), morph_status, start_index, end_index)
             )
 
             # we need to preserve indices, so we replace the morphs with whitespaces
