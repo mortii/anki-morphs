@@ -11,6 +11,7 @@
 # Incorrect:
 # from ankimorphs import browser_utils
 ################################################################
+
 import json
 from functools import partial
 from pathlib import Path
@@ -21,6 +22,7 @@ from anki.cards import Card
 from anki.collection import OpChangesAfterUndo
 from aqt import gui_hooks, mw
 from aqt.browser.browser import Browser
+from aqt.overview import Overview
 from aqt.qt import (  # pylint:disable=no-name-in-module
     QAction,
     QDesktopServices,
@@ -52,11 +54,12 @@ from .settings_dialog import SettingsDialog
 from .tag_selection_dialog import TagSelectionDialog
 from .toolbar_stats import MorphToolbarStats
 
-TOOL_MENU: str = "am_tool_menu"
-BROWSE_MENU: str = "am_browse_menu"
-CONTEXT_MENU: str = "am_context_menu"
+_TOOL_MENU: str = "am_tool_menu"
+_BROWSE_MENU: str = "am_browse_menu"
+_CONTEXT_MENU: str = "am_context_menu"
 
-startup_sync: bool = True
+_startup_sync: bool = True
+_updated_seen_morphs_for_profile: bool = False
 
 
 def main() -> None:
@@ -77,11 +80,13 @@ def main() -> None:
 
     gui_hooks.webview_will_show_context_menu.append(add_name_action)
 
+    gui_hooks.overview_did_refresh.append(update_seen_morphs)
+
     gui_hooks.reviewer_did_answer_card.append(insert_seen_morphs)
 
     gui_hooks.state_did_undo.append(rebuild_seen_morphs)
 
-    gui_hooks.profile_will_close.append(clear_seen_morphs)
+    gui_hooks.profile_will_close.append(clean_profile_session)
 
 
 def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
@@ -135,21 +140,8 @@ def load_am_profile_configs() -> None:
 
 
 def init_db() -> None:
-    read_config_filters: list[AnkiMorphsConfigFilter] = (
-        ankimorphs_config.get_read_enabled_filters()
-    )
-    has_active_note_filter = False
-
-    for config_filter in read_config_filters:
-        if config_filter.note_type != "":
-            has_active_note_filter = True
-
     am_db = AnkiMorphsDB()
     am_db.create_all_tables()
-
-    if has_active_note_filter:
-        AnkiMorphsDB.rebuild_seen_morphs_today()
-
     am_db.con.close()
 
 
@@ -184,7 +176,7 @@ def init_tool_menu_and_actions() -> None:
     assert mw is not None
 
     for action in mw.form.menuTools.actions():
-        if action.objectName() == TOOL_MENU:
+        if action.objectName() == _TOOL_MENU:
             return  # prevents duplicate menus on profile-switch
 
     am_config = AnkiMorphsConfig()
@@ -227,7 +219,7 @@ def init_browser_menus_and_actions() -> None:
         browser_utils.browser = _browser
 
         for action in browser_utils.browser.form.menubar.actions():
-            if action.objectName() == BROWSE_MENU:
+            if action.objectName() == _BROWSE_MENU:
                 return  # prevents duplicate menus on profile-switch
 
         am_browse_menu = QMenu("AnkiMorphs", mw)
@@ -235,7 +227,7 @@ def init_browser_menus_and_actions() -> None:
             am_browse_menu
         )
         assert am_browse_menu_creation_action is not None
-        am_browse_menu_creation_action.setObjectName(BROWSE_MENU)
+        am_browse_menu_creation_action.setObjectName(_BROWSE_MENU)
         am_browse_menu.addAction(view_action)
         am_browse_menu.addAction(learn_now_action)
         am_browse_menu.addAction(browse_morph_action)
@@ -245,7 +237,7 @@ def init_browser_menus_and_actions() -> None:
 
     def setup_context_menu(_browser: Browser, context_menu: QMenu) -> None:
         for action in context_menu.actions():
-            if action.objectName() == CONTEXT_MENU:
+            if action.objectName() == _CONTEXT_MENU:
                 return  # prevents duplicate menus on profile-switch
 
         context_menu_creation_action = context_menu.insertSeparator(learn_now_action)
@@ -256,7 +248,7 @@ def init_browser_menus_and_actions() -> None:
         context_menu.addAction(browse_morph_unknowns_action)
         context_menu.addAction(browse_morph_unknowns_lemma_action)
         context_menu.addAction(already_known_tagger_action)
-        context_menu_creation_action.setObjectName(CONTEXT_MENU)
+        context_menu_creation_action.setObjectName(_CONTEXT_MENU)
 
     gui_hooks.browser_menus_did_init.append(setup_browser_menu)
     gui_hooks.browser_will_show_context_menu.append(setup_context_menu)
@@ -265,10 +257,10 @@ def init_browser_menus_and_actions() -> None:
 def recalc_on_sync() -> None:
     # Sync automatically happens on Anki startup, so we have
     # to check for that before we run recalc
-    global startup_sync
+    global _startup_sync
 
-    if startup_sync:
-        startup_sync = False
+    if _startup_sync:
+        _startup_sync = False
     else:
         am_config = AnkiMorphsConfig()
         if am_config.recalc_on_sync:
@@ -294,6 +286,35 @@ def insert_seen_morphs(
     am_db = AnkiMorphsDB()
     am_db.update_seen_morphs_today_single_card(card.id)
     am_db.con.close()
+
+
+def update_seen_morphs(overview: Overview) -> None:
+    # Overview is NOT the starting screen, it's the screen you get
+    # when clicking on a deck. That is a good time to run this
+    # function because it is only really necessary to know 'seen morphs'
+    # before starting to review. This was previously run on the
+    # profile_did_open hook, but that sometimes caused interference
+    # with add-on updater (they both happened at the same time).
+
+    del overview  # unused
+    global _updated_seen_morphs_for_profile
+
+    if _updated_seen_morphs_for_profile:
+        return
+
+    has_active_note_filter = False
+    read_config_filters: list[AnkiMorphsConfigFilter] = (
+        ankimorphs_config.get_read_enabled_filters()
+    )
+
+    for config_filter in read_config_filters:
+        if config_filter.note_type != "":
+            has_active_note_filter = True
+
+    if has_active_note_filter:
+        AnkiMorphsDB.rebuild_seen_morphs_today()
+
+    _updated_seen_morphs_for_profile = True
 
 
 def rebuild_seen_morphs(changes: OpChangesAfterUndo) -> None:
@@ -332,7 +353,10 @@ def rebuild_seen_morphs(changes: OpChangesAfterUndo) -> None:
         am_db.con.close()
 
 
-def clear_seen_morphs() -> None:
+def clean_profile_session() -> None:
+    global _updated_seen_morphs_for_profile
+
+    _updated_seen_morphs_for_profile = False
     AnkiMorphsDB.drop_seen_morphs_table()
 
 
@@ -341,7 +365,7 @@ def create_am_tool_menu() -> QMenu:
     am_tool_menu = QMenu("AnkiMorphs", mw)
     am_tool_menu_creation_action = mw.form.menuTools.addMenu(am_tool_menu)
     assert am_tool_menu_creation_action is not None
-    am_tool_menu_creation_action.setObjectName(TOOL_MENU)
+    am_tool_menu_creation_action.setObjectName(_TOOL_MENU)
     return am_tool_menu
 
 
