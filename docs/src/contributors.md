@@ -10,12 +10,12 @@ mortii, Vilhelm-Ian.
 
 ### Docs contribution
 
-Matt Vs Japan, mortii, Vilhelm-Ian, cocowash.
+Matt Vs Japan, mortii, Vilhelm-Ian, cocowash, xuiqzy.
 
 ### Bugs reports, feature requests, or other helpful guidance
 
 Vilhelm-Ian, CodeWithMa, ashprice, Aleksej, HQYang1979, soliviantar, buster-blue, rymiel, BorisNA, wrinkledeth,
-cocowash, asayake-b5, quietmansoath, MichaelPetre, xofm31, knoebelja.
+cocowash, asayake-b5, quietmansoath, MichaelPetre, xofm31, knoebelja, xuiqzy.
 
 ### MorphMan (v5.0-qt6-alpha.1)
 

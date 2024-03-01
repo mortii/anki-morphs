@@ -19,12 +19,32 @@ the packages of a language to see which models are available.
 
 # Installing spaCy
 
-There is, unfortunately, no super simple way to integrate spaCy with Anki, so we have to use perform a little bit of
+There is, unfortunately, no super simple way to integrate spaCy with Anki, so we have to perform a little bit of
 terminal magic. This is because spaCy has a relatively large size (usually ~400 MB), so it can't be included as part of
-AnkiMorphs itself. Another problem is that Anki uses Python 3.9, which is considered an outdated version of python,
-further complicating the process somewhat. 
+AnkiMorphs itself.
 
-That being said, this only needs to be done once, so hopefully it's not too bad.
+Another problem is that we have to install spaCy with the same python version that Anki uses. If you downloaded Anki
+from their website, the python version will be `3.9`. This version of python is considered outdated, further complicating
+the process somewhat.
+
+If your Anki is from another source, then read the section below:
+
+<details>
+  <summary>Non-standard Anki builds</summary>
+
+> **Note:** If you are using a non-standard Anki build (e.g. `anki-bin` from AUR), then the python version will
+> probably not be `3.9`. To check which
+> python version your Anki is using, go to `Help -> About`, and you will find something like
+> this: `Python 3.9.15 Qt 6.6.1 PyQt 6.6.1`
+> <br><br>Because of the way the python packaging system works, we have to install spaCy with a python version that has
+> the same first two number groups, i.e. if your Anki shows `Python 3.11.xx`, you can install spaCy using
+> any `Python 3.11.yy` version.
+> <br><br>The rest of this guide assumes Anki uses `Python 3.9`, but if that is not the cause, then substitute `3.9` in
+> the terminal commands with whatever your Anki is using.
+</details>
+
+
+With all that being said, this only needs to be done once, so hopefully it's not too bad.
 
 
 <details>
