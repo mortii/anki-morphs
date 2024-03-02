@@ -37,7 +37,17 @@ from .text_preprocessing import (
     get_processed_spacy_morphs,
 )
 
-start_time: Optional[float] = None
+# Anki stores the 'due' value of cards as a 32-bit integer
+# on the backend, with '2147483647' being the max value before
+# overflow. To prevent overflow when cards are repositioned,
+# we decrement the second digit (from the left) of the max value,
+# which should give plenty of leeway (10^8).
+_DEFAULT_DIFFICULTY: int = 2047483647
+
+# When recalc is finished, the total duration is printed
+# to the terminal. We have a global start time variable
+# to make this process easier.
+_start_time: Optional[float] = None
 
 
 def recalc() -> None:
@@ -53,10 +63,10 @@ def recalc() -> None:
     ################################################################
 
     assert mw is not None
-    global start_time
+    global _start_time
 
     mw.progress.start(label="Recalculating")
-    start_time = time.time()
+    _start_time = time.time()
 
     operation = QueryOp(
         parent=mw,
@@ -451,10 +461,10 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                     note,
                 )
 
-            # We cannot check if due is different from the original here
+            # Note: we cannot check the card has actually been modified here,
             # because due is recalculated later.
             modified_cards.append(card)
-            handled_cards[card_id] = None
+            handled_cards[card_id] = None  # this marks the card as handled
 
             if original_fields != note.fields or original_tags != note.tags:
                 modified_notes.append(note)
@@ -689,9 +699,6 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
     #     morph_unknown_penalty = 500,000
     ####################################################################################
 
-    # Anki stores 'due' as a 32-bit integers on the backend,
-    # 2147483647 is therefore the max value before overflow.
-    default_difficulty = 2147483647
     morph_unknown_penalty = 500000
     unknown_morphs: list[Morpheme] = []
     has_learning_morph: bool = False
@@ -700,7 +707,7 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
         card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
     except KeyError:
         # card does not have morphs or is buggy in some way
-        return default_difficulty, unknown_morphs, has_learning_morph
+        return _DEFAULT_DIFFICULTY, unknown_morphs, has_learning_morph
 
     difficulty = 0
 
@@ -726,7 +733,7 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
 
     if len(unknown_morphs) == 0 and am_config.skip_only_known_morphs_cards:
         # Move stale cards to the end of the queue
-        return default_difficulty, unknown_morphs, has_learning_morph
+        return _DEFAULT_DIFFICULTY, unknown_morphs, has_learning_morph
 
     return difficulty, unknown_morphs, has_learning_morph
 
@@ -861,7 +868,7 @@ def _get_end_of_new_cards_queue(modified_cards: list[Card]) -> int:
     SELECT MAX(due) 
     FROM cards 
     """
-        + f"WHERE type = 0 AND due != 2147483647 AND id NOT IN {ids2str(card.id for card in modified_cards)}"
+        + f"WHERE type = 0 AND due != {_DEFAULT_DIFFICULTY} AND id NOT IN {ids2str(card.id for card in modified_cards)}"
     )
     try:
         highest_due: int = int(mw.col.db.scalar(end_of_queue_query_string))
@@ -876,15 +883,15 @@ def _on_success(result: Any) -> None:
     del result  # unused
     assert mw is not None
     assert mw.progress is not None
-    global start_time
+    global _start_time
 
     mw.toolbar.draw()  # updates stats
     mw.progress.finish()
     tooltip("Finished Recalc", parent=mw)
-    if start_time is not None:
+    if _start_time is not None:
         end_time: float = time.time()
-        print(f"Recalc duration: {round(end_time - start_time, 3)} seconds")
-        start_time = None
+        print(f"Recalc duration: {round(end_time - _start_time, 3)} seconds")
+        _start_time = None
 
 
 def _on_failure(
