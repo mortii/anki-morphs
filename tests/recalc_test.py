@@ -158,7 +158,7 @@ def test_recalc(fake_environment):  # pylint:disable=too-many-locals
     card_due_dict: dict[int, CardData] = {}
 
     original_collection_cards = original_collection.find_cards("")
-    card_collection_length = 37322
+    card_collection_length = 36850
     assert len(original_collection_cards) == card_collection_length
 
     for card_id in original_collection_cards:

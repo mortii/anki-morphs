@@ -14,7 +14,6 @@ from anki.consts import CARD_TYPE_NEW, CardQueue
 from anki.models import FieldDict, ModelManager, NotetypeDict, NotetypeId
 from anki.notes import Note
 from anki.tags import TagManager
-from anki.utils import ids2str
 from aqt import mw
 from aqt.operations import QueryOp
 from aqt.qt import QMessageBox  # pylint:disable=no-name-in-module
@@ -372,8 +371,6 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
         ankimorphs_config.get_modify_enabled_filters()
     )
     card_morph_map_cache: dict[int, list[Morpheme]] = _get_card_morph_map_cache(am_db)
-    original_due: dict[int, int] = {}
-    original_queue: dict[int, int] = {}
     handled_cards: dict[int, None] = {}  # we only care about the key lookup, not values
     modified_cards: list[Card] = []
     modified_notes: list[Note] = []
@@ -411,8 +408,8 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
             note = card.note()
 
             # make sure to get the values and not references
-            original_due[card_id] = int(card.due)
-            original_queue[card_id] = int(card.queue)
+            original_due = int(card.due)
+            original_queue = int(card.queue)  # queue: suspended, buried, etc.
             original_fields = note.fields.copy()
             original_tags = note.tags.copy()
 
@@ -461,47 +458,16 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                     note,
                 )
 
-            # Note: we cannot check the card has actually been modified here,
-            # because due is recalculated later.
-            modified_cards.append(card)
-            handled_cards[card_id] = None  # this marks the card as handled
+            # we only want anki to update the cards and notes that have actually changed
+            if card.due != original_due or card.queue != original_queue:
+                modified_cards.append(card)
 
             if original_fields != note.fields or original_tags != note.tags:
                 modified_notes.append(note)
 
+            handled_cards[card_id] = None  # this marks the card as handled
+
     am_db.con.close()
-
-    mw.taskman.run_on_main(
-        partial(
-            mw.progress.update,
-            label="Sorting & filtering cards",
-        )
-    )
-
-    ################################################################
-    #                          UNIQUE DUE
-    ################################################################
-    # When multiple cards have the same due (difficulty), then anki
-    # chooses one for review and ignores the others, therefore, we
-    # need to make sure all cards have a unique due. To achieve this,
-    # we sort modified_cards based on due, and then we replace
-    # the due with the index the card has in the list.
-    ################################################################
-
-    # if the due is the same, then the secondary sort is by id
-    modified_cards.sort(key=lambda _card: (_card.due, _card.id))
-
-    end_of_queue = _get_end_of_new_cards_queue(modified_cards)
-
-    for index, card in enumerate(modified_cards, start=end_of_queue):
-        if card.type == CARD_TYPE_NEW:
-            card.due = index
-
-    modified_cards = [
-        _card
-        for _card in modified_cards
-        if _card_is_modified(_card, original_due, original_queue)
-    ]
 
     mw.taskman.run_on_main(
         partial(
@@ -553,16 +519,6 @@ def _add_extra_fields(
             )
             model_manager.add_field(note_type_dict, new_field)
             model_manager.update_dict(note_type_dict)
-
-
-def _card_is_modified(
-    _card: Card, original_due: dict[int, int], original_queue: dict[int, int]
-) -> bool:
-    if _card.due != original_due[_card.id]:
-        return True
-    if _card.queue != original_queue[_card.id]:
-        return True
-    return False
 
 
 def _get_card_morph_map_cache(am_db: AnkiMorphsDB) -> dict[int, list[Morpheme]]:
@@ -725,15 +681,18 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
         else:
             difficulty += morph_priority[morph.lemma_and_inflection]
 
+    if len(unknown_morphs) == 0 and am_config.skip_only_known_morphs_cards:
+        # Move stale cards to the end of the queue
+        return _DEFAULT_DIFFICULTY, unknown_morphs, has_learning_morph
+
     if difficulty >= morph_unknown_penalty:
         # Cap morph priority penalties as described in #(2.2)
         difficulty = morph_unknown_penalty - 1
 
     difficulty += len(unknown_morphs) * morph_unknown_penalty
 
-    if len(unknown_morphs) == 0 and am_config.skip_only_known_morphs_cards:
-        # Move stale cards to the end of the queue
-        return _DEFAULT_DIFFICULTY, unknown_morphs, has_learning_morph
+    # cap difficulty to prevent 32-bit integer overflow
+    difficulty = min(difficulty, _DEFAULT_DIFFICULTY)
 
     return difficulty, unknown_morphs, has_learning_morph
 
@@ -857,25 +816,6 @@ def remove_exclusive_tags(note: Note, mutually_exclusive_tags: list[str]) -> Non
     for tag in mutually_exclusive_tags:
         if tag in note.tags:
             note.tags.remove(tag)
-
-
-def _get_end_of_new_cards_queue(modified_cards: list[Card]) -> int:
-    assert mw is not None
-    assert mw.col.db is not None
-
-    end_of_queue_query_string = (
-        """
-    SELECT MAX(due) 
-    FROM cards 
-    """
-        + f"WHERE type = 0 AND due != {_DEFAULT_DIFFICULTY} AND id NOT IN {ids2str(card.id for card in modified_cards)}"
-    )
-    try:
-        highest_due: int = int(mw.col.db.scalar(end_of_queue_query_string))
-    except TypeError:
-        # if all your cards match the note filters, then the query will return None
-        highest_due = 0
-    return highest_due + 1
 
 
 def _on_success(result: Any) -> None:
