@@ -129,7 +129,7 @@ class SpaceMorphemizer(Morphemizer):
         return [Morpheme(lemma=word, inflection=word) for word in word_list]
 
     def get_description(self) -> str:
-        return "AnkiMoprhs: Language w/ Spaces"
+        return "AnkiMorphs: Language w/ Spaces"
 
 
 class SpacyMorphemizer(Morphemizer):
