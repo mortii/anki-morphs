@@ -14,7 +14,7 @@ from .exceptions import CancelledOperationException, EmptyFileSelectionException
 from .generator_dialog import GeneratorDialog
 from .morpheme import Morpheme, MorphOccurrence
 from .morphemizer import Morphemizer, SpacyMorphemizer
-from .ui.frequency_file_generator_ui import Ui_FrequencyFileGeneratorDialog
+from .ui.frequency_file_generator_ui import Ui_FrequencyFileGeneratorWindow
 
 
 class FrequencyFileGeneratorDialog(GeneratorDialog):
@@ -34,7 +34,7 @@ class FrequencyFileGeneratorDialog(GeneratorDialog):
 
     def _setup_output_path(self) -> None:
         assert mw is not None
-        assert isinstance(self.ui, Ui_FrequencyFileGeneratorDialog)
+        assert isinstance(self.ui, Ui_FrequencyFileGeneratorWindow)
 
         self._output_file = os.path.join(
             mw.pm.profileFolder(), "frequency-files", "frequency.csv"
@@ -45,14 +45,14 @@ class FrequencyFileGeneratorDialog(GeneratorDialog):
 
     #
     def _setup_buttons(self) -> None:
-        assert isinstance(self.ui, Ui_FrequencyFileGeneratorDialog)
+        assert isinstance(self.ui, Ui_FrequencyFileGeneratorWindow)
         self.ui.inputButton.clicked.connect(self._on_input_button_clicked)
         self.ui.outputButton.clicked.connect(self._on_output_button_clicked)
         self.ui.createFrequencyFileButton.clicked.connect(self._generate_frequency_file)
 
     def _on_output_button_clicked(self) -> None:
         assert mw is not None
-        assert isinstance(self.ui, Ui_FrequencyFileGeneratorDialog)
+        assert isinstance(self.ui, Ui_FrequencyFileGeneratorWindow)
 
         output_file = QFileDialog.getSaveFileName(
             None, "Save File", self._output_file, "CSV File (*.csv)"
@@ -75,7 +75,7 @@ class FrequencyFileGeneratorDialog(GeneratorDialog):
     ) -> None:
         del col  # unused
         assert mw is not None
-        assert isinstance(self.ui, Ui_FrequencyFileGeneratorDialog)
+        assert isinstance(self.ui, Ui_FrequencyFileGeneratorWindow)
 
         if (
             self.ui.inputDirLineEdit.text() == ""
@@ -132,7 +132,7 @@ class FrequencyFileGeneratorDialog(GeneratorDialog):
     def _output_to_file(
         self, sorted_morph_frequency: dict[str, MorphOccurrence]
     ) -> None:
-        assert isinstance(self.ui, Ui_FrequencyFileGeneratorDialog)
+        assert isinstance(self.ui, Ui_FrequencyFileGeneratorWindow)
         output_file: str = self.ui.outputFileLineEdit.text()
 
         with open(output_file, mode="w+", encoding="utf-8", newline="") as csvfile:

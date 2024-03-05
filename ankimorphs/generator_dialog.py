@@ -6,12 +6,7 @@ from typing import Any, Callable, Optional, Union
 
 import aqt
 from aqt import mw
-from aqt.qt import (  # pylint:disable=no-name-in-module
-    QDialog,
-    QDir,
-    QFileDialog,
-    QMainWindow,
-)
+from aqt.qt import QDir, QFileDialog, QMainWindow  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
 from . import ankimorphs_globals, morphemizer, text_preprocessing
@@ -24,11 +19,11 @@ from .text_preprocessing import (
     slim_round_brackets_regexp,
     square_brackets_regex,
 )
-from .ui.frequency_file_generator_ui import Ui_FrequencyFileGeneratorDialog
-from .ui.readability_report_generator_ui import Ui_ReadabilityReportGeneratorDialog
+from .ui.frequency_file_generator_ui import Ui_FrequencyFileGeneratorWindow
+from .ui.readability_report_generator_ui import Ui_ReadabilityReportGeneratorWindow
 
 
-class GeneratorDialog(QDialog):
+class GeneratorDialog(QMainWindow):
     # Since there is so much overlap between the frequency file generator and the
     # readability report generator, it makes sense to have them both inherit from
     # a parent class.
@@ -41,13 +36,13 @@ class GeneratorDialog(QDialog):
         super().__init__(parent)
         self.child = child
         self.ui: Union[
-            Ui_FrequencyFileGeneratorDialog, Ui_ReadabilityReportGeneratorDialog
+            Ui_FrequencyFileGeneratorWindow, Ui_ReadabilityReportGeneratorWindow
         ]
 
         if self.child == "FrequencyFileGeneratorDialog":
-            self.ui = Ui_FrequencyFileGeneratorDialog()
+            self.ui = Ui_FrequencyFileGeneratorWindow()
         elif self.child == "ReadabilityReportGeneratorDialog":
-            self.ui = Ui_ReadabilityReportGeneratorDialog()
+            self.ui = Ui_ReadabilityReportGeneratorWindow()
 
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
         self._morphemizers = morphemizer.get_all_morphemizers()

@@ -9,6 +9,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
     QAbstractItemView,
     QHeaderView,
     Qt,
+    QTableWidget,
     QTableWidgetItem,
 )
 
@@ -20,7 +21,7 @@ from .generator_dialog import GeneratorDialog
 from .morpheme import Morpheme, MorphOccurrence
 from .morphemizer import Morphemizer, SpacyMorphemizer
 from .table_utils import QTableWidgetIntegerItem, QTableWidgetPercentItem
-from .ui.readability_report_generator_ui import Ui_ReadabilityReportGeneratorDialog
+from .ui.readability_report_generator_ui import Ui_ReadabilityReportGeneratorWindow
 
 
 class ReadabilityReportGeneratorDialog(GeneratorDialog):
@@ -29,66 +30,45 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
 
     def __init__(self) -> None:
         super().__init__(child=self.__class__.__name__)
-        assert isinstance(self.ui, Ui_ReadabilityReportGeneratorDialog)
+        assert isinstance(self.ui, Ui_ReadabilityReportGeneratorWindow)
         self.file_name_column = 0
         self._total_morphs = 1
         self._known_column = 2
         self._learning_column = 3
         self._unknowns_column = 4
         self._number_of_columns = 5
-        self._setup_absolute_table()
-        self._setup_percentages_table()
+        self._setup_table(self.ui.numericalTableWidget)
+        self._setup_table(self.ui.percentTableWidget)
         self._setup_buttons()
         self.show()
 
-    def _setup_absolute_table(self) -> None:
-        assert isinstance(self.ui, Ui_ReadabilityReportGeneratorDialog)
+    def _setup_table(self, table: QTableWidget) -> None:
+        assert isinstance(self.ui, Ui_ReadabilityReportGeneratorWindow)
 
-        self.ui.numericalTableWidget.setAlternatingRowColors(True)
-        self.ui.numericalTableWidget.setColumnCount(self._number_of_columns)
+        table.setAlternatingRowColors(True)
+        table.setColumnCount(self._number_of_columns)
 
-        self.ui.numericalTableWidget.setColumnWidth(self.file_name_column, 150)
-        self.ui.numericalTableWidget.setColumnWidth(self._total_morphs, 120)
-        self.ui.numericalTableWidget.setColumnWidth(self._known_column, 80)
-        self.ui.numericalTableWidget.setColumnWidth(self._learning_column, 90)
-        self.ui.numericalTableWidget.setColumnWidth(self._unknowns_column, 100)
+        table.setColumnWidth(self.file_name_column, 200)
+        table.setColumnWidth(self._total_morphs, 120)
+        table.setColumnWidth(self._known_column, 80)
+        table.setColumnWidth(self._learning_column, 90)
+        table.setColumnWidth(self._unknowns_column, 100)
 
-        absolute_table_vertical_headers: Optional[QHeaderView] = (
-            self.ui.numericalTableWidget.verticalHeader()
-        )
-        assert absolute_table_vertical_headers is not None
-        absolute_table_vertical_headers.hide()
+        table_vertical_headers: Optional[QHeaderView] = table.verticalHeader()
+        assert table_vertical_headers is not None
+        table_vertical_headers.hide()
+
+        table_horizontal_headers: Optional[QHeaderView] = table.horizontalHeader()
+        assert table_horizontal_headers is not None
+        table_horizontal_headers.setSectionsMovable(True)
 
         # disables manual editing of the table
         self.ui.numericalTableWidget.setEditTriggers(
             QAbstractItemView.EditTrigger.NoEditTriggers
         )
 
-    def _setup_percentages_table(self) -> None:
-        assert isinstance(self.ui, Ui_ReadabilityReportGeneratorDialog)
-
-        self.ui.percentTableWidget.setAlternatingRowColors(True)
-        self.ui.percentTableWidget.setColumnCount(self._number_of_columns)
-
-        self.ui.percentTableWidget.setColumnWidth(self.file_name_column, 150)
-        self.ui.percentTableWidget.setColumnWidth(self._total_morphs, 120)
-        self.ui.percentTableWidget.setColumnWidth(self._known_column, 80)
-        self.ui.percentTableWidget.setColumnWidth(self._learning_column, 90)
-        self.ui.percentTableWidget.setColumnWidth(self._unknowns_column, 100)
-
-        percent_table_vertical_headers: Optional[QHeaderView] = (
-            self.ui.percentTableWidget.verticalHeader()
-        )
-        assert percent_table_vertical_headers is not None
-        percent_table_vertical_headers.hide()
-
-        # disables manual editing of the table
-        self.ui.percentTableWidget.setEditTriggers(
-            QAbstractItemView.EditTrigger.NoEditTriggers
-        )
-
     def _setup_buttons(self) -> None:
-        assert isinstance(self.ui, Ui_ReadabilityReportGeneratorDialog)
+        assert isinstance(self.ui, Ui_ReadabilityReportGeneratorWindow)
         self.ui.inputPushButton.clicked.connect(self._on_input_button_clicked)
         self.ui.generateReportPushButton.clicked.connect(self._generate_report)
 
@@ -108,7 +88,7 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
     ) -> None:
         del col  # unused
         assert mw is not None
-        assert isinstance(self.ui, Ui_ReadabilityReportGeneratorDialog)
+        assert isinstance(self.ui, Ui_ReadabilityReportGeneratorWindow)
 
         if self.ui.inputDirLineEdit.text() == "":
             raise EmptyFileSelectionException
@@ -243,7 +223,7 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
         learning_morphs: int,
         unknown_morphs: int,
     ) -> None:
-        assert isinstance(self.ui, Ui_ReadabilityReportGeneratorDialog)
+        assert isinstance(self.ui, Ui_ReadabilityReportGeneratorWindow)
 
         relative_path = _input_file.relative_to(self._input_dir_root)
 
@@ -278,7 +258,7 @@ class ReadabilityReportGeneratorDialog(GeneratorDialog):
         learning_morphs: int,
         unknown_morphs: int,
     ) -> None:
-        assert isinstance(self.ui, Ui_ReadabilityReportGeneratorDialog)
+        assert isinstance(self.ui, Ui_ReadabilityReportGeneratorWindow)
 
         total_morphs: int = known_morphs + learning_morphs + unknown_morphs
         known_morphs_percent: float = 0
