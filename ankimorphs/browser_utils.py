@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Optional
 
 from anki.collection import SearchNode
@@ -31,17 +32,18 @@ def run_browse_morph(
 
     am_config = AnkiMorphsConfig()
 
-    for cid in browser.selectedCards():
-        card = mw.col.get_card(cid)
-        note = card.note()
-        browse_same_morphs(
-            am_config,
-            card_id=cid,
-            note=note,
-            search_unknowns=search_unknowns,
-            search_lemma_only=search_lemma_only,
-        )
-        return  # Only use one card since note-types can be different
+    # Only use the first selected card since note-types can be different
+    card_id: int = browser.selectedCards()[0]
+
+    card = mw.col.get_card(card_id)
+    note = card.note()
+    browse_same_morphs(
+        am_config,
+        card_id=card_id,
+        note=note,
+        search_unknowns=search_unknowns,
+        search_lemma_only=search_lemma_only,
+    )
 
 
 def browse_same_morphs(  # pylint:disable=too-many-arguments
@@ -57,7 +59,7 @@ def browse_same_morphs(  # pylint:disable=too-many-arguments
     #
     # The query is a list of card ids. This might seem unnecessarily complicated, but
     # if we were to only query the text on the cards themselves, we can get false positives
-    # because inflected morphs with different bases can be identical to each-other.
+    # because inflected morphs with different bases (lemmas) can be identical to each-other.
 
     global browser
     assert mw is not None
@@ -150,11 +152,11 @@ def run_already_known_tagger() -> None:
 
     am_config = AnkiMorphsConfig()
 
-    known_tag = am_config.tag_known_manually
-    selected_cards = browser.selectedCards()
+    known_tag: str = am_config.tag_known_manually
+    selected_cards: Sequence[int] = browser.selectedCards()
 
-    for cid in selected_cards:
-        card = mw.col.get_card(cid)
+    for card_id in selected_cards:
+        card = mw.col.get_card(card_id)
         note = card.note()
         note.add_tag(known_tag)
         mw.col.update_note(note)
@@ -175,7 +177,13 @@ def run_learn_card_now() -> None:
     )
     mw.col.tags.bulk_add(note_ids, am_config.tag_learn_card_now)
 
-    mw.col.sched.reposition_new_cards(selected_cards, 0, 1, False, True)
+    mw.col.sched.reposition_new_cards(
+        selected_cards,
+        starting_from=0,
+        step_size=1,
+        randomize=False,
+        shift_existing=True,
+    )
     mw.moveToState("review")
     mw.activateWindow()
     mw.reviewer._refresh_needed = RefreshNeeded.QUEUES

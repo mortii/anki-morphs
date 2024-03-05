@@ -513,6 +513,10 @@ def create_test_action() -> QAction:
 
 
 def test_function() -> None:
+    # to activate this dev function in Anki:
+    # 1. in ankimorphs_globals.py set 'DEV_MODE = True'
+    # 2. use Ctrl+T, or go to Tools -> Ankimorphs -> Test
+
     assert mw is not None
     assert mw.col.db is not None
 
