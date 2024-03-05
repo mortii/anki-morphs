@@ -1,7 +1,11 @@
 # Summary
 
+[Introduction](intro.md)
+
+
 # User Guide
-- [Intro](user_guide/intro.md)
+
+
 - [Glossary](user_guide/glossary.md)
 - [Installation](user_guide/installation.md)
   - [Installing spaCy](user_guide/installation/installing-spacy.md)
