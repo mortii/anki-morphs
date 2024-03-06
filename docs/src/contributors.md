@@ -6,7 +6,7 @@ know, and I'll add you ;)
 
 ### Code contribution
 
-mortii, Vilhelm-Ian.
+mortii, Vilhelm-Ian, xofm31.
 
 ### Docs contribution
 

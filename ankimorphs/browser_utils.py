@@ -175,15 +175,20 @@ def run_learn_card_now() -> None:
     note_ids = mw.col.db.list(
         f"select distinct nid from cards where id in {ids2str(selected_cards)}"
     )
+
+    # We give the cards the 'learn-now' tag to make sure that they are
+    # not skipped, even if other skip conditions are met.
+    # Note: this is done in SkippedCards.process_skip_conditions_of_card()
     mw.col.tags.bulk_add(note_ids, am_config.tag_learn_card_now)
 
     mw.col.sched.reposition_new_cards(
         selected_cards,
         starting_from=0,
-        step_size=1,
+        step_size=0,  # we want all the selected cards to be placed in the same position
         randomize=False,
-        shift_existing=True,
+        shift_existing=False,  # shifting exiting causes a full sync, which is terrible
     )
+
     mw.moveToState("review")
     mw.activateWindow()
     mw.reviewer._refresh_needed = RefreshNeeded.QUEUES
