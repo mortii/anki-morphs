@@ -161,7 +161,7 @@ def run_already_known_tagger() -> None:
         note.add_tag(known_tag)
         mw.col.update_note(note)
 
-    tooltip(f"{len(selected_cards)} notes given the {known_tag} tag")
+    tooltip(f"{len(selected_cards)} note(s) given the {known_tag} tag")
 
 
 def run_learn_card_now() -> None:

@@ -199,7 +199,6 @@ class GeneratorDialog(QMainWindow):
         assert mw is not None
         assert mw.progress is not None
 
-        mw.toolbar.draw()  # updates stats
         mw.progress.finish()
 
         if self.child == "FrequencyFileGeneratorDialog":
