@@ -221,6 +221,21 @@ Report</string>
               <string>Unknown</string>
              </property>
             </column>
+            <column>
+             <property name="text">
+              <string>Known Instances</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Learning Instances</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Unknown Instances</string>
+             </property>
+            </column>
            </widget>
           </item>
          </layout>
@@ -257,6 +272,22 @@ Report</string>
               <string>Unknown</string>
              </property>
             </column>
+            <column>
+             <property name="text">
+              <string>Known Instances</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Learning Instances</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Unknown Instances</string>
+             </property>
+            </column>
+
            </widget>
           </item>
          </layout>
