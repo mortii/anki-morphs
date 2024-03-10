@@ -1,3 +1,23 @@
+################################################################
+#                   ADDON SETTINGS/CONFIGS
+################################################################
+# Addons essentially only have one settings file that is shared
+# across all anki profiles, that file is found here:
+#    'Anki2/addons21/[addon]/meta.json'
+#
+# We extract the dictionary found in that file by using:
+#   mw.addonManager.getConfig(__name__)
+# where '__name__' is the module name of the addon
+# (ankiweb switches the module name to a number, so it's necessary for this to be dynamic)
+#
+# We can update meta.json with this:
+#   mw.addonManager.writeConfig(__name__, new_json_dict)
+
+# We want to have individual profile settings, and we achieve this by storing
+# a file ("ankimorphs_profile_settings.json") in the individual profile folders.
+# When a profile is loaded by anki, that file is used to overwrite/update meta.json.
+################################################################
+
 import json
 from pathlib import Path
 from typing import Any, Optional, Union

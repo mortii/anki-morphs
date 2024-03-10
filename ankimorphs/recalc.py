@@ -195,7 +195,9 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
 
             if card_data.automatically_known_tag or card_data.manually_known_tag:
                 highest_interval = am_config.recalc_interval_for_known
-            elif card_data.type == 1:
+            elif card_data.type == 1:  # 1: learning
+                # cards in the 'learning' state have an interval of zero, but we don't
+                # want to treat them as 'unknown', so we change the value manually.
                 highest_interval = 1
             else:
                 highest_interval = card_data.interval
