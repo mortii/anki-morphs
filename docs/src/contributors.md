@@ -6,7 +6,7 @@ know, and I'll add you ;)
 
 ### Code contribution
 
-mortii, Vilhelm-Ian, xofm31.
+mortii, Vilhelm-Ian, xofm31, Jcuhfehl.
 
 ### Docs contribution
 
@@ -15,7 +15,7 @@ Matt Vs Japan, mortii, Vilhelm-Ian, cocowash, xuiqzy.
 ### Bugs reports, feature requests, or other helpful guidance
 
 Vilhelm-Ian, CodeWithMa, ashprice, Aleksej, HQYang1979, soliviantar, buster-blue, rymiel, BorisNA, wrinkledeth,
-cocowash, asayake-b5, quietmansoath, MichaelPetre, xofm31, knoebelja, xuiqzy.
+cocowash, asayake-b5, quietmansoath, MichaelPetre, xofm31, knoebelja, xuiqzy, Jcuhfehl.
 
 ### MorphMan (v5.0-qt6-alpha.1)
 
