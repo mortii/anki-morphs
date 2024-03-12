@@ -134,9 +134,13 @@ def load_am_profile_configs() -> None:
             profile_settings = json.load(file)
             ankimorphs_config.update_configs(profile_settings)
     except FileNotFoundError:
-        # the profile settings file gets created when clicking
-        # the save button on the settings dialog
-        pass
+        # This is reached when we enter a new profile
+        # that hasn't saved any settings yet. It's important
+        # that we don't carry over any settings from the previous
+        # profile because they can be somewhat hidden (note filter tags),
+        # so it can produce unexpected results. We therefore reset
+        # meta.json to config.json (default settings)
+        ankimorphs_config.reset_all_configs()
 
 
 def init_db() -> None:

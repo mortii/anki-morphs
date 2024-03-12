@@ -236,7 +236,7 @@ def update_configs(new_configs: dict[str, object]) -> None:
         json.dump(config, file)
 
 
-def _reset_all_configs() -> None:
+def reset_all_configs() -> None:
     default_configs = get_all_default_configs()
     assert default_configs is not None
     update_configs(default_configs)
@@ -374,5 +374,5 @@ def show_critical_config_error() -> None:
     critical_box.exec()
 
     if critical_box.clickedButton() == ok_button:
-        _reset_all_configs()
+        reset_all_configs()
         tooltip("Please restart Anki", period=5000, parent=mw)
