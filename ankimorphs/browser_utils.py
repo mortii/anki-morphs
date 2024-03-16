@@ -15,7 +15,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 from aqt.reviewer import RefreshNeeded
 from aqt.utils import tooltip
 
-from . import ankimorphs_config
+from . import ankimorphs_config, ankimorphs_globals
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
 from .ui.view_morphs_dialog_ui import Ui_ViewMorphsDialog
@@ -122,6 +122,32 @@ def browse_same_morphs(  # pylint:disable=too-many-arguments
     search_edit: Optional[QLineEdit] = browser.form.searchEdit.lineEdit()
     assert search_edit is not None
 
+    search_edit.setText(query)
+    browser.onSearchActivated()
+
+
+def browse_am_unknown_for_highlighted_morph(selected_text: str) -> None:
+    # Find all cards that have the am-unknowns field equal to the
+    # selected text. Unlike browse_same_morphs which looks for card
+    # ids of cards in the AnkiMorphsDB, this function does a query
+    # for the text
+    global browser
+    assert mw is not None
+
+    browser = dialogs.open("Browser", mw)
+    assert browser is not None
+
+    search_edit: Optional[QLineEdit] = browser.form.searchEdit.lineEdit()
+    assert search_edit is not None
+
+    # if the selected text has special characters, then the
+    # browser search will be wrong unless the characters
+    # are escaped properly, which the anki api can do for us
+    escaped_selected_text = mw.col.build_search_string(
+        SearchNode(literal_text=selected_text),
+    )
+
+    query = f'"{ankimorphs_globals.EXTRA_FIELD_UNKNOWNS}:{escaped_selected_text}"'
     search_edit.setText(query)
     browser.onSearchActivated()
 
