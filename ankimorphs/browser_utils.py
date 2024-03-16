@@ -15,7 +15,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 from aqt.reviewer import RefreshNeeded
 from aqt.utils import tooltip
 
-from . import ankimorphs_config
+from . import ankimorphs_config, ankimorphs_globals
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
 from .ui.view_morphs_dialog_ui import Ui_ViewMorphsDialog
@@ -118,6 +118,23 @@ def browse_same_morphs(  # pylint:disable=too-many-arguments
     query = focus_query(am_config, card_ids, search_ready_tag)
     browser = dialogs.open("Browser", mw)
     assert browser is not None
+
+    search_edit: Optional[QLineEdit] = browser.form.searchEdit.lineEdit()
+    assert search_edit is not None
+
+    search_edit.setText(query)
+    browser.onSearchActivated()
+
+
+def browse_highlighted_morph(selected_text: str) -> None:
+    # Find all cards that have the am-unknowns field equal to the
+    # selected text. Unlike browse_same_morphs which looks for card
+    # ids of cards in the AnkiMorphsDB, this function does a query
+    # for the text
+
+    browser = dialogs.open("Browser", mw)
+    assert browser is not None
+    query = f'"{ankimorphs_globals.EXTRA_FIELD_UNKNOWNS}:{selected_text}"'
 
     search_edit: Optional[QLineEdit] = browser.form.searchEdit.lineEdit()
     assert search_edit is not None

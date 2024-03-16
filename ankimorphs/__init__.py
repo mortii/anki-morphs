@@ -1,4 +1,4 @@
-################################################################
+###############################################################
 #                          IMPORTS
 ################################################################
 # We have to use implicit imports from the 'ankimorphs'-module
@@ -79,6 +79,7 @@ def main() -> None:
     gui_hooks.sync_will_start.append(recalc_on_sync)
 
     gui_hooks.webview_will_show_context_menu.append(add_name_action)
+    gui_hooks.webview_will_show_context_menu.append(browse_am_unknowns_action)
 
     gui_hooks.overview_did_refresh.append(update_seen_morphs)
 
@@ -469,6 +470,18 @@ def add_name_action(web_view: AnkiWebView, menu: QMenu) -> None:
     action.triggered.connect(lambda: name_file_utils.add_name_to_file(selected_text))
     action.triggered.connect(AnkiMorphsDB.insert_names_to_seen_morphs)
     action.triggered.connect(mw.reviewer.bury_current_card)
+    menu.addAction(action)
+
+
+def browse_am_unknowns_action(web_view: AnkiWebView, menu: QMenu) -> None:
+    assert mw is not None
+    selected_text = web_view.selectedText()
+    if selected_text == "":
+        return
+    action = QAction(f"Browse in {ankimorphs_globals.EXTRA_FIELD_UNKNOWNS}", menu)
+    action.triggered.connect(
+        lambda: browser_utils.browse_highlighted_morph(selected_text)
+    )
     menu.addAction(action)
 
 
