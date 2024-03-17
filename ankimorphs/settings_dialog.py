@@ -104,7 +104,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 1.3.0")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 1.4.0")
 
         self.show()
 
@@ -431,6 +431,11 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
     def _populate_recalc_tab(self) -> None:
         self.ui.recalcIntervalSpinBox.setValue(self._config.recalc_interval_for_known)
+        self.ui.dueOffsetSpinBox.setValue(self._config.recalc_due_offset)
+        self.ui.offsetFirstMorphsSpinBox.setValue(
+            self._config.recalc_number_of_morphs_to_offset
+        )
+
         self.ui.recalcBeforeSyncCheckBox.setChecked(self._config.recalc_on_sync)
         self.ui.recalcSuspendKnownCheckBox.setChecked(
             self._config.recalc_suspend_known_new_cards
@@ -450,6 +455,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
             self._config.recalc_unknowns_field_shows_lemmas
         )
+        self.ui.shiftNewCardsCheckBox.setChecked(self._config.recalc_offset_new_cards)
 
     def _restore_recalc_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -463,6 +469,11 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.recalcIntervalSpinBox.setValue(
             self._default_config.recalc_interval_for_known
         )
+        self.ui.dueOffsetSpinBox.setValue(self._default_config.recalc_due_offset)
+        self.ui.offsetFirstMorphsSpinBox.setValue(
+            self._default_config.recalc_number_of_morphs_to_offset
+        )
+
         self.ui.recalcBeforeSyncCheckBox.setChecked(self._default_config.recalc_on_sync)
         self.ui.recalcSuspendKnownCheckBox.setChecked(
             self._default_config.recalc_suspend_known_new_cards
@@ -481,6 +492,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
         self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
             self._default_config.recalc_unknowns_field_shows_lemmas
+        )
+        self.ui.shiftNewCardsCheckBox.setChecked(
+            self._default_config.recalc_offset_new_cards
         )
 
     def _populate_skip_tab(self) -> None:
@@ -611,6 +625,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             "recalc_toolbar_stats_use_known": self.ui.toolbarStatsUseKnownRadioButton.isChecked(),
             "recalc_unknowns_field_shows_inflections": self.ui.unknownsFieldShowsInflectionsRadioButton.isChecked(),
             "recalc_unknowns_field_shows_lemmas": self.ui.unknownsFieldShowsLemmasRadioButton.isChecked(),
+            "recalc_offset_new_cards": self.ui.shiftNewCardsCheckBox.isChecked(),
+            "recalc_due_offset": self.ui.dueOffsetSpinBox.value(),
+            "recalc_number_of_morphs_to_offset": self.ui.offsetFirstMorphsSpinBox.value(),
             "preprocess_ignore_bracket_contents": self.ui.preprocessIgnoreSquareCheckBox.isChecked(),
             "preprocess_ignore_round_bracket_contents": self.ui.preprocessIgnoreRoundCheckBox.isChecked(),
             "preprocess_ignore_slim_round_bracket_contents": self.ui.preprocessIgnoreSlimCheckBox.isChecked(),

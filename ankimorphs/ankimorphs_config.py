@@ -172,6 +172,15 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
             self.recalc_unknowns_field_shows_lemmas: bool = _get_bool_config(
                 "recalc_unknowns_field_shows_lemmas", is_default
             )
+            self.recalc_offset_new_cards: bool = _get_bool_config(
+                "recalc_offset_new_cards", is_default
+            )
+            self.recalc_due_offset: int = _get_int_config(
+                "recalc_due_offset", is_default
+            )
+            self.recalc_number_of_morphs_to_offset: int = _get_int_config(
+                "recalc_number_of_morphs_to_offset", is_default
+            )
             self.tag_ready: str = _get_string_config("tag_ready", is_default)
             self.tag_not_ready: str = _get_string_config("tag_not_ready", is_default)
             self.tag_known_automatically: str = _get_string_config(

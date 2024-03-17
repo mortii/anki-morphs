@@ -26,6 +26,7 @@ repos:
               docs/src/img/learn-now.mp4|
               docs/src/img/adding-extra-fields.mp4|
               tests/data/collection.anki2|
+              tests/data/collection_with_offset.anki2|
               tests/data/populated_ankimorphs.db|
           )$
       - id: check-case-conflict

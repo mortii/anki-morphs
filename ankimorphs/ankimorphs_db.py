@@ -1,5 +1,7 @@
+import functools
 import os
 import sqlite3
+from collections import Counter
 from collections.abc import Sequence
 from typing import Any, Optional, Union
 
@@ -7,7 +9,9 @@ from anki.collection import Collection, SearchNode
 from aqt import mw
 from aqt.operations import QueryOp
 
+from .anki_data_utils import AnkiMorphsCardData
 from .ankimorphs_config import AnkiMorphsConfig
+from .morpheme import Morpheme
 from .name_file_utils import get_names_from_file_as_morphs
 
 
@@ -285,6 +289,79 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
             assert isinstance(highest_learning_interval, int)
             return highest_learning_interval
+
+    def get_card_morph_map_cache(self) -> dict[int, list[Morpheme]]:
+        card_morph_map_cache: dict[int, list[Morpheme]] = {}
+
+        # Sorting the morphs (ORDER BY) is crucial to avoid bugs
+        card_morph_map_cache_raw = self.con.execute(
+            """
+            SELECT Card_Morph_Map.card_id, Morphs.lemma, Morphs.inflection, Morphs.highest_learning_interval
+            FROM Card_Morph_Map
+            INNER JOIN Morphs ON
+                Card_Morph_Map.morph_lemma = Morphs.lemma AND Card_Morph_Map.morph_inflection = Morphs.inflection
+            ORDER BY Morphs.lemma, Morphs.inflection
+            """,
+        ).fetchall()
+
+        for row in card_morph_map_cache_raw:
+            card_id = row[0]
+            morph = Morpheme(
+                lemma=row[1], inflection=row[2], highest_learning_interval=row[3]
+            )
+
+            if card_id not in card_morph_map_cache:
+                card_morph_map_cache[card_id] = [morph]
+            else:
+                card_morph_map_cache[card_id].append(morph)
+
+        return card_morph_map_cache
+
+    def get_am_cards_data_dict(
+        self, note_type_id: int
+    ) -> dict[int, AnkiMorphsCardData]:
+        assert mw is not None
+        assert mw.col.db is not None
+
+        result = self.con.execute(
+            """
+            SELECT card_id, note_id, note_type_id, card_type, fields, tags
+            FROM Cards
+            WHERE note_type_id = ?
+            """,
+            (note_type_id,),
+        ).fetchall()
+
+        am_db_row_data_dict: dict[int, AnkiMorphsCardData] = {}
+        for am_data in map(AnkiMorphsCardData, result):
+            am_db_row_data_dict[am_data.card_id] = am_data
+        return am_db_row_data_dict
+
+    # the cache needs to have a max size to maintain garbage collection
+    @functools.lru_cache(maxsize=131072)
+    def get_morph_collection_priority(self) -> dict[str, int]:
+        # Sorting the morphs (ORDER BY) is crucial to avoid bugs
+        morph_priority = self.con.execute(
+            """
+            SELECT morph_lemma, morph_inflection
+            FROM Card_Morph_Map
+            ORDER BY morph_lemma, morph_inflection
+            """,
+        ).fetchall()
+
+        temp_list = []
+        for row in morph_priority:
+            temp_list.append(row[0] + row[1])
+
+        card_morph_map_cache_sorted: dict[str, int] = dict(
+            Counter(temp_list).most_common()
+        )
+
+        # reverse the values, the lower the priority number is, the more it is prioritized
+        for index, key in enumerate(card_morph_map_cache_sorted):
+            card_morph_map_cache_sorted[key] = index
+
+        return card_morph_map_cache_sorted
 
     def print_table(self, table: str) -> None:
         try:

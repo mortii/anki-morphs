@@ -8,6 +8,7 @@ from typing import Any, Optional, Union
 
 import anki.utils
 from anki.tags import TagManager
+from aqt import mw
 
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .morpheme import Morpheme
@@ -121,3 +122,80 @@ class AnkiMorphsCardData:
 
         assert isinstance(data_row[5], str)
         self.tags: str = data_row[5]
+
+
+def create_card_data_dict(
+    am_config: AnkiMorphsConfig,
+    config_filter: AnkiMorphsConfigFilter,
+) -> dict[int, AnkiCardData]:
+    assert mw is not None
+
+    tag_manager = TagManager(mw.col)
+    tags: dict[str, str] = config_filter.tags
+    model_id: Optional[int] = config_filter.note_type_id
+    card_data_dict: dict[int, AnkiCardData] = {}
+
+    for anki_row_data in _get_anki_data(am_config, model_id, tags).values():
+        card_data = AnkiCardData(am_config, config_filter, tag_manager, anki_row_data)
+        card_data_dict[anki_row_data.card_id] = card_data
+
+    return card_data_dict
+
+
+def _get_anki_data(
+    am_config: AnkiMorphsConfig, model_id: Optional[int], tags_object: dict[str, str]
+) -> dict[int, AnkiDBRowData]:
+    ################################################################
+    #                        SQL QUERY
+    ################################################################
+    # This sql query is horrible, partly because of the limitation
+    # in sqlite where you can't really build a query with variable
+    # parameter length (tags in this case)
+    # More info:
+    # https://stackoverflow.com/questions/5766230/select-from-sqlite-table-where-rowid-in-list-using-python-sqlite3-db-api-2-0
+    #
+    # EXAMPLE FINAL SQL QUERY:
+    #   SELECT cards.id, cards.ivl, cards.type, cards.queue, notes.id, notes.flds, notes.tags
+    #   FROM cards
+    #   INNER JOIN notes ON
+    #       cards.nid = notes.id
+    #   WHERE notes.mid = 1691076536776 AND (cards.queue != -1 OR notes.tags LIKE '% am-known-manually %') AND notes.tags LIKE '% movie %'
+    ################################################################
+
+    assert mw
+    assert mw.col.db
+
+    ignore_suspended_cards = ""
+    if am_config.preprocess_ignore_suspended_cards_content:
+        # If this part is included, then we don't get cards that are suspended EXCEPT for
+        # the cards that were 'set known and skip' and later suspended. We want to always
+        # include those cards otherwise we can lose track of known morphs
+        ignore_suspended_cards = f" AND (cards.queue != -1 OR notes.tags LIKE '% {am_config.tag_known_manually} %')"
+
+    excluded_tags = tags_object["exclude"]
+    included_tags = tags_object["include"]
+    tags_search_string = ""
+
+    if len(excluded_tags) > 0:
+        tags_search_string += "".join(
+            [f" AND notes.tags NOT LIKE '% {_tag} %'" for _tag in excluded_tags]
+        )
+    if len(included_tags) > 0:
+        tags_search_string += "".join(
+            [f" AND notes.tags LIKE '% {_tag} %'" for _tag in included_tags]
+        )
+
+    result: list[Sequence[Any]] = mw.col.db.all(
+        """
+        SELECT cards.id, cards.ivl, cards.type, cards.queue, notes.id, notes.flds, notes.tags
+        FROM cards
+        INNER JOIN notes ON
+            cards.nid = notes.id
+        """
+        + f"WHERE notes.mid = {model_id}{ignore_suspended_cards}{tags_search_string}",
+    )
+
+    anki_db_row_data_dict: dict[int, AnkiDBRowData] = {}
+    for anki_data in map(AnkiDBRowData, result):
+        anki_db_row_data_dict[anki_data.card_id] = anki_data
+    return anki_db_row_data_dict

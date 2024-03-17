@@ -16,6 +16,7 @@ from aqt import setupLangAndBackend
 from ankimorphs import (
     AnkiMorphsConfig,
     AnkiMorphsDB,
+    anki_data_utils,
     ankimorphs_config,
     ankimorphs_db,
     ankimorphs_globals,
@@ -70,7 +71,7 @@ class CardData:
 @pytest.fixture(
     scope="module"  # module-scope: created and destroyed once per module. Cached.
 )
-def fake_environment():
+def fake_environment_no_offset():
     # deck used is found here: https://github.com/mortii/anki-decks
     # "Japanese Sentences_v5.apkg"
     # the collection.ank2 file only stores the collection data, not media.
@@ -104,6 +105,7 @@ def fake_environment():
     morph_db_mw = mock.patch.object(ankimorphs_db, "mw", mock_mw)
     patch_config_mw = mock.patch.object(ankimorphs_config, "mw", mock_mw)
     patch_name_file_utils_mw = mock.patch.object(name_file_utils, "mw", mock_mw)
+    patch_anki_data_utils_mw = mock.patch.object(anki_data_utils, "mw", mock_mw)
     patch_testing_variable = mock.patch.object(
         spacy_wrapper, "testing_environment", True
     )
@@ -112,6 +114,7 @@ def fake_environment():
     morph_db_mw.start()
     patch_config_mw.start()
     patch_name_file_utils_mw.start()
+    patch_anki_data_utils_mw.start()
     patch_testing_variable.start()
 
     yield mock_mw.col, Collection(collection_path_original)
@@ -122,14 +125,81 @@ def fake_environment():
     morph_db_mw.stop()
     patch_config_mw.stop()
     patch_name_file_utils_mw.stop()
+    patch_anki_data_utils_mw.stop()
     patch_testing_variable.stop()
 
     os.remove(collection_path_duplicate)
     shutil.rmtree(collection_path_duplicate_media)
 
 
-def test_recalc(fake_environment):  # pylint:disable=too-many-locals
-    mock_collection, original_collection = fake_environment
+@pytest.fixture()
+def fake_environment_with_offset():
+    # almost identical to the other fake environment, but the collection
+    # has used the offset settings instead of skip
+
+    tests_path = os.path.join(os.path.abspath("tests"), "data")
+    collection_path_original = os.path.join(tests_path, "collection_with_offset.anki2")
+    collection_path_duplicate = os.path.join(
+        tests_path, "duplicate_collection_with_offset.anki2"
+    )
+    collection_path_duplicate_media = os.path.join(
+        tests_path, "duplicate_collection_with_offset.media"
+    )
+
+    print(f"current dir: {os.getcwd()}")
+
+    _config_data = None
+    with open(os.path.join(tests_path, "meta.json"), encoding="utf-8") as file:
+        _config_data = json.load(file)
+        _config_data["config"]["recalc_offset_new_cards"] = True
+        _config_data["config"]["skip_only_known_morphs_cards"] = False
+        _config_data["config"]["skip_unknown_morph_seen_today_cards"] = False
+
+    # If the destination already exists, it will be replaced
+    shutil.copyfile(collection_path_original, collection_path_duplicate)
+
+    mock_mw = mock.Mock(spec=aqt.mw)
+    mock_mw.col = Collection(collection_path_duplicate)
+    mock_mw.backend = setupLangAndBackend(
+        pm=mock.Mock(name="fake_pm"), app=mock.Mock(name="fake_app"), force="en"
+    )
+    mock_mw.pm.profileFolder.return_value = os.path.join("tests", "data")
+    mock_mw.progress.want_cancel.return_value = False
+    mock_mw.addonManager.getConfig.return_value = _config_data["config"]
+
+    patch_recalc_mw = mock.patch.object(recalc, "mw", mock_mw)
+    morph_db_mw = mock.patch.object(ankimorphs_db, "mw", mock_mw)
+    patch_config_mw = mock.patch.object(ankimorphs_config, "mw", mock_mw)
+    patch_name_file_utils_mw = mock.patch.object(name_file_utils, "mw", mock_mw)
+    patch_anki_data_utils_mw = mock.patch.object(anki_data_utils, "mw", mock_mw)
+    patch_testing_variable = mock.patch.object(
+        spacy_wrapper, "testing_environment", True
+    )
+
+    patch_recalc_mw.start()
+    morph_db_mw.start()
+    patch_config_mw.start()
+    patch_name_file_utils_mw.start()
+    patch_anki_data_utils_mw.start()
+    patch_testing_variable.start()
+
+    yield mock_mw.col, Collection(collection_path_original)
+
+    mock_mw.col.close()
+
+    patch_recalc_mw.stop()
+    morph_db_mw.stop()
+    patch_config_mw.stop()
+    patch_name_file_utils_mw.stop()
+    patch_anki_data_utils_mw.stop()
+    patch_testing_variable.stop()
+
+    os.remove(collection_path_duplicate)
+    shutil.rmtree(collection_path_duplicate_media)
+
+
+def test_recalc_no_offset(fake_environment_no_offset):  # pylint:disable=too-many-locals
+    mock_collection, original_collection = fake_environment_no_offset
 
     note_type_id: NotetypeId = NotetypeId(
         1691076536776  # found in tests/data/meta.json
@@ -244,7 +314,7 @@ def test_recalc(fake_environment):  # pylint:disable=too-many-locals
     assert known_morphs_test == known_morphs_correct
 
 
-def test_highlighting(fake_environment):  # pylint:disable=unused-argument
+def test_highlighting(fake_environment_no_offset):  # pylint:disable=unused-argument
     # this example has a couple of good nuances:
     #   1.  空[あ]い has a ruby character in the middle of the morph
     #   2. お 前[まえ] does not match any morphs, so this checks the non-span highlighting branch
@@ -351,3 +421,126 @@ def test_names_txt_file():
     # there isn't really a great way to test name.txt since removing
     # morphs will cause a cascade of due changes...
     assert False
+
+
+def test_recalc_with_offset(
+    fake_environment_with_offset,
+):  # pylint:disable=too-many-locals
+    # Identical to the other recalc test function, but with these configs on the test collection instead:
+    # _config_data["config"]["recalc_offset_new_cards"] = True
+    # _config_data["config"]["skip_only_known_morphs_cards"] = False
+    # _config_data["config"]["skip_unknown_morph_seen_today_cards"] = False
+
+    mock_collection, original_collection = fake_environment_with_offset
+
+    note_type_id: NotetypeId = NotetypeId(
+        1691076536776  # found in tests/data/meta.json
+    )
+    model_manager: ModelManager = ModelManager(mock_collection)
+    note_type_dict: Optional[NotetypeDict] = model_manager.get(note_type_id)
+    assert note_type_dict is not None
+    note_type_field_name_dict = model_manager.field_map(note_type_dict)
+
+    extra_field_unknowns: int = note_type_field_name_dict[
+        ankimorphs_globals.EXTRA_FIELD_UNKNOWNS
+    ][0]
+
+    extra_field_unknowns_count: int = note_type_field_name_dict[
+        ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT
+    ][0]
+
+    extra_field_highlighted: int = note_type_field_name_dict[
+        ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED
+    ][0]
+
+    extra_field_difficulty: int = note_type_field_name_dict[
+        ankimorphs_globals.EXTRA_FIELD_DIFFICULTY
+    ][0]
+
+    card_due_dict: dict[int, CardData] = {}
+
+    original_collection_cards = original_collection.find_cards("")
+    card_collection_length = 36850
+    assert len(original_collection_cards) == card_collection_length
+
+    for card_id in original_collection_cards:
+        card: Card = original_collection.get_card(card_id)
+        note: Note = card.note()
+
+        unknowns_field = note.fields[extra_field_unknowns]
+        unknowns_count_field = note.fields[extra_field_unknowns_count]
+        highlighted_field = note.fields[extra_field_highlighted]
+        difficulty_field = note.fields[extra_field_difficulty]
+
+        card_due_dict[card_id] = CardData(
+            due=card.due,
+            extra_field_unknowns=unknowns_field,
+            extra_field_unknowns_count=unknowns_count_field,
+            extra_field_highlighted=highlighted_field,
+            extra_field_difficulty=difficulty_field,
+            tags=note.tags,
+        )
+
+    recalc._recalc_background_op(mock_collection)
+
+    mock_collection_cards: Sequence[int] = mock_collection.find_cards("")
+    assert len(mock_collection_cards) == card_collection_length
+
+    for card_id in mock_collection_cards:
+        card: Card = mock_collection.get_card(card_id)
+        note: Note = card.note()
+
+        unknowns_field = note.fields[extra_field_unknowns]
+        unknowns_count_field = note.fields[extra_field_unknowns_count]
+        highlighted_field = note.fields[extra_field_highlighted]
+        difficulty_field = note.fields[extra_field_difficulty]
+
+        new_card_data = CardData(
+            due=card.due,
+            extra_field_unknowns=unknowns_field,
+            extra_field_unknowns_count=unknowns_count_field,
+            extra_field_highlighted=highlighted_field,
+            extra_field_difficulty=difficulty_field,
+            tags=note.tags,
+        )
+
+        original_card_data = card_due_dict[card_id]
+
+        # print("original card data")
+        # print(f"card_id: {card_id}")
+        # print(f"due: {original_card_data.due}")
+        # print(f"extra_field_unknowns: {original_card_data.extra_field_unknowns}")
+        # print(
+        #     f"extra_field_unknowns_count: {original_card_data.extra_field_unknowns_count}"
+        # )
+        # print(f"extra_field_highlighted: {original_card_data.extra_field_highlighted}")
+        # print(f"extra_field_difficulty: {original_card_data.extra_field_difficulty}")
+        # print(f"tags: {original_card_data.tags}")
+
+        assert card_id == card.id
+        assert original_card_data.due == new_card_data.due
+        assert (
+            original_card_data.extra_field_unknowns
+            == new_card_data.extra_field_unknowns
+        )
+        assert (
+            original_card_data.extra_field_unknowns_count
+            == new_card_data.extra_field_unknowns_count
+        )
+        assert (
+            original_card_data.extra_field_highlighted
+            == new_card_data.extra_field_highlighted
+        )
+        assert (
+            original_card_data.extra_field_difficulty
+            == new_card_data.extra_field_difficulty
+        )
+        assert original_card_data.tags == new_card_data.tags
+
+    # we check if the morphs from 'known-morphs' dir is correctly inserted into the db
+    known_morphs_test: list[tuple[str, str]] = AnkiMorphsDB.get_known_morphs(
+        highest_learning_interval=21
+    )
+    known_morphs_correct = [("æ", "æ"), ("ø", "ø")]
+
+    assert known_morphs_test == known_morphs_correct
