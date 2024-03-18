@@ -77,4 +77,38 @@ There are three scenarios where AnkiMorphs will automatically skip a card:
    `Alexander`. If you use the [Mark as name](../setup/names.md) feature to mark `Alexander` as a name on `card1`,
    then the cards `card2, card3` will be skipped.
 
+### Pre-skipping Cards
 
+The skipping features mentioned in the section above only take effect when using Anki on desktop where the AnkiMorphs
+addon is activated. This can make it tricky to study new cards on mobile since there might be many cards right after
+each other that have the same unknown morph.
+
+To get some of the same effects on mobile, we can instead "pre-skip" cards by selectively moving some of them
+farther back in the queue when we Recalc.
+
+For more info read:
+
+[Recalc Settings: Shift new cards that are not the first to have the unknown morph](../setup/settings/recalc.md)
+
+### Right-Clicking Highlighted Text
+
+![context-menu.png](../../img/context-menu.png)
+
+AnkiMorphs adds some additional options to the Anki context menu (right-click):
+
+* **Mark as Name**:  
+  The highlighted text will be added to the [names.txt](../setup/names.md) file, and the card will be skipped.
+
+* **Browse in am-unknowns**:  
+  This opens up the Anki Browse window with the search term:
+  ```
+   "am-unknowns:{highlighted_text}"
+  ```
+  This can be useful to find cards you previously studied that had this as an unknown morph.
+
+  For example, you might have forgotten the nuances of the word `lucky`, but you recall having studied it before and
+  you wish to refresh your memory. To quickly find the previously studied card(s), you can highlight `lucky`,
+  select this option, and the browse window will open with the search:
+  ```
+   "am-unknowns:lucky"
+  ```

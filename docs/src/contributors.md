@@ -10,7 +10,7 @@ mortii, Vilhelm-Ian, xofm31, Jcuhfehl.
 
 ### Docs contribution
 
-Matt Vs Japan, mortii, Vilhelm-Ian, cocowash, xuiqzy.
+Matt Vs Japan, mortii, Vilhelm-Ian, cocowash, xuiqzy, xofm31.
 
 ### Bugs reports, feature requests, or other helpful guidance
 
