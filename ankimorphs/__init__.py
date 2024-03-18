@@ -1,14 +1,14 @@
 ################################################################
 #                          IMPORTS
 ################################################################
-# We have to use implicit imports from the 'ankimorphs'-module
-# because ankiweb changes the directory name to a number instead
-# of 'ankimorphs'
+# We have to use implicit imports from the "ankimorphs" module
+# because ankiweb changes the directory name to a number:
+# "ankimorphs" -> "472573498"
 #
 # Correct:
 # from . import browser_utils
 #
-# Incorrect:
+# Incorrect (causes "not found" crashes):
 # from ankimorphs import browser_utils
 ################################################################
 
@@ -100,7 +100,7 @@ def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
             cmd="recalc_toolbar",
             label="Recalc",
             func=recalc.recalc,
-            tip="AnkiMorph Recalc",
+            tip="AnkiMorphs Recalc",
             id="recalc_toolbar",
         )
     )
@@ -135,12 +135,12 @@ def load_am_profile_configs() -> None:
             profile_settings = json.load(file)
             ankimorphs_config.update_configs(profile_settings)
     except FileNotFoundError:
-        # This is reached when we enter a new profile
-        # that hasn't saved any settings yet. It's important
-        # that we don't carry over any settings from the previous
-        # profile because they can be somewhat hidden (note filter tags),
-        # so it can produce unexpected results. We therefore reset
-        # meta.json to config.json (default settings)
+        # This is reached when we load a new anki profile that hasn't saved
+        # any ankimorphs settings yet. It's important that we don't carry over
+        # any settings from the previous profile because they can be somewhat
+        # hidden (note filter tags), which could lead to completely unexpected
+        # results for no apparent reason. We therefore reset meta.json to
+        # config.json (default settings)
         ankimorphs_config.reset_all_configs()
 
 
@@ -172,7 +172,7 @@ def register_addon_dialogs() -> None:
 
 def redraw_toolbar() -> None:
     # Updates the toolbar stats
-    # wrapping this makes testing easier because we don't have to mock mw
+    # Wrapping this makes testing easier because we don't have to mock mw
     assert mw is not None
     mw.toolbar.draw()
 
@@ -260,8 +260,9 @@ def init_browser_menus_and_actions() -> None:
 
 
 def recalc_on_sync() -> None:
-    # Sync automatically happens on Anki startup, so we have
-    # to check for that before we run recalc
+    # Sync automatically happens on Anki startup, but we don't
+    # want to run recalc at that point since it might be unnecessary,
+    # so we check for that first.
     global _startup_sync
 
     if _startup_sync:
@@ -330,22 +331,20 @@ def rebuild_seen_morphs(changes: OpChangesAfterUndo) -> None:
     # which gets complicated when a user undos or redos cards.
     #
     # When a card is answered/set known, we insert all the card's
-    # morphs into the 'Seen_Morphs'-table, if a morph is already
+    # morphs into the 'Seen_Morphs'-table. If a morph is already
     # in the table, we just ignore the insert error. This makes
-    # it tricky to remove morphs from the table  when undo is used
+    # it tricky to remove morphs from the table when undo is used
     # because we don't track if the morphs were already in the table
-    # or not. To not have to deal with this removal problem, we just
-    # drop the entire table and rebuild it with the morphs of all
-    # the studied cards. This is admittedly costly, but it only
-    # happens on 'undo,' which should be a rare occurrence.
+    # or not. To not deal with this removal problem, we just drop
+    # the entire table and rebuild it with the morphs of all the
+    # studied cards. This is costly, but it only happens on 'undo',
+    # which should be a rare occurrence.
     #
     # REDO:
     # Redoing, i.e., undoing an undo (Ctrl+Shift+Z), is almost
     # impossible to distinguish from a regular forward operation.
-    # Since this is such a nightmare to deal with, and is hopefully
-    # a rare occurrence, this will just be left as unexpected behavior.
-    # Whatever bugs the user might experience at that point is not a
-    # concern.
+    # Since this is such a nightmare to deal with (and is hopefully
+    # a rare occurrence), this will just be left as unexpected behavior.
     ################################################################
     del changes  # unused
 
@@ -466,7 +465,7 @@ def add_text_as_name_action(web_view: AnkiWebView, menu: QMenu) -> None:
     selected_text = web_view.selectedText()
     if selected_text == "":
         return
-    action = QAction(f'Mark "{selected_text}" as name', menu)
+    action = QAction("Mark as name", menu)
     action.triggered.connect(lambda: name_file_utils.add_name_to_file(selected_text))
     action.triggered.connect(AnkiMorphsDB.insert_names_to_seen_morphs)
     action.triggered.connect(mw.reviewer.bury_current_card)
@@ -477,9 +476,7 @@ def browse_am_unknowns_for_text_action(web_view: AnkiWebView, menu: QMenu) -> No
     selected_text = web_view.selectedText()
     if selected_text == "":
         return
-    action = QAction(
-        f'Browse "{ankimorphs_globals.EXTRA_FIELD_UNKNOWNS}:{selected_text}"', menu
-    )
+    action = QAction(f"Browse in {ankimorphs_globals.EXTRA_FIELD_UNKNOWNS}", menu)
     action.triggered.connect(
         lambda: browser_utils.browse_am_unknown_for_highlighted_morph(selected_text)
     )
@@ -531,9 +528,9 @@ def create_test_action() -> QAction:
 
 
 def test_function() -> None:
-    # to activate this dev function in Anki:
-    # 1. in ankimorphs_globals.py set 'DEV_MODE = True'
-    # 2. use Ctrl+T, or go to Tools -> Ankimorphs -> Test
+    # To activate this dev function in Anki:
+    # 1. In ankimorphs_globals.py set 'DEV_MODE = True'
+    # 2. Use Ctrl+T, or go to: Tools -> Ankimorphs -> Test
 
     assert mw is not None
     assert mw.col.db is not None
