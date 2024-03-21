@@ -440,6 +440,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.recalcSuspendKnownCheckBox.setChecked(
             self._config.recalc_suspend_known_new_cards
         )
+        self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.setChecked(
+            self._config.recalc_move_known_new_cards_to_the_end
+        )
         self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
             self._config.recalc_read_known_morphs_folder
         )
@@ -477,6 +480,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.recalcBeforeSyncCheckBox.setChecked(self._default_config.recalc_on_sync)
         self.ui.recalcSuspendKnownCheckBox.setChecked(
             self._default_config.recalc_suspend_known_new_cards
+        )
+        self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.setChecked(
+            self._default_config.recalc_move_known_new_cards_to_the_end
         )
         self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
             self._default_config.recalc_read_known_morphs_folder
@@ -620,6 +626,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             "recalc_interval_for_known": self.ui.recalcIntervalSpinBox.value(),
             "recalc_on_sync": self.ui.recalcBeforeSyncCheckBox.isChecked(),
             "recalc_suspend_known_new_cards": self.ui.recalcSuspendKnownCheckBox.isChecked(),
+            "recalc_move_known_new_cards_to_the_end": self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.isChecked(),
             "recalc_read_known_morphs_folder": self.ui.recalcReadKnownMorphsFolderCheckBox.isChecked(),
             "recalc_toolbar_stats_use_seen": self.ui.toolbarStatsUseSeenRadioButton.isChecked(),
             "recalc_toolbar_stats_use_known": self.ui.toolbarStatsUseKnownRadioButton.isChecked(),

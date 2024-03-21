@@ -443,6 +443,13 @@
               </widget>
              </item>
              <item>
+              <widget class="QCheckBox" name="recalcReadKnownMorphsFolderCheckBox">
+               <property name="text">
+                <string>Read files in 'known-morphs' folder and register morphs as known</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QCheckBox" name="recalcSuspendKnownCheckBox">
                <property name="text">
                 <string>Suspend new cards with only known morphs</string>
@@ -450,9 +457,9 @@
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="recalcReadKnownMorphsFolderCheckBox">
+              <widget class="QCheckBox" name="recalcMoveKnownNewCardsToTheEndCheckBox">
                <property name="text">
-                <string>Read files in 'known-morphs' folder and register morphs as known</string>
+                <string>Move new cards that only have known morphs to the end of the due queue</string>
                </property>
               </widget>
              </item>

@@ -645,7 +645,7 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
         else:
             difficulty += morph_priority[morph.lemma_and_inflection]
 
-    if len(unknown_morphs) == 0 and am_config.skip_only_known_morphs_cards:
+    if len(unknown_morphs) == 0 and am_config.recalc_move_known_new_cards_to_the_end:
         # Move stale cards to the end of the queue
         return _DEFAULT_DIFFICULTY, unknown_morphs, has_learning_morph
 

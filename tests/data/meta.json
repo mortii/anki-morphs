@@ -31,6 +31,7 @@
     "preprocess_ignore_suspended_cards_content": true,
     "recalc_due_offset": 50000,
     "recalc_interval_for_known": 21,
+    "recalc_move_known_new_cards_to_the_end": true,
     "recalc_number_of_morphs_to_offset": 100,
     "recalc_offset_new_cards": false,
     "recalc_on_sync": false,
