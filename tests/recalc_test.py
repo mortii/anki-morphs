@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import sys
 from collections.abc import Sequence
 from typing import Optional
 from unittest import mock
@@ -82,8 +83,9 @@ def fake_environment_no_offset():
     collection_path_duplicate_media = os.path.join(
         tests_path, "duplicate_collection.media"
     )
+    fake_morphemizers_path = os.path.join(tests_path, "morphemizers")
 
-    print(f"current dir: {os.getcwd()}")
+    # print(f"current dir: {os.getcwd()}")
 
     _config_data = None
     with open(os.path.join(tests_path, "meta.json"), encoding="utf-8") as file:
@@ -116,6 +118,7 @@ def fake_environment_no_offset():
     patch_name_file_utils_mw.start()
     patch_anki_data_utils_mw.start()
     patch_testing_variable.start()
+    sys.path.append(fake_morphemizers_path)
 
     yield mock_mw.col, Collection(collection_path_original)
 
@@ -130,6 +133,7 @@ def fake_environment_no_offset():
 
     os.remove(collection_path_duplicate)
     shutil.rmtree(collection_path_duplicate_media)
+    sys.path.remove(fake_morphemizers_path)
 
 
 @pytest.fixture()
@@ -145,8 +149,9 @@ def fake_environment_with_offset():
     collection_path_duplicate_media = os.path.join(
         tests_path, "duplicate_collection_with_offset.media"
     )
+    fake_morphemizers_path = os.path.join(tests_path, "morphemizers")
 
-    print(f"current dir: {os.getcwd()}")
+    # print(f"current dir: {os.getcwd()}")
 
     _config_data = None
     with open(os.path.join(tests_path, "meta.json"), encoding="utf-8") as file:
@@ -182,6 +187,7 @@ def fake_environment_with_offset():
     patch_name_file_utils_mw.start()
     patch_anki_data_utils_mw.start()
     patch_testing_variable.start()
+    sys.path.append(fake_morphemizers_path)
 
     yield mock_mw.col, Collection(collection_path_original)
 
@@ -196,8 +202,10 @@ def fake_environment_with_offset():
 
     os.remove(collection_path_duplicate)
     shutil.rmtree(collection_path_duplicate_media)
+    sys.path.remove(fake_morphemizers_path)
 
 
+@pytest.mark.external_morphemizers
 def test_recalc_no_offset(fake_environment_no_offset):  # pylint:disable=too-many-locals
     mock_collection, original_collection = fake_environment_no_offset
 
@@ -423,6 +431,7 @@ def test_names_txt_file():
     assert False
 
 
+@pytest.mark.external_morphemizers
 def test_recalc_with_offset(
     fake_environment_with_offset,
 ):  # pylint:disable=too-many-locals

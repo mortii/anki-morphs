@@ -7,8 +7,7 @@ default_language_version:
 exclude: |
   (?x)^(
       ankimorphs/ui/.*|
-      ankimorphs/deps/.*|
-      ankimorphs/mecab_wrapper.py|
+      tests/data/morphemizers/.*|
   )$
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

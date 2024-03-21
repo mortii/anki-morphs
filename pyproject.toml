@@ -48,6 +48,7 @@ filterwarnings = [
 # required_plugins: plugins that must be present for pytest to run
 # pytest-qt: allows for writing tests for PyQt5, PyQt6, PySide2 and PySide6 applications.
 # pytest-xvfb: allows tests to be run without windows popping up during GUI tests or on systems without a display (like a CI).
+# pytest-expect: stores test expectations by saving the set of failing tests, allowing them to be marked as xfail when running them in future
 required_plugins = "pytest-qt pytest-xvfb pytest-expect pytest-sugar"
 # xfail_strict = True: tests marked with @pytest.mark.xfail that actually succeed will by default fail the test suite
 xfail_strict = "True"
@@ -60,7 +61,8 @@ addopts = "--strict-markers --durations=5 --maxfail=1000000"
 # example with: pytest -m slow
 markers = [
   "slow",
-  "recalc"
+  "recalc",
+  "external_morphemizers"
 ]
 
 [tool.vulture]

@@ -1,5 +1,6 @@
 import os
 import pprint
+import sys
 from unittest import mock
 
 import aqt
@@ -18,7 +19,10 @@ from ankimorphs import spacy_wrapper
 def fake_environment():
     mock_mw = mock.Mock(spec=aqt.mw)
 
-    mock_mw.pm.profileFolder.return_value = os.path.join("tests", "data")
+    tests_path = os.path.join(os.path.abspath("tests"), "data")
+    fake_morphemizers_path = os.path.join(tests_path, "morphemizers")
+
+    mock_mw.pm.profileFolder.return_value = tests_path
     mock_mw.progress.want_cancel.return_value = False
 
     patch_gd_mw = mock.patch.object(gd, "mw", mock_mw)
@@ -27,6 +31,7 @@ def fake_environment():
         spacy_wrapper, "testing_environment", True
     )
 
+    sys.path.append(fake_morphemizers_path)
     patch_gd_mw.start()
     patch_ffg_mw.start()
     patch_testing_variable.start()
@@ -36,6 +41,7 @@ def fake_environment():
     patch_gd_mw.stop()
     patch_ffg_mw.stop()
     patch_testing_variable.stop()
+    sys.path.remove(fake_morphemizers_path)
 
 
 def test_frequency_file_generator(  # pylint:disable=unused-argument

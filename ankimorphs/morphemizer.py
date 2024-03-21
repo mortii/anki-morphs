@@ -1,10 +1,9 @@
 import functools
 import re
-import subprocess
 from typing import Optional
 
-from . import spacy_wrapper
-from .mecab_wrapper import get_mecab_identity, get_morphemes_mecab
+from . import mecab_wrapper, spacy_wrapper
+from .mecab_wrapper import get_morphemes_mecab
 from .morpheme import Morpheme
 
 ####################################################################################################
@@ -44,21 +43,29 @@ class Morphemizer:
 # Morphemizer Helpers
 ####################################################################################################
 
-morphemizers = None  # pylint:disable=invalid-name
-morphemizers_by_name = {}
+morphemizers: Optional[list[Morphemizer]] = None
+morphemizers_by_name: dict[str, Morphemizer] = {}
 
 
 def get_all_morphemizers() -> list[Morphemizer]:
     global morphemizers
+
     if morphemizers is None:
-        morphemizers = [
-            SpaceMorphemizer(),
-            MecabMorphemizer(),
-        ]
+        # the space morphemizer is just a regex splitter, and is
+        # therefore always included since nothing has to be installed
+        morphemizers = [SpaceMorphemizer()]
+
+        _mecab = MecabMorphemizer()
+        if mecab_wrapper.successful_startup:
+            morphemizers.append(_mecab)
+
         for spacy_model in spacy_wrapper.get_installed_models():
             morphemizers.append(SpacyMorphemizer(spacy_model))
+
+        # update the 'names to morphemizers' dict while we are at it
         for morphemizer in morphemizers:
             morphemizers_by_name[morphemizer.get_name()] = morphemizer
+
     return morphemizers
 
 
@@ -75,10 +82,10 @@ space_char_regex = re.compile(" ")
 
 
 class MecabMorphemizer(Morphemizer):
-    """
-    Because in japanese there are no spaces to differentiate between morphemes,
-    a extra tool called 'mecab' has to be used.
-    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        mecab_wrapper.setup_mecab()  # initialize mecab
 
     def _get_morphemes_from_expr(self, expression: str) -> list[Morpheme]:
         # Remove simple spaces that could be added by other add-ons and break the parsing.
@@ -87,11 +94,8 @@ class MecabMorphemizer(Morphemizer):
         return get_morphemes_mecab(expression)
 
     def get_description(self) -> str:
-        try:
-            identity = get_mecab_identity()
-        except (ModuleNotFoundError, subprocess.TimeoutExpired):
-            identity = "UNAVAILABLE"
-        return f"{identity}: Japanese"
+        assert mecab_wrapper.mecab_source is not None
+        return f"{mecab_wrapper.mecab_source}: Japanese"
 
 
 ####################################################################################################

@@ -1,3 +1,5 @@
+import os
+import sys
 from unittest import mock
 
 import pytest
@@ -14,11 +16,18 @@ def fake_environment():
     patch_testing_variable = mock.patch.object(
         spacy_wrapper, "testing_environment", True
     )
+
+    tests_path = os.path.join(os.path.abspath("tests"), "data")
+    fake_morphemizers_path = os.path.join(tests_path, "morphemizers")
+
+    sys.path.append(fake_morphemizers_path)
     patch_testing_variable.start()
     yield
     patch_testing_variable.stop()
+    sys.path.remove(fake_morphemizers_path)
 
 
+@pytest.mark.external_morphemizers
 def test_morpheme_generation(fake_environment):  # pylint:disable=unused-argument
     morphemizer = get_morphemizer_by_name("MecabMorphemizer")
 
