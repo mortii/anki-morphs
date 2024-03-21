@@ -12,13 +12,13 @@ from anki.models import FieldDict, ModelManager, NotetypeDict, NotetypeId
 from anki.notes import Note
 from aqt import mw
 from aqt.operations import QueryOp
-from aqt.qt import QMessageBox  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
 from . import (
     anki_data_utils,
     ankimorphs_config,
     ankimorphs_globals,
+    message_box_utils,
     spacy_wrapper,
     text_highlighting,
 )
@@ -29,6 +29,7 @@ from .exceptions import (
     CancelledOperationException,
     DefaultSettingsException,
     FrequencyFileNotFoundException,
+    MorphemizerNotFoundException,
 )
 from .morpheme import Morpheme
 from .morphemizer import SpacyMorphemizer, get_morphemizer_by_name
@@ -84,12 +85,29 @@ def _recalc_background_op(collection: Collection) -> None:
     assert mw.progress is not None
 
     am_config = AnkiMorphsConfig()
-    _cache_anki_data(am_config)
+
+    read_enabled_config_filters: list[AnkiMorphsConfigFilter] = (
+        ankimorphs_config.get_read_enabled_filters()
+    )
+
+    _abort_if_selected_morphemizers_not_found(read_enabled_config_filters)
+
+    _cache_anki_data(am_config, read_enabled_config_filters)
     _update_cards_and_notes(am_config)
+
+
+def _abort_if_selected_morphemizers_not_found(
+    read_enabled_config_filters: list[AnkiMorphsConfigFilter],
+) -> None:
+    for config_filter in read_enabled_config_filters:
+        name: str = config_filter.morphemizer_name
+        if get_morphemizer_by_name(name) is None:
+            raise MorphemizerNotFoundException(name)  # handled in on_failure()
 
 
 def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-many-statements
     am_config: AnkiMorphsConfig,
+    read_enabled_config_filters: list[AnkiMorphsConfigFilter],
 ) -> None:
     # Extracting morphs from cards is expensive, so caching them yields a significant
     # performance gain.
@@ -107,16 +125,12 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
     am_db.drop_all_tables()
     am_db.create_all_tables()
 
-    # We only want to cache the morphs on the note-filters that have 'read' enabled
-    read_enabled_config_filters: list[AnkiMorphsConfigFilter] = (
-        ankimorphs_config.get_read_enabled_filters()
-    )
-
     # These lists contain data that will be inserted into ankimorphs.db
     card_table_data: list[dict[str, Any]] = []
     morph_table_data: list[dict[str, Any]] = []
     card_morph_map_table_data: list[dict[str, Any]] = []
 
+    # We only want to cache the morphs on the note-filters that have 'read' enabled
     for config_filter in read_enabled_config_filters:
         if config_filter.note_type == "":
             raise DefaultSettingsException  # handled in on_failure()
@@ -802,6 +816,7 @@ def _on_failure(
     error: Union[
         Exception,
         DefaultSettingsException,
+        MorphemizerNotFoundException,
         CancelledOperationException,
         FrequencyFileNotFoundException,
     ]
@@ -815,21 +830,28 @@ def _on_failure(
         tooltip("Cancelled Recalc")
         return
 
+    title = "AnkiMorphs Error"
+
     if isinstance(error, DefaultSettingsException):
-        title = "AnkiMorphs Error"
         text = "Save settings before using Recalc!"
+    elif isinstance(error, MorphemizerNotFoundException):
+        if error.morphemizer_name == "MecabMorphemizer":
+            text = (
+                'Morphemizer "AnkiMorphs: Japanese" was not found.\n\n'
+                "The Japanese morphemizer can be added by installing a separate companion add-on:\n\n"
+                "Link: [https://ankiweb.net/shared/info/1974309724](https://ankiweb.net/shared/info/1974309724)\n\n"
+                "Installation code: 1974309724 \n\n"
+                "The morphemizer should be automatically found after the add-on is installed and Anki has restarted."
+            )
+        else:
+            text = f'Morphemizer "{error.morphemizer_name}" was not found.'
+
     elif isinstance(error, FrequencyFileNotFoundException):
-        title = "AnkiMorphs Error"
         text = f"Frequency file: {error.path} not found!"
     else:
         raise error
 
-    critical_box = QMessageBox(mw)
-    critical_box.setWindowTitle(title)
-    critical_box.setIcon(QMessageBox.Icon.Critical)
-    critical_box.setStandardButtons(QMessageBox.StandardButton.Ok)
-    critical_box.setText(text)
-    critical_box.exec()
+    message_box_utils.show_error_box(title=title, body=text, parent=mw)
 
 
 def update_progress_potentially_cancel(

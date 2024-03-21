@@ -14,6 +14,13 @@ class EmptyFileSelectionException(Exception):
     """No file(s) selected"""
 
 
+class MorphemizerNotFoundException(Exception):
+    """Selected Morphemizer(s) not found on the system"""
+
+    def __init__(self, morphemizer_name: str):
+        self.morphemizer_name = morphemizer_name
+
+
 class FrequencyFileNotFoundException(Exception):
     """Selected frequency files not found"""
 

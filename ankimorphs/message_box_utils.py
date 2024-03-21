@@ -20,5 +20,6 @@ def show_error_box(title: str, body: str, parent: QWidget) -> int:
     critical_box.setIcon(QMessageBox.Icon.Critical)
     critical_box.setStandardButtons(QMessageBox.StandardButton.Ok)
     critical_box.setText(body)
+    critical_box.setTextFormat(Qt.TextFormat.MarkdownText)
     answer: int = critical_box.exec()
     return answer
