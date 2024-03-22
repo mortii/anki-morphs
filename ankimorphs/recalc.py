@@ -67,6 +67,19 @@ def recalc() -> None:
     assert mw is not None
     global _start_time
 
+    # The confirmation message box is a gui element and therefore can't be shown
+    # from a background thread, so we do it from the main thread here first.
+    if _new_extra_fields_selected():
+        title = "AnkiMorphs Confirmation"
+        text = (
+            'New "extra fields" have been selected in the settings, which will cause a full upload of your card'
+            " collection the next time you synchronize.\n\nAny reviews or changes made on other devices that have"
+            " yet to be synchronized will be lost when a full upload takes place.\n\nDo you still want to continue?"
+        )
+        answer = message_box_utils.show_warning_box(title, text, parent=mw)
+        if answer is not True:
+            return
+
     mw.progress.start(label="Recalculating")
     _start_time = time.time()
 
@@ -79,6 +92,44 @@ def recalc() -> None:
     operation.with_progress().run_in_background()
 
 
+def _new_extra_fields_selected() -> bool:
+    assert mw is not None
+
+    model_manager: ModelManager = mw.col.models
+    modify_enabled_config_filters: list[AnkiMorphsConfigFilter] = (
+        ankimorphs_config.get_modify_enabled_filters()
+    )
+
+    for config_filter in modify_enabled_config_filters:
+        assert config_filter.note_type_id is not None
+        note_type_id: NotetypeId = NotetypeId(config_filter.note_type_id)
+
+        note_type_dict: Optional[NotetypeDict] = model_manager.get(note_type_id)
+        assert note_type_dict is not None
+        existing_field_names = model_manager.field_names(note_type_dict)
+
+        if config_filter.extra_unknowns:
+            if ankimorphs_globals.EXTRA_FIELD_UNKNOWNS not in existing_field_names:
+                return True
+
+        if config_filter.extra_unknowns_count:
+            if (
+                ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT
+                not in existing_field_names
+            ):
+                return True
+
+        if config_filter.extra_highlighted:
+            if ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED not in existing_field_names:
+                return True
+
+        if config_filter.extra_score:
+            if ankimorphs_globals.EXTRA_FIELD_SCORE not in existing_field_names:
+                return True
+
+    return False
+
+
 def _recalc_background_op(collection: Collection) -> None:
     del collection  # unused
     assert mw is not None
@@ -89,11 +140,14 @@ def _recalc_background_op(collection: Collection) -> None:
     read_enabled_config_filters: list[AnkiMorphsConfigFilter] = (
         ankimorphs_config.get_read_enabled_filters()
     )
+    modify_enabled_config_filters: list[AnkiMorphsConfigFilter] = (
+        ankimorphs_config.get_modify_enabled_filters()
+    )
 
     _abort_if_selected_morphemizers_not_found(read_enabled_config_filters)
 
     _cache_anki_data(am_config, read_enabled_config_filters)
-    _update_cards_and_notes(am_config)
+    _update_cards_and_notes(am_config, modify_enabled_config_filters)
 
 
 def _abort_if_selected_morphemizers_not_found(
@@ -305,16 +359,14 @@ def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:
 
 def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-statements, too-many-branches
     am_config: AnkiMorphsConfig,
+    modify_enabled_config_filters: list[AnkiMorphsConfigFilter],
 ) -> None:
     assert mw is not None
     assert mw.col.db is not None
     assert mw.progress is not None
 
-    model_manager: ModelManager = mw.col.models
     am_db = AnkiMorphsDB()
-    modify_config_filters: list[AnkiMorphsConfigFilter] = (
-        ankimorphs_config.get_modify_enabled_filters()
-    )
+    model_manager: ModelManager = mw.col.models
     card_morph_map_cache: dict[int, list[Morpheme]] = am_db.get_card_morph_map_cache()
     handled_cards: dict[int, None] = {}  # we only care about the key lookup, not values
     modified_cards: dict[int, Card] = {}  # a dict makes the offsetting process easier
@@ -323,7 +375,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
     # clear the morph collection frequency cache between recalcs
     am_db.get_morph_collection_priority.cache_clear()
 
-    for config_filter in modify_config_filters:
+    for config_filter in modify_enabled_config_filters:
         assert config_filter.note_type_id is not None
         note_type_id: NotetypeId = NotetypeId(config_filter.note_type_id)
 
@@ -536,6 +588,7 @@ def _add_extra_fields_to_note_type(
 ) -> None:
     note_type_dict: Optional[NotetypeDict] = model_manager.get(note_type_id)
     assert note_type_dict is not None
+
     existing_field_names = model_manager.field_names(note_type_dict)
     new_field: FieldDict
 

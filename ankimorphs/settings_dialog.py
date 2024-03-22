@@ -13,7 +13,6 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
     QCheckBox,
     QComboBox,
     QDialog,
-    QMessageBox,
     QStyle,
     Qt,
     QTableWidgetItem,
@@ -863,7 +862,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self, title: str, text: str, display_tooltip: bool = True
     ) -> bool:
         answer = show_warning_box(title, text, parent=self)
-        if answer == QMessageBox.StandardButton.Yes:
+        if answer is True:
             if display_tooltip:
                 tooltip("Remember to save!", parent=self)
             return True

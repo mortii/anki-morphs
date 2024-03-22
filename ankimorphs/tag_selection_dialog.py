@@ -11,7 +11,6 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
     QColor,
     QDialog,
     QHeaderView,
-    QMessageBox,
     QStyle,
     Qt,
     QTableWidgetItem,
@@ -228,7 +227,7 @@ class TagSelectionDialog(QDialog):  # pylint:disable=too-many-instance-attribute
         text = "Are you sure you want to unselect all tags?"
         answer = show_warning_box(title, text, parent=self)
 
-        if answer != QMessageBox.StandardButton.Yes:
+        if answer is not True:
             return
 
         global user_changed_check_state

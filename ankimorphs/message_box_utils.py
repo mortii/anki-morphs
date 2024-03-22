@@ -1,7 +1,11 @@
 from aqt.qt import QMessageBox, Qt, QWidget  # pylint:disable=no-name-in-module
 
 
-def show_warning_box(title: str, body: str, parent: QWidget) -> int:
+def show_warning_box(title: str, body: str, parent: QWidget) -> bool:
+    """
+    Returns 'True' if user clicked 'Ok' button
+    Returns 'False' otherwise.
+    """
     warning_box = QMessageBox(parent)
     warning_box.setWindowTitle(title)
     warning_box.setIcon(QMessageBox.Icon.Warning)
@@ -11,7 +15,9 @@ def show_warning_box(title: str, body: str, parent: QWidget) -> int:
     warning_box.setText(body)
     warning_box.setTextFormat(Qt.TextFormat.MarkdownText)
     answer: int = warning_box.exec()
-    return answer
+    if answer == QMessageBox.StandardButton.Yes:
+        return True
+    return False
 
 
 def show_error_box(title: str, body: str, parent: QWidget) -> int:
