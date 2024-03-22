@@ -7,7 +7,7 @@ magic. When you run Recalc, AnkiMorphs will go through
 the [cards that match any 'Note Filter'](../setup/settings/note-filter.md) and do the following:
 
 * Update the `ankimorphs.db` with any new seen morphs, known morphs, etc.
-* Calculate the [difficulty of the cards](#difficulty-algorithm), and then sort the cards based on that difficulty.
+* Calculate the [score of the cards](#scoring-algorithm), and then sort the cards based on that score.
 * Update any cards' [extra fields](../setup/settings/extra-fields.md) and [tags](../setup/settings/tags.md).
 
 Basically, when you run Recalc, AnkiMorphs will go through your collection, recalculate
@@ -25,9 +25,14 @@ running it automatically before Anki syncs your collection.
 > The [Anki FAQ](https://faqs.ankiweb.net/can-i-sync-only-some-of-my-decks.html) has some
 > tricks you can try if this poses a significant problem.
 
-### Difficulty Algorithm
+### Scoring Algorithm
 
-$$$ \large \text{Difficulty} = U_n \times U_p + \sum_{m \in M}{m_p} $$$
+Low scores are good, high scores are bad; the more comprehensible and important a text is evaluated to be, the lower the
+score will end up being.
+
+The algorithm is as follows:
+
+$$$ \large \text{Score} = U_n \times U_p + \sum_{m \in M}{m_p} $$$
 
 where
 $$$

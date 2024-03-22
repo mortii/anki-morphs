@@ -103,7 +103,7 @@ Any [installed spaCy models](../../installation/installing-spacy.md) will also s
 
 ## Morph Priority
 
-The calculated [difficulty](../../usage/recalc.md#difficulty-algorithm) of the card, and as a result, the sorting of the card, depends on
+The calculated [score](../../usage/recalc.md#scoring-algorithm) of the card, and as a result, the sorting of the card, depends on
 the [priority](../prioritizing.md) you give the morphs. You can either set the priorities to be `Collection frequency` (how often the morphs occur in your card collection), or you could use
 a [custom .csv file](../prioritizing.md#frequencycsv) that specifies the priorities of the morphs.
 
@@ -135,11 +135,11 @@ There are some nuances that are important to be aware of when it comes to note f
 
 Order matters. In the image above all the cards that have note type `ankimorphs_sub2srs` will have the text found in
 the `Japanese` field analyzed, and then those cards will be sorted based on
-the difficulty of that text.
+the score of that text.
 
 **After those cards are analyzed and sorted** then the next note filter will take effect: All the cards that have the
 note type `Kanji` will have the text found in the `Front` field analyzed and then those cards will be sorted based on
-the difficulty of that text.
+the score of that text.
 
 ### Overlapping filters
 

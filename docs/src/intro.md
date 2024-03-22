@@ -17,7 +17,7 @@ into [morphs](./user_guide/glossary.html#morph) (basically words). It assumes yo
 contained within the cards you’ve learned. In this way, it creates a database of your current knowledge and uses that
 database to analyze how many unknown morphs are contained within each of your new cards.
 
-It then reorders your new cards based on their [difficulty](./user_guide/usage/recalc.md#difficulty-algorithm) so that you
+It then reorders your new cards based on their [score](./user_guide/usage/recalc.md#scoring-algorithm) so that you
 see the easiest cards (i.e., the cards with the fewest
 number of unknown morphs) first. AnkiMorphs only reorders your new cards; it doesn’t touch the scheduling of cards
 you’ve

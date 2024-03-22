@@ -19,8 +19,8 @@ The fields contain the following:
   The number of unknowns found
 - **am-highlighted**:  
   An HTML version of the text that highlights the morphs based on learning status
-- **am-difficulty**:  
-  The difficulty AnkiMorphs calculated the text to have
+- **am-score**:  
+  The [score](../../usage/recalc.md#scoring-algorithm) AnkiMorphs determined the card to have
 
 <br>
 Here is an example where all the extra-fields have been selected:
@@ -121,7 +121,7 @@ press `Show Answer` on the card. To prevent both playing you can do the followin
 2. Scroll down to the `Audio` section
 3. Activate `Skip question when replaying answer`
 
-## Using am-difficulty
+## Using am-score
 
 This field is really just for debugging purposes, so I recommend that you **don't** add this field to your card-template
 to make it visible--it would just end up making your cards more cluttered.
