@@ -70,7 +70,7 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
             self.extra_highlighted: bool = _get_filter_bool(
                 _filter, "extra_highlighted"
             )
-            self.extra_difficulty: bool = _get_filter_bool(_filter, "extra_difficulty")
+            self.extra_score: bool = _get_filter_bool(_filter, "extra_score")
 
         except (KeyError, AssertionError):
             self.has_error = True
@@ -348,7 +348,13 @@ def _get_filter_str(_filter: FilterTypeAlias, key: str) -> str:
 
 
 def _get_filter_bool(_filter: FilterTypeAlias, key: str) -> bool:
-    filter_item = _filter[key]
+    try:
+        filter_item = _filter[key]
+    except KeyError:
+        # Silently ignoring this and just adding the non-activated default value
+        # is a much better user experience than crashing/getting an error message.
+        # The default filters config is a list with one entry which contains default values.
+        filter_item = get_default_config("filters")[0][key]
     assert isinstance(filter_item, bool)
     return filter_item
 

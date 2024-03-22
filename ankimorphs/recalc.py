@@ -44,7 +44,7 @@ from .text_preprocessing import (
 # overflow. To prevent overflow when cards are repositioned,
 # we decrement the second digit (from the left) of the max value,
 # which should give plenty of leeway (10^8).
-_DEFAULT_DIFFICULTY: int = 2047483647
+_DEFAULT_SCORE: int = 2047483647
 
 # When recalc is finished, the total duration is printed
 # to the terminal. We have a global start time variable
@@ -176,7 +176,7 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
         #
         # We don't want to store duplicate morphs because it can lead
         # to the same morph being counted twice, which is bad for the
-        # difficulty algorithm. We therefore convert the lists of morphs
+        # scoring algorithm. We therefore convert the lists of morphs
         # we receive from the morphemizers into sets.
         if nlp is not None:
             for index, doc in enumerate(nlp.pipe(all_text)):
@@ -361,17 +361,17 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
 
             if card.type == CARD_TYPE_NEW:
                 (
-                    card_difficulty,
+                    card_score,
                     card_unknown_morphs,
                     card_has_learning_morphs,
-                ) = _get_card_difficulty_and_unknowns_and_learning_status(
+                ) = _get_card_score_and_unknowns_and_learning_status(
                     am_config,
                     card_id,
                     card_morph_map_cache,
                     morph_priority,
                 )
 
-                card.due = card_difficulty
+                card.due = card_score
 
                 _update_tags_and_queue(
                     am_config,
@@ -389,10 +389,8 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                     _update_unknowns_count_field(
                         note_type_field_name_dict, note, card_unknown_morphs
                     )
-                if config_filter.extra_difficulty:
-                    _update_difficulty_field(
-                        note_type_field_name_dict, note, card_difficulty
-                    )
+                if config_filter.extra_score:
+                    _update_score_field(note_type_field_name_dict, note, card_score)
 
             if config_filter.extra_highlighted:
                 _update_highlighted_field(
@@ -522,8 +520,8 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
                     del modified_cards[card_id]
                     continue
 
-            # limit to _DEFAULT_DIFFICULTY to prevent integer overflow
-            card.due = min(card.due + am_config.recalc_due_offset, _DEFAULT_DIFFICULTY)
+            # limit to _DEFAULT_SCORE to prevent integer overflow
+            card.due = min(card.due + am_config.recalc_due_offset, _DEFAULT_SCORE)
             modified_offset_cards[card_id] = card
 
     # combine the "lists" of cards we want to modify
@@ -563,11 +561,9 @@ def _add_extra_fields_to_note_type(
             model_manager.add_field(note_type_dict, new_field)
             model_manager.update_dict(note_type_dict)
 
-    if config_filter.extra_difficulty:
-        if ankimorphs_globals.EXTRA_FIELD_DIFFICULTY not in existing_field_names:
-            new_field = model_manager.new_field(
-                ankimorphs_globals.EXTRA_FIELD_DIFFICULTY
-            )
+    if config_filter.extra_score:
+        if ankimorphs_globals.EXTRA_FIELD_SCORE not in existing_field_names:
+            new_field = model_manager.new_field(ankimorphs_globals.EXTRA_FIELD_SCORE)
             model_manager.add_field(note_type_dict, new_field)
             model_manager.update_dict(note_type_dict)
 
@@ -597,8 +593,8 @@ def _get_morph_frequency_file_priority(frequency_file_name: str) -> dict[str, in
             morph_reader = csv.reader(csvfile, delimiter=",")
             next(morph_reader, None)  # skip the headers
             for index, row in enumerate(morph_reader):
-                if index > _DEFAULT_DIFFICULTY:
-                    # the difficulty algorithm ignores values > 50K
+                if index > _DEFAULT_SCORE:
+                    # the scoring algorithm ignores values > 50K
                     # so any rows after this will be ignored anyway
                     break
                 key = row[0] + row[1]
@@ -608,7 +604,7 @@ def _get_morph_frequency_file_priority(frequency_file_name: str) -> dict[str, in
     return morph_priority
 
 
-def _get_card_difficulty_and_unknowns_and_learning_status(
+def _get_card_score_and_unknowns_and_learning_status(
     am_config: AnkiMorphsConfig,
     card_id: int,
     card_morph_map_cache: dict[int, list[Morpheme]],
@@ -617,7 +613,7 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
     ####################################################################################
     #                                      ALGORITHM
     ####################################################################################
-    # We want our algorithm to determine difficulty based on the following importance:
+    # We want our algorithm to determine the score based on the following importance:
     #     1. If the card has unknown morphs (unknown_morph_penalty)
     #     2. The priority of the card's morphs (morph_priority_penalty)
     #
@@ -641,9 +637,9 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
         card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
     except KeyError:
         # card does not have morphs or is buggy in some way
-        return _DEFAULT_DIFFICULTY, unknown_morphs, has_learning_morph
+        return _DEFAULT_SCORE, unknown_morphs, has_learning_morph
 
-    difficulty = 0
+    score = 0
 
     for morph in card_morphs:
         assert morph.highest_learning_interval is not None
@@ -655,24 +651,24 @@ def _get_card_difficulty_and_unknowns_and_learning_status(
 
         if morph.lemma_and_inflection not in morph_priority:
             # Heavily penalizes if a morph is not in frequency file
-            difficulty = morph_unknown_penalty - 1
+            score = morph_unknown_penalty - 1
         else:
-            difficulty += morph_priority[morph.lemma_and_inflection]
+            score += morph_priority[morph.lemma_and_inflection]
 
     if len(unknown_morphs) == 0 and am_config.recalc_move_known_new_cards_to_the_end:
         # Move stale cards to the end of the queue
-        return _DEFAULT_DIFFICULTY, unknown_morphs, has_learning_morph
+        return _DEFAULT_SCORE, unknown_morphs, has_learning_morph
 
-    if difficulty >= morph_unknown_penalty:
+    if score >= morph_unknown_penalty:
         # Cap morph priority penalties as described in #(2.2)
-        difficulty = morph_unknown_penalty - 1
+        score = morph_unknown_penalty - 1
 
-    difficulty += len(unknown_morphs) * morph_unknown_penalty
+    score += len(unknown_morphs) * morph_unknown_penalty
 
-    # cap difficulty to prevent 32-bit integer overflow
-    difficulty = min(difficulty, _DEFAULT_DIFFICULTY)
+    # cap score to prevent 32-bit integer overflow
+    score = min(score, _DEFAULT_SCORE)
 
-    return difficulty, unknown_morphs, has_learning_morph
+    return score, unknown_morphs, has_learning_morph
 
 
 def _update_unknowns_field(
@@ -704,13 +700,13 @@ def _update_unknowns_count_field(
     note.fields[index] = str(len(unknowns))
 
 
-def _update_difficulty_field(
+def _update_score_field(
     note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
-    difficulty: int,
+    score: int,
 ) -> None:
-    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_DIFFICULTY][0]
-    note.fields[index] = str(difficulty)
+    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_SCORE][0]
+    note.fields[index] = str(score)
 
 
 def _update_highlighted_field(  # pylint:disable=too-many-arguments

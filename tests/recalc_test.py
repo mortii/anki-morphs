@@ -230,7 +230,7 @@ def test_recalc_no_offset(fake_environment_no_offset):  # pylint:disable=too-man
     ][0]
 
     extra_field_difficulty: int = note_type_field_name_dict[
-        ankimorphs_globals.EXTRA_FIELD_DIFFICULTY
+        ankimorphs_globals.EXTRA_FIELD_SCORE
     ][0]
 
     card_due_dict: dict[int, CardData] = {}
@@ -463,7 +463,7 @@ def test_recalc_with_offset(
     ][0]
 
     extra_field_difficulty: int = note_type_field_name_dict[
-        ankimorphs_globals.EXTRA_FIELD_DIFFICULTY
+        ankimorphs_globals.EXTRA_FIELD_SCORE
     ][0]
 
     card_due_dict: dict[int, CardData] = {}

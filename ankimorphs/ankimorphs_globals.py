@@ -17,6 +17,6 @@ KNOWN_MORPHS_EXPORTER_DIALOG_NAME: str = "am_known_morphs_exporter_dialog"
 EXTRA_FIELD_UNKNOWNS: str = "am-unknowns"
 EXTRA_FIELD_UNKNOWNS_COUNT: str = "am-unknowns-count"
 EXTRA_FIELD_HIGHLIGHTED: str = "am-highlighted"
-EXTRA_FIELD_DIFFICULTY: str = "am-difficulty"
+EXTRA_FIELD_SCORE: str = "am-score"
 
 ankimorphs_broken: bool = False

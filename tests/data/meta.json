@@ -3,8 +3,8 @@
   "config": {
     "filters": [
       {
-        "extra_difficulty": true,
         "extra_highlighted": true,
+        "extra_score": false,
         "extra_unknowns": true,
         "extra_unknowns_count": true,
         "field": "Japanese",

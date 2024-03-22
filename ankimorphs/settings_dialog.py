@@ -74,7 +74,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             ankimorphs_globals.EXTRA_FIELD_UNKNOWNS,
             ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT,
             ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED,
-            ankimorphs_globals.EXTRA_FIELD_DIFFICULTY,
+            ankimorphs_globals.EXTRA_FIELD_SCORE,
         ]
         self._config = AnkiMorphsConfig()
         self._default_config = AnkiMorphsConfig(is_default=True)
@@ -228,14 +228,14 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
             active_note_types.add(note_type)
 
-            extra_difficulty: bool = False
+            extra_score: bool = False
             extra_highlighted: bool = False
             extra_unknowns: bool = False
             extra_unknowns_count: bool = False
 
             for _filter in config_filters:
                 if note_type == _filter.note_type:
-                    extra_difficulty = _filter.extra_difficulty
+                    extra_score = _filter.extra_score
                     extra_highlighted = _filter.extra_highlighted
                     extra_unknowns = _filter.extra_unknowns
                     extra_unknowns_count = _filter.extra_unknowns_count
@@ -251,8 +251,8 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
                 child_item.setText(0, extra_field)
                 check_state: Qt.CheckState = Qt.CheckState.Unchecked
 
-                if extra_field == ankimorphs_globals.EXTRA_FIELD_DIFFICULTY:
-                    if extra_difficulty is True:
+                if extra_field == ankimorphs_globals.EXTRA_FIELD_SCORE:
+                    if extra_score is True:
                         check_state = Qt.CheckState.Checked
                         children_checked += 1
                 elif extra_field == ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED:
@@ -687,9 +687,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             selected_extra_fields: set[str] = self._get_selected_extra_fields(
                 note_type_name
             )
-            extra_difficulty = (
-                ankimorphs_globals.EXTRA_FIELD_DIFFICULTY in selected_extra_fields
-            )
+            extra_score = ankimorphs_globals.EXTRA_FIELD_SCORE in selected_extra_fields
             extra_highlighted = (
                 ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED in selected_extra_fields
             )
@@ -720,7 +718,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
                 "morph_priority_index": morph_priority_widget.currentIndex(),
                 "read": read_widget.isChecked(),
                 "modify": modify_widget.isChecked(),
-                "extra_difficulty": extra_difficulty,
+                "extra_score": extra_score,
                 "extra_highlighted": extra_highlighted,
                 "extra_unknowns": extra_unknowns,
                 "extra_unknowns_count": extra_unknowns_count,

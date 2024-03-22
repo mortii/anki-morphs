@@ -1,8 +1,8 @@
 {
   "filters": [
     {
-      "extra_difficulty": false,
       "extra_highlighted": false,
+      "extra_score": false,
       "extra_unknowns": false,
       "extra_unknowns_count": false,
       "field": "",
