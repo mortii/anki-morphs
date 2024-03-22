@@ -888,7 +888,7 @@ def _on_failure(
             text = (
                 'Morphemizer "AnkiMorphs: Japanese" was not found.\n\n'
                 "The Japanese morphemizer can be added by installing a separate companion add-on:\n\n"
-                "Link: [https://ankiweb.net/shared/info/1974309724](https://ankiweb.net/shared/info/1974309724)\n\n"
+                "Link: https://ankiweb.net/shared/info/1974309724 \n\n"
                 "Installation code: 1974309724 \n\n"
                 "The morphemizer should be automatically found after the add-on is installed and Anki has restarted."
             )
