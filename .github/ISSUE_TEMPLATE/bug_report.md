@@ -7,26 +7,41 @@ assignees: mortii
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+### Describe the bug
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+[//]: # (Please provide a clear and concise description of what the bug is.)
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+### Steps to reproduce the behavior
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+[//]: # (Example:)
+[//]: # (1. Go to '...')
+[//]: # (2. Click on '....')
+[//]: # (3. Scroll down to '....')
+[//]: # (4. See error)
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Anki Version [e.g. 23.10]
- - AnkiMorphs Version [e.g. 0.5.3-alpha]
+### Expected behavior
 
-**Additional context**
-Add any other context about the problem here.
+[//]: # (Please provide a clear and concise description of what would expected to happen instead.)
+
+### Screenshots
+
+[//]: # (If applicable, add screenshots to help explain your problem, otherwise you can delete this section.)
+
+### My setup
+
+[//]: # (Note: the AnkiMorphs version is found on the bottom of the AnkiMorphs settings window)
+
+[//]: # (Example:)
+[//]: # (- Operating System: Windows 11)
+[//]: # (- Anki Version: 23.12.1)
+[//]: # (- AnkiMorphs Version: v2.0.0)
+
+ - Operating System:
+ - Anki Version:
+ - AnkiMorphs Version:
+
+### Additional context
+
+[//]: # (Add any additional context about the problem here, or delete this section if it's empty)
+
+

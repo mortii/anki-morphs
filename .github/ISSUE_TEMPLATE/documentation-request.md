@@ -7,8 +7,8 @@ assignees: mortii
 
 ---
 
-## What is the current documentation?
+### What is the current documentation?
 
-[//]: # (Please add a link to the current docs page)
+[//]: # (Please add a link to the current docs page if it exists)
 
-## What changes do you suggest?
+### What changes do you suggest?
