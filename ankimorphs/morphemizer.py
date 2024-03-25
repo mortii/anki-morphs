@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import functools
 import re
-from typing import Optional
 
 from . import jieba_wrapper, mecab_wrapper, spacy_wrapper
 from .mecab_wrapper import get_morphemes_mecab
@@ -43,7 +44,7 @@ class Morphemizer:
 # Morphemizer Helpers
 ####################################################################################################
 
-morphemizers: Optional[list[Morphemizer]] = None
+morphemizers: list[Morphemizer] | None = None
 morphemizers_by_name: dict[str, Morphemizer] = {}
 
 
@@ -73,7 +74,7 @@ def get_all_morphemizers() -> list[Morphemizer]:
     return morphemizers
 
 
-def get_morphemizer_by_name(name: str) -> Optional[Morphemizer]:
+def get_morphemizer_by_name(name: str) -> Morphemizer | None:
     get_all_morphemizers()
     return morphemizers_by_name.get(name, None)
 

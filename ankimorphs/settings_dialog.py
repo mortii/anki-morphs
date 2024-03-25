@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import functools
 import json
 from collections.abc import Iterable, Sequence
 from functools import partial
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable
 
 import aqt
 from anki.models import FieldDict, NotetypeId, NotetypeNameId
@@ -546,7 +548,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             self._restore_shortcuts_defaults(skip_confirmation=True)
 
     def _setup_buttons(self) -> None:
-        style: Optional[QStyle] = self.style()
+        style: QStyle | None = self.style()
         assert style is not None
 
         save_icon = style.standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton)
@@ -738,7 +740,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
     def _get_selected_extra_fields(self, note_type_name: str) -> set[str]:
         selected_fields: set[str] = set()
         for top_node_index in range(self.ui.treeWidget.topLevelItemCount()):
-            top_node: Optional[QTreeWidgetItem] = self.ui.treeWidget.topLevelItem(
+            top_node: QTreeWidgetItem | None = self.ui.treeWidget.topLevelItem(
                 top_node_index
             )
             assert top_node is not None
@@ -840,7 +842,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
     @staticmethod
     def _get_model_combobox_index(
         items: Iterable[NotetypeNameId], filter_field: str
-    ) -> Optional[int]:
+    ) -> int | None:
         for index, model in enumerate(items):
             if model.name == filter_field:
                 return index

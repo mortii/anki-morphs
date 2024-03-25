@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 import json
 import os
 import shutil
 import sys
 from collections.abc import Sequence
-from typing import Optional
 from unittest import mock
 
 import aqt
@@ -213,7 +214,7 @@ def test_recalc_no_offset(fake_environment_no_offset):  # pylint:disable=too-man
         1691076536776  # found in tests/data/meta.json
     )
     model_manager: ModelManager = ModelManager(mock_collection)
-    note_type_dict: Optional[NotetypeDict] = model_manager.get(note_type_id)
+    note_type_dict: NotetypeDict | None = model_manager.get(note_type_id)
     assert note_type_dict is not None
     note_type_field_name_dict = model_manager.field_map(note_type_dict)
 
@@ -446,7 +447,7 @@ def test_recalc_with_offset(
         1691076536776  # found in tests/data/meta.json
     )
     model_manager: ModelManager = ModelManager(mock_collection)
-    note_type_dict: Optional[NotetypeDict] = model_manager.get(note_type_id)
+    note_type_dict: NotetypeDict | None = model_manager.get(note_type_id)
     assert note_type_dict is not None
     note_type_field_name_dict = model_manager.field_map(note_type_dict)
 

@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import csv
 import os
 from functools import partial
 from pathlib import Path
-from typing import Optional
 
 from anki.collection import Collection
 from aqt import mw
@@ -25,7 +26,7 @@ class FrequencyFileGeneratorDialog(GeneratorDialog):
     # Here we make the final adjustments that can't be made (or are hard to make) in
     # Qt Designer, like setting up tables and widget-connections.
 
-    def __init__(self, parent: Optional[QMainWindow] = None) -> None:
+    def __init__(self, parent: QMainWindow | None = None) -> None:
         super().__init__(child=self.__class__.__name__)
         self._output_file: str = ""
         self._setup_output_path()

@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from collections.abc import Iterable
-from typing import Any, Optional
+from typing import Any
 
 from aqt.qt import (  # pylint:disable=no-name-in-module
     QCheckBox,
@@ -10,27 +12,27 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 
 
-def get_combobox_widget(widget: Optional[QWidget]) -> QComboBox:
+def get_combobox_widget(widget: QWidget | None) -> QComboBox:
     assert isinstance(widget, QComboBox)
     return widget
 
 
-def get_checkbox_widget(widget: Optional[QWidget]) -> QCheckBox:
+def get_checkbox_widget(widget: QWidget | None) -> QCheckBox:
     assert isinstance(widget, QCheckBox)
     return widget
 
 
-def get_radiobutton_widget(widget: Optional[QWidget]) -> QRadioButton:
+def get_radiobutton_widget(widget: QWidget | None) -> QRadioButton:
     assert isinstance(widget, QRadioButton)
     return widget
 
 
-def get_table_item(item: Optional[QTableWidgetItem]) -> QTableWidgetItem:
+def get_table_item(item: QTableWidgetItem | None) -> QTableWidgetItem:
     assert isinstance(item, QTableWidgetItem)
     return item
 
 
-def get_combobox_index(items: Iterable[str], filter_field: str) -> Optional[int]:
+def get_combobox_index(items: Iterable[str], filter_field: str) -> int | None:
     for index, field in enumerate(items):
         if field == filter_field:
             return index

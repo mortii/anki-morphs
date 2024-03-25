@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import csv
 import os
 import time
 from functools import partial
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 
 from anki.cards import Card
 from anki.collection import Collection
@@ -49,7 +51,7 @@ _DEFAULT_SCORE: int = 2047483647
 # When recalc is finished, the total duration is printed
 # to the terminal. We have a global start time variable
 # to make this process easier.
-_start_time: Optional[float] = None
+_start_time: float | None = None
 
 
 def recalc() -> None:
@@ -104,7 +106,7 @@ def _new_extra_fields_selected() -> bool:
         assert config_filter.note_type_id is not None
         note_type_id: NotetypeId = NotetypeId(config_filter.note_type_id)
 
-        note_type_dict: Optional[NotetypeDict] = model_manager.get(note_type_id)
+        note_type_dict: NotetypeDict | None = model_manager.get(note_type_id)
         assert note_type_dict is not None
         existing_field_names = model_manager.field_names(note_type_dict)
 
@@ -586,7 +588,7 @@ def _add_extra_fields_to_note_type(
     note_type_id: NotetypeId,
     model_manager: ModelManager,
 ) -> None:
-    note_type_dict: Optional[NotetypeDict] = model_manager.get(note_type_id)
+    note_type_dict: NotetypeDict | None = model_manager.get(note_type_id)
     assert note_type_dict is not None
 
     existing_field_names = model_manager.field_names(note_type_dict)
@@ -862,13 +864,13 @@ def _on_success(result: Any) -> None:
 
 
 def _on_failure(
-    error: Union[
-        Exception,
-        DefaultSettingsException,
-        MorphemizerNotFoundException,
-        CancelledOperationException,
-        FrequencyFileNotFoundException,
-    ]
+    error: (
+        Exception
+        | DefaultSettingsException
+        | MorphemizerNotFoundException
+        | CancelledOperationException
+        | FrequencyFileNotFoundException
+    ),
 ) -> None:
     # This function runs on the main thread.
     assert mw is not None

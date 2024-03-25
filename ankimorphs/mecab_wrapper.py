@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 import importlib
 import importlib.util
@@ -5,7 +7,7 @@ import re
 import subprocess
 import sys
 from types import ModuleType
-from typing import IO, Any, Optional
+from typing import IO, Any
 
 from .morpheme import Morpheme
 
@@ -23,10 +25,10 @@ _MECAB_SUB_POS_BLACKLIST = [
 _control_chars_re = re.compile("[\x00-\x1f\x7f-\x9f]")
 _wide_alpha_num_rx = re.compile(r"[０-９Ａ-Ｚａ-ｚ]")
 
-_mecab_encoding: Optional[str] = None
-_mecab_complete_cmd: Optional[str] = None
-_mecab_base_cmd: Optional[list[str]] = None
-_mecab_windows_startupinfo: Optional[Any] = None
+_mecab_encoding: str | None = None
+_mecab_complete_cmd: str | None = None
+_mecab_base_cmd: list[str] | None = None
+_mecab_windows_startupinfo: Any | None = None
 _mecab_args = [
     "--node-format={}\r".format("\t".join(_MECAB_NODE_IPADIC_PARTS)),
     "--eos-format=\n",
@@ -91,7 +93,7 @@ def _spawn_mecab() -> subprocess.Popen[bytes]:
 def _get_subprocess_dump(sub_cmd: list[str]) -> bytes:
     assert _mecab_base_cmd is not None
 
-    subprocess_stdout: Optional[IO[bytes]] = _spawn_cmd(
+    subprocess_stdout: IO[bytes] | None = _spawn_cmd(
         _mecab_base_cmd + sub_cmd,
         _mecab_windows_startupinfo,
     ).stdout
@@ -124,14 +126,14 @@ def get_morphemes_mecab(expression: str) -> list[Morpheme]:
     actual_morphs: list[Morpheme] = []
 
     for morph_string in mecab_morphs:
-        morph: Optional[Morpheme] = _get_morpheme(morph_string.split("\t"))
+        morph: Morpheme | None = _get_morpheme(morph_string.split("\t"))
         if morph is not None:
             actual_morphs.append(morph)
 
     return actual_morphs
 
 
-def _get_morpheme(morph_string_parts: list[str]) -> Optional[Morpheme]:
+def _get_morpheme(morph_string_parts: list[str]) -> Morpheme | None:
     if len(morph_string_parts) != _MECAB_NODE_LENGTH_IPADIC:
         return None
 

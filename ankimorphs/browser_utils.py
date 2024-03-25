@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from collections.abc import Sequence
-from typing import Optional
 
 from anki.collection import SearchNode
 from anki.notes import Note
@@ -20,7 +21,7 @@ from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
 from .ui.view_morphs_dialog_ui import Ui_ViewMorphsDialog
 
-browser: Optional[Browser] = None
+browser: Browser | None = None
 
 
 def run_browse_morph(
@@ -48,8 +49,8 @@ def run_browse_morph(
 
 def browse_same_morphs(  # pylint:disable=too-many-arguments
     am_config: AnkiMorphsConfig,
-    card_id: Optional[int] = None,
-    note: Optional[Note] = None,
+    card_id: int | None = None,
+    note: Note | None = None,
     search_unknowns: bool = False,
     search_ready_tag: bool = False,
     search_lemma_only: bool = False,
@@ -83,7 +84,7 @@ def browse_same_morphs(  # pylint:disable=too-many-arguments
         )
         return
 
-    card_ids: Optional[set[int]]
+    card_ids: set[int] | None
 
     # These branches are simplified by the fact that we have not exhaustively
     # added all combinations of known/unknown and inflection/lemma.
@@ -119,7 +120,7 @@ def browse_same_morphs(  # pylint:disable=too-many-arguments
     browser = dialogs.open("Browser", mw)
     assert browser is not None
 
-    search_edit: Optional[QLineEdit] = browser.form.searchEdit.lineEdit()
+    search_edit: QLineEdit | None = browser.form.searchEdit.lineEdit()
     assert search_edit is not None
 
     search_edit.setText(query)
@@ -137,7 +138,7 @@ def browse_am_unknown_for_highlighted_morph(selected_text: str) -> None:
     browser = dialogs.open("Browser", mw)
     assert browser is not None
 
-    search_edit: Optional[QLineEdit] = browser.form.searchEdit.lineEdit()
+    search_edit: QLineEdit | None = browser.form.searchEdit.lineEdit()
     assert search_edit is not None
 
     # if the selected text has special characters, then the
@@ -156,7 +157,7 @@ def focus_query(
     am_config: AnkiMorphsConfig,
     card_ids: set[int],
     ready_tag: bool = False,
-) -> Optional[str]:
+) -> str | None:
     assert mw is not None
 
     if len(card_ids) == 0:
@@ -233,7 +234,7 @@ def run_view_morphs() -> None:  # pylint:disable=too-many-locals
         card = mw.col.get_card(cid)
         note = card.note()
 
-        am_config_filter: Optional[AnkiMorphsConfigFilter] = (
+        am_config_filter: AnkiMorphsConfigFilter | None = (
             ankimorphs_config.get_matching_read_filter(note)
         )
         if am_config_filter is None:

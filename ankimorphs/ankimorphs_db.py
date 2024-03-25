@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import functools
 import os
 import sqlite3
 from collections import Counter
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any
 
 from anki.collection import Collection, SearchNode
 from aqt import mw
@@ -92,7 +94,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             )
 
     def insert_many_into_card_table(
-        self, card_list: list[dict[str, Union[int, str, bool]]]
+        self, card_list: list[dict[str, int | str | bool]]
     ) -> None:
         with self.con:
             self.con.executemany(
@@ -111,7 +113,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             )
 
     def insert_many_into_morph_table(
-        self, morph_list: list[dict[str, Union[int, str, bool]]]
+        self, morph_list: list[dict[str, int | str | bool]]
     ) -> None:
         with self.con:
             self.con.executemany(
@@ -131,7 +133,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             )
 
     def insert_many_into_card_morph_map_table(
-        self, card_morph_list: list[dict[str, Union[int, str, bool]]]
+        self, card_morph_list: list[dict[str, int | str | bool]]
     ) -> None:
         with self.con:
             self.con.executemany(
@@ -195,7 +197,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
     def get_morphs_of_card(
         self, card_id: int, search_unknowns: bool = False
-    ) -> Optional[set[tuple[str, str]]]:
+    ) -> set[tuple[str, str]] | None:
         morphs: set[tuple[str, str]] = set()
 
         if search_unknowns:
@@ -228,12 +230,12 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         card_id: int,
         search_unknowns: bool = False,
         search_lemma_only: bool = False,
-    ) -> Optional[set[int]]:
+    ) -> set[int] | None:
         # The where_query_string is a necessary hack to overcome the sqlite problem
         # of not allowing variable length parameters
 
         card_ids: set[int] = set()
-        card_morphs: Optional[set[tuple[str, str]]] = self.get_morphs_of_card(
+        card_morphs: set[tuple[str, str]] | None = self.get_morphs_of_card(
             card_id, search_unknowns
         )
         if card_morphs is None:
@@ -270,7 +272,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         return card_ids
 
-    def get_highest_learning_interval(self, base: str, inflected: str) -> Optional[int]:
+    def get_highest_learning_interval(self, base: str, inflected: str) -> int | None:
         with self.con:
             highest_learning_interval = self.con.execute(
                 """
@@ -515,12 +517,7 @@ def _on_success(result: Any) -> None:
     mw.progress.finish()
 
 
-def _on_failure(
-    error: Union[
-        Exception,
-        sqlite3.OperationalError,
-    ]
-) -> None:
+def _on_failure(error: Exception | sqlite3.OperationalError) -> None:
     # This function runs on the main thread.
     assert mw is not None
     assert mw.progress is not None

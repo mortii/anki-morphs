@@ -3,8 +3,10 @@ By using a class with slots we get the speed of a dict and also
 the convenience/safety of accessing properties of an object.
 """
 
+from __future__ import annotations
+
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any
 
 import anki.utils
 from anki.tags import TagManager
@@ -91,7 +93,7 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         self.note_id = anki_row_data.note_id
 
         # this is set later when spacy is used
-        self.morphs: Optional[set[Morpheme]] = None
+        self.morphs: set[Morpheme] | None = None
 
 
 class AnkiMorphsCardData:
@@ -104,7 +106,7 @@ class AnkiMorphsCardData:
         "tags",
     )
 
-    def __init__(self, data_row: list[Union[int, str]]) -> None:
+    def __init__(self, data_row: list[int | str]) -> None:
         assert isinstance(data_row[0], int)
         self.card_id: int = data_row[0]
 
@@ -132,7 +134,7 @@ def create_card_data_dict(
 
     tag_manager = TagManager(mw.col)
     tags: dict[str, str] = config_filter.tags
-    model_id: Optional[int] = config_filter.note_type_id
+    model_id: int | None = config_filter.note_type_id
     card_data_dict: dict[int, AnkiCardData] = {}
 
     for anki_row_data in _get_anki_data(am_config, model_id, tags).values():
@@ -143,7 +145,7 @@ def create_card_data_dict(
 
 
 def _get_anki_data(
-    am_config: AnkiMorphsConfig, model_id: Optional[int], tags_object: dict[str, str]
+    am_config: AnkiMorphsConfig, model_id: int | None, tags_object: dict[str, str]
 ) -> dict[int, AnkiDBRowData]:
     ################################################################
     #                        SQL QUERY

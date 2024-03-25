@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import csv
 import datetime
 import os
 from pathlib import Path
-from typing import Any, Callable, Union
+from typing import Any, Callable
 
 import aqt
 from anki.collection import Collection
@@ -118,11 +120,7 @@ class KnownMorphsExporterDialog(QDialog):
 
     def _on_failure(
         self,
-        error: Union[
-            Exception,
-            CancelledOperationException,
-            EmptyFileSelectionException,
-        ],
+        error: Exception | CancelledOperationException | EmptyFileSelectionException,
     ) -> None:
         # This function runs on the main thread.
         assert mw is not None

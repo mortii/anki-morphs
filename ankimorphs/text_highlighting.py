@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import re
-from typing import Optional
 
 from . import text_preprocessing
 from .ankimorphs_config import AnkiMorphsConfig
@@ -74,7 +75,7 @@ def get_highlighted_text(
 
     while index < len(text_to_highlight):
 
-        span_element: Optional[SpanElement] = _get_span_element(
+        span_element: SpanElement | None = _get_span_element(
             span_elements, previous_span_index
         )
         if (
@@ -148,7 +149,7 @@ def _extract_ruby_characters_and_filter_string(
 
     while True:
         # matches first found, left to right
-        match: Optional[re.Match[str]] = re.search(
+        match: re.Match[str] | None = re.search(
             text_preprocessing.square_brackets_regex, text_to_highlight
         )
         if match is None:
@@ -219,7 +220,7 @@ def _extract_span_elements_and_filter_string(
 
 def _get_span_element(
     span_elements: list[SpanElement], previous_span_index: int
-) -> Optional[SpanElement]:
+) -> SpanElement | None:
     try:
         return span_elements[previous_span_index + 1]
     except IndexError:

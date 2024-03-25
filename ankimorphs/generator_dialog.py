@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import os
 import re
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable
 
 import aqt
 from aqt import mw
@@ -31,13 +33,11 @@ class GeneratorDialog(QMainWindow):
     def __init__(
         self,
         child: str,
-        parent: Optional[QMainWindow] = None,
+        parent: QMainWindow | None = None,
     ) -> None:
         super().__init__(parent)
         self.child = child
-        self.ui: Union[
-            Ui_FrequencyFileGeneratorWindow, Ui_ReadabilityReportGeneratorWindow
-        ]
+        self.ui: Ui_FrequencyFileGeneratorWindow | Ui_ReadabilityReportGeneratorWindow
 
         if self.child == "FrequencyFileGeneratorDialog":
             self.ui = Ui_FrequencyFileGeneratorWindow()
@@ -208,11 +208,7 @@ class GeneratorDialog(QMainWindow):
 
     def _on_failure(
         self,
-        error: Union[
-            Exception,
-            CancelledOperationException,
-            EmptyFileSelectionException,
-        ],
+        error: Exception | CancelledOperationException | EmptyFileSelectionException,
     ) -> None:
         # This function runs on the main thread.
         assert mw is not None

@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 
 class Morpheme:
@@ -17,7 +17,7 @@ class Morpheme:
         inflection: str,
         part_of_speech: str = "",
         sub_part_of_speech: str = "",
-        highest_learning_interval: Optional[int] = None,
+        highest_learning_interval: int | None = None,
     ):
         """
         Lemma: dictionary form, e.g.: break
@@ -32,7 +32,7 @@ class Morpheme:
         self.inflection: str = inflection  # surface lemma
         self.part_of_speech = part_of_speech  # determined by mecab tool. for example: u'動詞' or u'助動詞', u'形容詞'
         self.sub_part_of_speech = sub_part_of_speech
-        self.highest_learning_interval: Optional[int] = highest_learning_interval
+        self.highest_learning_interval: int | None = highest_learning_interval
         self.lemma_and_inflection: str = self.lemma + self.inflection
 
     def __eq__(self, other: object) -> bool:

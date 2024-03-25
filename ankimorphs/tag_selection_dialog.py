@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import json
 import re
 from re import Match
-from typing import Callable, Optional
+from typing import Callable
 
 import aqt
 from anki.tags import TagManager
@@ -42,7 +44,7 @@ class TagSelectionDialog(QDialog):  # pylint:disable=too-many-instance-attribute
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
         self.ui.tableWidget.setAlternatingRowColors(True)
 
-        vertical_header: Optional[QHeaderView] = self.ui.tableWidget.verticalHeader()
+        vertical_header: QHeaderView | None = self.ui.tableWidget.verticalHeader()
         assert vertical_header is not None
         vertical_header.hide()
 
@@ -188,7 +190,7 @@ class TagSelectionDialog(QDialog):  # pylint:disable=too-many-instance-attribute
         user_changed_check_state = True
 
     def _setup_buttons(self) -> None:
-        style: Optional[QStyle] = self.style()
+        style: QStyle | None = self.style()
         assert style is not None
 
         apply_icon = style.standardIcon(QStyle.StandardPixmap.SP_DialogApplyButton)
@@ -290,7 +292,7 @@ class TagSelectionDialog(QDialog):  # pylint:disable=too-many-instance-attribute
                 self.ui.tableWidget.item(_row, self._tag_column)
             )
 
-            _match: Optional[Match[str]] = re.search(search_text, tag_item.text())
+            _match: Match[str] | None = re.search(search_text, tag_item.text())
             if _match:
                 self.ui.tableWidget.showRow(_row)
             else:

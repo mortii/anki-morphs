@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import importlib
 import importlib.util
 import sys
 from types import ModuleType
-from typing import Optional
 
-posseg: Optional[ModuleType] = None
+posseg: ModuleType | None = None
 
 successful_startup: bool = False
 
