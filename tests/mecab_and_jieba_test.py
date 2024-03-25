@@ -28,7 +28,7 @@ def fake_environment():
 
 
 @pytest.mark.external_morphemizers
-def test_morpheme_generation(fake_environment):  # pylint:disable=unused-argument
+def test_mecab_morpheme_generation(fake_environment):  # pylint:disable=unused-argument
     morphemizer = get_morphemizer_by_name("MecabMorphemizer")
 
     sentence = "本当に重要な任務の時しか 動かない"
@@ -46,6 +46,29 @@ def test_morpheme_generation(fake_environment):  # pylint:disable=unused-argumen
 
     extracted_morphs = morphemizer.get_morphemes_from_expr(sentence)
     assert len(extracted_morphs) == 9
+
+    for morph in extracted_morphs:
+        assert morph in correct_morphs
+
+
+@pytest.mark.external_morphemizers
+def test_jieba_morpheme_generation(fake_environment):  # pylint:disable=unused-argument
+    morphemizer = get_morphemizer_by_name("JiebaMorphemizer")
+
+    # sentence = "本当に重要な任務の時しか 動かない"
+    sentence = "请您说得慢些好吗？"
+    correct_morphs: set[Morpheme] = {
+        Morpheme("吗", "吗"),
+        Morpheme("好", "好"),
+        Morpheme("得", "得"),
+        Morpheme("您", "您"),
+        Morpheme("慢些", "慢些"),
+        Morpheme("说", "说"),
+        Morpheme("请", "请"),
+    }
+
+    extracted_morphs = morphemizer.get_morphemes_from_expr(sentence)
+    assert len(extracted_morphs) == 7
 
     for morph in extracted_morphs:
         assert morph in correct_morphs
