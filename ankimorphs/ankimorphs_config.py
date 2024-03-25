@@ -18,9 +18,11 @@
 # When a profile is loaded by anki, that file is used to overwrite/update meta.json.
 ################################################################
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 from anki.notes import Note
 from aqt import mw
@@ -35,7 +37,8 @@ from aqt.utils import tooltip
 from . import ankimorphs_globals
 
 # Unfortunately, 'TypeAlias' is introduced in python 3.10 so for now
-# we can only create implicit type aliases.
+# we can only create implicit type aliases. We also have to use the
+# 'Union' notation even though we use '__future__ import annotations'.
 FilterTypeAlias = dict[str, Union[str, bool, int, dict[str, str], None]]
 
 
@@ -45,12 +48,12 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
             self.has_error: bool = False
 
             self.note_type: str = _get_filter_str(_filter, "note_type")
-            self.note_type_id: Optional[int] = _get_filter_optional_int(
+            self.note_type_id: int | None = _get_filter_optional_int(
                 _filter, "note_type_id"
             )
             self.tags: dict[str, str] = _get_filter_str_from_json(_filter, "tags")
             self.field: str = _get_filter_str(_filter, "field")
-            self.field_index: Optional[int] = _get_filter_optional_int(
+            self.field_index: int | None = _get_filter_optional_int(
                 _filter, "field_index"
             )
             self.morphemizer_description: str = _get_filter_str(
@@ -58,7 +61,7 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
             )
             self.morphemizer_name: str = _get_filter_str(_filter, "morphemizer_name")
             self.morph_priority: str = _get_filter_str(_filter, "morph_priority")
-            self.morph_priority_index: Optional[int] = _get_filter_optional_int(
+            self.morph_priority_index: int | None = _get_filter_optional_int(
                 _filter, "morph_priority_index"
             )
             self.read: bool = _get_filter_bool(_filter, "read")
@@ -206,7 +209,7 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
 
 def _get_config(
     key: str,
-) -> Union[str, int, bool, list[FilterTypeAlias], None]:
+) -> str | int | bool | list[FilterTypeAlias] | None:
     config = get_configs()
     assert config is not None
     item = config[key]
@@ -214,7 +217,7 @@ def _get_config(
     return item
 
 
-def get_configs() -> Optional[dict[str, Any]]:
+def get_configs() -> dict[str, Any] | None:
     assert mw is not None
     return mw.addonManager.getConfig(__name__)
 
@@ -225,7 +228,7 @@ def get_default_config(key: str) -> Any:
     return config[key]
 
 
-def get_all_default_configs() -> Optional[dict[str, Any]]:
+def get_all_default_configs() -> dict[str, Any] | None:
     assert mw is not None
     addon = mw.addonManager.addonFromModule(__name__)  # necessary to prevent anki bug
     return mw.addonManager.addonConfigDefaults(addon)
@@ -274,7 +277,7 @@ def get_modify_enabled_filters() -> list[AnkiMorphsConfigFilter]:
     return modify_filters
 
 
-def get_matching_modify_filter(note: Note) -> Optional[AnkiMorphsConfigFilter]:
+def get_matching_modify_filter(note: Note) -> AnkiMorphsConfigFilter | None:
     modify_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
     for am_filter in modify_filters:
         if am_filter.note_type_id == note.mid:
@@ -282,7 +285,7 @@ def get_matching_modify_filter(note: Note) -> Optional[AnkiMorphsConfigFilter]:
     return None
 
 
-def get_matching_read_filter(note: Note) -> Optional[AnkiMorphsConfigFilter]:
+def get_matching_read_filter(note: Note) -> AnkiMorphsConfigFilter | None:
     read_filters: list[AnkiMorphsConfigFilter] = get_read_enabled_filters()
     for am_filter in read_filters:
         if am_filter.note_type_id == note.mid:
@@ -365,7 +368,7 @@ def _get_filter_str_from_json(_filter: FilterTypeAlias, key: str) -> dict[str, s
     return filter_item_dict
 
 
-def _get_filter_optional_int(_filter: FilterTypeAlias, key: str) -> Optional[int]:
+def _get_filter_optional_int(_filter: FilterTypeAlias, key: str) -> int | None:
     filter_item = _filter[key]
     assert isinstance(filter_item, int) or filter_item is None
     return filter_item
