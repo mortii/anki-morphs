@@ -1,0 +1,1 @@
+# an __init__ file is neccessary for Anki to recognize that it is an add-on

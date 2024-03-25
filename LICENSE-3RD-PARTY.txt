@@ -27,6 +27,8 @@ The following third party libraries are used in this project, and these are thei
     - GNU Lesser General Public License (LGPL)
 - spacy
     - The MIT License (MIT)
+- zhon
+    - The MIT License (MIT)
 
 
 =================================================================================

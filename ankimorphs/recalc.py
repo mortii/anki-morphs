@@ -892,6 +892,14 @@ def _on_failure(
                 "Installation code: 1974309724 \n\n"
                 "The morphemizer should be automatically found after the add-on is installed and Anki has restarted."
             )
+        elif error.morphemizer_name == "JiebaMorphemizer":
+            text = (
+                'Morphemizer "AnkiMorphs: Chinese" was not found.\n\n'
+                "The Chinese morphemizer can be added by installing a separate companion add-on:\n\n"
+                "Link: https://ankiweb.net/shared/info/1857311956 \n\n"
+                "Installation code: 1857311956 \n\n"
+                "The morphemizer should be automatically found after the add-on is installed and Anki has restarted."
+            )
         else:
             text = f'Morphemizer "{error.morphemizer_name}" was not found.'
 

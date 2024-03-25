@@ -33,13 +33,11 @@ _mecab_args = [
     "--unk-format=",
 ]
 
-mecab_source: Optional[str] = None
 successful_startup: bool = False
 
 
 def setup_mecab() -> None:
     global successful_startup
-    global mecab_source
     global _mecab_windows_startupinfo
     global _mecab_encoding
     global _mecab_base_cmd
@@ -69,7 +67,6 @@ def setup_mecab() -> None:
     assert charset_match is not None
     _mecab_encoding = charset_match.group(1)  # example: utf8, type: <class 'str'>
 
-    mecab_source = "AnkiMorphs"
     successful_startup = True
 
 
