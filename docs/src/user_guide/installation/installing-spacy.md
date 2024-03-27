@@ -50,7 +50,7 @@ With all that being said, this only needs to be done once, so hopefully it's not
 <details>
   <summary>Windows</summary>
 
-First, we need to have Python 3.9 on our system. Go to the start menu, open a Command Prompt, and type in:
+First, we need to have `Python 3.9` on our system. Go to the start menu, open a Command Prompt, and type in:
 
 ```
 py -3.9 --version
@@ -58,6 +58,8 @@ py -3.9 --version
 
 If your output is not `Python 3.9.x`, then 3.9 has to be installed.
 
+>Note: If you install Python 3.9 in a different way than the instructions below, then you might encounter important 
+> differences that could prevent you from accessing the spaCy morphemizers in Anki.
 
 <details>
   <summary>Installing Python</summary>
@@ -102,13 +104,16 @@ Now those spaCy models should be available as morphemizers in AnkiMorphs!
 
 <details>
   <summary>macOS</summary>
-First, we need to have Python 3.9 on our system. Go to the start menu, Open a terminal and type:
+First, we need to have `Python 3.9` on our system. Go to the start menu, Open a terminal and type:
 
 ```` bash
 python3.9 --version
 ````
 
 If your output is not `Python 3.9.x`, then 3.9 has to be installed.
+
+>Note: If you install Python 3.9 in a different way than the instructions below, then you might encounter important
+> differences that could prevent you from accessing the spaCy morphemizers in Anki.
 
 <details>
   <summary>Installing Python</summary>
@@ -150,7 +155,7 @@ Now those spaCy models should be available as morphemizers in AnkiMorphs!
 <details>
   <summary>Linux</summary>
 
-First, we need to have Python 3.9 on our system. Go to the start menu, Open a terminal and type:
+First, we need to have `Python 3.9` on our system. Go to the start menu, Open a terminal and type:
 
 ```` bash
 python3.9 --version
