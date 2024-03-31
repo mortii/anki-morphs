@@ -103,7 +103,9 @@ def _new_extra_fields_selected() -> bool:
     )
 
     for config_filter in modify_enabled_config_filters:
-        assert config_filter.note_type_id is not None
+        if config_filter.note_type_id is None:
+            continue  # empty note filter
+
         note_type_id: NotetypeId = NotetypeId(config_filter.note_type_id)
 
         note_type_dict: NotetypeDict | None = model_manager.get(note_type_id)
@@ -146,10 +148,26 @@ def _recalc_background_op(collection: Collection) -> None:
         ankimorphs_config.get_modify_enabled_filters()
     )
 
+    _abort_if_default_settings_are_used(
+        read_enabled_config_filters, modify_enabled_config_filters
+    )
     _abort_if_selected_morphemizers_not_found(read_enabled_config_filters)
 
     _cache_anki_data(am_config, read_enabled_config_filters)
     _update_cards_and_notes(am_config, modify_enabled_config_filters)
+
+
+def _abort_if_default_settings_are_used(
+    read_enabled_config_filters: list[AnkiMorphsConfigFilter],
+    modify_enabled_config_filters: list[AnkiMorphsConfigFilter],
+) -> None:
+    for config_filter in read_enabled_config_filters:
+        if config_filter.note_type == "":
+            raise DefaultSettingsException  # handled in on_failure()
+
+    for config_filter in modify_enabled_config_filters:
+        if config_filter.note_type == "":
+            raise DefaultSettingsException
 
 
 def _abort_if_selected_morphemizers_not_found(
@@ -188,8 +206,6 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
 
     # We only want to cache the morphs on the note-filters that have 'read' enabled
     for config_filter in read_enabled_config_filters:
-        if config_filter.note_type == "":
-            raise DefaultSettingsException  # handled in on_failure()
 
         cards_data_dict: dict[int, AnkiCardData] = (
             anki_data_utils.create_card_data_dict(
