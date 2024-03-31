@@ -477,7 +477,7 @@
              <item>
               <widget class="QSpinBox" name="dueOffsetSpinBox">
                <property name="maximum">
-                <number>50000</number>
+                <number>500000</number>
                </property>
               </widget>
              </item>
@@ -933,7 +933,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="recalcUnknownFieldRadioButtonGroup"/>
   <buttongroup name="recalcToolbarKnownRadioButtonGroup"/>
+  <buttongroup name="recalcUnknownFieldRadioButtonGroup"/>
  </buttongroups>
 </ui>

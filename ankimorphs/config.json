@@ -27,7 +27,7 @@
   "preprocess_ignore_round_bracket_contents": false,
   "preprocess_ignore_slim_round_bracket_contents": false,
   "preprocess_ignore_suspended_cards_content": false,
-  "recalc_due_offset": 50000,
+  "recalc_due_offset": 500000,
   "recalc_interval_for_known": 21,
   "recalc_move_known_new_cards_to_the_end": false,
   "recalc_number_of_morphs_to_offset": 100,

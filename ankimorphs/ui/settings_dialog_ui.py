@@ -228,7 +228,7 @@ class Ui_SettingsDialog(object):
         self.shiftNewCardsCheckBox.setObjectName("shiftNewCardsCheckBox")
         self.horizontalLayout_13.addWidget(self.shiftNewCardsCheckBox)
         self.dueOffsetSpinBox = QtWidgets.QSpinBox(parent=self.recalc_tab)
-        self.dueOffsetSpinBox.setMaximum(50000)
+        self.dueOffsetSpinBox.setMaximum(500000)
         self.dueOffsetSpinBox.setObjectName("dueOffsetSpinBox")
         self.horizontalLayout_13.addWidget(self.dueOffsetSpinBox)
         self.label_20 = QtWidgets.QLabel(parent=self.recalc_tab)
