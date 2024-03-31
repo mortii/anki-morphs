@@ -583,15 +583,26 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
 
         for card_id in all_new_cards_with_morph:
             card = mw.col.get_card(card_id)
+            score_and_offset: int | None = None
 
             # we don't want to offset the card due if it has already been offset previously
             if card_id in modified_cards:
-                if modified_cards[card_id].due != card.due:
+                # limit to _DEFAULT_SCORE to prevent integer overflow
+                score_and_offset = min(
+                    modified_cards[card_id].due + am_config.recalc_due_offset,
+                    _DEFAULT_SCORE,
+                )
+                if card.due == score_and_offset:
                     del modified_cards[card_id]
                     continue
 
-            # limit to _DEFAULT_SCORE to prevent integer overflow
-            card.due = min(card.due + am_config.recalc_due_offset, _DEFAULT_SCORE)
+            if score_and_offset is None:
+                score_and_offset = min(
+                    card.due + am_config.recalc_due_offset,
+                    _DEFAULT_SCORE,
+                )
+
+            card.due = score_and_offset
             modified_offset_cards[card_id] = card
 
     # combine the "lists" of cards we want to modify
