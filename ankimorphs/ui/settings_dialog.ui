@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>923</width>
-    <height>497</height>
+    <height>472</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -702,16 +702,9 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_7">
-                 <property name="text">
-                  <string>Frequency File Generator</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QLabel" name="label_15">
                  <property name="text">
-                  <string>Readability Report Generator</string>
+                  <string>Open Generators</string>
                  </property>
                 </widget>
                </item>
@@ -742,10 +735,7 @@
                 <widget class="QKeySequenceEdit" name="shortcutViewMorphsKeySequenceEdit"/>
                </item>
                <item>
-                <widget class="QKeySequenceEdit" name="shortcutFrequencyFileGeneratorKeySequenceEdit"/>
-               </item>
-               <item>
-                <widget class="QKeySequenceEdit" name="shortcutReadabilityReportGeneratorKeySequenceEdit"/>
+                <widget class="QKeySequenceEdit" name="shortcutGeneratorsKeySequenceEdit"/>
                </item>
                <item>
                 <widget class="QKeySequenceEdit" name="shortcutKnownMorphsExporterKeySequenceEdit"/>
@@ -933,7 +923,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="recalcToolbarKnownRadioButtonGroup"/>
   <buttongroup name="recalcUnknownFieldRadioButtonGroup"/>
+  <buttongroup name="recalcToolbarKnownRadioButtonGroup"/>
  </buttongroups>
 </ui>

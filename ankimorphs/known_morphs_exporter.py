@@ -16,7 +16,7 @@ from aqt.utils import tooltip
 from . import ankimorphs_globals
 from .ankimorphs_db import AnkiMorphsDB
 from .exceptions import CancelledOperationException, EmptyFileSelectionException
-from .ui.known_morphs_exporter_ui import Ui_KnownMorphsExporterDialog
+from .ui.known_morphs_exporter_dialog_ui import Ui_KnownMorphsExporterDialog
 
 
 class KnownMorphsExporterDialog(QDialog):

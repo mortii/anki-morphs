@@ -20,19 +20,19 @@ Convert ui file to python:
 pyuic6 -o ankimorphs/ui/settings_dialog_ui.py ankimorphs/ui/settings_dialog.ui
 ```
 ```bash
-pyuic6 -o ankimorphs/ui/frequency_file_generator_ui.py ankimorphs/ui/frequency_file_generator.ui
+pyuic6 -o ankimorphs/ui/tag_selection_dialog_ui.py ankimorphs/ui/tag_selection_dialog.ui
 ```
 ```bash
-pyuic6 -o ankimorphs/ui/tag_selection_ui.py ankimorphs/ui/tag_selection.ui
+pyuic6 -o ankimorphs/ui/generators_window_ui.py ankimorphs/ui/generators_window.ui
 ```
 ```bash
-pyuic6 -o ankimorphs/ui/readability_report_generator_ui.py ankimorphs/ui/readability_report_generator.ui
-```
-```bash
-pyuic6 -o ankimorphs/ui/known_morphs_exporter_ui.py ankimorphs/ui/known_morphs_exporter.ui
+pyuic6 -o ankimorphs/ui/known_morphs_exporter_dialog_ui.py ankimorphs/ui/known_morphs_exporter_dialog.ui
 ```
 ```bash
 pyuic6 -o ankimorphs/ui/view_morphs_dialog_ui.py ankimorphs/ui/view_morphs_dialog.ui
+```
+```bash
+pyuic6 -o ankimorphs/ui/generator_output_dialog_ui.py ankimorphs/ui/generator_output_dialog.ui
 ```
 
 

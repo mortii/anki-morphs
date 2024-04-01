@@ -1,4 +1,5 @@
 import re
+from typing import Any
 
 from . import name_file_utils
 from .ankimorphs_config import AnkiMorphsConfig
@@ -11,7 +12,7 @@ slim_round_brackets_regexp = re.compile(r"\([^)]*\)")
 non_alpha_regexp = re.compile(r"[-'\w]")
 
 
-def get_processed_spacy_morphs(am_config: AnkiMorphsConfig, doc) -> list[Morpheme]:  # type: ignore[no-untyped-def]
+def get_processed_spacy_morphs(am_config: AnkiMorphsConfig, doc: Any) -> list[Morpheme]:
     # doc: spacy.tokens.Doc
 
     morphs: list[Morpheme] = []

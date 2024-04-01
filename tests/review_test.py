@@ -67,13 +67,13 @@ def fake_environment():
     # tooltip obviously tries to do gui stuff which breaks tests
     mock_tooltip = mock.Mock(spec=aqt.utils.tooltip)
 
-    patch_am_db_mw_mw = mock.patch.object(ankimorphs_db, "mw", mock_mw)
+    patch_am_db_mw = mock.patch.object(ankimorphs_db, "mw", mock_mw)
     patch_config_mw = mock.patch.object(ankimorphs_config, "mw", mock_mw)
     patch_reviewing_mw = mock.patch.object(reviewing_utils, "mw", mock_mw)
     patch_am_db = mock.patch.object(reviewing_utils, "AnkiMorphsDB", MockDB)
     patch_tooltip = mock.patch.object(reviewing_utils, "tooltip", mock_tooltip)
 
-    patch_am_db_mw_mw.start()
+    patch_am_db_mw.start()
     patch_config_mw.start()
     patch_reviewing_mw.start()
     patch_am_db.start()
@@ -82,7 +82,7 @@ def fake_environment():
     yield mock_mw
 
     mock_mw.col.close()
-    patch_am_db_mw_mw.stop()
+    patch_am_db_mw.stop()
     patch_config_mw.stop()
     patch_reviewing_mw.stop()
     patch_am_db.stop()

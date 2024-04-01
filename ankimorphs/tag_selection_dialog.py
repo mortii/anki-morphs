@@ -21,7 +21,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 from . import ankimorphs_globals
 from .message_box_utils import show_error_box, show_warning_box
 from .table_utils import get_checkbox_widget, get_table_item
-from .ui.tag_selection_ui import Ui_TagSelectionDialog
+from .ui.tag_selection_dialog_ui import Ui_TagSelectionDialog
 
 user_changed_check_state: bool = True
 

@@ -47,9 +47,8 @@ from . import (
 )
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
-from .frequency_file_generator import FrequencyFileGeneratorDialog
+from .generators_window import GeneratorWindow
 from .known_morphs_exporter import KnownMorphsExporterDialog
-from .readability_report_generator import ReadabilityReportGeneratorDialog
 from .settings_dialog import SettingsDialog
 from .tag_selection_dialog import TagSelectionDialog
 from .toolbar_stats import MorphToolbarStats
@@ -157,12 +156,8 @@ def register_addon_dialogs() -> None:
         name=ankimorphs_globals.SETTINGS_DIALOG_NAME, creator=SettingsDialog
     )
     aqt.dialogs.register_dialog(
-        name=ankimorphs_globals.FREQUENCY_FILE_GENERATOR_DIALOG_NAME,
-        creator=FrequencyFileGeneratorDialog,
-    )
-    aqt.dialogs.register_dialog(
-        name=ankimorphs_globals.READABILITY_REPORT_GENERATOR_DIALOG_NAME,
-        creator=ReadabilityReportGeneratorDialog,
+        name=ankimorphs_globals.GENERATOR_DIALOG_NAME,
+        creator=GeneratorWindow,
     )
     aqt.dialogs.register_dialog(
         name=ankimorphs_globals.KNOWN_MORPHS_EXPORTER_DIALOG_NAME,
@@ -188,8 +183,7 @@ def init_tool_menu_and_actions() -> None:
 
     settings_action = create_settings_action(am_config)
     recalc_action = create_recalc_action(am_config)
-    frequency_list_action = create_frequency_file_action(am_config)
-    readability_report_action = create_readability_report_action(am_config)
+    generators_action = create_generators_dialog_action(am_config)
     known_morphs_exporter_action = create_known_morphs_exporter_action(am_config)
     guide_action = create_guide_action()
     changelog_action = create_changelog_action()
@@ -197,8 +191,7 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu = create_am_tool_menu()
     am_tool_menu.addAction(settings_action)
     am_tool_menu.addAction(recalc_action)
-    am_tool_menu.addAction(frequency_list_action)
-    am_tool_menu.addAction(readability_report_action)
+    am_tool_menu.addAction(generators_action)
     am_tool_menu.addAction(known_morphs_exporter_action)
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
@@ -483,25 +476,13 @@ def browse_am_unknowns_for_text_action(web_view: AnkiWebView, menu: QMenu) -> No
     menu.addAction(action)
 
 
-def create_frequency_file_action(am_config: AnkiMorphsConfig) -> QAction:
-    action = QAction("&Frequency File Generator", mw)
-    action.setShortcut(am_config.shortcut_frequency_file_generator)
+def create_generators_dialog_action(am_config: AnkiMorphsConfig) -> QAction:
+    action = QAction("&Generators", mw)
+    action.setShortcut(am_config.shortcut_generators)
     action.triggered.connect(
         partial(
             aqt.dialogs.open,
-            name=ankimorphs_globals.FREQUENCY_FILE_GENERATOR_DIALOG_NAME,
-        )
-    )
-    return action
-
-
-def create_readability_report_action(am_config: AnkiMorphsConfig) -> QAction:
-    action = QAction("&Readability Report Generator", mw)
-    action.setShortcut(am_config.shortcut_readability_report_generator)
-    action.triggered.connect(
-        partial(
-            aqt.dialogs.open,
-            name=ankimorphs_globals.READABILITY_REPORT_GENERATOR_DIALOG_NAME,
+            name=ankimorphs_globals.GENERATOR_DIALOG_NAME,
         )
     )
     return action

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ReadabilityReportGeneratorWindow</class>
- <widget class="QMainWindow" name="ReadabilityReportGeneratorWindow">
+ <class>GeneratorsWindow</class>
+ <widget class="QMainWindow" name="GeneratorsWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Readability Report Generator</string>
+   <string>Generators</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -24,21 +24,21 @@
           <item>
            <widget class="QPushButton" name="inputPushButton">
             <property name="text">
-             <string>Select Input</string>
+             <string>Select Folder</string>
             </property>
            </widget>
           </item>
-          <item>
+          <item alignment="Qt::AlignHCenter">
            <widget class="QLabel" name="label">
             <property name="text">
-             <string>Morphemizer</string>
+             <string>Morphemizer:</string>
             </property>
            </widget>
           </item>
-          <item>
+          <item alignment="Qt::AlignHCenter">
            <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>File formats</string>
+             <string>File formats:</string>
             </property>
            </widget>
           </item>
@@ -50,7 +50,7 @@
            <widget class="QLineEdit" name="inputDirLineEdit"/>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBox"/>
+           <widget class="QComboBox" name="morphemizerComboBox"/>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout">
@@ -108,7 +108,7 @@
            <number>0</number>
           </property>
           <item alignment="Qt::AlignTop">
-           <widget class="QPushButton" name="generateReportPushButton">
+           <widget class="QPushButton" name="loadFilesPushButton">
             <property name="minimumSize">
              <size>
               <width>0</width>
@@ -116,8 +116,8 @@
              </size>
             </property>
             <property name="text">
-             <string>Generate
-Report</string>
+             <string>Load
+Files</string>
             </property>
            </widget>
           </item>
@@ -141,51 +141,143 @@ Report</string>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="squareBracketsCheckBox">
-          <property name="text">
-           <string>Ignore content in square brackets []</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_10">
+            <item>
+             <widget class="QCheckBox" name="squareBracketsCheckBox">
+              <property name="text">
+               <string>Ignore content in square brackets []</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="namesMorphemizerCheckBox">
+              <property name="text">
+               <string>Ignore names found by morphemizer</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QCheckBox" name="roundBracketsCheckBox">
+              <property name="text">
+               <string>ignore content in round brackets（）</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="namesFileCheckBox">
+              <property name="text">
+               <string>Ignore names found in names.txt</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <item>
+             <widget class="QCheckBox" name="slimRoundBracketsCheckBox">
+              <property name="text">
+               <string>ignore content in slim round brackets ()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="numbersCheckBox">
+              <property name="text">
+               <string>Ignore numbers</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
         <item>
-         <widget class="QCheckBox" name="roundBracketsCheckBox">
-          <property name="text">
-           <string>ignore content in round brackets（）</string>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <property name="spacing">
+           <number>15</number>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="slimRoundBracketsCheckBox">
-          <property name="text">
-           <string>ignore content in slim round brackets ()</string>
+          <property name="topMargin">
+           <number>20</number>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="namesMorphemizerCheckBox">
-          <property name="text">
-           <string>Ignore names found by morphemizer</string>
+          <property name="bottomMargin">
+           <number>20</number>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="namesFileCheckBox">
-          <property name="text">
-           <string>Ignore names found in names.txt</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="numbersCheckBox">
-          <property name="text">
-           <string>Ignore numbers</string>
-          </property>
-         </widget>
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="generateReportPushButton">
+            <property name="text">
+             <string>Generate Readability Report</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="generateFrequencyFilePushButton">
+            <property name="text">
+             <string>Generate Frequency File</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="generateStudyPlanPushButton">
+            <property name="text">
+             <string>Generate Study Plan</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
       <item>
-       <widget class="QTabWidget" name="tabWidget">
+       <widget class="QTabWidget" name="tablesTabWidget">
         <property name="currentIndex">
          <number>0</number>
         </property>

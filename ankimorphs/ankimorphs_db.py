@@ -508,6 +508,35 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         return known_morphs
 
+    @staticmethod
+    def get_morph_statuses() -> dict[str, str]:
+        morph_status_dict: dict[str, str] = {}
+        am_db = AnkiMorphsDB()
+        am_config = AnkiMorphsConfig()
+
+        with am_db.con:
+            card_morphs_raw = am_db.con.execute(
+                """
+                    SELECT lemma, inflection, highest_learning_interval
+                    FROM Morphs
+                    ORDER BY lemma, inflection
+                    """,
+            ).fetchall()
+
+            for row in card_morphs_raw:
+                key = row[0] + row[1]
+                interval = row[2]
+                if interval >= am_config.recalc_interval_for_known:
+                    learning_status = "known"
+                elif interval > 0:
+                    learning_status = "learning"
+                else:
+                    learning_status = "unknown"
+
+                morph_status_dict[key] = learning_status
+
+        return morph_status_dict
+
 
 def _on_success(result: Any) -> None:
     # This function runs on the main thread.

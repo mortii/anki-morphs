@@ -105,7 +105,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 2.1.1")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 2.2.0")
 
         self.show()
 
@@ -377,11 +377,8 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
             self._config.shortcut_view_morphemes.toString()
         )
-        self.ui.shortcutFrequencyFileGeneratorKeySequenceEdit.setKeySequence(
-            self._config.shortcut_frequency_file_generator.toString()
-        )
-        self.ui.shortcutReadabilityReportGeneratorKeySequenceEdit.setKeySequence(
-            self._config.shortcut_readability_report_generator.toString()
+        self.ui.shortcutGeneratorsKeySequenceEdit.setKeySequence(
+            self._config.shortcut_generators.toString()
         )
         self.ui.shortcutKnownMorphsExporterKeySequenceEdit.setKeySequence(
             self._config.shortcut_known_morphs_exporter.toString()
@@ -420,11 +417,8 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
             self._default_config.shortcut_view_morphemes
         )
-        self.ui.shortcutFrequencyFileGeneratorKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_frequency_file_generator.toString()
-        )
-        self.ui.shortcutReadabilityReportGeneratorKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_readability_report_generator.toString()
+        self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
+            self._default_config.shortcut_view_morphemes.toString()
         )
         self.ui.shortcutKnownMorphsExporterKeySequenceEdit.setKeySequence(
             self._default_config.shortcut_known_morphs_exporter.toString()
@@ -621,8 +615,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             "shortcut_set_known_and_skip": self.ui.shortcutKnownAndSkipKeySequenceEdit.keySequence().toString(),
             "shortcut_learn_now": self.ui.shortcutLearnNowKeySequenceEdit.keySequence().toString(),
             "shortcut_view_morphemes": self.ui.shortcutViewMorphsKeySequenceEdit.keySequence().toString(),
-            "shortcut_readability_report_generator": self.ui.shortcutReadabilityReportGeneratorKeySequenceEdit.keySequence().toString(),
-            "shortcut_frequency_file_generator": self.ui.shortcutFrequencyFileGeneratorKeySequenceEdit.keySequence().toString(),
+            "shortcut_generators": self.ui.shortcutGeneratorsKeySequenceEdit.keySequence().toString(),
             "shortcut_known_morphs_exporter": self.ui.shortcutKnownMorphsExporterKeySequenceEdit.keySequence().toString(),
             "recalc_interval_for_known": self.ui.recalcIntervalSpinBox.value(),
             "recalc_on_sync": self.ui.recalcBeforeSyncCheckBox.isChecked(),

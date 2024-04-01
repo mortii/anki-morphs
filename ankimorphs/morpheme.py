@@ -61,6 +61,10 @@ class MorphOccurrence:
         self.morph: Morpheme = morph
         self.occurrence: int = 1
 
+    def __add__(self, other: MorphOccurrence) -> MorphOccurrence:
+        self.occurrence += other.occurrence
+        return self
+
 
 # mypy crashes if the files don't run something...
 pass  # pylint:disable=unnecessary-pass

@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'ankimorphs/ui/tag_selection.ui'
+# Form implementation generated from reading ui file 'ankimorphs/ui/tag_selection_dialog.ui'
 #
 # Created by: PyQt6 UI code generator 6.4.2
 #
@@ -9,7 +9,7 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
-class Ui_TagSelectionDialog:
+class Ui_TagSelectionDialog(object):
     def setupUi(self, TagSelectionDialog):
         TagSelectionDialog.setObjectName("TagSelectionDialog")
         TagSelectionDialog.resize(593, 451)

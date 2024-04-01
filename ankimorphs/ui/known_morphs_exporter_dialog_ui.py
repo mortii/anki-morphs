@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'ankimorphs/ui/known_morphs_exporter.ui'
+# Form implementation generated from reading ui file 'ankimorphs/ui/known_morphs_exporter_dialog.ui'
 #
 # Created by: PyQt6 UI code generator 6.4.2
 #

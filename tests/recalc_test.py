@@ -105,7 +105,7 @@ def fake_environment_no_offset():
     mock_mw.addonManager.getConfig.return_value = _config_data["config"]
 
     patch_recalc_mw = mock.patch.object(recalc, "mw", mock_mw)
-    morph_db_mw = mock.patch.object(ankimorphs_db, "mw", mock_mw)
+    patch_am_db_mw = mock.patch.object(ankimorphs_db, "mw", mock_mw)
     patch_config_mw = mock.patch.object(ankimorphs_config, "mw", mock_mw)
     patch_name_file_utils_mw = mock.patch.object(name_file_utils, "mw", mock_mw)
     patch_anki_data_utils_mw = mock.patch.object(anki_data_utils, "mw", mock_mw)
@@ -114,7 +114,7 @@ def fake_environment_no_offset():
     )
 
     patch_recalc_mw.start()
-    morph_db_mw.start()
+    patch_am_db_mw.start()
     patch_config_mw.start()
     patch_name_file_utils_mw.start()
     patch_anki_data_utils_mw.start()
@@ -126,7 +126,7 @@ def fake_environment_no_offset():
     mock_mw.col.close()
 
     patch_recalc_mw.stop()
-    morph_db_mw.stop()
+    patch_am_db_mw.stop()
     patch_config_mw.stop()
     patch_name_file_utils_mw.stop()
     patch_anki_data_utils_mw.stop()

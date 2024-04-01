@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'ankimorphs/ui/readability_report_generator.ui'
+# Form implementation generated from reading ui file 'ankimorphs/ui/generators_window.ui'
 #
 # Created by: PyQt6 UI code generator 6.4.2
 #
@@ -9,11 +9,11 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
-class Ui_ReadabilityReportGeneratorWindow(object):
-    def setupUi(self, ReadabilityReportGeneratorWindow):
-        ReadabilityReportGeneratorWindow.setObjectName("ReadabilityReportGeneratorWindow")
-        ReadabilityReportGeneratorWindow.resize(1035, 600)
-        self.centralwidget = QtWidgets.QWidget(parent=ReadabilityReportGeneratorWindow)
+class Ui_GeneratorsWindow(object):
+    def setupUi(self, GeneratorsWindow):
+        GeneratorsWindow.setObjectName("GeneratorsWindow")
+        GeneratorsWindow.resize(1035, 600)
+        self.centralwidget = QtWidgets.QWidget(parent=GeneratorsWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.centralwidget)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
@@ -28,19 +28,19 @@ class Ui_ReadabilityReportGeneratorWindow(object):
         self.verticalLayout.addWidget(self.inputPushButton)
         self.label = QtWidgets.QLabel(parent=self.centralwidget)
         self.label.setObjectName("label")
-        self.verticalLayout.addWidget(self.label)
+        self.verticalLayout.addWidget(self.label, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.label_2 = QtWidgets.QLabel(parent=self.centralwidget)
         self.label_2.setObjectName("label_2")
-        self.verticalLayout.addWidget(self.label_2)
+        self.verticalLayout.addWidget(self.label_2, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.horizontalLayout_2.addLayout(self.verticalLayout)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.inputDirLineEdit = QtWidgets.QLineEdit(parent=self.centralwidget)
         self.inputDirLineEdit.setObjectName("inputDirLineEdit")
         self.verticalLayout_2.addWidget(self.inputDirLineEdit)
-        self.comboBox = QtWidgets.QComboBox(parent=self.centralwidget)
-        self.comboBox.setObjectName("comboBox")
-        self.verticalLayout_2.addWidget(self.comboBox)
+        self.morphemizerComboBox = QtWidgets.QComboBox(parent=self.centralwidget)
+        self.morphemizerComboBox.setObjectName("morphemizerComboBox")
+        self.verticalLayout_2.addWidget(self.morphemizerComboBox)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.txtFilesCheckBox = QtWidgets.QCheckBox(parent=self.centralwidget)
@@ -62,10 +62,10 @@ class Ui_ReadabilityReportGeneratorWindow(object):
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setContentsMargins(-1, 0, -1, 0)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.generateReportPushButton = QtWidgets.QPushButton(parent=self.centralwidget)
-        self.generateReportPushButton.setMinimumSize(QtCore.QSize(0, 57))
-        self.generateReportPushButton.setObjectName("generateReportPushButton")
-        self.horizontalLayout_3.addWidget(self.generateReportPushButton, 0, QtCore.Qt.AlignmentFlag.AlignTop)
+        self.loadFilesPushButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.loadFilesPushButton.setMinimumSize(QtCore.QSize(0, 57))
+        self.loadFilesPushButton.setObjectName("loadFilesPushButton")
+        self.horizontalLayout_3.addWidget(self.loadFilesPushButton, 0, QtCore.Qt.AlignmentFlag.AlignTop)
         self.horizontalLayout_2.addLayout(self.horizontalLayout_3)
         self.verticalLayout_4.addLayout(self.horizontalLayout_2)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout()
@@ -74,27 +74,60 @@ class Ui_ReadabilityReportGeneratorWindow(object):
         self.label_3 = QtWidgets.QLabel(parent=self.centralwidget)
         self.label_3.setObjectName("label_3")
         self.verticalLayout_3.addWidget(self.label_3)
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        self.verticalLayout_10 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_10.setObjectName("verticalLayout_10")
         self.squareBracketsCheckBox = QtWidgets.QCheckBox(parent=self.centralwidget)
         self.squareBracketsCheckBox.setObjectName("squareBracketsCheckBox")
-        self.verticalLayout_3.addWidget(self.squareBracketsCheckBox)
-        self.roundBracketsCheckBox = QtWidgets.QCheckBox(parent=self.centralwidget)
-        self.roundBracketsCheckBox.setObjectName("roundBracketsCheckBox")
-        self.verticalLayout_3.addWidget(self.roundBracketsCheckBox)
-        self.slimRoundBracketsCheckBox = QtWidgets.QCheckBox(parent=self.centralwidget)
-        self.slimRoundBracketsCheckBox.setObjectName("slimRoundBracketsCheckBox")
-        self.verticalLayout_3.addWidget(self.slimRoundBracketsCheckBox)
+        self.verticalLayout_10.addWidget(self.squareBracketsCheckBox)
         self.namesMorphemizerCheckBox = QtWidgets.QCheckBox(parent=self.centralwidget)
         self.namesMorphemizerCheckBox.setObjectName("namesMorphemizerCheckBox")
-        self.verticalLayout_3.addWidget(self.namesMorphemizerCheckBox)
+        self.verticalLayout_10.addWidget(self.namesMorphemizerCheckBox)
+        self.horizontalLayout_6.addLayout(self.verticalLayout_10)
+        self.verticalLayout_9 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_9.setContentsMargins(0, -1, -1, -1)
+        self.verticalLayout_9.setObjectName("verticalLayout_9")
+        self.roundBracketsCheckBox = QtWidgets.QCheckBox(parent=self.centralwidget)
+        self.roundBracketsCheckBox.setObjectName("roundBracketsCheckBox")
+        self.verticalLayout_9.addWidget(self.roundBracketsCheckBox)
         self.namesFileCheckBox = QtWidgets.QCheckBox(parent=self.centralwidget)
         self.namesFileCheckBox.setObjectName("namesFileCheckBox")
-        self.verticalLayout_3.addWidget(self.namesFileCheckBox)
+        self.verticalLayout_9.addWidget(self.namesFileCheckBox)
+        self.horizontalLayout_6.addLayout(self.verticalLayout_9)
+        self.verticalLayout_8 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_8.setObjectName("verticalLayout_8")
+        self.slimRoundBracketsCheckBox = QtWidgets.QCheckBox(parent=self.centralwidget)
+        self.slimRoundBracketsCheckBox.setObjectName("slimRoundBracketsCheckBox")
+        self.verticalLayout_8.addWidget(self.slimRoundBracketsCheckBox)
         self.numbersCheckBox = QtWidgets.QCheckBox(parent=self.centralwidget)
         self.numbersCheckBox.setObjectName("numbersCheckBox")
-        self.verticalLayout_3.addWidget(self.numbersCheckBox)
+        self.verticalLayout_8.addWidget(self.numbersCheckBox)
+        self.horizontalLayout_6.addLayout(self.verticalLayout_8)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_6.addItem(spacerItem1)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_6)
+        self.horizontalLayout_7 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_7.setContentsMargins(-1, 20, -1, 20)
+        self.horizontalLayout_7.setSpacing(15)
+        self.horizontalLayout_7.setObjectName("horizontalLayout_7")
+        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_7.addItem(spacerItem2)
+        self.generateReportPushButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.generateReportPushButton.setObjectName("generateReportPushButton")
+        self.horizontalLayout_7.addWidget(self.generateReportPushButton)
+        self.generateFrequencyFilePushButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.generateFrequencyFilePushButton.setObjectName("generateFrequencyFilePushButton")
+        self.horizontalLayout_7.addWidget(self.generateFrequencyFilePushButton)
+        self.generateStudyPlanPushButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.generateStudyPlanPushButton.setObjectName("generateStudyPlanPushButton")
+        self.horizontalLayout_7.addWidget(self.generateStudyPlanPushButton)
+        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_7.addItem(spacerItem3)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_7)
         self.verticalLayout_4.addLayout(self.verticalLayout_3)
-        self.tabWidget = QtWidgets.QTabWidget(parent=self.centralwidget)
-        self.tabWidget.setObjectName("tabWidget")
+        self.tablesTabWidget = QtWidgets.QTabWidget(parent=self.centralwidget)
+        self.tablesTabWidget.setObjectName("tablesTabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.tab)
@@ -122,7 +155,7 @@ class Ui_ReadabilityReportGeneratorWindow(object):
         item = QtWidgets.QTableWidgetItem()
         self.numericalTableWidget.setHorizontalHeaderItem(8, item)
         self.verticalLayout_6.addWidget(self.numericalTableWidget)
-        self.tabWidget.addTab(self.tab, "")
+        self.tablesTabWidget.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
         self.verticalLayout_7 = QtWidgets.QVBoxLayout(self.tab_2)
@@ -150,85 +183,88 @@ class Ui_ReadabilityReportGeneratorWindow(object):
         item = QtWidgets.QTableWidgetItem()
         self.percentTableWidget.setHorizontalHeaderItem(8, item)
         self.verticalLayout_7.addWidget(self.percentTableWidget)
-        self.tabWidget.addTab(self.tab_2, "")
-        self.verticalLayout_4.addWidget(self.tabWidget)
+        self.tablesTabWidget.addTab(self.tab_2, "")
+        self.verticalLayout_4.addWidget(self.tablesTabWidget)
         self.verticalLayout_5.addLayout(self.verticalLayout_4)
-        ReadabilityReportGeneratorWindow.setCentralWidget(self.centralwidget)
+        GeneratorsWindow.setCentralWidget(self.centralwidget)
 
-        self.retranslateUi(ReadabilityReportGeneratorWindow)
-        self.tabWidget.setCurrentIndex(0)
-        QtCore.QMetaObject.connectSlotsByName(ReadabilityReportGeneratorWindow)
+        self.retranslateUi(GeneratorsWindow)
+        self.tablesTabWidget.setCurrentIndex(0)
+        QtCore.QMetaObject.connectSlotsByName(GeneratorsWindow)
 
-    def retranslateUi(self, ReadabilityReportGeneratorWindow):
+    def retranslateUi(self, GeneratorsWindow):
         _translate = QtCore.QCoreApplication.translate
-        ReadabilityReportGeneratorWindow.setWindowTitle(_translate("ReadabilityReportGeneratorWindow", "Readability Report Generator"))
-        self.inputPushButton.setText(_translate("ReadabilityReportGeneratorWindow", "Select Input"))
-        self.label.setText(_translate("ReadabilityReportGeneratorWindow", "Morphemizer"))
-        self.label_2.setText(_translate("ReadabilityReportGeneratorWindow", "File formats"))
-        self.txtFilesCheckBox.setText(_translate("ReadabilityReportGeneratorWindow", ".txt"))
-        self.srtFilesCheckBox.setText(_translate("ReadabilityReportGeneratorWindow", ".srt"))
-        self.vttFilesCheckBox.setText(_translate("ReadabilityReportGeneratorWindow", ".vtt"))
-        self.mdFilesCheckBox.setText(_translate("ReadabilityReportGeneratorWindow", ".md"))
-        self.generateReportPushButton.setText(_translate("ReadabilityReportGeneratorWindow", "Generate\n"
-"Report"))
-        self.label_3.setText(_translate("ReadabilityReportGeneratorWindow", "Preprocess:"))
-        self.squareBracketsCheckBox.setText(_translate("ReadabilityReportGeneratorWindow", "Ignore content in square brackets []"))
-        self.roundBracketsCheckBox.setText(_translate("ReadabilityReportGeneratorWindow", "ignore content in round brackets（）"))
-        self.slimRoundBracketsCheckBox.setText(_translate("ReadabilityReportGeneratorWindow", "ignore content in slim round brackets ()"))
-        self.namesMorphemizerCheckBox.setText(_translate("ReadabilityReportGeneratorWindow", "Ignore names found by morphemizer"))
-        self.namesFileCheckBox.setText(_translate("ReadabilityReportGeneratorWindow", "Ignore names found in names.txt"))
-        self.numbersCheckBox.setText(_translate("ReadabilityReportGeneratorWindow", "Ignore numbers"))
+        GeneratorsWindow.setWindowTitle(_translate("GeneratorsWindow", "Generators"))
+        self.inputPushButton.setText(_translate("GeneratorsWindow", "Select Folder"))
+        self.label.setText(_translate("GeneratorsWindow", "Morphemizer:"))
+        self.label_2.setText(_translate("GeneratorsWindow", "File formats:"))
+        self.txtFilesCheckBox.setText(_translate("GeneratorsWindow", ".txt"))
+        self.srtFilesCheckBox.setText(_translate("GeneratorsWindow", ".srt"))
+        self.vttFilesCheckBox.setText(_translate("GeneratorsWindow", ".vtt"))
+        self.mdFilesCheckBox.setText(_translate("GeneratorsWindow", ".md"))
+        self.loadFilesPushButton.setText(_translate("GeneratorsWindow", "Load\n"
+"Files"))
+        self.label_3.setText(_translate("GeneratorsWindow", "Preprocess:"))
+        self.squareBracketsCheckBox.setText(_translate("GeneratorsWindow", "Ignore content in square brackets []"))
+        self.namesMorphemizerCheckBox.setText(_translate("GeneratorsWindow", "Ignore names found by morphemizer"))
+        self.roundBracketsCheckBox.setText(_translate("GeneratorsWindow", "ignore content in round brackets（）"))
+        self.namesFileCheckBox.setText(_translate("GeneratorsWindow", "Ignore names found in names.txt"))
+        self.slimRoundBracketsCheckBox.setText(_translate("GeneratorsWindow", "ignore content in slim round brackets ()"))
+        self.numbersCheckBox.setText(_translate("GeneratorsWindow", "Ignore numbers"))
+        self.generateReportPushButton.setText(_translate("GeneratorsWindow", "Generate Readability Report"))
+        self.generateFrequencyFilePushButton.setText(_translate("GeneratorsWindow", "Generate Frequency File"))
+        self.generateStudyPlanPushButton.setText(_translate("GeneratorsWindow", "Generate Study Plan"))
         item = self.numericalTableWidget.horizontalHeaderItem(0)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "File"))
+        item.setText(_translate("GeneratorsWindow", "File"))
         item = self.numericalTableWidget.horizontalHeaderItem(1)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Unique\n"
+        item.setText(_translate("GeneratorsWindow", "Unique\n"
 "Morphs"))
         item = self.numericalTableWidget.horizontalHeaderItem(2)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Unique \n"
+        item.setText(_translate("GeneratorsWindow", "Unique \n"
 "Known"))
         item = self.numericalTableWidget.horizontalHeaderItem(3)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Unique\n"
+        item.setText(_translate("GeneratorsWindow", "Unique\n"
 "Learning"))
         item = self.numericalTableWidget.horizontalHeaderItem(4)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Unique\n"
+        item.setText(_translate("GeneratorsWindow", "Unique\n"
 "Unknown"))
         item = self.numericalTableWidget.horizontalHeaderItem(5)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Total\n"
+        item.setText(_translate("GeneratorsWindow", "Total\n"
 "Morphs"))
         item = self.numericalTableWidget.horizontalHeaderItem(6)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Total\n"
+        item.setText(_translate("GeneratorsWindow", "Total\n"
 "Known"))
         item = self.numericalTableWidget.horizontalHeaderItem(7)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Total\n"
+        item.setText(_translate("GeneratorsWindow", "Total\n"
 "Learning"))
         item = self.numericalTableWidget.horizontalHeaderItem(8)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Total\n"
+        item.setText(_translate("GeneratorsWindow", "Total\n"
 "Unknown"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("ReadabilityReportGeneratorWindow", "Numerical"))
+        self.tablesTabWidget.setTabText(self.tablesTabWidget.indexOf(self.tab), _translate("GeneratorsWindow", "Numerical"))
         item = self.percentTableWidget.horizontalHeaderItem(0)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "File"))
+        item.setText(_translate("GeneratorsWindow", "File"))
         item = self.percentTableWidget.horizontalHeaderItem(1)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Unique\n"
+        item.setText(_translate("GeneratorsWindow", "Unique\n"
 "Morphs"))
         item = self.percentTableWidget.horizontalHeaderItem(2)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Unique \n"
+        item.setText(_translate("GeneratorsWindow", "Unique \n"
 "Known"))
         item = self.percentTableWidget.horizontalHeaderItem(3)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Unique\n"
+        item.setText(_translate("GeneratorsWindow", "Unique\n"
 "Learning"))
         item = self.percentTableWidget.horizontalHeaderItem(4)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Unique\n"
+        item.setText(_translate("GeneratorsWindow", "Unique\n"
 "Unknown"))
         item = self.percentTableWidget.horizontalHeaderItem(5)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Total\n"
+        item.setText(_translate("GeneratorsWindow", "Total\n"
 "Morphs"))
         item = self.percentTableWidget.horizontalHeaderItem(6)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Total\n"
+        item.setText(_translate("GeneratorsWindow", "Total\n"
 "Known"))
         item = self.percentTableWidget.horizontalHeaderItem(7)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Total\n"
+        item.setText(_translate("GeneratorsWindow", "Total\n"
 "Learning"))
         item = self.percentTableWidget.horizontalHeaderItem(8)
-        item.setText(_translate("ReadabilityReportGeneratorWindow", "Total\n"
+        item.setText(_translate("GeneratorsWindow", "Total\n"
 "Unknown"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("ReadabilityReportGeneratorWindow", "Percentage"))
+        self.tablesTabWidget.setTabText(self.tablesTabWidget.indexOf(self.tab_2), _translate("GeneratorsWindow", "Percentage"))

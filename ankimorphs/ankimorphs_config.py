@@ -113,15 +113,8 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
             self.shortcut_view_morphemes: QKeySequence = _get_key_sequence_config(
                 "shortcut_view_morphemes", is_default
             )
-            self.shortcut_frequency_file_generator: QKeySequence = (
-                _get_key_sequence_config(
-                    "shortcut_frequency_file_generator", is_default
-                )
-            )
-            self.shortcut_readability_report_generator: QKeySequence = (
-                _get_key_sequence_config(
-                    "shortcut_readability_report_generator", is_default
-                )
+            self.shortcut_generators: QKeySequence = _get_key_sequence_config(
+                "shortcut_generators", is_default
             )
             self.shortcut_known_morphs_exporter: QKeySequence = (
                 _get_key_sequence_config("shortcut_known_morphs_exporter", is_default)
