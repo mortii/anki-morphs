@@ -1,4 +1,4 @@
-anki==23.12.1
+anki==24.04
 aqt[qt6]==24.04
 black==24.3.0
 ca_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ca_core_news_sm-3.7.0/ca_core_news_sm-3.7.0-py3-none-any.whl
