@@ -89,23 +89,19 @@ In my case the field I'm interested in is `Japanese`
 
 ## Morphemizer
 
-This is the tool AnkiMorphs uses to split text into morphs. AnkiMorphs comes bundled with two morphemizers:
-
-- `AnkiMorphs: Japanese`
-- `AnkiMorphs: Languages w/ Spaces`
-
-Any [installed spaCy models](../../installation/installing-spacy.md) will also show up in this list.
+This is the tool AnkiMorphs uses to split text into morphs. See the [installation section](../../installation.md) for 
+how to add morphemizers. 
 
 ![morphemizer-selection.png](../../../img/morphemizer-selection.png)
 
 > **Note**: `AnkiMorphs: Languages w/ Spaces` is bad, it simply splits all text on whitespace. It's much better to use
-> spaCy models if you are able to install them.
+> other morphemizers if you are able to install them.
 
 ## Morph Priority
 
 The calculated [score](../../usage/recalc.md#scoring-algorithm) of the card, and as a result, the sorting of the card, depends on
 the [priority](../prioritizing.md) you give the morphs. You can either set the priorities to be `Collection frequency` (how often the morphs occur in your card collection), or you could use
-a [custom .csv file](../prioritizing.md#frequencycsv) that specifies the priorities of the morphs.
+a [custom frequency file](../prioritizing.md#custom-frequency-files) that specifies the priorities of the morphs.
 
 AnkiMorphs automatically finds .csv files placed
 in [[anki profile folder](../../glossary.md#profile-folder)]`/frequency-files/`.

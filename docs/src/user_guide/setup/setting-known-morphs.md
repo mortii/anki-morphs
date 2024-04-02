@@ -1,15 +1,13 @@
 # Setting Known Morphs
 
-AnkiMorphs determines which morphs you know based on the cards it reads. One problem with this approach is that
-information can get lost when you delete cards. To overcome this problem, you can store known morphs in .csv files in the
+AnkiMorphs determines which morphs you know by analyzing the cards you specify. However, if you delete any of those
+cards then it can lead to loss of information. To address this issue, you can store known morphs in .csv files in the
 [[anki profile](../glossary.md#profile-folder)]`/known-morphs` folder.
 
 ![known-morphs-folder.png](../../img/known-morphs-folder.png)
 
-Any .csv file that has the same format as those created by
-the [frequency file generator](../usage/generators/frequency-file-generator.md), and
-the [known morphs exporter](../usage/known-morphs-exporter.md) and is placed in
-this folder can be read during [Recalc](../usage/recalc.md) and saved to the database.
+Any .csv file that has the [frequency file format](prioritizing.md#custom-frequency-files) (like those produces by the
+[Known Morphs Exporter](../usage/known-morphs-exporter.md)), and is placed within this folder, can be read during [Recalc](../usage/recalc.md) and saved to the database.
 
-You can activate this feature by selecting `Read files in 'known-morphs' folder and register morphs as known` 
-in [recalc settings](../setup/settings/recalc.md).
+You can activate this feature by selecting `Read files in 'known-morphs' folder and register morphs as known`
+in the [Recalc settings](../setup/settings/recalc.md).

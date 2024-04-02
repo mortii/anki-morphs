@@ -7,15 +7,16 @@ AnkiMorphs is a general purpose language learning tool, therefore, it has to be 
 can do this in two ways, either have AnkiMorphs calculate the morph frequencies found in your
 cards (`Collection frequency`), or you can specify a custom .csv file that contains that information.
 
-## frequency.csv
+## Custom Frequency Files
 
 ![frequency-csv.png](../../img/frequency-csv.png)
 
-Your custom .csv file needs to follow this format:
+The custom .csv files follows this format:
 
-- The first row is assumed to contain column headers and will be ignored.
-- Rows 2 and down are assumed to contain morphs in descending order of frequency, i.e., the morph on the second row is
-  the most frequently occurring morph, the morph on the third row is the second most frequently occurring, etc.
+- **The first row** contains column headers (AnkiMorphs skips reading this line).
+- **The second row and down** contain morphs in descending order of frequency.
+- **The first column** contains morph-lemmas, **the second column** contains morph-inflections (this is done to prevent [morph collisions](#morph-collision)).
+- **All other columns** are optional and are not read by AnkiMorphs.
 
 Keep the files to 50K rows or fewer, any rows after that are ignored.
 The [scoring algorithm](../usage/recalc.md#scoring-algorithm) needs to have a max limit on morph priorities to make it
@@ -24,13 +25,26 @@ practical, hence this 50K limit.
 Any .csv file located in the folder [[anki profile folder](../glossary.md#profile-folder)]`/frequency-files/` is
 available for selection in [note filters: morph priority](../setup/settings/note-filter.md#morph-priority).
 
+### Morph Collision
+
+Inflected morphs can be identical even if they are derived from different lemmas (base), e.g.:
+
+```
+Lemma : Inflection
+有る    ある
+或る    ある
+```
+
+To prevent misinterpretation of the inflected morphs, we also store the lemmas.
+
 ### Creating Your Own frequency.csv
 
-You can use the [Frequency File Generator](../usage/generators/frequency-file-generator.md) to generate your own
-frequency.csv
-file.
+You can use the [Frequency File Generator](../usage/generators.md#frequency-file-generator) or the 
+[Study Plan Generator](../usage/generators.md#study-plan-generator) to generate your own custom frequency file.
 
 ### Downloadable Frequency Files
+
+> **Note**: These files do not contain the optional `Occurrence` column, but they still work just fine.
 
 <details>
   <summary>Catalan</summary>

@@ -260,6 +260,5 @@ You can find info about the options here:
 
 * [Settings](../setup/settings.md)
 * [Recalc](../usage/recalc.md)
-* [Frequency File Generator](../usage/generators/frequency-file-generator.md)
-* [Readability Report Generator](../usage/generators/readability-report-generator.md)
+* [Generators](../usage/generators.md)
 * [Known Morphs Exporter](../usage/known-morphs-exporter.md)
