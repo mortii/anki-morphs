@@ -3,7 +3,7 @@ import os
 
 from aqt import mw
 
-from ankimorphs import ankimorphs_globals
+from . import ankimorphs_globals
 
 
 def add_name_to_file(selected_text: str) -> None:
