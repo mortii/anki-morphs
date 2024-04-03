@@ -69,6 +69,7 @@ def main() -> None:
 
     gui_hooks.profile_did_open.append(load_am_profile_configs)
     gui_hooks.profile_did_open.append(init_db)
+    gui_hooks.profile_did_open.append(create_am_directories_and_files)
     gui_hooks.profile_did_open.append(register_addon_dialogs)
     gui_hooks.profile_did_open.append(redraw_toolbar)
     gui_hooks.profile_did_open.append(init_tool_menu_and_actions)
@@ -147,6 +148,31 @@ def init_db() -> None:
     am_db = AnkiMorphsDB()
     am_db.create_all_tables()
     am_db.con.close()
+
+
+def create_am_directories_and_files() -> None:
+    assert mw is not None
+
+    names_file_path: Path = Path(
+        mw.pm.profileFolder(), ankimorphs_globals.NAMES_TXT_FILE_NAME
+    )
+    known_morphs_dir_path: Path = Path(
+        mw.pm.profileFolder(), ankimorphs_globals.KNOWN_MORPHS_DIR_NAME
+    )
+    frequency_files_dir_path: Path = Path(
+        mw.pm.profileFolder(), ankimorphs_globals.FREQUENCY_FILES_DIR_NAME
+    )
+
+    if not names_file_path.is_file():
+        with open(names_file_path, mode="w", encoding="utf-8"):
+            # just opening the file creates it
+            pass
+
+    if not known_morphs_dir_path.exists():
+        Path(known_morphs_dir_path).mkdir()
+
+    if not frequency_files_dir_path.exists():
+        Path(frequency_files_dir_path).mkdir()
 
 
 def register_addon_dialogs() -> None:

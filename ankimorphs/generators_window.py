@@ -632,7 +632,9 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             return
 
         default_output_file = Path(
-            mw.pm.profileFolder(), "frequency-files", "frequency-file.csv"
+            mw.pm.profileFolder(),
+            ankimorphs_globals.FREQUENCY_FILES_DIR_NAME,
+            "frequency-file.csv",
         )
 
         selected_output = GeneratorOutputDialog(default_output_file)
@@ -748,7 +750,9 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             return
 
         default_output_file = Path(
-            mw.pm.profileFolder(), "frequency-files", "study-plan-frequency-file.csv"
+            mw.pm.profileFolder(),
+            ankimorphs_globals.FREQUENCY_FILES_DIR_NAME,
+            "study-plan-frequency-file.csv",
         )
 
         selected_output = GeneratorOutputDialog(default_output_file)

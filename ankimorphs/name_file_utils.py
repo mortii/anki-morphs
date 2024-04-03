@@ -3,6 +3,8 @@ import os
 
 from aqt import mw
 
+from ankimorphs import ankimorphs_globals
+
 
 def add_name_to_file(selected_text: str) -> None:
     assert mw is not None
@@ -11,7 +13,7 @@ def add_name_to_file(selected_text: str) -> None:
     names: list[str] = selected_text.split()
 
     profile_path: str = mw.pm.profileFolder()
-    path: str = os.path.join(profile_path, "names.txt")
+    path: str = os.path.join(profile_path, ankimorphs_globals.NAMES_TXT_FILE_NAME)
 
     with open(path, mode="a", encoding="utf-8") as file:
         for name in names:
@@ -26,7 +28,7 @@ def get_names_from_file() -> set[str]:
     assert mw is not None
 
     profile_path: str = mw.pm.profileFolder()
-    path: str = os.path.join(profile_path, "names.txt")
+    path: str = os.path.join(profile_path, ankimorphs_globals.NAMES_TXT_FILE_NAME)
 
     # 'a+' creates the file if it does not exist (w+ overwrites the content)
     with open(path, mode="a+", encoding="utf-8") as names_file:

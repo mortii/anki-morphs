@@ -339,8 +339,9 @@ def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:
     assert mw is not None
 
     morphs_from_files: list[dict[str, Any]] = []
-    known_morphs_dir: str = os.path.join(mw.pm.profileFolder(), "known-morphs")
-    known_morphs_dir_path: Path = Path(known_morphs_dir)
+    known_morphs_dir_path: Path = Path(
+        mw.pm.profileFolder(), ankimorphs_globals.KNOWN_MORPHS_DIR_NAME
+    )
     input_files: list[Path] = []
 
     for path in known_morphs_dir_path.rglob("*.csv"):
@@ -668,7 +669,9 @@ def _get_morph_frequency_file_priority(frequency_file_name: str) -> dict[str, in
 
     morph_priority: dict[str, int] = {}
     frequency_file_path = os.path.join(
-        mw.pm.profileFolder(), "frequency-files", frequency_file_name
+        mw.pm.profileFolder(),
+        ankimorphs_globals.FREQUENCY_FILES_DIR_NAME,
+        frequency_file_name,
     )
     try:
         with open(frequency_file_path, mode="r+", encoding="utf-8") as csvfile:

@@ -7,6 +7,9 @@ that file and not here.
 DEV_MODE: bool = False
 
 PROFILE_SETTINGS_FILE_NAME = "ankimorphs_profile_settings.json"
+NAMES_TXT_FILE_NAME = "names.txt"
+KNOWN_MORPHS_DIR_NAME = "known-morphs"
+FREQUENCY_FILES_DIR_NAME = "frequency-files"
 
 SETTINGS_DIALOG_NAME: str = "am_settings_dialog"
 TAG_SELECTOR_DIALOG_NAME: str = "am_tag_selector_dialog"

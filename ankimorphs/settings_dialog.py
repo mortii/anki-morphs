@@ -828,7 +828,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
     @staticmethod
     def _get_frequency_files() -> list[str]:
         assert mw is not None
-        path_generator = Path(mw.pm.profileFolder(), "frequency-files").glob("*.csv")
+        path_generator = Path(
+            mw.pm.profileFolder(), ankimorphs_globals.FREQUENCY_FILES_DIR_NAME
+        ).glob("*.csv")
         frequency_files = [file.name for file in path_generator if file.is_file()]
         return frequency_files
 

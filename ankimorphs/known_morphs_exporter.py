@@ -37,7 +37,9 @@ class KnownMorphsExporterDialog(QDialog):
     def _setup_output_path(self) -> None:
         assert mw is not None
 
-        _output_dir = os.path.join(mw.pm.profileFolder(), "known-morphs")
+        _output_dir = os.path.join(
+            mw.pm.profileFolder(), ankimorphs_globals.KNOWN_MORPHS_DIR_NAME
+        )
         # create the parent directories if they don't exist
         Path(_output_dir).parent.mkdir(parents=True, exist_ok=True)
         self.ui.outputLineEdit.setText(_output_dir)
