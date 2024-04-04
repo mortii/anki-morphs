@@ -14,9 +14,9 @@ Matt Vs Japan, mortii, Vilhelm-Ian, cocowash, xuiqzy, xofm31.
 
 ### Bugs reports, feature requests, or other helpful guidance
 
-Vilhelm-Ian, CodeWithMa, ashprice, Aleksej, HQYang1979, soliviantar, buster-blue, rymiel, BorisNA, wrinkledeth,
+Vilhelm-Ian, CodeWithMa, ashprice, aleksejrs, HQYang1979, soliviantar, buster-blue, rymiel, BorisNA, wrinkledeth,
 cocowash, asayake-b5, quietmansoath, MichaelPetre, xofm31, knoebelja, xuiqzy, Jcuhfehl, fuquasteve, pallas42, syfgk,
-jahnke.
+jahnke, jsteel44.
 
 ### MorphMan (v5.0-qt6-alpha.1)
 
