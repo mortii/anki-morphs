@@ -19,7 +19,7 @@ from ankimorphs import (
     ankimorphs_db,
     reviewing_utils,
 )
-from ankimorphs.skipped_cards import SkippedCards
+from ankimorphs.reviewing_utils import SkippedCards
 
 
 class MockDB(AnkiMorphsDB):
