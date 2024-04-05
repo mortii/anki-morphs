@@ -731,7 +731,7 @@ def _get_card_score_and_unknowns_and_learning_status(
 
         if morph.highest_learning_interval == 0:
             unknown_morphs.append(morph)
-        elif morph.highest_learning_interval <= am_config.recalc_interval_for_known:
+        elif morph.highest_learning_interval < am_config.recalc_interval_for_known:
             has_learning_morph = True
 
         if morph.lemma_and_inflection not in morph_priority:
