@@ -22,7 +22,7 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="QPushButton" name="inputPushButton">
+           <widget class="QPushButton" name="selectFolderPushButton">
             <property name="text">
              <string>Select Folder</string>
             </property>

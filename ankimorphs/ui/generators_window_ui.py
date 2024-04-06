@@ -23,9 +23,9 @@ class Ui_GeneratorsWindow(object):
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
-        self.inputPushButton = QtWidgets.QPushButton(parent=self.centralwidget)
-        self.inputPushButton.setObjectName("inputPushButton")
-        self.verticalLayout.addWidget(self.inputPushButton)
+        self.selectFolderPushButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.selectFolderPushButton.setObjectName("selectFolderPushButton")
+        self.verticalLayout.addWidget(self.selectFolderPushButton)
         self.label = QtWidgets.QLabel(parent=self.centralwidget)
         self.label.setObjectName("label")
         self.verticalLayout.addWidget(self.label, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
@@ -195,7 +195,7 @@ class Ui_GeneratorsWindow(object):
     def retranslateUi(self, GeneratorsWindow):
         _translate = QtCore.QCoreApplication.translate
         GeneratorsWindow.setWindowTitle(_translate("GeneratorsWindow", "Generators"))
-        self.inputPushButton.setText(_translate("GeneratorsWindow", "Select Folder"))
+        self.selectFolderPushButton.setText(_translate("GeneratorsWindow", "Select Folder"))
         self.label.setText(_translate("GeneratorsWindow", "Morphemizer:"))
         self.label_2.setText(_translate("GeneratorsWindow", "File formats:"))
         self.txtFilesCheckBox.setText(_translate("GeneratorsWindow", ".txt"))

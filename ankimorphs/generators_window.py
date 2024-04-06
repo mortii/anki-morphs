@@ -103,7 +103,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         )
 
     def _setup_buttons(self) -> None:
-        self.ui.inputPushButton.clicked.connect(self._on_input_button_clicked)
+        self.ui.selectFolderPushButton.clicked.connect(self._on_select_folder_clicked)
         self.ui.loadFilesPushButton.clicked.connect(self._on_load_files_button_clicked)
         self.ui.generateReportPushButton.clicked.connect(
             self._generate_readability_report
@@ -128,9 +128,9 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self.ui.vttFilesCheckBox.setChecked(True)
         self.ui.mdFilesCheckBox.setChecked(True)
 
-    def _on_input_button_clicked(self) -> None:
+    def _on_select_folder_clicked(self) -> None:
         input_dir: str = QFileDialog.getExistingDirectory(
-            parent=None,
+            parent=self,
             caption="Directory with files to analyze",
             directory=QDir().homePath(),
         )
@@ -143,7 +143,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
 
         mw.progress.start(label="Gathering input files")
         operation = QueryOp(
-            parent=mw,
+            parent=self,
             op=self._background_gather_files_and_populate_files_column,
             success=lambda _: self._on_successfully_loaded_files(),
         )
@@ -181,7 +181,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
                     self._input_files.append(file_path)
 
         # without this sorting, the initial order will be (seemingly) random
-        self._input_files.sort(key=lambda _file: _file.name)
+        self._input_files.sort()
         self._populate_files_column()
 
     def _populate_files_column(self) -> None:
@@ -274,7 +274,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
 
         mw.progress.start(label="Generating readability report")
         operation = QueryOp(
-            parent=mw,
+            parent=self,
             op=self._background_generate_report,
             success=self._on_success,
         )
@@ -647,7 +647,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
 
         mw.progress.start(label="Generating frequency file")
         operation = QueryOp(
-            parent=mw,
+            parent=self,
             op=lambda _: self._background_generate_frequency_file(
                 selected_output_options
             ),
@@ -765,7 +765,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
 
         mw.progress.start(label="Generating study plan")
         operation = QueryOp(
-            parent=mw,
+            parent=self,
             op=lambda _: self._background_generate_study_plan(selected_output_options),
             success=self._on_success,
         )
@@ -829,11 +829,11 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
                     "Morph-inflection",
                     "Learning-status",
                     "Occurrence",
-                    "File Name",
+                    "File",
                 ]
             )
 
-            for file, sorted_morph_occurrence in morph_occurrences_by_file.items():
+            for file_path, sorted_morph_occurrence in morph_occurrences_by_file.items():
                 morph_key_cutoff: str | None = None
 
                 if selected_comprehension:
@@ -868,7 +868,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
                             morph.inflection,
                             learning_status,
                             occurrence,
-                            file.name,  # path object
+                            file_path.relative_to(self._input_dir_root),
                         ]
                     )
 
