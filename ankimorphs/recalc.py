@@ -41,6 +41,7 @@ from .text_preprocessing import (
     get_processed_morphemizer_morphs,
     get_processed_spacy_morphs,
 )
+from .calc_score import get_card_score_and_unknowns_and_learning_status
 
 # Anki stores the 'due' value of cards as a 32-bit integer
 # on the backend, with '2147483647' being the max value before
@@ -434,7 +435,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                     card_score,
                     card_unknown_morphs,
                     card_has_learning_morphs,
-                ) = _get_card_score_and_unknowns_and_learning_status(
+                ) = get_card_score_and_unknowns_and_learning_status(
                     am_config,
                     card_id,
                     card_morph_map_cache,
