@@ -26,6 +26,7 @@ pylint==3.1.0
 pytest==8.1.1
 pytest-expect==1.1.0
 pytest-qt==4.4.0
+pytest-randomly==3.15.0
 pytest-sugar==1.0.0
 pytest-xvfb==3.0.0
 ro_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ro_core_news_sm-3.7.0/ro_core_news_sm-3.7.0-py3-none-any.whl

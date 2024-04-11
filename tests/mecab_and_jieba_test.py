@@ -8,6 +8,8 @@ from ankimorphs import spacy_wrapper
 from ankimorphs.morpheme import Morpheme
 from ankimorphs.morphemizer import get_morphemizer_by_name
 
+from .environment_setup_for_tests import TESTS_DATA_PATH
+
 
 @pytest.fixture(
     scope="module"  # module-scope: created and destroyed once per module. Cached.
@@ -16,9 +18,7 @@ def fake_environment():
     patch_testing_variable = mock.patch.object(
         spacy_wrapper, "testing_environment", True
     )
-
-    tests_path = os.path.join(os.path.abspath("tests"), "data")
-    fake_morphemizers_path = os.path.join(tests_path, "morphemizers")
+    fake_morphemizers_path = os.path.join(TESTS_DATA_PATH, "morphemizers")
 
     sys.path.append(fake_morphemizers_path)
     patch_testing_variable.start()

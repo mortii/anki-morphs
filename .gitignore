@@ -7,11 +7,12 @@
 .venv
 .designer-venv
 
-ankimorphs/meta.json
 docs/book
+
+ankimorphs/meta.json
 ankimorphs.db
+ankimorphs*.ankiaddon
 anki_output.txt
 profile.svg
-ankimorphs*.ankiaddon
-ja_ffg_test_result.csv
+tests/data/tests_outputs/*
 *.anki2-wal

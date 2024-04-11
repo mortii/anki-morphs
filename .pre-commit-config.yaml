@@ -24,8 +24,7 @@ repos:
               docs/src/img/deck-options.mp4|
               docs/src/img/learn-now.mp4|
               docs/src/img/adding-extra-fields.mp4|
-              tests/data/collection.anki2|
-              tests/data/collection_with_offset.anki2|
+              tests/data/card_collections/big-japanese-collection.anki2|
               tests/data/populated_ankimorphs.db|
           )$
       - id: check-case-conflict
@@ -38,10 +37,12 @@ repos:
       - id: check-toml
       - id: debug-statements
       - id: name-tests-test
-        files: '^tests/'
+        files: '^tests'
         exclude: |
           (?x)^(
-              tests/data/.*|
+              ^tests/environment_setup_for_tests.py|
+              ^tests/README.md|
+              ^tests/data/.*|
           )$
       - id: requirements-txt-fixer
   - repo: https://github.com/codespell-project/codespell
@@ -102,7 +103,7 @@ repos:
         files: 'ankimorphs/|^tests/'
         exclude: |
           (?x)^(
-              tests/.*|
+              ^tests/.*|
           )$
       - id: pytest
         name: pytest
