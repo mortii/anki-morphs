@@ -1,16 +1,14 @@
 from __future__ import annotations
 
 import csv
-import os
 import time
 from functools import partial
 from pathlib import Path
 from typing import Any
 
 from anki.cards import Card
-from anki.collection import Collection
 from anki.consts import CARD_TYPE_NEW, CardQueue
-from anki.models import FieldDict, ModelManager, NotetypeDict, NotetypeId
+from anki.models import FieldDict, ModelManager, NotetypeDict
 from anki.notes import Note
 from aqt import mw
 from aqt.operations import QueryOp
@@ -20,21 +18,24 @@ from . import (
     anki_data_utils,
     ankimorphs_config,
     ankimorphs_globals,
+    extra_field_utils,
     message_box_utils,
-    spacy_wrapper,
-    text_highlighting,
 )
+from . import morphemizer as morphemizer_module
+from . import spacy_wrapper
 from .anki_data_utils import AnkiCardData, AnkiMorphsCardData
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
 from .exceptions import (
+    AnkiFieldNotFound,
+    AnkiNoteTypeNotFound,
     CancelledOperationException,
     DefaultSettingsException,
     FrequencyFileNotFoundException,
     MorphemizerNotFoundException,
 )
 from .morpheme import Morpheme
-from .morphemizer import SpacyMorphemizer, get_morphemizer_by_name
+from .morphemizer import SpacyMorphemizer
 from .text_preprocessing import (
     get_processed_expression,
     get_processed_morphemizer_morphs,
@@ -47,11 +48,6 @@ from .text_preprocessing import (
 # we decrement the second digit (from the left) of the max value,
 # which should give plenty of leeway (10^8).
 _DEFAULT_SCORE: int = 2047483647
-
-# When recalc is finished, the total duration is printed
-# to the terminal. We have a global start time variable
-# to make this process easier.
-_start_time: float | None = None
 
 
 def recalc() -> None:
@@ -67,79 +63,6 @@ def recalc() -> None:
     ################################################################
 
     assert mw is not None
-    global _start_time
-
-    # The confirmation message box is a gui element and therefore can't be shown
-    # from a background thread, so we do it from the main thread here first.
-    if _new_extra_fields_selected():
-        title = "AnkiMorphs Confirmation"
-        text = (
-            'New "extra fields" have been selected in the settings, which will cause a full upload of your card'
-            " collection the next time you synchronize.\n\nAny reviews or changes made on other devices that have"
-            " yet to be synchronized will be lost when a full upload takes place.\n\nDo you still want to continue?"
-        )
-        answer = message_box_utils.show_warning_box(title, text, parent=mw)
-        if answer is not True:
-            return
-
-    mw.progress.start(label="Recalculating")
-    _start_time = time.time()
-
-    operation = QueryOp(
-        parent=mw,
-        op=_recalc_background_op,
-        success=_on_success,
-    )
-    operation.failure(_on_failure)
-    operation.with_progress().run_in_background()
-
-
-def _new_extra_fields_selected() -> bool:
-    assert mw is not None
-
-    model_manager: ModelManager = mw.col.models
-    modify_enabled_config_filters: list[AnkiMorphsConfigFilter] = (
-        ankimorphs_config.get_modify_enabled_filters()
-    )
-
-    for config_filter in modify_enabled_config_filters:
-        if config_filter.note_type_id is None:
-            continue  # empty note filter
-
-        note_type_id: NotetypeId = NotetypeId(config_filter.note_type_id)
-
-        note_type_dict: NotetypeDict | None = model_manager.get(note_type_id)
-        assert note_type_dict is not None
-        existing_field_names = model_manager.field_names(note_type_dict)
-
-        if config_filter.extra_unknowns:
-            if ankimorphs_globals.EXTRA_FIELD_UNKNOWNS not in existing_field_names:
-                return True
-
-        if config_filter.extra_unknowns_count:
-            if (
-                ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT
-                not in existing_field_names
-            ):
-                return True
-
-        if config_filter.extra_highlighted:
-            if ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED not in existing_field_names:
-                return True
-
-        if config_filter.extra_score:
-            if ankimorphs_globals.EXTRA_FIELD_SCORE not in existing_field_names:
-                return True
-
-    return False
-
-
-def _recalc_background_op(collection: Collection) -> None:
-    del collection  # unused
-    assert mw is not None
-    assert mw.progress is not None
-
-    am_config = AnkiMorphsConfig()
 
     read_enabled_config_filters: list[AnkiMorphsConfigFilter] = (
         ankimorphs_config.get_read_enabled_filters()
@@ -148,35 +71,102 @@ def _recalc_background_op(collection: Collection) -> None:
         ankimorphs_config.get_modify_enabled_filters()
     )
 
-    _abort_if_default_settings_are_used(
+    # Note: we check for potential errors before running the QueryOp because
+    # these processes and confirmations can require gui elements being displayed,
+    # which is less of a headache to do on the main thread.
+    settings_error: Exception | None = _check_selected_settings_for_errors(
         read_enabled_config_filters, modify_enabled_config_filters
     )
-    _abort_if_selected_morphemizers_not_found(read_enabled_config_filters)
 
-    _cache_anki_data(am_config, read_enabled_config_filters)
-    _update_cards_and_notes(am_config, modify_enabled_config_filters)
+    if settings_error is not None:
+        _on_failure(error=settings_error, before_query_op=True)
+        return
+
+    if extra_field_utils.new_extra_fields_are_selected():
+        confirmed = message_box_utils.confirm_new_extra_fields_selection(parent=mw)
+        if not confirmed:
+            return
+
+    mw.progress.start(label="Recalculating")
+    _start_time: float = time.time()
+
+    # lambda is used to ignore the irrelevant arguments given by QueryOp
+    operation = QueryOp(
+        parent=mw,
+        op=lambda _: _recalc_background_op(
+            read_enabled_config_filters, modify_enabled_config_filters
+        ),
+        success=lambda _: _on_success(_start_time),
+    )
+    operation.failure(_on_failure)
+    operation.with_progress().run_in_background()
 
 
-def _abort_if_default_settings_are_used(
+def _check_selected_settings_for_errors(
+    read_enabled_config_filters: list[AnkiMorphsConfigFilter],
+    modify_enabled_config_filters: list[AnkiMorphsConfigFilter],
+) -> Exception | None:
+    assert mw is not None
+
+    # ideally we would combine the read and modify filters into a set since they
+    # usually have significant overlap, but they contain dicts, which makes
+    # comparing them impractical, so we just combine them into a list.
+    config_filters = read_enabled_config_filters + modify_enabled_config_filters
+
+    model_manager: ModelManager = mw.col.models
+
+    for config_filter in config_filters:
+        options_possibly_containing_none: set[str] = {
+            config_filter.note_type,
+            config_filter.field,
+            config_filter.morphemizer_description,
+            config_filter.morph_priority,
+        }
+
+        if ankimorphs_globals.NONE_OPTION in options_possibly_containing_none:
+            return DefaultSettingsException()
+
+        note_type_dict: NotetypeDict | None = mw.col.models.by_name(
+            config_filter.note_type
+        )
+        if note_type_dict is None:
+            return AnkiNoteTypeNotFound()
+
+        note_type_field_name_dict: dict[str, tuple[int, FieldDict]] = (
+            model_manager.field_map(note_type_dict)
+        )
+
+        if config_filter.field not in note_type_field_name_dict:
+            return AnkiFieldNotFound()
+
+        morphemizer_found = morphemizer_module.get_morphemizer_by_description(
+            config_filter.morphemizer_description
+        )
+        if morphemizer_found is None:
+            return MorphemizerNotFoundException(config_filter.morphemizer_description)
+
+        if (
+            config_filter.morph_priority
+            != ankimorphs_globals.COLLECTION_FREQUENCY_OPTION
+        ):
+            frequency_file_path = Path(
+                mw.pm.profileFolder(),
+                ankimorphs_globals.FREQUENCY_FILES_DIR_NAME,
+                config_filter.morph_priority,
+            )
+            if not frequency_file_path.is_file():
+                return FrequencyFileNotFoundException(path=str(frequency_file_path))
+
+    return None
+
+
+def _recalc_background_op(
     read_enabled_config_filters: list[AnkiMorphsConfigFilter],
     modify_enabled_config_filters: list[AnkiMorphsConfigFilter],
 ) -> None:
-    for config_filter in read_enabled_config_filters:
-        if config_filter.note_type == "":
-            raise DefaultSettingsException  # handled in on_failure()
-
-    for config_filter in modify_enabled_config_filters:
-        if config_filter.note_type == "":
-            raise DefaultSettingsException
-
-
-def _abort_if_selected_morphemizers_not_found(
-    read_enabled_config_filters: list[AnkiMorphsConfigFilter],
-) -> None:
-    for config_filter in read_enabled_config_filters:
-        name: str = config_filter.morphemizer_name
-        if get_morphemizer_by_name(name) is None:
-            raise MorphemizerNotFoundException(name)  # handled in on_failure()
+    am_config = AnkiMorphsConfig()
+    _cache_anki_data(am_config, read_enabled_config_filters)
+    _update_cards_and_notes(am_config, modify_enabled_config_filters)
 
 
 def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-many-statements
@@ -234,7 +224,9 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
             all_keys.append(key)
 
         nlp = None  # spacy.Language
-        morphemizer = get_morphemizer_by_name(config_filter.morphemizer_name)
+        morphemizer = morphemizer_module.get_morphemizer_by_description(
+            config_filter.morphemizer_description
+        )
         assert morphemizer is not None
 
         if isinstance(morphemizer, SpacyMorphemizer):
@@ -252,7 +244,7 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
         # we receive from the morphemizers into sets.
         if nlp is not None:
             for index, doc in enumerate(nlp.pipe(all_text)):
-                update_progress_potentially_cancel(
+                _update_progress_potentially_cancel(
                     label=f"Extracting morphs from<br>{config_filter.note_type} cards<br>card: {index} of {card_amount}",
                     counter=index,
                     max_value=card_amount,
@@ -262,7 +254,7 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
                 cards_data_dict[key].morphs = morphs
         else:
             for index, _expression in enumerate(all_text):
-                update_progress_potentially_cancel(
+                _update_progress_potentially_cancel(
                     label=f"Extracting morphs from<br>{config_filter.note_type} cards<br>card: {index} of {card_amount}",
                     counter=index,
                     max_value=card_amount,
@@ -276,7 +268,7 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
                 cards_data_dict[key].morphs = morphs
 
         for counter, card_id in enumerate(cards_data_dict):
-            update_progress_potentially_cancel(
+            _update_progress_potentially_cancel(
                 label=f"Caching {config_filter.note_type} cards<br>card: {counter} of {card_amount}",
                 counter=counter,
                 max_value=card_amount,
@@ -296,7 +288,7 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
                 {
                     "card_id": card_id,
                     "note_id": card_data.note_id,
-                    "note_type_id": config_filter.note_type_id,
+                    "note_type_id": card_data.note_type_id,
                     "card_type": card_data.type,
                     "fields": card_data.fields,
                     "tags": card_data.tags,
@@ -364,7 +356,6 @@ def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:
             for row in morph_reader:
                 lemma: str = row[0]
                 inflection: str = row[1]
-
                 morphs_from_files.append(
                     {
                         "lemma": lemma,
@@ -395,23 +386,31 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
     am_db.get_morph_collection_priority.cache_clear()
 
     for config_filter in modify_enabled_config_filters:
-        assert config_filter.note_type_id is not None
-        note_type_id: NotetypeId = NotetypeId(config_filter.note_type_id)
-
-        _add_extra_fields_to_note_type(config_filter, note_type_id, model_manager)
-
-        note_type_dict = model_manager.get(note_type_id)
+        note_type_dict: NotetypeDict | None = model_manager.by_name(
+            config_filter.note_type
+        )
         assert note_type_dict is not None
-        note_type_field_name_dict = model_manager.field_map(note_type_dict)
 
+        did_add_fields: bool = extra_field_utils.add_extra_fields_to_note_type(
+            config_filter, note_type_dict, model_manager
+        )
+
+        if did_add_fields:
+            # fetch the updated note type dict
+            note_type_dict = model_manager.by_name(config_filter.note_type)
+            assert note_type_dict is not None
+
+        note_type_field_name_dict: dict[str, tuple[int, FieldDict]] = (
+            model_manager.field_map(note_type_dict)
+        )
         morph_priority: dict[str, int] = _get_morph_priority(am_db, config_filter)
         cards_data_dict: dict[int, AnkiMorphsCardData] = am_db.get_am_cards_data_dict(
-            config_filter.note_type_id
+            note_type_id=model_manager.id_for_name(config_filter.note_type)
         )
         card_amount = len(cards_data_dict)
 
         for counter, card_id in enumerate(cards_data_dict):
-            update_progress_potentially_cancel(
+            _update_progress_potentially_cancel(
                 label=f"Updating {config_filter.note_type} cards<br>card: {counter} of {card_amount}",
                 counter=counter,
                 max_value=card_amount,
@@ -453,18 +452,20 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                 )
 
                 if config_filter.extra_unknowns:
-                    _update_unknowns_field(
+                    extra_field_utils.update_unknowns_field(
                         am_config, note_type_field_name_dict, note, card_unknown_morphs
                     )
                 if config_filter.extra_unknowns_count:
-                    _update_unknowns_count_field(
+                    extra_field_utils.update_unknowns_count_field(
                         note_type_field_name_dict, note, card_unknown_morphs
                     )
                 if config_filter.extra_score:
-                    _update_score_field(note_type_field_name_dict, note, card_score)
+                    extra_field_utils.update_score_field(
+                        note_type_field_name_dict, note, card_score
+                    )
 
             if config_filter.extra_highlighted:
-                _update_highlighted_field(
+                extra_field_utils.update_highlighted_field(
                     am_config,
                     config_filter,
                     note_type_field_name_dict,
@@ -521,7 +522,7 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
 
     card_amount = len(handled_cards)
     for counter, card_id in enumerate(handled_cards):
-        update_progress_potentially_cancel(
+        _update_progress_potentially_cancel(
             label=f"Potentially offsetting cards<br>card: {counter} of {card_amount}",
             counter=counter,
             max_value=card_amount,
@@ -611,51 +612,14 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
     return modified_cards
 
 
-def _add_extra_fields_to_note_type(
-    config_filter: AnkiMorphsConfigFilter,
-    note_type_id: NotetypeId,
-    model_manager: ModelManager,
-) -> None:
-    note_type_dict: NotetypeDict | None = model_manager.get(note_type_id)
-    assert note_type_dict is not None
-
-    existing_field_names = model_manager.field_names(note_type_dict)
-    new_field: FieldDict
-
-    if config_filter.extra_unknowns:
-        if ankimorphs_globals.EXTRA_FIELD_UNKNOWNS not in existing_field_names:
-            new_field = model_manager.new_field(ankimorphs_globals.EXTRA_FIELD_UNKNOWNS)
-            model_manager.add_field(note_type_dict, new_field)
-            model_manager.update_dict(note_type_dict)
-
-    if config_filter.extra_unknowns_count:
-        if ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT not in existing_field_names:
-            new_field = model_manager.new_field(
-                ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT
-            )
-            model_manager.add_field(note_type_dict, new_field)
-            model_manager.update_dict(note_type_dict)
-
-    if config_filter.extra_highlighted:
-        if ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED not in existing_field_names:
-            new_field = model_manager.new_field(
-                ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED
-            )
-            model_manager.add_field(note_type_dict, new_field)
-            model_manager.update_dict(note_type_dict)
-
-    if config_filter.extra_score:
-        if ankimorphs_globals.EXTRA_FIELD_SCORE not in existing_field_names:
-            new_field = model_manager.new_field(ankimorphs_globals.EXTRA_FIELD_SCORE)
-            model_manager.add_field(note_type_dict, new_field)
-            model_manager.update_dict(note_type_dict)
-
-
 def _get_morph_priority(
     am_db: AnkiMorphsDB,
     am_config_filter: AnkiMorphsConfigFilter,
 ) -> dict[str, int]:
-    if am_config_filter.morph_priority_index == 0:
+    if (
+        am_config_filter.morph_priority
+        == ankimorphs_globals.COLLECTION_FREQUENCY_OPTION
+    ):
         morph_priority = am_db.get_morph_collection_priority()
     else:
         morph_priority = _get_morph_frequency_file_priority(
@@ -668,7 +632,7 @@ def _get_morph_frequency_file_priority(frequency_file_name: str) -> dict[str, in
     assert mw is not None
 
     morph_priority: dict[str, int] = {}
-    frequency_file_path = os.path.join(
+    frequency_file_path = Path(
         mw.pm.profileFolder(),
         ankimorphs_globals.FREQUENCY_FILES_DIR_NAME,
         frequency_file_name,
@@ -685,7 +649,7 @@ def _get_morph_frequency_file_priority(frequency_file_name: str) -> dict[str, in
                 key = row[0] + row[1]
                 morph_priority[key] = index
     except FileNotFoundError as error:
-        raise FrequencyFileNotFoundException(frequency_file_path) from error
+        raise FrequencyFileNotFoundException(str(frequency_file_path)) from error
     return morph_priority
 
 
@@ -756,72 +720,6 @@ def _get_card_score_and_unknowns_and_learning_status(
     return score, unknown_morphs, has_learning_morph
 
 
-def _update_unknowns_field(
-    am_config: AnkiMorphsConfig,
-    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
-    note: Note,
-    unknowns: list[Morpheme],
-) -> None:
-    focus_morph_string: str
-
-    if am_config.recalc_unknowns_field_shows_inflections:
-        focus_morph_string = "".join(f"{unknown.inflection}, " for unknown in unknowns)
-    else:
-        focus_morph_string = "".join(f"{unknown.lemma}, " for unknown in unknowns)
-
-    focus_morph_string = focus_morph_string[:-2]  # removes last comma and whitespace
-    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_UNKNOWNS][0]
-    note.fields[index] = focus_morph_string
-
-
-def _update_unknowns_count_field(
-    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
-    note: Note,
-    unknowns: list[Morpheme],
-) -> None:
-    index: int = note_type_field_name_dict[
-        ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT
-    ][0]
-    note.fields[index] = str(len(unknowns))
-
-
-def _update_score_field(
-    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
-    note: Note,
-    score: int,
-) -> None:
-    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_SCORE][0]
-    note.fields[index] = str(score)
-
-
-def _update_highlighted_field(  # pylint:disable=too-many-arguments
-    am_config: AnkiMorphsConfig,
-    config_filter: AnkiMorphsConfigFilter,
-    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
-    card_morph_map_cache: dict[int, list[Morpheme]],
-    card_id: int,
-    note: Note,
-) -> None:
-    try:
-        card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
-    except KeyError:
-        # card does not have morphs or is buggy in some way
-        return
-
-    assert config_filter.field_index is not None
-    text_to_highlight = note.fields[config_filter.field_index]
-    highlighted_text = text_highlighting.get_highlighted_text(
-        am_config,
-        card_morphs,
-        text_to_highlight,
-    )
-
-    highlighted_index: int = note_type_field_name_dict[
-        ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED
-    ][0]
-    note.fields[highlighted_index] = highlighted_text
-
-
 def _update_tags_and_queue(
     am_config: AnkiMorphsConfig,
     note: Note,
@@ -877,20 +775,17 @@ def remove_exclusive_tags(note: Note, mutually_exclusive_tags: list[str]) -> Non
             note.tags.remove(tag)
 
 
-def _on_success(result: Any) -> None:
+def _on_success(_start_time: float) -> None:
     # This function runs on the main thread.
-    del result  # unused
     assert mw is not None
     assert mw.progress is not None
-    global _start_time
 
     mw.toolbar.draw()  # updates stats
     mw.progress.finish()
+
     tooltip("Finished Recalc", parent=mw)
-    if _start_time is not None:
-        end_time: float = time.time()
-        print(f"Recalc duration: {round(end_time - _start_time, 3)} seconds")
-        _start_time = None
+    end_time: float = time.time()
+    print(f"Recalc duration: {round(end_time - _start_time, 3)} seconds")
 
 
 def _on_failure(
@@ -900,12 +795,17 @@ def _on_failure(
         | MorphemizerNotFoundException
         | CancelledOperationException
         | FrequencyFileNotFoundException
+        | AnkiNoteTypeNotFound
+        | AnkiFieldNotFound
     ),
+    before_query_op: bool = False,
 ) -> None:
     # This function runs on the main thread.
     assert mw is not None
     assert mw.progress is not None
-    mw.progress.finish()
+
+    if not before_query_op:
+        mw.progress.finish()
 
     if isinstance(error, CancelledOperationException):
         tooltip("Cancelled Recalc")
@@ -914,7 +814,11 @@ def _on_failure(
     title = "AnkiMorphs Error"
 
     if isinstance(error, DefaultSettingsException):
-        text = "Save settings before using Recalc!"
+        text = f'Found a note filter containing a "{ankimorphs_globals.NONE_OPTION}" option. Please select something else.'
+    elif isinstance(error, AnkiNoteTypeNotFound):
+        text = "The AnkiMorphs settings uses one or more note types that no longer exists. Please redo your settings."
+    elif isinstance(error, AnkiFieldNotFound):
+        text = "The AnkiMorphs settings uses one or more fields that no longer exist. Please redo your settings."
     elif isinstance(error, MorphemizerNotFoundException):
         if error.morphemizer_name == "MecabMorphemizer":
             text = (
@@ -943,7 +847,7 @@ def _on_failure(
     message_box_utils.show_error_box(title=title, body=text, parent=mw)
 
 
-def update_progress_potentially_cancel(
+def _update_progress_potentially_cancel(
     label: str, counter: int, max_value: int
 ) -> None:
     assert mw is not None

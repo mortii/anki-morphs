@@ -2,6 +2,14 @@ class DefaultSettingsException(Exception):
     """Raised when the default settings are used and no note type is selected"""
 
 
+class AnkiNoteTypeNotFound(Exception):
+    """User tried to get Anki data that doesn't exist"""
+
+
+class AnkiFieldNotFound(Exception):
+    """User tried to get Anki data that doesn't exist"""
+
+
 class CardQueueEmptyException(Exception):
     """The new card queue has no more cards"""
 

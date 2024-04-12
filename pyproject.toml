@@ -65,7 +65,8 @@ addopts = "--strict-markers --durations=5 --maxfail=1000000"
 markers = [
   "slow",
   "recalc",
-  "external_morphemizers"
+  "external_morphemizers",
+  "should_cause_exception"
 ]
 
 [tool.vulture]

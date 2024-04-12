@@ -6,7 +6,7 @@ import pytest
 
 from ankimorphs import spacy_wrapper
 from ankimorphs.morpheme import Morpheme
-from ankimorphs.morphemizer import get_morphemizer_by_name
+from ankimorphs.morphemizer import get_morphemizer_by_description
 
 from .environment_setup_for_tests import TESTS_DATA_PATH
 
@@ -29,7 +29,7 @@ def fake_environment():
 
 @pytest.mark.external_morphemizers
 def test_mecab_morpheme_generation(fake_environment):  # pylint:disable=unused-argument
-    morphemizer = get_morphemizer_by_name("MecabMorphemizer")
+    morphemizer = get_morphemizer_by_description("AnkiMorphs: Japanese")
 
     sentence = "本当に重要な任務の時しか 動かない"
     correct_morphs: set[Morpheme] = {
@@ -53,7 +53,7 @@ def test_mecab_morpheme_generation(fake_environment):  # pylint:disable=unused-a
 
 @pytest.mark.external_morphemizers
 def test_jieba_morpheme_generation(fake_environment):  # pylint:disable=unused-argument
-    morphemizer = get_morphemizer_by_name("JiebaMorphemizer")
+    morphemizer = get_morphemizer_by_description("AnkiMorphs: Chinese")
 
     # sentence = "本当に重要な任務の時しか 動かない"
     sentence = "请您说得慢些好吗？"

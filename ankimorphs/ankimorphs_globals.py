@@ -21,4 +21,8 @@ EXTRA_FIELD_UNKNOWNS_COUNT: str = "am-unknowns-count"
 EXTRA_FIELD_HIGHLIGHTED: str = "am-highlighted"
 EXTRA_FIELD_SCORE: str = "am-score"
 
+NONE_OPTION = "(none)"
+COLLECTION_FREQUENCY_OPTION = "Collection frequency"
+
+
 ankimorphs_broken: bool = False

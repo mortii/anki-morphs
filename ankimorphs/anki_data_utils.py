@@ -9,6 +9,7 @@ from collections.abc import Sequence
 from typing import Any
 
 import anki.utils
+from anki.models import ModelManager, NotetypeDict, NotetypeId
 from anki.tags import TagManager
 from aqt import mw
 
@@ -58,23 +59,23 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         "fields",
         "tags",
         "note_id",
+        "note_type_id",
         "morphs",
     )
 
-    def __init__(
+    def __init__(  # pylint:disable=too-many-arguments
         self,
         am_config: AnkiMorphsConfig,
-        config_filter: AnkiMorphsConfigFilter,
         tag_manager: TagManager,
+        note_type_id: NotetypeId,
+        expression_field_index: int,
         anki_row_data: AnkiDBRowData,
     ) -> None:
-        assert config_filter.field_index is not None
-
         fields_list = anki.utils.split_fields(anki_row_data.note_fields)
-        tags_list = tag_manager.split(anki_row_data.note_tags)
-
-        expression_field = fields_list[config_filter.field_index]
+        expression_field = fields_list[expression_field_index]
         expression = anki.utils.strip_html(expression_field)
+
+        tags_list = tag_manager.split(anki_row_data.note_tags)
 
         automatically_known_tag = am_config.tag_known_automatically in tags_list
         manually_known_tag = am_config.tag_known_manually in tags_list
@@ -91,6 +92,7 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         self.fields = anki_row_data.note_fields
         self.tags = anki_row_data.note_tags
         self.note_id = anki_row_data.note_id
+        self.note_type_id = note_type_id
 
         # this is set later when spacy is used
         self.morphs: set[Morpheme] | None = None
@@ -132,20 +134,34 @@ def create_card_data_dict(
 ) -> dict[int, AnkiCardData]:
     assert mw is not None
 
+    model_manager: ModelManager = mw.col.models
     tag_manager = TagManager(mw.col)
     tags: dict[str, str] = config_filter.tags
-    model_id: int | None = config_filter.note_type_id
     card_data_dict: dict[int, AnkiCardData] = {}
 
-    for anki_row_data in _get_anki_data(am_config, model_id, tags).values():
-        card_data = AnkiCardData(am_config, config_filter, tag_manager, anki_row_data)
+    # we can assume everything exists and works at this point since we checked for that earlier
+    note_type_id: NotetypeId | None = mw.col.models.id_for_name(config_filter.note_type)
+    assert note_type_id is not None
+    note_type_dict: NotetypeDict | None = mw.col.models.get(note_type_id)
+    assert note_type_dict is not None
+    existing_field_names: list[str] = model_manager.field_names(note_type_dict)
+    field_index: int = existing_field_names.index(config_filter.field)
+
+    for anki_row_data in _get_anki_data(am_config, note_type_id, tags).values():
+        card_data = AnkiCardData(
+            am_config=am_config,
+            tag_manager=tag_manager,
+            note_type_id=note_type_id,
+            expression_field_index=field_index,
+            anki_row_data=anki_row_data,
+        )
         card_data_dict[anki_row_data.card_id] = card_data
 
     return card_data_dict
 
 
 def _get_anki_data(
-    am_config: AnkiMorphsConfig, model_id: int | None, tags_object: dict[str, str]
+    am_config: AnkiMorphsConfig, model_id: NotetypeId, tags_object: dict[str, str]
 ) -> dict[int, AnkiDBRowData]:
     ################################################################
     #                        SQL QUERY
@@ -164,8 +180,8 @@ def _get_anki_data(
     #   WHERE notes.mid = 1691076536776 AND (cards.queue != -1 OR notes.tags LIKE '% am-known-manually %') AND notes.tags LIKE '% movie %'
     ################################################################
 
-    assert mw
-    assert mw.col.db
+    assert mw is not None
+    assert mw.col.db is not None
 
     ignore_suspended_cards = ""
     if am_config.preprocess_ignore_suspended_cards_content:
@@ -198,6 +214,8 @@ def _get_anki_data(
     )
 
     anki_db_row_data_dict: dict[int, AnkiDBRowData] = {}
+
     for anki_data in map(AnkiDBRowData, result):
         anki_db_row_data_dict[anki_data.card_id] = anki_data
+
     return anki_db_row_data_dict

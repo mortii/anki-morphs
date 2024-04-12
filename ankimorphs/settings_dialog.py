@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import functools
 import json
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from functools import partial
 from pathlib import Path
 from typing import Callable
 
 import aqt
-from anki.models import FieldDict, NotetypeId, NotetypeNameId
+from anki.models import NotetypeDict, NotetypeNameId
 from aqt import mw
 from aqt.qt import (  # pylint:disable=no-name-in-module
     QAbstractItemView,
@@ -22,16 +22,10 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from . import ankimorphs_config, ankimorphs_globals
+from . import ankimorphs_config, ankimorphs_globals, table_utils
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter, FilterTypeAlias
 from .message_box_utils import show_warning_box
 from .morphemizer import get_all_morphemizers
-from .table_utils import (
-    get_checkbox_widget,
-    get_combobox_index,
-    get_combobox_widget,
-    get_table_item,
-)
 from .tag_selection_dialog import TagSelectionDialog
 from .ui.settings_dialog_ui import Ui_SettingsDialog
 
@@ -105,7 +99,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
 
         # Semantic Versioning https://semver.org/
-        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 2.2.2")
+        self.ui.ankimorphs_version_label.setText("AnkiMorphs version: 2.2.3")
 
         self.show()
 
@@ -134,21 +128,29 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.note_filters_table.setRowHeight(row, 35)
 
         note_type_cbox = QComboBox(self.ui.note_filters_table)
-        note_type_cbox.addItems([model.name for model in self._note_type_models])
-        note_type_name_index = self._get_model_combobox_index(
-            self._note_type_models, config_filter.note_type
+        note_types_string: list[str] = [ankimorphs_globals.NONE_OPTION] + [
+            model.name for model in self._note_type_models
+        ]
+        note_type_cbox.addItems(note_types_string)
+        note_type_name_index = table_utils.get_combobox_index(
+            note_types_string, config_filter.note_type
         )
-        if note_type_name_index is not None:
-            note_type_cbox.setCurrentIndex(note_type_name_index)
+        note_type_cbox.setCurrentIndex(note_type_name_index)
+        selected_note_type: str = note_type_cbox.itemText(note_type_cbox.currentIndex())
 
-        current_model_id = self._note_type_models[note_type_cbox.currentIndex()].id
-        note_type = mw.col.models.get(NotetypeId(int(current_model_id)))
-        assert note_type
+        note_type_dict: NotetypeDict | None = mw.col.models.by_name(
+            name=selected_note_type
+        )
+        note_type_fields: list[str] = [ankimorphs_globals.NONE_OPTION]
 
-        fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
+        if note_type_dict is not None:
+            note_type_fields += mw.col.models.field_map(note_type_dict)
+
         field_cbox = QComboBox(self.ui.note_filters_table)
-        field_cbox.addItems(fields)
-        field_cbox_index = get_combobox_index(fields, config_filter.field)
+        field_cbox.addItems(note_type_fields)
+        field_cbox_index = table_utils.get_combobox_index(
+            note_type_fields, config_filter.field
+        )
         if field_cbox_index is not None:
             field_cbox.setCurrentIndex(field_cbox_index)
 
@@ -158,23 +160,27 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
 
         morphemizer_cbox = QComboBox(self.ui.note_filters_table)
-        morphemizers = [mizer.get_description() for mizer in self._morphemizers]
+        morphemizers: list[str] = [ankimorphs_globals.NONE_OPTION] + [
+            mizer.get_description() for mizer in self._morphemizers
+        ]
         morphemizer_cbox.addItems(morphemizers)
-        morphemizer_cbox_index = get_combobox_index(
+        morphemizer_cbox_index = table_utils.get_combobox_index(
             morphemizers, config_filter.morphemizer_description
         )
         if morphemizer_cbox_index is not None:
             morphemizer_cbox.setCurrentIndex(morphemizer_cbox_index)
 
         morph_priority_cbox = QComboBox(self.ui.note_filters_table)
-        frequency_files: list[str] = self._get_frequency_files()
-        morph_priority_cbox.addItems(["Collection frequency"])
+        frequency_files: list[str] = [
+            ankimorphs_globals.NONE_OPTION,
+            ankimorphs_globals.COLLECTION_FREQUENCY_OPTION,
+        ]
+        frequency_files += self._get_frequency_files()
         morph_priority_cbox.addItems(frequency_files)
-        morph_priority_cbox_index = get_combobox_index(
+        morph_priority_cbox_index = table_utils.get_combobox_index(
             frequency_files, config_filter.morph_priority
         )
         if morph_priority_cbox_index is not None:
-            morph_priority_cbox_index += 1  # to offset the added "Collection frequency"
             morph_priority_cbox.setCurrentIndex(morph_priority_cbox_index)
 
         read_checkbox = QCheckBox()
@@ -216,7 +222,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         active_note_types: set[str] = set()
 
         for row in range(self.ui.note_filters_table.rowCount()):
-            note_filter_note_type_widget: QComboBox = get_combobox_widget(
+            note_filter_note_type_widget: QComboBox = table_utils.get_combobox_widget(
                 self.ui.note_filters_table.cellWidget(
                     row, self._note_filter_note_type_column
                 )
@@ -224,7 +230,10 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             note_type = note_filter_note_type_widget.itemText(
                 note_filter_note_type_widget.currentIndex()
             )
-            if note_type in active_note_types:
+            if (
+                note_type in active_note_types
+                or note_type == ankimorphs_globals.NONE_OPTION
+            ):
                 continue
 
             active_note_types.add(note_type)
@@ -642,35 +651,35 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
         filters: list[FilterTypeAlias] = []
         for row in range(self.ui.note_filters_table.rowCount()):
-            note_type_cbox: QComboBox = get_combobox_widget(
+            note_type_cbox: QComboBox = table_utils.get_combobox_widget(
                 self.ui.note_filters_table.cellWidget(
                     row, self._note_filter_note_type_column
                 )
             )
-            tags_widget: QTableWidgetItem = get_table_item(
+            tags_widget: QTableWidgetItem = table_utils.get_table_item(
                 self.ui.note_filters_table.item(row, self._note_filter_tags_column)
             )
-            field_cbox: QComboBox = get_combobox_widget(
+            field_cbox: QComboBox = table_utils.get_combobox_widget(
                 self.ui.note_filters_table.cellWidget(
                     row, self._note_filter_field_column
                 )
             )
-            morphemizer_widget: QComboBox = get_combobox_widget(
+            morphemizer_widget: QComboBox = table_utils.get_combobox_widget(
                 self.ui.note_filters_table.cellWidget(
                     row, self._note_filter_morphemizer_column
                 )
             )
-            morph_priority_widget: QComboBox = get_combobox_widget(
+            morph_priority_widget: QComboBox = table_utils.get_combobox_widget(
                 self.ui.note_filters_table.cellWidget(
                     row, self._note_filter_morph_priority_column
                 )
             )
-            read_widget: QCheckBox = get_checkbox_widget(
+            read_widget: QCheckBox = table_utils.get_checkbox_widget(
                 self.ui.note_filters_table.cellWidget(
                     row, self._note_filter_read_column
                 )
             )
-            modify_widget: QCheckBox = get_checkbox_widget(
+            modify_widget: QCheckBox = table_utils.get_checkbox_widget(
                 self.ui.note_filters_table.cellWidget(
                     row, self._note_filter_modify_column
                 )
@@ -694,22 +703,14 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
             _filter: FilterTypeAlias = {
                 "note_type": note_type_name,
-                "note_type_id": self._note_type_models[
-                    note_type_cbox.currentIndex()
-                ].id,
                 "tags": json.loads(tags_widget.text()),
                 "field": field_cbox.itemText(field_cbox.currentIndex()),
-                "field_index": field_cbox.currentIndex(),
                 "morphemizer_description": morphemizer_widget.itemText(
                     morphemizer_widget.currentIndex()
                 ),
-                "morphemizer_name": self._morphemizers[
-                    morphemizer_widget.currentIndex()
-                ].get_name(),
                 "morph_priority": morph_priority_widget.itemText(
                     morph_priority_widget.currentIndex()
                 ),
-                "morph_priority_index": morph_priority_widget.currentIndex(),
                 "read": read_widget.isChecked(),
                 "modify": modify_widget.isChecked(),
                 "extra_score": extra_score,
@@ -745,17 +746,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
                         selected_fields.add(child.text(0))
                 break
         return selected_fields
-
-    def _update_fields_cbox(
-        self, field_cbox: QComboBox, note_type_cbox: QComboBox
-    ) -> None:
-        assert mw
-        current_model_id = self._note_type_models[note_type_cbox.currentIndex()].id
-        note_type = mw.col.models.get(NotetypeId(int(current_model_id)))
-        assert note_type
-        fields: dict[str, tuple[int, FieldDict]] = mw.col.models.field_map(note_type)
-        field_cbox.clear()
-        field_cbox.addItems(fields)
 
     def _on_tab_changed(self, index: int) -> None:
         # The extra fields settings are dependent on the note filters, so
@@ -806,7 +796,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             # tags cells are in column 1
             return
 
-        tags_widget: QTableWidgetItem = get_table_item(
+        tags_widget: QTableWidgetItem = table_utils.get_table_item(
             self.ui.note_filters_table.item(row, 1)
         )
         self.tag_selector.set_selected_tags_and_row(
@@ -826,6 +816,28 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         tooltip("Remember to save!", parent=self)
 
     @staticmethod
+    def _update_fields_cbox(field_cbox: QComboBox, note_type_cbox: QComboBox) -> None:
+        """
+        When the note type selection changes we repopulate the fields list,
+        and we set the selected field to (none)
+        """
+        assert mw
+
+        field_cbox.clear()
+        note_type_fields: list[str] = [ankimorphs_globals.NONE_OPTION]
+
+        selected_note_type: str = note_type_cbox.itemText(note_type_cbox.currentIndex())
+        note_type_dict: NotetypeDict | None = mw.col.models.by_name(
+            name=selected_note_type
+        )
+
+        if note_type_dict is not None:
+            note_type_fields += mw.col.models.field_map(note_type_dict)
+
+        field_cbox.addItems(note_type_fields)
+        field_cbox.setCurrentIndex(0)
+
+    @staticmethod
     def _get_frequency_files() -> list[str]:
         assert mw is not None
         path_generator = Path(
@@ -833,15 +845,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         ).glob("*.csv")
         frequency_files = [file.name for file in path_generator if file.is_file()]
         return frequency_files
-
-    @staticmethod
-    def _get_model_combobox_index(
-        items: Iterable[NotetypeNameId], filter_field: str
-    ) -> int | None:
-        for index, model in enumerate(items):
-            if model.name == filter_field:
-                return index
-        return None
 
     def closeWithCallback(  # pylint:disable=invalid-name
         self, callback: Callable[[], None]

@@ -24,6 +24,7 @@ import json
 from pathlib import Path
 from typing import Any, Union
 
+from anki.models import NotetypeId
 from anki.notes import Note
 from aqt import mw
 from aqt.qt import (  # pylint:disable=no-name-in-module
@@ -46,24 +47,13 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
     def __init__(self, _filter: FilterTypeAlias):
         try:
             self.has_error: bool = False
-
             self.note_type: str = _get_filter_str(_filter, "note_type")
-            self.note_type_id: int | None = _get_filter_optional_int(
-                _filter, "note_type_id"
-            )
             self.tags: dict[str, str] = _get_filter_str_from_json(_filter, "tags")
             self.field: str = _get_filter_str(_filter, "field")
-            self.field_index: int | None = _get_filter_optional_int(
-                _filter, "field_index"
-            )
             self.morphemizer_description: str = _get_filter_str(
                 _filter, "morphemizer_description"
             )
-            self.morphemizer_name: str = _get_filter_str(_filter, "morphemizer_name")
             self.morph_priority: str = _get_filter_str(_filter, "morph_priority")
-            self.morph_priority_index: int | None = _get_filter_optional_int(
-                _filter, "morph_priority_index"
-            )
             self.read: bool = _get_filter_bool(_filter, "read")
             self.modify: bool = _get_filter_bool(_filter, "modify")
             self.extra_unknowns: bool = _get_filter_bool(_filter, "extra_unknowns")
@@ -271,17 +261,21 @@ def get_modify_enabled_filters() -> list[AnkiMorphsConfigFilter]:
 
 
 def get_matching_modify_filter(note: Note) -> AnkiMorphsConfigFilter | None:
+    assert mw is not None
     modify_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()
     for am_filter in modify_filters:
-        if am_filter.note_type_id == note.mid:
+        note_type_id: NotetypeId | None = mw.col.models.id_for_name(am_filter.note_type)
+        if note_type_id == note.mid:
             return am_filter
     return None
 
 
 def get_matching_read_filter(note: Note) -> AnkiMorphsConfigFilter | None:
+    assert mw is not None
     read_filters: list[AnkiMorphsConfigFilter] = get_read_enabled_filters()
     for am_filter in read_filters:
-        if am_filter.note_type_id == note.mid:
+        note_type_id: NotetypeId | None = mw.col.models.id_for_name(am_filter.note_type)
+        if note_type_id == note.mid:
             return am_filter
     return None
 
@@ -359,12 +353,6 @@ def _get_filter_str_from_json(_filter: FilterTypeAlias, key: str) -> dict[str, s
     filter_item_dict = _filter[key]
     assert isinstance(filter_item_dict, dict)
     return filter_item_dict
-
-
-def _get_filter_optional_int(_filter: FilterTypeAlias, key: str) -> int | None:
-    filter_item = _filter[key]
-    assert isinstance(filter_item, int) or filter_item is None
-    return filter_item
 
 
 def show_critical_config_error() -> None:

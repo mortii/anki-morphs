@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from anki.collection import Collection, SearchNode
+from anki.models import NotetypeId
 from aqt import mw
 from aqt.operations import QueryOp
 
@@ -320,10 +321,11 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         return card_morph_map_cache
 
     def get_am_cards_data_dict(
-        self, note_type_id: int
+        self, note_type_id: NotetypeId | None
     ) -> dict[int, AnkiMorphsCardData]:
         assert mw is not None
         assert mw.col.db is not None
+        assert note_type_id is not None
 
         result = self.con.execute(
             """

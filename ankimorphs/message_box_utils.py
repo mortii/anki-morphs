@@ -29,3 +29,14 @@ def show_error_box(title: str, body: str, parent: QWidget) -> int:
     critical_box.setTextFormat(Qt.TextFormat.MarkdownText)
     answer: int = critical_box.exec()
     return answer
+
+
+def confirm_new_extra_fields_selection(parent: QWidget) -> bool:
+    title = "AnkiMorphs Confirmation"
+    text = (
+        'New "extra fields" have been selected in the settings, which will cause a full upload of your card'
+        " collection the next time you synchronize.\n\nAny reviews or changes made on other devices that have"
+        " yet to be synchronized will be lost when a full upload takes place.\n\nDo you still want to continue?"
+    )
+    answer = show_warning_box(title, text, parent=parent)
+    return answer

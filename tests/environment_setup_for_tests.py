@@ -22,6 +22,7 @@ from ankimorphs import (
     anki_data_utils,
     ankimorphs_config,
     ankimorphs_db,
+    ankimorphs_globals,
     generators_window,
     name_file_utils,
     recalc,
@@ -57,43 +58,65 @@ config_big_japanese_collection["preprocess_ignore_names_morphemizer"] = True
 config_big_japanese_collection["preprocess_ignore_round_bracket_contents"] = True
 config_big_japanese_collection["preprocess_ignore_slim_round_bracket_contents"] = True
 config_big_japanese_collection["filters"][0]["note_type"] = "japanese_sub2srs"
-config_big_japanese_collection["filters"][0]["note_type_id"] = 1691076536776
 config_big_japanese_collection["filters"][0]["field"] = "Japanese"
 config_big_japanese_collection["filters"][0][
     "morphemizer_description"
 ] = "AnkiMorphs: Japanese"
-config_big_japanese_collection["filters"][0]["morphemizer_name"] = "MecabMorphemizer"
 
 config_offset_enabled = copy.deepcopy(default_config_dict)
 config_offset_enabled["recalc_offset_new_cards"] = True
 config_offset_enabled["filters"][0]["note_type"] = "note-type-with-offset"
-config_offset_enabled["filters"][0]["note_type_id"] = 1712833018699
 config_offset_enabled["filters"][0]["field"] = "Front"
 config_offset_enabled["filters"][0][
     "morphemizer_description"
 ] = "AnkiMorphs: Language w/ Spaces"
-config_offset_enabled["filters"][0]["morphemizer_name"] = "SpaceMorphemizer"
 
 config_known_morphs_enabled = copy.deepcopy(default_config_dict)
 config_known_morphs_enabled["recalc_read_known_morphs_folder"] = True
 config_known_morphs_enabled["recalc_move_known_new_cards_to_the_end"] = False
 config_known_morphs_enabled["filters"][0]["note_type"] = "known-morphs-note-type"
-config_known_morphs_enabled["filters"][0]["note_type_id"] = 1712828138913
 config_known_morphs_enabled["filters"][0]["field"] = "Front"
 config_known_morphs_enabled["filters"][0][
     "morphemizer_description"
 ] = "AnkiMorphs: Language w/ Spaces"
-config_known_morphs_enabled["filters"][0]["morphemizer_name"] = "SpaceMorphemizer"
 
 config_ignore_names_txt_enabled = copy.deepcopy(default_config_dict)
 config_ignore_names_txt_enabled["preprocess_ignore_names_textfile"] = True
 config_ignore_names_txt_enabled["filters"][0]["note_type"] = "note-type-with-names"
-config_ignore_names_txt_enabled["filters"][0]["note_type_id"] = 1712834024208
 config_ignore_names_txt_enabled["filters"][0]["field"] = "Front"
 config_ignore_names_txt_enabled["filters"][0][
     "morphemizer_description"
 ] = "AnkiMorphs: Language w/ Spaces"
-config_ignore_names_txt_enabled["filters"][0]["morphemizer_name"] = "SpaceMorphemizer"
+
+config_wrong_note_type = copy.deepcopy(config_ignore_names_txt_enabled)
+config_wrong_note_type["filters"][0]["note_type"] = "random_wrong_value"
+
+config_wrong_field_name = copy.deepcopy(config_ignore_names_txt_enabled)
+config_wrong_field_name["filters"][0]["field"] = "random_wrong_value"
+
+config_wrong_morph_priority = copy.deepcopy(config_ignore_names_txt_enabled)
+config_wrong_morph_priority["filters"][0]["morph_priority"] = "random_wrong_value"
+
+config_wrong_morphemizer_description = copy.deepcopy(config_ignore_names_txt_enabled)
+config_wrong_morphemizer_description["filters"][0][
+    "morphemizer_description"
+] = "random_wrong_value"
+
+config_default_note_type = copy.deepcopy(config_ignore_names_txt_enabled)
+config_default_note_type["filters"][0]["note_type"] = ankimorphs_globals.NONE_OPTION
+
+config_default_field = copy.deepcopy(config_ignore_names_txt_enabled)
+config_default_field["filters"][0]["field"] = ankimorphs_globals.NONE_OPTION
+
+config_default_morph_priority = copy.deepcopy(config_ignore_names_txt_enabled)
+config_default_morph_priority["filters"][0][
+    "morph_priority"
+] = ankimorphs_globals.NONE_OPTION
+
+config_default_morphemizer = copy.deepcopy(config_ignore_names_txt_enabled)
+config_default_morphemizer["filters"][0][
+    "morphemizer_description"
+] = ankimorphs_globals.NONE_OPTION
 
 
 class MockDB(AnkiMorphsDB):
@@ -207,31 +230,31 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     patch_testing_variable.start()
     sys.path.append(str(fake_morphemizers_path))
 
-    # yield mock_mw.col, Collection(str(collection_path_original))
-    yield FakeEnvironment(
-        mock_mw=mock_mw,
-        config=_config_data,
-        original_collection=Collection(str(collection_path_original)),
-        modified_collection=mock_mw.col,
-    )
+    try:
+        yield FakeEnvironment(
+            mock_mw=mock_mw,
+            config=_config_data,
+            original_collection=Collection(str(collection_path_original)),
+            modified_collection=mock_mw.col,
+        )
+    finally:
+        mock_mw.col.close()
 
-    mock_mw.col.close()
+        patch_recalc_mw.stop()
+        patch_am_db_mw.stop()
+        patch_config_mw.stop()
+        patch_name_file_utils_mw.stop()
+        patch_anki_data_utils_mw.stop()
+        patch_reviewing_mw.stop()
+        patch_gd_mw.stop()
 
-    patch_recalc_mw.stop()
-    patch_am_db_mw.stop()
-    patch_config_mw.stop()
-    patch_name_file_utils_mw.stop()
-    patch_anki_data_utils_mw.stop()
-    patch_reviewing_mw.stop()
-    patch_gd_mw.stop()
+        patch_am_db.stop()
+        patch_tooltip.stop()
 
-    patch_am_db.stop()
-    patch_tooltip.stop()
+        patch_testing_variable.stop()
+        sys.path.remove(str(fake_morphemizers_path))
 
-    patch_testing_variable.stop()
-    sys.path.remove(str(fake_morphemizers_path))
-
-    os.remove(test_db_copy_path)
-    os.remove(collection_path_duplicate)
-    shutil.rmtree(collection_path_original_media)
-    shutil.rmtree(collection_path_duplicate_media)
+        Path.unlink(test_db_copy_path, missing_ok=True)
+        Path.unlink(collection_path_duplicate, missing_ok=True)
+        shutil.rmtree(collection_path_original_media, ignore_errors=True)
+        shutil.rmtree(collection_path_duplicate_media, ignore_errors=True)

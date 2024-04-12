@@ -36,16 +36,13 @@ class Morphemizer:
         """
         return "No information available"
 
-    def get_name(self) -> str:
-        return self.__class__.__name__
-
 
 ####################################################################################################
 # Morphemizer Helpers
 ####################################################################################################
 
 morphemizers: list[Morphemizer] | None = None
-morphemizers_by_name: dict[str, Morphemizer] = {}
+morphemizers_by_description: dict[str, Morphemizer] = {}
 
 
 def get_all_morphemizers() -> list[Morphemizer]:
@@ -69,14 +66,14 @@ def get_all_morphemizers() -> list[Morphemizer]:
 
         # update the 'names to morphemizers' dict while we are at it
         for morphemizer in morphemizers:
-            morphemizers_by_name[morphemizer.get_name()] = morphemizer
+            morphemizers_by_description[morphemizer.get_description()] = morphemizer
 
     return morphemizers
 
 
-def get_morphemizer_by_name(name: str) -> Morphemizer | None:
+def get_morphemizer_by_description(description: str) -> Morphemizer | None:
     get_all_morphemizers()
-    return morphemizers_by_name.get(name, None)
+    return morphemizers_by_description.get(description, None)
 
 
 ####################################################################################################

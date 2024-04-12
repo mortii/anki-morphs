@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 from typing import Any
 
 from aqt.qt import (  # pylint:disable=no-name-in-module
@@ -10,6 +9,8 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
     QTableWidgetItem,
     QWidget,
 )
+
+from . import ankimorphs_globals
 
 
 def get_combobox_widget(widget: QWidget | None) -> QComboBox:
@@ -32,11 +33,16 @@ def get_table_item(item: QTableWidgetItem | None) -> QTableWidgetItem:
     return item
 
 
-def get_combobox_index(items: Iterable[str], filter_field: str) -> int | None:
-    for index, field in enumerate(items):
-        if field == filter_field:
-            return index
-    return None
+def get_combobox_index(items: list[str], filter_field: str) -> int:
+    """
+    Returns the index if found, otherwise returns the index of the "(none)" option
+    """
+    index: int
+    try:
+        index = items.index(filter_field)
+    except ValueError:
+        index = items.index(ankimorphs_globals.NONE_OPTION)
+    return index
 
 
 class QTableWidgetIntegerItem(QTableWidgetItem):
