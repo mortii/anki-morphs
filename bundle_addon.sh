@@ -26,7 +26,7 @@ fi
 sed -i 's/DEV_MODE: bool = True/DEV_MODE: bool = False/g' ankimorphs_globals.py
 
 # Find and store the AnkiMorphs version number. Will be used in .addon file name
-version="v$(grep -Po '(?<=version: )[^\"]*' settings_dialog.py)"
+version="v$(grep -Po '__version__ = "\K[^"]*' ankimorphs_globals.py)"
 version=$(echo "$version" | tr . -)  # replace . with - for filename to work
 
 # meta.json is the local user's customized version of config.json, don't bundle this.
