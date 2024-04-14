@@ -459,7 +459,7 @@
              <item>
               <widget class="QCheckBox" name="recalcMoveKnownNewCardsToTheEndCheckBox">
                <property name="text">
-                <string>Move new cards that only have known morphs to the end of the due queue</string>
+                <string>Move new cards without unknown morphs to the end of the due queue</string>
                </property>
               </widget>
              </item>
@@ -923,7 +923,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="recalcUnknownFieldRadioButtonGroup"/>
   <buttongroup name="recalcToolbarKnownRadioButtonGroup"/>
+  <buttongroup name="recalcUnknownFieldRadioButtonGroup"/>
  </buttongroups>
 </ui>

@@ -12,8 +12,8 @@
   suspended on Recalc.
 * **Read files in 'known-morphs' folder and register morphs as known**:  
   Import known morphs from the known-morphs folder. Read more in [Settings Known Morphs](../setting-known-morphs.md).
-* **Move new cards that only have known morphs to the end of the due queue**:  
-  New cards that don't have unknown morphs will be given a `due` value of `2047483647` which is the max score given by AnkiMorphs.
+* **Move new cards without unknown morphs to the end of the due queue**:  
+  New cards that do not contain any unknown morphs will be given a `due` value of `2047483647` which is the max score given by AnkiMorphs.
 * **Shift new cards that are not the first to have the unknown morph**:  
   This option is an alternative to the [skip options](skip.md) that are only available on desktop, potentially making it
   easier to study new cards on mobile.  

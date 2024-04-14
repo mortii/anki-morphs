@@ -471,7 +471,7 @@ class Ui_SettingsDialog(object):
         self.recalcBeforeSyncCheckBox.setText(_translate("SettingsDialog", "Automatically Recalc before Anki sync"))
         self.recalcReadKnownMorphsFolderCheckBox.setText(_translate("SettingsDialog", "Read files in \'known-morphs\' folder and register morphs as known"))
         self.recalcSuspendKnownCheckBox.setText(_translate("SettingsDialog", "Suspend new cards with only known morphs"))
-        self.recalcMoveKnownNewCardsToTheEndCheckBox.setText(_translate("SettingsDialog", "Move new cards that only have known morphs to the end of the due queue"))
+        self.recalcMoveKnownNewCardsToTheEndCheckBox.setText(_translate("SettingsDialog", "Move new cards without unknown morphs to the end of the due queue"))
         self.shiftNewCardsCheckBox.setText(_translate("SettingsDialog", "Shift new cards that are not the first to have the unknown morph, by"))
         self.label_20.setText(_translate("SettingsDialog", "due, for the first"))
         self.label_21.setText(_translate("SettingsDialog", "morphs"))
