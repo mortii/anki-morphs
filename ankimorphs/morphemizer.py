@@ -4,8 +4,10 @@ import functools
 import re
 
 from . import jieba_wrapper, mecab_wrapper, spacy_wrapper
-from .mecab_wrapper import get_morphemes_mecab
 from .morpheme import Morpheme
+
+space_char_regex = re.compile(" ")
+
 
 ####################################################################################################
 # Base Class
@@ -80,8 +82,6 @@ def get_morphemizer_by_description(description: str) -> Morphemizer | None:
 # Mecab Morphemizer
 ####################################################################################################
 
-space_char_regex = re.compile(" ")
-
 
 class MecabMorphemizer(Morphemizer):
 
@@ -93,7 +93,7 @@ class MecabMorphemizer(Morphemizer):
         # Remove simple spaces that could be added by other add-ons and break the parsing.
         if space_char_regex.search(expression):
             expression = space_char_regex.sub("", expression)
-        return get_morphemes_mecab(expression)
+        return mecab_wrapper.get_morphemes_mecab(expression)
 
     def get_description(self) -> str:
         return "AnkiMorphs: Japanese"
@@ -166,23 +166,7 @@ class JiebaMorphemizer(Morphemizer):
         jieba_wrapper.import_jieba()
 
     def _get_morphemes_from_expr(self, expression: str) -> list[Morpheme]:
-        assert jieba_wrapper.posseg is not None
-        expression_morphs: list[Morpheme] = []
-
-        # only retain the cjk ideographs
-        expression = "".join(
-            re.findall(
-                f"[{jieba_wrapper.CJK_IDEOGRAPHS}]",
-                expression,
-            )
-        )
-
-        for jieba_segment in jieba_wrapper.posseg.cut(expression):
-            # chinese does not have inflections, so we use the lemma for both
-            _morph = Morpheme(lemma=jieba_segment.word, inflection=jieba_segment.word)
-            expression_morphs.append(_morph)
-
-        return expression_morphs
+        return jieba_wrapper.get_morphemes_jieba(expression)
 
     def get_description(self) -> str:
         return "AnkiMorphs: Chinese"

@@ -55,7 +55,6 @@ def test_mecab_morpheme_generation(fake_environment):  # pylint:disable=unused-a
 def test_jieba_morpheme_generation(fake_environment):  # pylint:disable=unused-argument
     morphemizer = get_morphemizer_by_description("AnkiMorphs: Chinese")
 
-    # sentence = "本当に重要な任務の時しか 動かない"
     sentence = "请您说得慢些好吗？"
     correct_morphs: set[Morpheme] = {
         Morpheme("吗", "吗"),
@@ -69,6 +68,20 @@ def test_jieba_morpheme_generation(fake_environment):  # pylint:disable=unused-a
 
     extracted_morphs = morphemizer.get_morphemes_from_expr(sentence)
     assert len(extracted_morphs) == 7
+
+    for morph in extracted_morphs:
+        assert morph in correct_morphs
+
+    sentence = "一，二，三，跳！"
+    correct_morphs: set[Morpheme] = {
+        Morpheme("一", "一"),
+        Morpheme("二", "二"),
+        Morpheme("三", "三"),
+        Morpheme("跳", "跳"),
+    }
+
+    extracted_morphs = morphemizer.get_morphemes_from_expr(sentence)
+    assert len(extracted_morphs) == 4
 
     for morph in extracted_morphs:
         assert morph in correct_morphs
