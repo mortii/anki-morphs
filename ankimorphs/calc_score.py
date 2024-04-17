@@ -17,23 +17,37 @@ _DEFAULT_SCORE: int = 2_047_483_647
 # The algorithm is calculated with the following equation
 #
 #    score = (
-#        usefulness_weight * usefulness_penalty
-#        + ave_difficulty_weight * ave_difficulty_penalty
-#        + num_morphs_weight * num_morphs_penalty
-#        + num_learning_weight * num_learning_penalty
+#        TOTAL_PRIORITY_FOR_UNKNOWN_WEIGHT * total_priority_for_unknown
+#        + AVG_PRIORITY_WEIGHT * avg_priority
+#        + LEARNING_MORPHS_DISTANCE_WEIGHT * (learning_morphs_distance**2)
+#        + ALL_MORPHS_DISTANCE_WEIGHT * (all_morphs_distance**2)
 #    )
-
-# Usefulness is measured by frequency of the unknown morph(s)
-#    The Lower (more frequent) is more useful
-# Difficulty is the average frequency of the morphs in the sentence
-#    Lower (the average morph is more frequent) is considered easier
-# Num morphs is the length of the sentence, measured by number of morphs
-#    The user can specify the target range of number of morphs
-#    The farther the length is from the target, the higher the penalty
-# Num learning is the number of morphs that are in the learning state
+#
+# Each of the factors has a weight (in CAPITALS) which determines
+#    how much that factor contributes to the final score.
+# A lower total score means that the card will show up sooner 
+#    in the new card list, so each of the factors can be thought
+#    of as a penalty.
+#
+# Priority is measured by frequency of the morph
+#    An unknown morph that has a higher frequency will have a lower
+#    priority score
+#
+# total_priority_for_unknown is the sum of the priority scores for
+#    all of the unknown morphs
+#
+# avg_priority is the sum of the priority scores for all of the
+#    known and learning scores
+#
+# learning_morphs_distance is the number of morphs that are in the learning state
 #    (this is for reinforcement of new / difficult morphs)
 #    The user can specify the target number of learning morphs
 #    The farther the number of learning morphs is from the target, the higher the penalty
+#
+# all_morphs_distance is how much shorter/longer the {read field
+#    / parse field / input field} is than the desired length range
+#    (measured in the number of morphs)
+
 
 #######################################
 # The following should be user selected
@@ -113,8 +127,8 @@ def get_card_score_and_unknowns_and_learning_status(  # pylint:disable=too-many-
     score = (
         TOTAL_PRIORITY_FOR_UNKNOWN_WEIGHT * total_priority_for_unknown
         + AVG_PRIORITY_WEIGHT * avg_priority
-        + LEARNING_MORPHS_DISTANCE_WEIGHT * learning_morphs_distance
-        + ALL_MORPHS_DISTANCE_WEIGHT * all_morphs_distance
+        + LEARNING_MORPHS_DISTANCE_WEIGHT * (learning_morphs_distance**2)
+        + ALL_MORPHS_DISTANCE_WEIGHT * (all_morphs_distance**2)
     )
 
     if score >= morph_unknown_penalty:
