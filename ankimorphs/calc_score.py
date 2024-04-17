@@ -45,14 +45,14 @@ TARGET_NUM_MORPHS_HIGH = 6
 TARGET_NUM_LEARNING = 1
 
 # Weights for the different criteria
-USEFULNESS_WEIGHT = 10
-AVG_DIFFICULTY_WEIGHT = 1
-NUM_LEARNING_WEIGHT = 5
-NUM_MORPHS_WEIGHT = 1
+TOTAL_PRIORITY_FOR_UNKNOWN_WEIGHT = 10
+AVG_PRIORITY_WEIGHT = 1
+LEARNING_MORPHS_DISTANCE_WEIGHT = 5
+ALL_MORPHS_DISTANCE_WEIGHT = 1
 
 
 #######################################
-def _get_length_penalty(num_morphs: int) -> int:
+def _get_distance_from_morphs_length_target(num_morphs: int) -> int:
     if num_morphs < TARGET_NUM_MORPHS_LOW:
         return TARGET_NUM_MORPHS_LOW - num_morphs
     if num_morphs > TARGET_NUM_MORPHS_HIGH:
@@ -64,7 +64,7 @@ def get_card_score_and_unknowns_and_learning_status(  # pylint:disable=too-many-
     am_config: AnkiMorphsConfig,
     card_id: int,
     card_morph_map_cache: dict[int, list[Morpheme]],
-    morph_priority: dict[str, int],
+    morph_priority: dict[str, int],  # todo: maybe name it frequency instead?
 ) -> tuple[int, list[Morpheme], bool]:
 
     morph_unknown_penalty: int = 1_000_000
@@ -78,9 +78,9 @@ def get_card_score_and_unknowns_and_learning_status(  # pylint:disable=too-many-
         # card does not have morphs or is buggy in some way
         return _DEFAULT_SCORE, unknown_morphs, has_learning_morph
 
-    usefulness_penalty = 0
+    total_priority_for_unknown = 0
     num_learning_morphs = 0
-    sentence_difficulty = 0
+    total_priority = 0
 
     for morph in card_morphs:
         assert morph.highest_learning_interval is not None
@@ -88,9 +88,9 @@ def get_card_score_and_unknowns_and_learning_status(  # pylint:disable=too-many-
         if morph.highest_learning_interval == 0:
             unknown_morphs.append(morph)
             if morph.lemma_and_inflection in morph_priority:
-                usefulness_penalty += morph_priority[morph.lemma_and_inflection]
+                total_priority_for_unknown += morph_priority[morph.lemma_and_inflection]
             else:
-                usefulness_penalty += no_morph_priority_value
+                total_priority_for_unknown += no_morph_priority_value
 
         elif morph.highest_learning_interval < am_config.recalc_interval_for_known:
             has_learning_morph = True
@@ -98,23 +98,23 @@ def get_card_score_and_unknowns_and_learning_status(  # pylint:disable=too-many-
 
         if morph.lemma_and_inflection not in morph_priority:
             # Heavily penalizes if a morph is not in frequency file
-            sentence_difficulty = no_morph_priority_value
+            total_priority = no_morph_priority_value
         else:
-            sentence_difficulty += morph_priority[morph.lemma_and_inflection]
+            total_priority += morph_priority[morph.lemma_and_inflection]
 
     if len(unknown_morphs) == 0 and am_config.recalc_move_known_new_cards_to_the_end:
         # Move stale cards to the end of the queue
         return _DEFAULT_SCORE, unknown_morphs, has_learning_morph
 
-    num_learning_penalty = abs(num_learning_morphs - TARGET_NUM_LEARNING)
-    num_morphs_penalty = _get_length_penalty(len(card_morphs))
-    avg_difficulty_penalty = int(sentence_difficulty / len(card_morphs))
+    learning_morphs_distance = abs(num_learning_morphs - TARGET_NUM_LEARNING)
+    all_morphs_distance = _get_distance_from_morphs_length_target(len(card_morphs))
+    avg_priority = int(total_priority / len(card_morphs))
 
     score = (
-        USEFULNESS_WEIGHT * usefulness_penalty
-        + AVG_DIFFICULTY_WEIGHT * avg_difficulty_penalty
-        + NUM_LEARNING_WEIGHT * num_learning_penalty
-        + NUM_MORPHS_WEIGHT * num_morphs_penalty
+        TOTAL_PRIORITY_FOR_UNKNOWN_WEIGHT * total_priority_for_unknown
+        + AVG_PRIORITY_WEIGHT * avg_priority
+        + LEARNING_MORPHS_DISTANCE_WEIGHT * learning_morphs_distance
+        + ALL_MORPHS_DISTANCE_WEIGHT * all_morphs_distance
     )
 
     if score >= morph_unknown_penalty:
@@ -129,9 +129,9 @@ def get_card_score_and_unknowns_and_learning_status(  # pylint:disable=too-many-
     print(f"card id: {card_id}")
     print(f"card_morphs: {[morph.inflection for morph in card_morphs]}")
     print(f"unknown_morphs: {len(unknown_morphs)}")
-    print(f"num_learning_penalty: {num_learning_penalty}")
-    print(f"num_morphs_penalty: {num_morphs_penalty}")
-    print(f"ave_difficulty_penalty: {avg_difficulty_penalty}")
+    print(f"num_learning_penalty: {learning_morphs_distance}")
+    print(f"num_morphs_penalty: {all_morphs_distance}")
+    print(f"ave_difficulty_penalty: {avg_priority}")
     print(f"score: {score}")
     print()
 
