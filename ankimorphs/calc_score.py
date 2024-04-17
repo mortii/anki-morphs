@@ -1,4 +1,4 @@
-from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
+from .ankimorphs_config import AnkiMorphsConfig
 from .morpheme import Morpheme
 
 # Anki stores the 'due' value of cards as a 32-bit integer
@@ -38,41 +38,29 @@ _DEFAULT_SCORE: int = 2047483647
 #######################################
 # The following should be user selected
 # Target length of sentences
-target_num_morphs_low = 4
-target_num_morphs_high = 6
+TARGET_NUM_MORPHS_LOW = 4
+TARGET_NUM_MORPHS_HIGH = 6
 
 # Target number of morphs in the "learning" state
-target_num_learning = 1
+TARGET_NUM_LEARNING = 1
 
 # Weights for the different criteria
-usefulness_weight = 10
-ave_difficulty_weight = 1
-num_learning_weight = 5
-num_morphs_weight = 1
+USEFULNESS_WEIGHT = 10
+AVG_DIFFICULTY_WEIGHT = 1
+NUM_LEARNING_WEIGHT = 5
+NUM_MORPHS_WEIGHT = 1
 
 
 #######################################
 def _get_length_penalty(num_morphs: int) -> int:
-    if num_morphs < target_num_morphs_low:
-        return target_num_morphs_low - num_morphs
-    elif num_morphs > target_num_morphs_high:
-        return num_morphs - target_num_morphs_high
-    else:
-        return 0
+    if num_morphs < TARGET_NUM_MORPHS_LOW:
+        return TARGET_NUM_MORPHS_LOW - num_morphs
+    if num_morphs > TARGET_NUM_MORPHS_HIGH:
+        return num_morphs - TARGET_NUM_MORPHS_HIGH
+    return 0
 
 
-def _get_ave_difficulty_penalty(sentence_difficulty: int, length: int) -> int:
-    return int(sentence_difficulty / length)
-
-
-def _get_learning_penalty(num_learning_morphs: int) -> int:
-    if num_learning_morphs == target_num_learning:
-        return 0
-    else:
-        return abs(num_learning_morphs - target_num_learning)
-
-
-def get_card_score_and_unknowns_and_learning_status(
+def get_card_score_and_unknowns_and_learning_status(  # pylint:disable=too-many-locals
     am_config: AnkiMorphsConfig,
     card_id: int,
     card_morph_map_cache: dict[int, list[Morpheme]],
@@ -104,7 +92,7 @@ def get_card_score_and_unknowns_and_learning_status(
             else:
                 usefulness_penalty += no_morph_priority_value
 
-        elif morph.highest_learning_interval <= am_config.recalc_interval_for_known:
+        elif morph.highest_learning_interval < am_config.recalc_interval_for_known:
             has_learning_morph = True
             num_learning_morphs += 1
 
@@ -118,23 +106,15 @@ def get_card_score_and_unknowns_and_learning_status(
         # Move stale cards to the end of the queue
         return _DEFAULT_SCORE, unknown_morphs, has_learning_morph
 
-    ##
-    # Num learning penalty
-    num_learning_penalty = _get_learning_penalty(num_learning_morphs)
-
-    # Num morphs penalty
+    num_learning_penalty = abs(num_learning_morphs - TARGET_NUM_LEARNING)
     num_morphs_penalty = _get_length_penalty(len(card_morphs))
+    avg_difficulty_penalty = int(sentence_difficulty / len(card_morphs))
 
-    ave_difficulty_penalty = _get_ave_difficulty_penalty(
-        sentence_difficulty, len(card_morphs)
-    )
-
-    ## Calculate the score
     score = (
-        usefulness_weight * usefulness_penalty
-        + ave_difficulty_weight * ave_difficulty_penalty
-        + num_learning_weight * num_learning_penalty
-        + num_morphs_weight * num_morphs_penalty
+        USEFULNESS_WEIGHT * usefulness_penalty
+        + AVG_DIFFICULTY_WEIGHT * avg_difficulty_penalty
+        + NUM_LEARNING_WEIGHT * num_learning_penalty
+        + NUM_MORPHS_WEIGHT * num_morphs_penalty
     )
 
     if score >= morph_unknown_penalty:
@@ -145,5 +125,14 @@ def get_card_score_and_unknowns_and_learning_status(
 
     # cap score to prevent 32-bit integer overflow
     score = min(score, _DEFAULT_SCORE)
+
+    print(f"card id: {card_id}")
+    print(f"card_morphs: {[morph.inflection for morph in card_morphs]}")
+    print(f"unknown_morphs: {len(unknown_morphs)}")
+    print(f"num_learning_penalty: {num_learning_penalty}")
+    print(f"num_morphs_penalty: {num_morphs_penalty}")
+    print(f"ave_difficulty_penalty: {avg_difficulty_penalty}")
+    print(f"score: {score}")
+    print()
 
     return score, unknown_morphs, has_learning_morph
