@@ -6,7 +6,7 @@ from .morpheme import Morpheme
 # overflow. To prevent overflow when cards are repositioned,
 # we decrement the second digit (from the left) of the max value,
 # which should give plenty of leeway (10^8).
-_DEFAULT_SCORE: int = 2047483647
+_DEFAULT_SCORE: int = 2_047_483_647
 
 
 ####################################################################################
@@ -67,7 +67,7 @@ def get_card_score_and_unknowns_and_learning_status(  # pylint:disable=too-many-
     morph_priority: dict[str, int],
 ) -> tuple[int, list[Morpheme], bool]:
 
-    morph_unknown_penalty: int = 1000000
+    morph_unknown_penalty: int = 1_000_000
     unknown_morphs: list[Morpheme] = []
     no_morph_priority_value = len(morph_priority) + 1
     has_learning_morph: bool = False
