@@ -25,7 +25,7 @@ _DEFAULT_SCORE: int = 2_047_483_647
 #
 # Each of the factors has a weight (in CAPITALS) which determines
 #    how much that factor contributes to the final score.
-# A lower total score means that the card will show up sooner 
+# A lower total score means that the card will show up sooner
 #    in the new card list, so each of the factors can be thought
 #    of as a penalty.
 #
