@@ -30,6 +30,8 @@ To use the generators you have to follow these three steps:
 These are the files that the generators are (mostly) able to read. Any files that don't have these extensions will be
 ignored.
 
+Please note that the files must be encoded in `UTF-8`. Using other encodings may lead to parsing errors or crashes.
+
 ### Selecting Root Folder
 
 ![generator-select-input.png](../../img/generator-select-input.png)
