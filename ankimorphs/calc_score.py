@@ -14,39 +14,50 @@ _DEFAULT_SCORE: int = 2_047_483_647
 ####################################################################################
 # The algorithm is calculated with the following equation
 #
-#    score = (
-#        TOTAL_PRIORITY_FOR_UNKNOWN_WEIGHT * total_priority_for_unknown
-#        + AVG_PRIORITY_WEIGHT * avg_priority
-#        + LEARNING_MORPHS_DISTANCE_WEIGHT * (learning_morphs_distance**2)
-#        + ALL_MORPHS_DISTANCE_WEIGHT * (all_morphs_distance**2)
-#    )
+#     score = (
+#             unknown_morphs_total_priority_score
+#             + all_morphs_avg_priority_score
+#             + all_morphs_total_priority_score
+#             + leaning_morphs_target_difference_score
+#             + all_morphs_target_difference_score
+#     )
 #
-# Each of the factors has a weight (in CAPITALS) which determines
-#    how much that factor contributes to the final score.
+# Each of the terms has an associated weight that can be used to bias
+# the term arbitrarily, e.g.:
+#
+#     unknown_morphs_total_priority_score = (
+#             TOTAL_PRIORITY_UNKNOWN_MORPHS_WEIGHT * total_priority_unknown_morphs
+#     )
+#
 # A lower total score means that the card will show up sooner
-#    in the new card list, so each of the factors can be thought
-#    of as a penalty.
-#
-# Priority is measured by frequency of the morph
-#    An unknown morph that has a higher frequency will have a lower
-#    priority score
-#
-# total_priority_for_unknown is the sum of the priority scores for
-#    all of the unknown morphs
-#
-# avg_priority is the sum of the priority scores for all of the
-#    known and learning scores
-#
-# learning_morphs_distance is the number of morphs that are in the learning state
-#    (this is for reinforcement of new / difficult morphs)
-#    The user can specify the target number of learning morphs
-#    The farther the number of learning morphs is from the target, the higher the penalty
-#
-# all_morphs_distance is how much shorter/longer the {read field
-#    / parse field / input field} is than the desired length range
-#    (measured in the number of morphs)
+# in the new card list, so each of the factors can be thought
+# of as a penalty.
 
-
+# Priority is measured by frequency of the morph. An unknown morph
+# that has a higher frequency will have a lower priority score
+#
+# TERMS IN THE ALGORITHM:
+#
+# - unknown_morphs_total_priority_score:
+#   The sum of the priority scores for all the unknown morphs.
+#   Note: We only implement a "total priority" version since cards should ideally
+#   only contain one unknown morph.
+#
+# - all_morphs_avg_priority_score:
+#   The average (mean) of the priority scores for all found morphs.
+#
+# - all_morphs_total_priority_score:
+#   The total priority scores for all found morphs
+#
+# - leaning_morphs_target_difference_score:
+#   The penalty given when the target number of learning morphs is not reached.
+#   This is used as a means of reinforcing new vocabulary.
+#   A piecewise quadratic equation is used for more flexibility, i.e. the punishment
+#   can be higher for overshooting the target vs undershooting, and vice-versa.
+#
+# - all_morphs_target_difference_score:
+#   Same as "leaning_morphs_target_difference_score", but for all morphs.
+#
 #######################################
 # The following should be user selected
 # Target length of sentences
@@ -64,11 +75,11 @@ TARGET_NUM_LEARNING_HIGH_COEFFICIENTS = (1, 0, 0)
 TARGET_NUM_LEARNING_LOW_COEFFICIENTS = (1, 0, 0)
 
 # Weights for the different criteria
-TOTAL_PRIORITY_FOR_UNKNOWN_WEIGHT = 10
-AVG_PRIORITY_WEIGHT = 1
-TOTAL_PRIORITY_WEIGHT = 0
-LEARNING_MORPHS_DISTANCE_WEIGHT = 5
-ALL_MORPHS_DISTANCE_WEIGHT = 1
+TOTAL_PRIORITY_UNKNOWN_MORPHS_WEIGHT = 10
+AVG_PRIORITY_ALL_MORPHS_WEIGHT = 1
+TOTAL_PRIORITY_ALL_MORPHS_WEIGHT = 0
+LEARNING_MORPHS_TARGET_DISTANCE_WEIGHT = 5
+ALL_MORPHS_TARGET_DISTANCE_WEIGHT = 1
 #######################################
 
 
@@ -110,13 +121,9 @@ def get_card_score_and_unknowns_and_learning_status(  # pylint:disable=too-many-
         # card does not have morphs or is buggy in some way
         return _DEFAULT_SCORE, unknown_morphs, has_learning_morph
 
-    print()
-    print(f"card id: {card_id}")
-    print(f"card_morphs: {[morph.inflection for morph in card_morphs]}")
-
-    total_priority_for_unknown = 0
+    total_priority_unknown_morphs = 0
     num_learning_morphs = 0
-    total_priority = 0
+    total_priority_all_morphs = 0
 
     for morph in card_morphs:
         assert morph.highest_learning_interval is not None
@@ -128,9 +135,11 @@ def get_card_score_and_unknowns_and_learning_status(  # pylint:disable=too-many-
         if morph.highest_learning_interval == 0:
             unknown_morphs.append(morph)
             if morph.lemma_and_inflection in morph_priority:
-                total_priority_for_unknown += morph_priority[morph.lemma_and_inflection]
+                total_priority_unknown_morphs += morph_priority[
+                    morph.lemma_and_inflection
+                ]
             else:
-                total_priority_for_unknown += no_morph_priority_value
+                total_priority_unknown_morphs += no_morph_priority_value
 
         elif morph.highest_learning_interval < am_config.recalc_interval_for_known:
             has_learning_morph = True
@@ -138,66 +147,77 @@ def get_card_score_and_unknowns_and_learning_status(  # pylint:disable=too-many-
 
         if morph.lemma_and_inflection not in morph_priority:
             # Heavily penalizes if a morph is not in frequency file
-            total_priority = no_morph_priority_value
+            total_priority_all_morphs = no_morph_priority_value
         else:
-            total_priority += morph_priority[morph.lemma_and_inflection]
+            total_priority_all_morphs += morph_priority[morph.lemma_and_inflection]
 
     if len(unknown_morphs) == 0 and am_config.recalc_move_known_new_cards_to_the_end:
         # Move stale cards to the end of the queue
         return _DEFAULT_SCORE, unknown_morphs, has_learning_morph
 
-    all_morphs_difference: int = _get_morph_targets_difference(
+    all_morphs_target_difference: int = _get_morph_targets_difference(
         num_morphs=len(card_morphs),
         high_target=TARGET_NUM_MORPHS_HIGH,
         low_target=TARGET_NUM_MORPHS_LOW,
         coefficients_high=TARGET_NUM_MORPHS_HIGH_COEFFICIENTS,
         coefficients_low=TARGET_NUM_MORPHS_LOW_COEFFICIENTS,
     )
-    learning_morphs_difference_score: int = _get_morph_targets_difference(
+    learning_morphs_target_difference: int = _get_morph_targets_difference(
         num_morphs=num_learning_morphs,
         high_target=TARGET_NUM_LEARNING_MORPHS_HIGH,
         low_target=TARGET_NUM_LEARNING_MORPHS_LOW,
         coefficients_high=TARGET_NUM_LEARNING_HIGH_COEFFICIENTS,
         coefficients_low=TARGET_NUM_LEARNING_LOW_COEFFICIENTS,
     )
-    all_morphs_avg_priority = int(total_priority / len(card_morphs))
+    all_morphs_avg_priority = int(total_priority_all_morphs / len(card_morphs))
 
     unknown_morphs_total_priority_score = (
-        TOTAL_PRIORITY_FOR_UNKNOWN_WEIGHT * total_priority_for_unknown
+        TOTAL_PRIORITY_UNKNOWN_MORPHS_WEIGHT * total_priority_unknown_morphs
     )
-    all_morphs_avg_priority_score = AVG_PRIORITY_WEIGHT * all_morphs_avg_priority
-    all_morphs_total_priority_score = TOTAL_PRIORITY_WEIGHT * total_priority
-    leaning_morphs_difference_score = (
-        LEARNING_MORPHS_DISTANCE_WEIGHT * learning_morphs_difference_score
+    all_morphs_avg_priority_score = (
+        AVG_PRIORITY_ALL_MORPHS_WEIGHT * all_morphs_avg_priority
     )
-    all_morphs_difference_score = ALL_MORPHS_DISTANCE_WEIGHT * all_morphs_difference
+    all_morphs_total_priority_score = (
+        TOTAL_PRIORITY_ALL_MORPHS_WEIGHT * total_priority_all_morphs
+    )
+    leaning_morphs_target_difference_score = (
+        LEARNING_MORPHS_TARGET_DISTANCE_WEIGHT * learning_morphs_target_difference
+    )
+    all_morphs_target_difference_score = (
+        ALL_MORPHS_TARGET_DISTANCE_WEIGHT * all_morphs_target_difference
+    )
 
     score = (
         unknown_morphs_total_priority_score
         + all_morphs_avg_priority_score
         + all_morphs_total_priority_score
-        + leaning_morphs_difference_score
-        + all_morphs_difference_score
+        + leaning_morphs_target_difference_score
+        + all_morphs_target_difference_score
     )
 
     if score >= morph_unknown_penalty:
         # Cap morph priority penalties as described in #(2.2)
         score = morph_unknown_penalty - 1
 
-    unknown_morphs_length_score = len(unknown_morphs) * morph_unknown_penalty
-    score += unknown_morphs_length_score
+    unknown_morphs_amount_score = len(unknown_morphs) * morph_unknown_penalty
+    score += unknown_morphs_amount_score
 
     # cap score to prevent 32-bit integer overflow
     score = min(score, _DEFAULT_SCORE)
 
+    print()
+    print(f"card id: {card_id}")
+    print(f"card_morphs: {[morph.inflection for morph in card_morphs]}")
     print(f"unknown_morphs: {len(unknown_morphs)}")
     print(f"learning_morphs: {num_learning_morphs}")
-    print(f"unknown_morphs_length_score: {unknown_morphs_length_score}")
+    print(f"unknown_morphs_amount_score: {unknown_morphs_amount_score}")
     print(f"unknown_morphs_total_priority_score: {unknown_morphs_total_priority_score}")
     print(f"all_morphs_avg_priority_score: {all_morphs_avg_priority_score}")
     print(f"all_morphs_total_priority_score: {all_morphs_total_priority_score}")
-    print(f"leaning_morphs_difference_score: {leaning_morphs_difference_score}")
-    print(f"all_morphs_difference_score: {all_morphs_difference_score}")
+    print(
+        f"leaning_morphs_target_difference_score: {leaning_morphs_target_difference_score}"
+    )
+    print(f"all_morphs_target_difference_score: {all_morphs_target_difference_score}")
     print(f"score: {score}")
 
     return score, unknown_morphs, has_learning_morph
