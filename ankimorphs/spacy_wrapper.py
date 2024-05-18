@@ -341,7 +341,10 @@ def get_installed_models() -> list[str]:
             else:
                 spacy_bin_path = os.path.join(spacy_path, "bin")
                 spacy_site_packages_path = os.path.join(
-                    spacy_path, "lib", "python3.9", "site-packages"
+                    spacy_path,
+                    "lib",
+                    f"python{sys.version_info.major}.{sys.version_info.minor}",
+                    "site-packages",
                 )
 
             sys.path.append(spacy_bin_path)

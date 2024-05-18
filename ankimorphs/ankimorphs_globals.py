@@ -4,7 +4,7 @@ If a constants or a variable is only used in one file, then it should be declare
 that file and not here.
 """
 
-__version__ = "2.2.4"
+__version__ = "2.2.5"
 
 DEV_MODE: bool = False
 
