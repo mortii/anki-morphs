@@ -343,9 +343,11 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
     # the cache needs to have a max size to maintain garbage collection
     @functools.lru_cache(maxsize=131072)
-    def get_morph_collection_priority(self) -> dict[str, int]:
+    def get_morph_collection_priorities(
+        self, am_config: AnkiMorphsConfig
+    ) -> dict[str, int]:
         # Sorting the morphs (ORDER BY) is crucial to avoid bugs
-        morph_priority = self.con.execute(
+        morphs_query = self.con.execute(
             """
             SELECT morph_lemma, morph_inflection
             FROM Card_Morph_Map
@@ -353,19 +355,33 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             """,
         ).fetchall()
 
-        temp_list = []
-        for row in morph_priority:
-            temp_list.append(row[0] + row[1])
+        intermediate_morph_list = []
 
-        card_morph_map_cache_sorted: dict[str, int] = dict(
-            Counter(temp_list).most_common()
+        if am_config.algorithm_lemma_priority:
+            for row in morphs_query:
+                intermediate_morph_list.append(row[0] + row[0])  # lemma + lemma
+        else:
+            for row in morphs_query:
+                intermediate_morph_list.append(row[0] + row[1])  # lemma + inflection
+
+        morphs_sorted_amount: dict[str, int] = dict(
+            Counter(intermediate_morph_list).most_common()
         )
 
-        # reverse the values, the lower the priority number is, the more it is prioritized
-        for index, key in enumerate(card_morph_map_cache_sorted):
-            card_morph_map_cache_sorted[key] = index
+        morph_priorities: dict[str, int] = {}
 
-        return card_morph_map_cache_sorted
+        # print("local morph priorities")
+
+        # Reverse the values, the lower the priority number is, the more it is prioritized.
+        # Note: we can use a shortcut of providing the same priority (index) for both
+        # the lemma and the inflection since we generate the intermediate lists from
+        # scratch every recalc, so which ever ends up being used will have the correct value.
+        for index, key in enumerate(morphs_sorted_amount):
+            # morphs_sorted_amount[key] = index+
+            morph_priorities[key] = index
+            # print(f"key: {key}, index: {index}")
+
+        return morph_priorities
 
     def print_table(self, table: str) -> None:
         try:

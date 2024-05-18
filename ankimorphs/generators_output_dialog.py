@@ -11,11 +11,21 @@ from .ui.generator_output_dialog_ui import Ui_GeneratorOutputDialog
 class OutputOptions:
     def __init__(self, ui: Ui_GeneratorOutputDialog):
         self.output_path: Path = Path(ui.outputLineEdit.text())
+
+        self.store_only_lemma: bool = ui.storeOnlyMorphLemmaRadioButton.isChecked()
+        self.store_lemma_and_inflection: bool = (
+            ui.storeMorphLemmaAndInflectionRadioButton.isChecked()
+        )
+
         self.min_occurrence: bool = ui.minOccurrenceRadioButton.isChecked()
         self.comprehension: bool = ui.comprehensionRadioButton.isChecked()
 
-        self.min_occurrence_threshold = ui.minOccurrenceSpinBox.value()
-        self.comprehension_threshold = ui.comprehensionSpinBox.value()
+        self.min_occurrence_threshold: int = ui.minOccurrenceSpinBox.value()
+        self.comprehension_threshold: int = ui.comprehensionSpinBox.value()
+
+        self.selected_extra_occurrences_column: bool = (
+            ui.addOccurrencesColumnCheckBox.isChecked()
+        )
 
 
 class GeneratorOutputDialog(QDialog):
@@ -36,6 +46,9 @@ class GeneratorOutputDialog(QDialog):
         self.ui.minOccurrenceRadioButton.setChecked(True)
         # also disable the spinbox of the non-selected option
         self.ui.comprehensionSpinBox.setDisabled(True)
+
+        self.ui.storeMorphLemmaAndInflectionRadioButton.setChecked(True)
+        self.ui.storeOnlyMorphLemmaRadioButton.setChecked(False)
 
         self.ui.selectFolderPushButton.clicked.connect(self._on_output_button_clicked)
         self.ui.okPushButton.clicked.connect(self._on_ok_button_clicked)

@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>923</width>
-    <height>484</height>
+    <height>511</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -426,89 +426,46 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="tab">
+       <widget class="QWidget" name="algorithm_tab">
         <attribute name="title">
          <string>Algorithm</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_31">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_26">
+          <layout class="QVBoxLayout" name="verticalLayout_27">
            <property name="bottomMargin">
             <number>10</number>
            </property>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_15">
-             <item>
-              <widget class="QLabel" name="label_24">
-               <property name="text">
-                <string>Upper target number of all morphs</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox_6"/>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_25">
-               <property name="text">
-                <string>Coefficients (a, b, c)</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox_7"/>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox_8"/>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox_9"/>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_15">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
+            <widget class="QLabel" name="label_35">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Morph Priority:</string>
+             </property>
+            </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_14">
+            <layout class="QHBoxLayout" name="horizontalLayout_20">
              <item>
-              <widget class="QLabel" name="label_22">
+              <widget class="QRadioButton" name="priorityLemmaRadioButton">
                <property name="text">
-                <string>Lower target number of all morphs</string>
+                <string>Lemma</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QSpinBox" name="spinBox"/>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_23">
+              <widget class="QRadioButton" name="priorityInflectionRadioButton">
                <property name="text">
-                <string>Coefficients (a, b, c)</string>
+                <string>Inflection</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QSpinBox" name="spinBox_3"/>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox_4"/>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox_5"/>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_14">
+              <spacer name="horizontalSpacer_20">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
@@ -525,100 +482,10 @@
           </layout>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_27">
+          <layout class="QVBoxLayout" name="verticalLayout_34">
            <property name="bottomMargin">
-            <number>15</number>
+            <number>10</number>
            </property>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_18">
-             <item>
-              <widget class="QLabel" name="label_30">
-               <property name="text">
-                <string>Upper target number of learning morphs</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox_18"/>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_31">
-               <property name="text">
-                <string>Coefficients (a, b, c)</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox_19"/>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox_20"/>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox_21"/>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_16">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_19">
-             <item>
-              <widget class="QLabel" name="label_32">
-               <property name="text">
-                <string>Lower target number of learning morphs</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox_2"/>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_33">
-               <property name="text">
-                <string>Coefficients (a, b, c)</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox_22"/>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox_23"/>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox_24"/>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_17">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_30">
            <item>
             <widget class="QLabel" name="label_7">
              <property name="font">
@@ -636,16 +503,9 @@
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_28">
                <item>
-                <widget class="QLabel" name="label_26">
-                 <property name="text">
-                  <string>Total priority unknown morphs</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QLabel" name="label_27">
                  <property name="text">
-                  <string>Average priority all morphs</string>
+                  <string>Total priority unknown morphs</string>
                  </property>
                 </widget>
                </item>
@@ -663,8 +523,42 @@
                  </property>
                 </widget>
                </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_29">
+               <property name="rightMargin">
+                <number>7</number>
+               </property>
                <item>
-                <widget class="QLabel" name="label_34">
+                <widget class="QSpinBox" name="totalPriorityUknownMorphsSpinBox"/>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="totalPriorityAllMorphsSpinBox"/>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="allMorphsTargetDistanceSpinBox"/>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_32">
+               <item>
+                <widget class="QLabel" name="label_26">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_38">
+                 <property name="text">
+                  <string>Average priority all morphs</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_41">
                  <property name="text">
                   <string>Learning morphs target distance</string>
                  </property>
@@ -673,21 +567,19 @@
               </layout>
              </item>
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout_29">
+              <layout class="QVBoxLayout" name="verticalLayout_33">
                <item>
-                <widget class="QSpinBox" name="spinBox_10"/>
+                <widget class="QLabel" name="label_34">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
                </item>
                <item>
-                <widget class="QSpinBox" name="spinBox_11"/>
+                <widget class="QSpinBox" name="averagePriorityAllMorphsSpinBox"/>
                </item>
                <item>
-                <widget class="QSpinBox" name="spinBox_12"/>
-               </item>
-               <item>
-                <widget class="QSpinBox" name="spinBox_13"/>
-               </item>
-               <item>
-                <widget class="QSpinBox" name="spinBox_14"/>
+                <widget class="QSpinBox" name="learningMorphsTargetDistanceSpinBox"/>
                </item>
               </layout>
              </item>
@@ -698,11 +590,231 @@
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
+                 <width>878</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_30">
+           <item>
+            <widget class="QLabel" name="label_36">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Morph Targets:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_21">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_15">
+               <property name="rightMargin">
+                <number>7</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_24">
+                 <property name="text">
+                  <string>Upper target number of all morphs</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="upperTargetAllMorphsSpinBox"/>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_25">
+               <property name="text">
+                <string>Coefficients (a, b, c)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="upperTargetAllMorphsCoefficientA"/>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="upperTargetAllMorphsCoefficientB"/>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="upperTargetAllMorphsCoefficientC"/>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_14">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
                  <width>40</width>
                  <height>20</height>
                 </size>
                </property>
               </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_22">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_14">
+               <property name="rightMargin">
+                <number>7</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_22">
+                 <property name="text">
+                  <string>Lower target number of all morphs</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="lowerTargetAllMorphsSpinBox"/>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_23">
+               <property name="text">
+                <string>Coefficients (a, b, c)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="lowerTargetAllMorphsCoefficientA"/>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="lowerTargetAllMorphsCoefficientB"/>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="lowerTargetAllMorphsCoefficientC"/>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_15">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_26">
+             <property name="topMargin">
+              <number>5</number>
+             </property>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_23">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_18">
+                 <item>
+                  <widget class="QLabel" name="label_30">
+                   <property name="text">
+                    <string>Upper target number of learning morphs</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="upperTargetLearningMorphsSpinBox"/>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_31">
+                 <property name="text">
+                  <string>Coefficients (a, b, c)</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="upperTargetLearningMorphsCoefficientA"/>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="upperTargetLearningMorphsCoefficientB"/>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="upperTargetLearningMorphsCoefficientC"/>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_16">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_24">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_19">
+                 <property name="rightMargin">
+                  <number>7</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_32">
+                   <property name="text">
+                    <string>Lower target number of learning morphs</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="lowerTargetLearningMorphsSpinBox"/>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_33">
+                 <property name="text">
+                  <string>Coefficients (a, b, c)</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="lowerTargetLearningMorphsCoefficientA"/>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="lowerTargetLearningMorphsCoefficientB"/>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="lowerTargetLearningMorphsCoefficientC"/>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_17">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
              </item>
             </layout>
            </item>
@@ -724,7 +836,7 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_17">
            <item>
-            <widget class="QPushButton" name="pushButton">
+            <widget class="QPushButton" name="restoreAlgorithmPushButton">
              <property name="text">
               <string>Restore Default Algorithm Settings</string>
              </property>

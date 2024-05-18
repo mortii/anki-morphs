@@ -44,6 +44,10 @@ def new_extra_fields_are_selected() -> bool:
             if ankimorphs_globals.EXTRA_FIELD_SCORE not in existing_field_names:
                 return True
 
+        if config_filter.extra_score_terms:
+            if ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS not in existing_field_names:
+                return True
+
     return False
 
 
@@ -88,6 +92,15 @@ def add_extra_fields_to_note_type(
             model_manager.update_dict(note_type_dict)
             did_add_fields = True
 
+    if config_filter.extra_score_terms:
+        if ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS not in existing_field_names:
+            new_field = model_manager.new_field(
+                ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS
+            )
+            model_manager.add_field(note_type_dict, new_field)
+            model_manager.update_dict(note_type_dict)
+            did_add_fields = True
+
     return did_add_fields
 
 
@@ -127,6 +140,17 @@ def update_score_field(
 ) -> None:
     index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_SCORE][0]
     note.fields[index] = str(score)
+
+
+def update_score_terms_field(
+    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    note: Note,
+    score_terms: str,
+) -> None:
+    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS][
+        0
+    ]
+    note.fields[index] = score_terms
 
 
 def update_highlighted_field(  # pylint:disable=too-many-arguments

@@ -33,7 +33,6 @@ class Morpheme:
         self.part_of_speech = part_of_speech  # determined by mecab tool. for example: u'動詞' or u'助動詞', u'形容詞'
         self.sub_part_of_speech = sub_part_of_speech
         self.highest_learning_interval: int | None = highest_learning_interval
-        self.lemma_and_inflection: str = self.lemma + self.inflection
 
     def __eq__(self, other: object) -> bool:
         assert isinstance(other, Morpheme)
@@ -57,13 +56,37 @@ class MorphOccurrence:
         "occurrence",
     )
 
-    def __init__(self, morph: Morpheme) -> None:
+    def __init__(self, morph: Morpheme, occurrence: int = 1) -> None:
         self.morph: Morpheme = morph
-        self.occurrence: int = 1
+        self.occurrence: int = occurrence
 
     def __add__(self, other: MorphOccurrence) -> MorphOccurrence:
         self.occurrence += other.occurrence
         return self
+
+
+# class MorphPriority:
+#     __slots__ = (
+#         "lemma_priority",
+#         "inflection_priority",
+#     )
+#
+#     def __init__(
+#         self,
+#         lemma_priority: int | str | None = None,
+#         inflection_priority: int | str | None = None,
+#     ) -> None:
+#         try:
+#             self.lemma_priority: int | None = (
+#                 int(lemma_priority) if lemma_priority is not None else None
+#             )
+#             self.inflection_priority: int | None = (
+#                 int(inflection_priority) if inflection_priority is not None else None
+#             )
+#         except ValueError as error:
+#             # failed to convert to string
+#             # todo handle this. Create a MalformedFrequencyFileException
+#             raise error
 
 
 # mypy crashes if the files don't run something...

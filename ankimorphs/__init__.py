@@ -39,6 +39,7 @@ from . import (
     ankimorphs_config,
     ankimorphs_globals,
     browser_utils,
+    morph_priority_utils,
     name_file_utils,
     recalc,
     reviewing_utils,

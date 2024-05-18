@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import pprint
 import time
 from functools import partial
 from pathlib import Path
@@ -26,15 +27,17 @@ from . import spacy_wrapper
 from .anki_data_utils import AnkiCardData, AnkiMorphsCardData
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
-from .calc_score import get_card_score_and_unknowns_and_learning_status
+from .calc_score import _DEFAULT_SCORE, ScoreValues, get_card_score_values
 from .exceptions import (
     AnkiFieldNotFound,
     AnkiNoteTypeNotFound,
     CancelledOperationException,
     DefaultSettingsException,
+    FrequencyFileMalformedException,
     FrequencyFileNotFoundException,
     MorphemizerNotFoundException,
 )
+from .morph_priority_utils import _get_morph_priority
 from .morpheme import Morpheme
 from .morphemizer import SpacyMorphemizer
 from .text_preprocessing import (
@@ -42,13 +45,6 @@ from .text_preprocessing import (
     get_processed_morphemizer_morphs,
     get_processed_spacy_morphs,
 )
-
-# Anki stores the 'due' value of cards as a 32-bit integer
-# on the backend, with '2147483647' being the max value before
-# overflow. To prevent overflow when cards are repositioned,
-# we decrement the second digit (from the left) of the max value,
-# which should give plenty of leeway (10^8).
-_DEFAULT_SCORE: int = 2047483647
 
 
 def recalc() -> None:
@@ -121,7 +117,7 @@ def _check_selected_settings_for_errors(
             config_filter.note_type,
             config_filter.field,
             config_filter.morphemizer_description,
-            config_filter.morph_priority,
+            config_filter.morph_priority_selection,
         }
 
         if ankimorphs_globals.NONE_OPTION in options_possibly_containing_none:
@@ -147,13 +143,13 @@ def _check_selected_settings_for_errors(
             return MorphemizerNotFoundException(config_filter.morphemizer_description)
 
         if (
-            config_filter.morph_priority
+            config_filter.morph_priority_selection
             != ankimorphs_globals.COLLECTION_FREQUENCY_OPTION
         ):
             frequency_file_path = Path(
                 mw.pm.profileFolder(),
                 ankimorphs_globals.FREQUENCY_FILES_DIR_NAME,
-                config_filter.morph_priority,
+                config_filter.morph_priority_selection,
             )
             if not frequency_file_path.is_file():
                 return FrequencyFileNotFoundException(path=str(frequency_file_path))
@@ -384,7 +380,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
     modified_notes: list[Note] = []
 
     # clear the morph collection frequency cache between recalcs
-    am_db.get_morph_collection_priority.cache_clear()
+    am_db.get_morph_collection_priorities.cache_clear()
 
     for config_filter in modify_enabled_config_filters:
         note_type_dict: NotetypeDict | None = model_manager.by_name(
@@ -404,7 +400,13 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
         note_type_field_name_dict: dict[str, tuple[int, FieldDict]] = (
             model_manager.field_map(note_type_dict)
         )
-        morph_priority: dict[str, int] = _get_morph_priority(am_db, config_filter)
+        morph_priorities: dict[str, int] = _get_morph_priority(
+            am_db, am_config, config_filter
+        )
+
+        # print("morph priorities")
+        # pprint.pp(morph_priorities)
+
         cards_data_dict: dict[int, AnkiMorphsCardData] = am_db.get_am_cards_data_dict(
             note_type_id=model_manager.id_for_name(config_filter.note_type)
         )
@@ -431,38 +433,43 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
             original_tags: list[str] = note.tags.copy()
 
             if card.type == CARD_TYPE_NEW:
-                (
-                    card_score,
-                    card_unknown_morphs,
-                    card_has_learning_morphs,
-                ) = get_card_score_and_unknowns_and_learning_status(
+                score_values: ScoreValues = get_card_score_values(
                     am_config,
                     card_id,
                     card_morph_map_cache,
-                    morph_priority,
+                    morph_priorities,
                 )
 
-                card.due = card_score
+                card.due = score_values.card_score
 
                 _update_tags_and_queue(
                     am_config,
                     note,
                     card,
-                    len(card_unknown_morphs),
-                    card_has_learning_morphs,
+                    len(score_values.card_unknown_morphs),
+                    score_values.card_has_learning_morphs,
                 )
 
                 if config_filter.extra_unknowns:
                     extra_field_utils.update_unknowns_field(
-                        am_config, note_type_field_name_dict, note, card_unknown_morphs
+                        am_config,
+                        note_type_field_name_dict,
+                        note,
+                        score_values.card_unknown_morphs,
                     )
                 if config_filter.extra_unknowns_count:
                     extra_field_utils.update_unknowns_count_field(
-                        note_type_field_name_dict, note, card_unknown_morphs
+                        note_type_field_name_dict,
+                        note,
+                        score_values.card_unknown_morphs,
                     )
                 if config_filter.extra_score:
                     extra_field_utils.update_score_field(
-                        note_type_field_name_dict, note, card_score
+                        note_type_field_name_dict, note, score_values.card_score
+                    )
+                if config_filter.extra_score_terms:
+                    extra_field_utils.update_score_terms_field(
+                        note_type_field_name_dict, note, score_values.score_terms
                     )
 
             if config_filter.extra_highlighted:
@@ -613,47 +620,6 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
     return modified_cards
 
 
-def _get_morph_priority(
-    am_db: AnkiMorphsDB,
-    am_config_filter: AnkiMorphsConfigFilter,
-) -> dict[str, int]:
-    if (
-        am_config_filter.morph_priority
-        == ankimorphs_globals.COLLECTION_FREQUENCY_OPTION
-    ):
-        morph_priority = am_db.get_morph_collection_priority()
-    else:
-        morph_priority = _get_morph_frequency_file_priority(
-            am_config_filter.morph_priority
-        )
-    return morph_priority
-
-
-def _get_morph_frequency_file_priority(frequency_file_name: str) -> dict[str, int]:
-    assert mw is not None
-
-    morph_priority: dict[str, int] = {}
-    frequency_file_path = Path(
-        mw.pm.profileFolder(),
-        ankimorphs_globals.FREQUENCY_FILES_DIR_NAME,
-        frequency_file_name,
-    )
-    try:
-        with open(frequency_file_path, mode="r+", encoding="utf-8") as csvfile:
-            morph_reader = csv.reader(csvfile, delimiter=",")
-            next(morph_reader, None)  # skip the headers
-            for index, row in enumerate(morph_reader):
-                if index > _DEFAULT_SCORE:
-                    # the scoring algorithm ignores values > 50K
-                    # so any rows after this will be ignored anyway
-                    break
-                key = row[0] + row[1]
-                morph_priority[key] = index
-    except FileNotFoundError as error:
-        raise FrequencyFileNotFoundException(str(frequency_file_path)) from error
-    return morph_priority
-
-
 # todo: temporarily disabled while working on the new algorithm
 # def _get_card_score_and_unknowns_and_learning_status(
 #     am_config: AnkiMorphsConfig,
@@ -797,6 +763,7 @@ def _on_failure(
         | MorphemizerNotFoundException
         | CancelledOperationException
         | FrequencyFileNotFoundException
+        | FrequencyFileMalformedException
         | AnkiNoteTypeNotFound
         | AnkiFieldNotFound
     ),
@@ -843,6 +810,11 @@ def _on_failure(
 
     elif isinstance(error, FrequencyFileNotFoundException):
         text = f"Frequency file: {error.path} not found!"
+    elif isinstance(error, FrequencyFileMalformedException):
+        text = (
+            f"Frequency file: {error.path} is malformed (possibly outdated).\n\n"
+            f"Please generate a new one."
+        )
     else:
         raise error
 

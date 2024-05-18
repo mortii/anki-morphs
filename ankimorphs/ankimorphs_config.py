@@ -53,7 +53,9 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
             self.morphemizer_description: str = _get_filter_str(
                 _filter, "morphemizer_description"
             )
-            self.morph_priority: str = _get_filter_str(_filter, "morph_priority")
+            self.morph_priority_selection: str = _get_filter_str(
+                _filter, "morph_priority"
+            )  # todo rename this
             self.read: bool = _get_filter_bool(_filter, "read")
             self.modify: bool = _get_filter_bool(_filter, "modify")
             self.extra_unknowns: bool = _get_filter_bool(_filter, "extra_unknowns")
@@ -64,6 +66,9 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
                 _filter, "extra_highlighted"
             )
             self.extra_score: bool = _get_filter_bool(_filter, "extra_score")
+            self.extra_score_terms: bool = _get_filter_bool(
+                _filter, "extra_score_terms"
+            )
 
         except (KeyError, AssertionError):
             self.has_error = True
@@ -180,6 +185,87 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
             )
             self.tag_learn_card_now: str = _get_string_config(
                 "tag_learn_card_now", is_default
+            )
+            self.algorithm_lemma_priority: bool = _get_bool_config(
+                "algorithm_lemma_priority", is_default
+            )
+            self.algorithm_inflection_priority: bool = _get_bool_config(
+                "algorithm_inflection_priority", is_default
+            )
+            self.algorithm_total_priority_unknown_morphs: int = _get_int_config(
+                "algorithm_total_priority_unknown_morphs", is_default
+            )
+            self.algorithm_total_priority_all_morphs: int = _get_int_config(
+                "algorithm_total_priority_all_morphs", is_default
+            )
+            self.algorithm_average_priority_all_morphs: int = _get_int_config(
+                "algorithm_average_priority_all_morphs", is_default
+            )
+            self.algorithm_all_morphs_target_distance: int = _get_int_config(
+                "algorithm_all_morphs_target_distance", is_default
+            )
+            self.algorithm_learning_morphs_target_distance: int = _get_int_config(
+                "algorithm_learning_morphs_target_distance", is_default
+            )
+            self.algorithm_upper_target_all_morphs: int = _get_int_config(
+                "algorithm_upper_target_all_morphs", is_default
+            )
+            self.algorithm_upper_target_all_morphs_coefficient_a: int = _get_int_config(
+                "algorithm_upper_target_all_morphs_coefficient_a", is_default
+            )
+            self.algorithm_upper_target_all_morphs_coefficient_b: int = _get_int_config(
+                "algorithm_upper_target_all_morphs_coefficient_b", is_default
+            )
+            self.algorithm_upper_target_all_morphs_coefficient_c: int = _get_int_config(
+                "algorithm_upper_target_all_morphs_coefficient_c", is_default
+            )
+            self.algorithm_lower_target_all_morphs: int = _get_int_config(
+                "algorithm_lower_target_all_morphs", is_default
+            )
+            self.algorithm_lower_target_all_morphs_coefficient_a: int = _get_int_config(
+                "algorithm_lower_target_all_morphs_coefficient_a", is_default
+            )
+            self.algorithm_lower_target_all_morphs_coefficient_b: int = _get_int_config(
+                "algorithm_lower_target_all_morphs_coefficient_b", is_default
+            )
+            self.algorithm_lower_target_all_morphs_coefficient_c: int = _get_int_config(
+                "algorithm_lower_target_all_morphs_coefficient_c", is_default
+            )
+            self.algorithm_upper_target_learning_morphs: int = _get_int_config(
+                "algorithm_upper_target_learning_morphs", is_default
+            )
+            self.algorithm_lower_target_learning_morphs: int = _get_int_config(
+                "algorithm_lower_target_learning_morphs", is_default
+            )
+            self.algorithm_upper_target_learning_morphs_coefficient_a: int = (
+                _get_int_config(
+                    "algorithm_upper_target_learning_morphs_coefficient_a", is_default
+                )
+            )
+            self.algorithm_upper_target_learning_morphs_coefficient_b: int = (
+                _get_int_config(
+                    "algorithm_upper_target_learning_morphs_coefficient_b", is_default
+                )
+            )
+            self.algorithm_upper_target_learning_morphs_coefficient_c: int = (
+                _get_int_config(
+                    "algorithm_upper_target_learning_morphs_coefficient_c", is_default
+                )
+            )
+            self.algorithm_lower_target_learning_morphs_coefficient_a: int = (
+                _get_int_config(
+                    "algorithm_lower_target_learning_morphs_coefficient_a", is_default
+                )
+            )
+            self.algorithm_lower_target_learning_morphs_coefficient_b: int = (
+                _get_int_config(
+                    "algorithm_lower_target_learning_morphs_coefficient_b", is_default
+                )
+            )
+            self.algorithm_lower_target_learning_morphs_coefficient_c: int = (
+                _get_int_config(
+                    "algorithm_lower_target_learning_morphs_coefficient_c", is_default
+                )
             )
 
             self.filters: list[AnkiMorphsConfigFilter] = _get_filters_config(is_default)

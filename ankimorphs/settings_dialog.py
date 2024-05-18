@@ -70,6 +70,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT,
             ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED,
             ankimorphs_globals.EXTRA_FIELD_SCORE,
+            ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS,
         ]
         self._config = AnkiMorphsConfig()
         self._default_config = AnkiMorphsConfig(is_default=True)
@@ -78,8 +79,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self._populate_tags_tab()
         self._populate_preprocess_tab()
         self._populate_skip_tab()
-        self._populate_shortcuts_tab()
+        self._populate_algorithm_tab()
         self._populate_recalc_tab()
+        self._populate_shortcuts_tab()
         self._setup_buttons()
         self.ui.treeWidget.itemChanged.connect(self._tree_item_changed)
         self.ui.tabWidget.currentChanged.connect(self._on_tab_changed)
@@ -180,7 +182,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         frequency_files += self._get_frequency_files()
         morph_priority_cbox.addItems(frequency_files)
         morph_priority_cbox_index = table_utils.get_combobox_index(
-            frequency_files, config_filter.morph_priority
+            frequency_files, config_filter.morph_priority_selection
         )
         if morph_priority_cbox_index is not None:
             morph_priority_cbox.setCurrentIndex(morph_priority_cbox_index)
@@ -217,7 +219,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             row, self._note_filter_modify_column, modify_checkbox
         )
 
-    def _setup_extra_fields_tree_widget(  # pylint:disable=too-many-locals, too-many-branches
+    def _setup_extra_fields_tree_widget(  # pylint:disable=too-many-locals, too-many-branches, too-many-statements
         self, config_filters: list[AnkiMorphsConfigFilter]
     ) -> None:
         self.ui.treeWidget.clear()  # content might be outdated so we clear it
@@ -241,6 +243,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             active_note_types.add(note_type)
 
             extra_score: bool = False
+            extra_score_terms: bool = False
             extra_highlighted: bool = False
             extra_unknowns: bool = False
             extra_unknowns_count: bool = False
@@ -248,6 +251,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             for _filter in config_filters:
                 if note_type == _filter.note_type:
                     extra_score = _filter.extra_score
+                    extra_score_terms = _filter.extra_score_terms
                     extra_highlighted = _filter.extra_highlighted
                     extra_unknowns = _filter.extra_unknowns
                     extra_unknowns_count = _filter.extra_unknowns_count
@@ -265,6 +269,10 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
                 if extra_field == ankimorphs_globals.EXTRA_FIELD_SCORE:
                     if extra_score is True:
+                        check_state = Qt.CheckState.Checked
+                        children_checked += 1
+                elif extra_field == ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS:
+                    if extra_score_terms is True:
                         check_state = Qt.CheckState.Checked
                         children_checked += 1
                 elif extra_field == ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED:
@@ -537,6 +545,164 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             self._default_config.skip_show_num_of_skipped_cards
         )
 
+    def _populate_algorithm_tab(self) -> None:
+        self.ui.priorityLemmaRadioButton.setChecked(
+            self._config.algorithm_lemma_priority
+        )
+        self.ui.priorityInflectionRadioButton.setChecked(
+            self._config.algorithm_inflection_priority
+        )
+        self.ui.totalPriorityUknownMorphsSpinBox.setValue(
+            self._config.algorithm_total_priority_unknown_morphs
+        )
+        self.ui.totalPriorityAllMorphsSpinBox.setValue(
+            self._config.algorithm_total_priority_all_morphs
+        )
+        self.ui.averagePriorityAllMorphsSpinBox.setValue(
+            self._config.algorithm_average_priority_all_morphs
+        )
+        self.ui.allMorphsTargetDistanceSpinBox.setValue(
+            self._config.algorithm_all_morphs_target_distance
+        )
+        self.ui.learningMorphsTargetDistanceSpinBox.setValue(
+            self._config.algorithm_learning_morphs_target_distance
+        )
+        self.ui.upperTargetAllMorphsSpinBox.setValue(
+            self._config.algorithm_upper_target_all_morphs
+        )
+        self.ui.lowerTargetAllMorphsSpinBox.setValue(
+            self._config.algorithm_lower_target_all_morphs
+        )
+        self.ui.upperTargetAllMorphsCoefficientA.setValue(
+            self._config.algorithm_upper_target_all_morphs_coefficient_a
+        )
+        self.ui.upperTargetAllMorphsCoefficientB.setValue(
+            self._config.algorithm_upper_target_all_morphs_coefficient_b
+        )
+        self.ui.upperTargetAllMorphsCoefficientC.setValue(
+            self._config.algorithm_upper_target_all_morphs_coefficient_c
+        )
+        self.ui.lowerTargetAllMorphsCoefficientA.setValue(
+            self._config.algorithm_lower_target_all_morphs_coefficient_a
+        )
+        self.ui.lowerTargetAllMorphsCoefficientB.setValue(
+            self._config.algorithm_lower_target_all_morphs_coefficient_b
+        )
+        self.ui.lowerTargetAllMorphsCoefficientC.setValue(
+            self._config.algorithm_lower_target_all_morphs_coefficient_c
+        )
+        self.ui.upperTargetLearningMorphsSpinBox.setValue(
+            self._config.algorithm_upper_target_learning_morphs
+        )
+        self.ui.lowerTargetLearningMorphsSpinBox.setValue(
+            self._config.algorithm_lower_target_learning_morphs
+        )
+        self.ui.upperTargetLearningMorphsCoefficientA.setValue(
+            self._config.algorithm_upper_target_learning_morphs_coefficient_a
+        )
+        self.ui.upperTargetLearningMorphsCoefficientB.setValue(
+            self._config.algorithm_upper_target_learning_morphs_coefficient_b
+        )
+        self.ui.upperTargetLearningMorphsCoefficientC.setValue(
+            self._config.algorithm_upper_target_learning_morphs_coefficient_c
+        )
+        self.ui.lowerTargetLearningMorphsCoefficientA.setValue(
+            self._config.algorithm_lower_target_learning_morphs_coefficient_a
+        )
+        self.ui.lowerTargetLearningMorphsCoefficientB.setValue(
+            self._config.algorithm_lower_target_learning_morphs_coefficient_b
+        )
+        self.ui.lowerTargetLearningMorphsCoefficientC.setValue(
+            self._config.algorithm_lower_target_learning_morphs_coefficient_c
+        )
+
+    def _restore_algorithm_defaults(self, skip_confirmation: bool = False) -> None:
+        if not skip_confirmation:
+            title = "Confirmation"
+            text = "Are you sure you want to restore default algorithm settings?"
+            confirmed = self._warning_dialog(title, text)
+
+            if not confirmed:
+                return
+
+        self.ui.priorityLemmaRadioButton.setChecked(
+            self._default_config.algorithm_lemma_priority
+        )
+        self.ui.priorityInflectionRadioButton.setChecked(
+            self._default_config.algorithm_inflection_priority
+        )
+
+        self.ui.totalPriorityUknownMorphsSpinBox.setValue(
+            self._default_config.algorithm_total_priority_unknown_morphs
+        )
+        self.ui.totalPriorityAllMorphsSpinBox.setValue(
+            self._default_config.algorithm_total_priority_all_morphs
+        )
+        self.ui.averagePriorityAllMorphsSpinBox.setValue(
+            self._default_config.algorithm_average_priority_all_morphs
+        )
+
+        self.ui.allMorphsTargetDistanceSpinBox.setValue(
+            self._default_config.algorithm_all_morphs_target_distance
+        )
+        self.ui.learningMorphsTargetDistanceSpinBox.setValue(
+            self._default_config.algorithm_learning_morphs_target_distance
+        )
+
+        self.ui.upperTargetAllMorphsSpinBox.setValue(
+            self._default_config.algorithm_upper_target_all_morphs
+        )
+        self.ui.lowerTargetAllMorphsSpinBox.setValue(
+            self._default_config.algorithm_lower_target_all_morphs
+        )
+
+        self.ui.upperTargetAllMorphsCoefficientA.setValue(
+            self._default_config.algorithm_upper_target_all_morphs_coefficient_a
+        )
+        self.ui.upperTargetAllMorphsCoefficientB.setValue(
+            self._default_config.algorithm_upper_target_all_morphs_coefficient_b
+        )
+        self.ui.upperTargetAllMorphsCoefficientC.setValue(
+            self._default_config.algorithm_upper_target_all_morphs_coefficient_c
+        )
+
+        self.ui.lowerTargetAllMorphsCoefficientA.setValue(
+            self._default_config.algorithm_lower_target_all_morphs_coefficient_a
+        )
+        self.ui.lowerTargetAllMorphsCoefficientB.setValue(
+            self._default_config.algorithm_lower_target_all_morphs_coefficient_b
+        )
+        self.ui.lowerTargetAllMorphsCoefficientC.setValue(
+            self._default_config.algorithm_lower_target_all_morphs_coefficient_c
+        )
+
+        self.ui.upperTargetLearningMorphsSpinBox.setValue(
+            self._default_config.algorithm_upper_target_learning_morphs
+        )
+        self.ui.lowerTargetLearningMorphsSpinBox.setValue(
+            self._default_config.algorithm_lower_target_learning_morphs
+        )
+
+        self.ui.upperTargetLearningMorphsCoefficientA.setValue(
+            self._default_config.algorithm_upper_target_learning_morphs_coefficient_a
+        )
+        self.ui.upperTargetLearningMorphsCoefficientB.setValue(
+            self._default_config.algorithm_upper_target_learning_morphs_coefficient_b
+        )
+        self.ui.upperTargetLearningMorphsCoefficientC.setValue(
+            self._default_config.algorithm_upper_target_learning_morphs_coefficient_c
+        )
+
+        self.ui.lowerTargetLearningMorphsCoefficientA.setValue(
+            self._default_config.algorithm_lower_target_learning_morphs_coefficient_a
+        )
+        self.ui.lowerTargetLearningMorphsCoefficientB.setValue(
+            self._default_config.algorithm_lower_target_learning_morphs_coefficient_b
+        )
+        self.ui.lowerTargetLearningMorphsCoefficientC.setValue(
+            self._default_config.algorithm_lower_target_learning_morphs_coefficient_c
+        )
+
     def _restore_all_defaults(self) -> None:
         title = "Confirmation"
         text = "Are you sure you want to restore <b>all</b> default settings?"
@@ -588,6 +754,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             self._restore_preprocess_defaults
         )
         self.ui.restoreSkipPushButton.clicked.connect(self._restore_skip_defaults)
+        self.ui.restoreAlgorithmPushButton.clicked.connect(
+            self._restore_algorithm_defaults
+        )
         self.ui.restoreAllDefaultsPushButton.clicked.connect(self._restore_all_defaults)
 
     def _delete_row(self) -> None:
@@ -649,6 +818,29 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             "skip_only_known_morphs_cards": self.ui.skipKnownCheckBox.isChecked(),
             "skip_unknown_morph_seen_today_cards": self.ui.skipAlreadySeenCheckBox.isChecked(),
             "skip_show_num_of_skipped_cards": self.ui.skipNotificationsCheckBox.isChecked(),
+            "algorithm_lemma_priority": self.ui.priorityLemmaRadioButton.isChecked(),
+            "algorithm_inflection_priority": self.ui.priorityInflectionRadioButton.isChecked(),
+            "algorithm_total_priority_unknown_morphs": self.ui.totalPriorityUknownMorphsSpinBox.value(),
+            "algorithm_total_priority_all_morphs": self.ui.totalPriorityAllMorphsSpinBox.value(),
+            "algorithm_average_priority_all_morphs": self.ui.averagePriorityAllMorphsSpinBox.value(),
+            "algorithm_all_morphs_target_distance": self.ui.allMorphsTargetDistanceSpinBox.value(),
+            "algorithm_learning_morphs_target_distance": self.ui.learningMorphsTargetDistanceSpinBox.value(),
+            "algorithm_upper_target_all_morphs": self.ui.upperTargetAllMorphsSpinBox.value(),
+            "algorithm_upper_target_all_morphs_coefficient_a": self.ui.upperTargetAllMorphsCoefficientA.value(),
+            "algorithm_upper_target_all_morphs_coefficient_b": self.ui.upperTargetAllMorphsCoefficientB.value(),
+            "algorithm_upper_target_all_morphs_coefficient_c": self.ui.upperTargetAllMorphsCoefficientC.value(),
+            "algorithm_lower_target_all_morphs": self.ui.lowerTargetAllMorphsSpinBox.value(),
+            "algorithm_lower_target_all_morphs_coefficient_a": self.ui.lowerTargetAllMorphsCoefficientA.value(),
+            "algorithm_lower_target_all_morphs_coefficient_b": self.ui.lowerTargetAllMorphsCoefficientB.value(),
+            "algorithm_lower_target_all_morphs_coefficient_c": self.ui.lowerTargetAllMorphsCoefficientC.value(),
+            "algorithm_upper_target_learning_morphs": self.ui.upperTargetLearningMorphsSpinBox.value(),
+            "algorithm_lower_target_learning_morphs": self.ui.lowerTargetLearningMorphsSpinBox.value(),
+            "algorithm_upper_target_learning_morphs_coefficient_a": self.ui.upperTargetLearningMorphsCoefficientA.value(),
+            "algorithm_upper_target_learning_morphs_coefficient_b": self.ui.upperTargetLearningMorphsCoefficientB.value(),
+            "algorithm_upper_target_learning_morphs_coefficient_c": self.ui.upperTargetLearningMorphsCoefficientC.value(),
+            "algorithm_lower_target_learning_morphs_coefficient_a": self.ui.lowerTargetLearningMorphsCoefficientA.value(),
+            "algorithm_lower_target_learning_morphs_coefficient_b": self.ui.lowerTargetLearningMorphsCoefficientB.value(),
+            "algorithm_lower_target_learning_morphs_coefficient_c": self.ui.lowerTargetLearningMorphsCoefficientC.value(),
         }
 
         filters: list[FilterTypeAlias] = []
@@ -693,6 +885,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
                 note_type_name
             )
             extra_score = ankimorphs_globals.EXTRA_FIELD_SCORE in selected_extra_fields
+            extra_score_terms = (
+                ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS in selected_extra_fields
+            )
             extra_highlighted = (
                 ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED in selected_extra_fields
             )
@@ -716,6 +911,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
                 "read": read_widget.isChecked(),
                 "modify": modify_widget.isChecked(),
                 "extra_score": extra_score,
+                "extra_score_terms": extra_score_terms,
                 "extra_highlighted": extra_highlighted,
                 "extra_unknowns": extra_unknowns,
                 "extra_unknowns_count": extra_unknowns_count,

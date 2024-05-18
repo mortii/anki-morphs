@@ -35,7 +35,7 @@ from .ankimorphs_db import AnkiMorphsDB
 from .exceptions import CancelledOperationException, EmptyFileSelectionException
 from .generators_output_dialog import GeneratorOutputDialog, OutputOptions
 from .generators_text_processing import PreprocessOptions
-from .morpheme import MorphOccurrence
+from .morpheme import Morpheme, MorphOccurrence
 from .morphemizer import Morphemizer, SpacyMorphemizer
 from .readability_report_utils import FileMorphsStats
 from .table_utils import QTableWidgetIntegerItem, QTableWidgetPercentItem
@@ -227,6 +227,39 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         # we return a tuple to make it compatible with .endswith()
         return tuple(extensions)
 
+    @staticmethod
+    def _get_comprehension_cutoff(
+        sorted_morph_occurrence: dict[str, MorphOccurrence],
+        comprehension_threshold: int,
+    ) -> str | None:
+        total_occurrences = 0
+
+        for morph_occurrence in sorted_morph_occurrence.values():
+            total_occurrences += morph_occurrence.occurrence
+
+        # _comprehension_threshold is between 100 and 1
+        target_percent = comprehension_threshold / 100
+        target_number = target_percent * total_occurrences
+
+        running_total = 0
+
+        for key, morph_occurrence in sorted_morph_occurrence.items():
+            running_total += morph_occurrence.occurrence
+            if running_total > target_number:
+                return key
+
+        return None
+
+    @staticmethod
+    def _get_min_occurrence_cutoff(
+        sorted_morph_occurrence: dict[str, MorphOccurrence],
+        min_occurrence_threshold: int,
+    ) -> str | None:
+        for morph_key in sorted_morph_occurrence:
+            if sorted_morph_occurrence[morph_key].occurrence < min_occurrence_threshold:
+                return morph_key
+        return None
+
     def closeWithCallback(  # pylint:disable=invalid-name
         self, callback: Callable[[], None]
     ) -> None:
@@ -355,7 +388,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             mw.taskman.run_on_main(
                 partial(
                     mw.progress.update,
-                    label=f"Reading file:<br>{input_file.relative_to(self._input_dir_root)}",
+                    label=f"Processing file:<br>{input_file.relative_to(self._input_dir_root)}",
                 )
             )
 
@@ -673,16 +706,173 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             )
         )
 
+        # key: lemma + inflection
         total_morph_occurrences: dict[str, MorphOccurrence] = {}
 
         for file_morph_dict in morph_occurrences_by_file.values():
             for key in file_morph_dict:
+                # print(f"file_morph_dict key: {key}")
                 if key not in total_morph_occurrences:
                     total_morph_occurrences[key] = file_morph_dict[key]
                 else:
                     total_morph_occurrences[key] += file_morph_dict[key]
 
-        sorted_morph_frequency = dict(
+        # todo this should not be done here since we don't always need it
+        # sorted_morph_frequency = dict(
+        #     sorted(
+        #         total_morph_occurrences.items(),
+        #         key=lambda item: item[1].occurrence,
+        #         reverse=True,
+        #     )
+        # )
+
+        # self._write_out_frequency_file(selected_output_options, sorted_morph_frequency)
+        self._write_out_frequency_file(selected_output_options, total_morph_occurrences)
+
+    def _write_out_frequency_file(
+        self,
+        selected_output_options: OutputOptions,
+        # sorted_morph_occurrences: dict[str, MorphOccurrence],
+        total_morph_occurrences: dict[str, MorphOccurrence],
+    ) -> None:
+
+        output_file: Path = selected_output_options.output_path
+
+        # make sure the parent dirs exist before creating the file
+        Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+
+        # selected_min_occurrence: bool = selected_output_options.min_occurrence
+        # selected_comprehension: bool = selected_output_options.comprehension
+        #
+        # min_occurrence_threshold: int = selected_output_options.min_occurrence_threshold
+        # comprehension_threshold: int = selected_output_options.comprehension_threshold
+
+        # morph_key_cutoff: str | None = None
+        #
+        # if selected_comprehension:
+        #     morph_key_cutoff = self._get_comprehension_cutoff(
+        #         sorted_morph_occurrences, comprehension_threshold
+        #     )
+        # elif selected_min_occurrence:
+        #     morph_key_cutoff = self._get_min_occurrence_cutoff(
+        #         sorted_morph_occurrences, min_occurrence_threshold
+        #     )
+
+        if selected_output_options.store_only_lemma:
+            self._lemma_only_writer(
+                selected_output_options=selected_output_options,
+                total_morph_occurrences=total_morph_occurrences,
+            )
+        else:
+            self._lemma_and_inflection_writer(
+                selected_output_options=selected_output_options,
+                total_morph_occurrences=total_morph_occurrences,
+            )
+
+    @staticmethod
+    def _get_sorted_lemma_occurrence_dict(
+        morph_occurrence_dict: dict[str, MorphOccurrence]
+    ) -> dict[str, int]:
+        lemma_occurrence: dict[str, int] = {}
+
+        for morph_occurrence in morph_occurrence_dict.values():
+            lemma: str = morph_occurrence.morph.lemma
+            if lemma in lemma_occurrence:
+                lemma_occurrence[lemma] += morph_occurrence.occurrence
+            else:
+                lemma_occurrence[lemma] = morph_occurrence.occurrence
+
+        sorted_lemma_frequency: dict[str, int] = dict(
+            sorted(
+                lemma_occurrence.items(),
+                key=lambda item: item[1],
+                reverse=True,
+            )
+        )
+
+        return sorted_lemma_frequency
+
+    def _lemma_only_writer(
+        self,
+        selected_output_options: OutputOptions,
+        total_morph_occurrences: dict[str, MorphOccurrence],
+    ) -> None:
+        output_file: Path = selected_output_options.output_path
+        headers = [ankimorphs_globals.LEMMA_HEADER]
+
+        if selected_output_options.selected_extra_occurrences_column:
+            headers.append(ankimorphs_globals.OCCURRENCES_HEADER)
+
+        # We use a dict of MorphOccurrence for easier compatibility
+        # with other helper functions like the cutoff getter.
+        lemma_occurrence: dict[str, MorphOccurrence] = {}
+
+        for morph_occurrence in total_morph_occurrences.values():
+            lemma: str = morph_occurrence.morph.lemma
+            if lemma in lemma_occurrence:
+                lemma_occurrence[lemma] += morph_occurrence
+            else:
+                # todo this is horrible
+                # mostly a stub object (see comment above)
+                morph = Morpheme(lemma=lemma, inflection=lemma)
+                new_morph_occurrence = MorphOccurrence(
+                    morph, occurrence=morph_occurrence.occurrence
+                )
+                lemma_occurrence[lemma] = new_morph_occurrence
+
+        sorted_lemma_occurrences = dict(
+            sorted(
+                lemma_occurrence.items(),
+                key=lambda item: item[1].occurrence,
+                reverse=True,
+            )
+        )
+
+        # todo make this into a separate function
+        if selected_output_options.comprehension:
+            morph_key_cutoff = self._get_comprehension_cutoff(
+                sorted_lemma_occurrences,
+                selected_output_options.comprehension_threshold,
+            )
+        else:
+            morph_key_cutoff = self._get_min_occurrence_cutoff(
+                sorted_lemma_occurrences,
+                selected_output_options.min_occurrence_threshold,
+            )
+
+        with open(output_file, mode="w+", encoding="utf-8", newline="") as csvfile:
+            morph_writer = csv.writer(csvfile)
+            morph_writer.writerow(headers)
+
+            for key, morph_occurrence in sorted_lemma_occurrences.items():
+                if key == morph_key_cutoff:
+                    break
+
+                morph = morph_occurrence.morph
+                occurrence = morph_occurrence.occurrence
+
+                row_values: list[str | int] = [morph.lemma]
+
+                if selected_output_options.selected_extra_occurrences_column:
+                    row_values.append(occurrence)
+
+                morph_writer.writerow(row_values)
+
+    def _lemma_and_inflection_writer(
+        self,
+        selected_output_options: OutputOptions,
+        total_morph_occurrences: dict[str, MorphOccurrence],
+    ) -> None:
+        output_file: Path = selected_output_options.output_path
+
+        headers = [
+            ankimorphs_globals.LEMMA_HEADER,
+            ankimorphs_globals.INFLECTION_HEADER,
+            ankimorphs_globals.LEMMA_PRIORITY_HEADER,
+            ankimorphs_globals.INFLECTION_PRIORITY_HEADER,
+        ]
+
+        sorted_inflection_occurrences = dict(
             sorted(
                 total_morph_occurrences.items(),
                 key=lambda item: item[1].occurrence,
@@ -690,53 +880,71 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             )
         )
 
-        self._write_out_frequency_file(selected_output_options, sorted_morph_frequency)
+        lemma_occurrence: dict[str, int] = {}
+        sorted_index_replaced_lemma_dict: dict[str, int] = {}
 
-    def _write_out_frequency_file(
-        self,
-        selected_output_options: OutputOptions,
-        sorted_morph_occurrences: dict[str, MorphOccurrence],
-    ) -> None:
-        output_file = selected_output_options.output_path
+        if selected_output_options.store_lemma_and_inflection:
 
-        # make sure the parent dirs exist before creating the file
-        Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+            for morph_occurrence in total_morph_occurrences.values():
+                lemma: str = morph_occurrence.morph.lemma
+                if lemma in lemma_occurrence:
+                    lemma_occurrence[lemma] += morph_occurrence.occurrence
+                else:
+                    lemma_occurrence[lemma] = morph_occurrence.occurrence
 
-        selected_min_occurrence: bool = selected_output_options.min_occurrence
-        selected_comprehension: bool = selected_output_options.comprehension
-
-        min_occurrence_threshold: int = selected_output_options.min_occurrence_threshold
-        comprehension_threshold: int = selected_output_options.comprehension_threshold
-
-        morph_key_cutoff: str | None = None
-
-        if selected_comprehension:
-            morph_key_cutoff = self._get_comprehension_cutoff(
-                sorted_morph_occurrences, comprehension_threshold
+            sorted_items: list[tuple[str, int]] = sorted(
+                lemma_occurrence.items(), key=lambda item: item[1], reverse=True
             )
-        elif selected_min_occurrence:
+
+            # print("sorted lemma frequency dict")
+            # pprint.pp(sorted_lemma_frequency)
+
+            # print(f"sorted: {sorted_items}")
+
+            sorted_index_replaced_lemma_dict = {
+                k: index for index, (k, v) in enumerate(sorted_items)
+            }
+
+        if selected_output_options.selected_extra_occurrences_column:
+            headers.append("Occurrence")
+
+        # todo make this into a separate function
+        if selected_output_options.comprehension:
+            morph_key_cutoff = self._get_comprehension_cutoff(
+                sorted_inflection_occurrences,
+                selected_output_options.comprehension_threshold,
+            )
+        else:
             morph_key_cutoff = self._get_min_occurrence_cutoff(
-                sorted_morph_occurrences, min_occurrence_threshold
+                sorted_inflection_occurrences,
+                selected_output_options.min_occurrence_threshold,
             )
 
         with open(output_file, mode="w+", encoding="utf-8", newline="") as csvfile:
             morph_writer = csv.writer(csvfile)
-            morph_writer.writerow(["Morph-lemma", "Morph-inflection", "Occurrence"])
+            morph_writer.writerow(headers)
 
-            for key, morph_occurrence in sorted_morph_occurrences.items():
+            for index, (key, morph_occurrence) in enumerate(
+                sorted_inflection_occurrences.items()
+            ):
                 if key == morph_key_cutoff:
                     break
 
                 morph = morph_occurrence.morph
                 occurrence = morph_occurrence.occurrence
 
-                morph_writer.writerow(
-                    [
-                        morph.lemma,
-                        morph.inflection,
-                        occurrence,
-                    ]
-                )
+                row_values: list[str | int] = [morph.lemma]
+
+                # todo all these if statements are slow, but that's fine?
+                if selected_output_options.store_lemma_and_inflection:
+                    row_values.append(morph.inflection)
+                    row_values.append(sorted_index_replaced_lemma_dict[morph.lemma])
+                    row_values.append(index)
+
+                if selected_output_options.selected_extra_occurrences_column:
+                    row_values.append(occurrence)
+
+                morph_writer.writerow(row_values)
 
     ##############################################################################
     #                              STUDY PLAN
@@ -873,36 +1081,3 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
                     )
 
                     morph_in_study_plan[key] = None  # inserts the key
-
-    @staticmethod
-    def _get_comprehension_cutoff(
-        sorted_morph_occurrence: dict[str, MorphOccurrence],
-        comprehension_threshold: int,
-    ) -> str | None:
-        total_occurrences = 0
-
-        for morph_occurrence in sorted_morph_occurrence.values():
-            total_occurrences += morph_occurrence.occurrence
-
-        # _comprehension_threshold is between 100 and 1
-        target_percent = comprehension_threshold / 100
-        target_number = target_percent * total_occurrences
-
-        running_number = 0
-
-        for key, morph_occurrence in sorted_morph_occurrence.items():
-            running_number += morph_occurrence.occurrence
-            if running_number > target_number:
-                return key
-
-        return None
-
-    @staticmethod
-    def _get_min_occurrence_cutoff(
-        sorted_morph_occurrence: dict[str, MorphOccurrence],
-        min_occurrence_threshold: int,
-    ) -> str | None:
-        for morph_key in sorted_morph_occurrence:
-            if sorted_morph_occurrence[morph_key].occurrence < min_occurrence_threshold:
-                return morph_key
-        return None
