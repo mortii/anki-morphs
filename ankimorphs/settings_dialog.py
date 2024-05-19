@@ -546,6 +546,20 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         )
 
     def _populate_algorithm_tab(self) -> None:
+
+        # making sure the lower values are always smaller the upper ones
+        self.ui.upperTargetAllMorphsSpinBox.valueChanged.connect(
+            lambda: self.ui.lowerTargetAllMorphsSpinBox.setMaximum(
+                self.ui.upperTargetAllMorphsSpinBox.value()
+            )
+        )
+
+        self.ui.upperTargetLearningMorphsSpinBox.valueChanged.connect(
+            lambda: self.ui.lowerTargetLearningMorphsSpinBox.setMaximum(
+                self.ui.upperTargetLearningMorphsSpinBox.value()
+            )
+        )
+
         self.ui.priorityLemmaRadioButton.setChecked(
             self._config.algorithm_lemma_priority
         )

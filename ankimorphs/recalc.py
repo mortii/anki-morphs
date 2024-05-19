@@ -58,7 +58,6 @@ def recalc() -> None:
     # QueryOp docs:
     # https://addon-docs.ankiweb.net/background-ops.html
     ################################################################
-
     assert mw is not None
 
     read_enabled_config_filters: list[AnkiMorphsConfigFilter] = (
