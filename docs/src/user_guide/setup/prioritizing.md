@@ -44,7 +44,17 @@ You can use the [Frequency File Generator](../usage/generators.md#frequency-file
 
 ### Downloadable Frequency Files
 
-> **Note**: These files do not contain the optional `Occurrence` column, but they still work just fine.
+> **Note**: Not all of these files contain the optional `Occurrence` column, but they still work just fine.
+
+
+<details>
+  <summary>Cantonese</summary>
+
+> * <a download href="../../frequency_lists/cantonese/words-hk/zhh-freq.csv">zhh-freq.csv</a>
+>   - Source: `existingwordcount.csv` found on [words.hk - analysis](https://words.hk/faiman/analysis/)
+>   - Morphemizer: `AnkiMorphs: Chinese`
+
+</details>
 
 <details>
   <summary>Catalan</summary>
