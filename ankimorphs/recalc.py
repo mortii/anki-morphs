@@ -165,6 +165,7 @@ def _recalc_background_op(
     _update_cards_and_notes(am_config, modify_enabled_config_filters)
 
 
+# todo: move caching to a separate file
 def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-many-statements
     am_config: AnkiMorphsConfig,
     read_enabled_config_filters: list[AnkiMorphsConfigFilter],
@@ -313,14 +314,26 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
 
     morphs_from_files: list[dict[str, Any]] = []
     if am_config.recalc_read_known_morphs_folder is True:
+        mw.taskman.run_on_main(
+            partial(mw.progress.update, label="Importing known morphs")
+        )
         morphs_from_files = _get_morphs_from_files(am_config)
 
     mw.taskman.run_on_main(partial(mw.progress.update, label="Saving to ankimorphs.db"))
 
-    am_db.insert_many_into_morph_table(morph_table_data + morphs_from_files)
+    # todo: make this config options more generic
+    if am_config.algorithm_lemma_priority:
+        am_db.update_lemma_intervals_and_insert_many_into_morph_table(
+            morph_table_data + morphs_from_files
+        )
+    else:
+        am_db.insert_many_into_morph_table(morph_table_data + morphs_from_files)
+
     am_db.insert_many_into_card_table(card_table_data)
     am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
-    # am_db.print_table("Cards")
+
+    am_db.print_table("Morphs")
+
     am_db.con.close()
 
 

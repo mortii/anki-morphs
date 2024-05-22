@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import os
+import pprint
 import sqlite3
 from collections import Counter
 from collections.abc import Sequence
@@ -386,6 +387,44 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             # print(f"key: {key}, index: {index}")
 
         return morph_priorities
+
+    def update_lemma_intervals_and_insert_many_into_morph_table(
+        self, morph_table_data: list[dict[str, Any]]
+    ) -> None:
+        lemmas_learning_intervals: dict[str, int] = {}
+
+        for morph_data_dict in morph_table_data:
+            lemma = morph_data_dict["lemma"]
+            inflection_interval = morph_data_dict[
+                "highest_inflection_learning_interval"
+            ]
+
+            if lemma in lemmas_learning_intervals:
+                if inflection_interval > lemmas_learning_intervals[lemma]:
+                    lemmas_learning_intervals[lemma] = inflection_interval
+            else:
+                lemmas_learning_intervals[lemma] = inflection_interval
+
+        for morph_data_dict in morph_table_data:
+            lemma = morph_data_dict["lemma"]
+            morph_data_dict["highest_lemma_learning_interval"] = (
+                lemmas_learning_intervals[lemma]
+            )
+
+        print(f"morph_table_data lemmas")
+        for morph_data_dict in morph_table_data:
+            pprint.pp(morph_data_dict)
+
+        self.insert_many_into_morph_table(morph_table_data)
+        #
+        # intermediate_morph_list = []
+        #
+        # if am_config.algorithm_lemma_priority:
+        #     for row in morphs_query:
+        #         intermediate_morph_list.append(row[0] + row[0])  # lemma + lemma
+        # else:
+        #     for row in morphs_query:
+        #         intermediate_morph_list.append(row[0] + row[1])  # lemma + inflection
 
     def print_table(self, table: str) -> None:
         try:
