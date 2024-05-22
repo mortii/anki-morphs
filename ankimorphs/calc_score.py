@@ -147,7 +147,7 @@ def get_card_score_values(  # pylint:disable=too-many-locals, too-many-statement
     num_learning_morphs = 0
 
     for morph in card_morphs:
-        assert morph.highest_learning_interval is not None
+        assert morph.highest_inflection_learning_interval is not None
 
         morph_priority = no_morph_priority_value
 
@@ -166,11 +166,14 @@ def get_card_score_values(  # pylint:disable=too-many-locals, too-many-statement
 
         total_priority_all_morphs += morph_priority
 
-        if morph.highest_learning_interval == 0:
+        if morph.highest_inflection_learning_interval == 0:
             unknown_morphs.append(morph)
             total_priority_unknown_morphs += morph_priority
 
-        elif morph.highest_learning_interval < am_config.recalc_interval_for_known:
+        elif (
+            morph.highest_inflection_learning_interval
+            < am_config.recalc_interval_for_known
+        ):
             has_learning_morph = True
             num_learning_morphs += 1
 

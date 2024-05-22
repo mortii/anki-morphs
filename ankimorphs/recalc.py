@@ -299,7 +299,8 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
                     {
                         "lemma": morph.lemma,
                         "inflection": morph.inflection,
-                        "highest_learning_interval": highest_interval,
+                        "highest_lemma_learning_interval": None,
+                        "highest_inflection_learning_interval": highest_interval,
                     }
                 )
                 card_morph_map_table_data.append(

@@ -75,7 +75,8 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                     (
                         lemma TEXT,
                         inflection TEXT,
-                        highest_learning_interval INTEGER,
+                        highest_lemma_learning_interval INTEGER,
+                        highest_inflection_learning_interval INTEGER,
                         PRIMARY KEY (lemma, inflection)
                     )
                     """
@@ -124,11 +125,12 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                     (
                        :lemma,
                        :inflection,
-                       :highest_learning_interval
+                       :highest_lemma_learning_interval,
+                       :highest_inflection_learning_interval
                     )
                     ON CONFLICT(lemma, inflection) DO UPDATE SET
-                        highest_learning_interval = :highest_learning_interval
-                    WHERE highest_learning_interval < :highest_learning_interval
+                        highest_inflection_learning_interval = :highest_inflection_learning_interval
+                    WHERE highest_inflection_learning_interval < :highest_inflection_learning_interval
                 """,
                 morph_list,
             )
@@ -299,7 +301,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         # Sorting the morphs (ORDER BY) is crucial to avoid bugs
         card_morph_map_cache_raw = self.con.execute(
             """
-            SELECT Card_Morph_Map.card_id, Morphs.lemma, Morphs.inflection, Morphs.highest_learning_interval
+            SELECT Card_Morph_Map.card_id, Morphs.lemma, Morphs.inflection, Morphs.highest_inflection_learning_interval
             FROM Card_Morph_Map
             INNER JOIN Morphs ON
                 Card_Morph_Map.morph_lemma = Morphs.lemma AND Card_Morph_Map.morph_inflection = Morphs.inflection
@@ -310,7 +312,9 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         for row in card_morph_map_cache_raw:
             card_id = row[0]
             morph = Morpheme(
-                lemma=row[1], inflection=row[2], highest_learning_interval=row[3]
+                lemma=row[1],
+                inflection=row[2],
+                highest_inflection_learning_interval=row[3],
             )
 
             if card_id not in card_morph_map_cache:
