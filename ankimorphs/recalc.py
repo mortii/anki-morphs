@@ -323,7 +323,7 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
 
     # todo: make this config options more generic
     if am_config.algorithm_lemma_priority:
-        am_db.update_lemma_intervals_and_insert_many_into_morph_table(
+        am_db.update_learning_intervals_and_insert_many_into_morph_table(
             morph_table_data + morphs_from_files
         )
     else:
@@ -332,7 +332,7 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
     am_db.insert_many_into_card_table(card_table_data)
     am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
 
-    am_db.print_table("Morphs")
+    # am_db.print_table("Morphs")
 
     am_db.con.close()
 

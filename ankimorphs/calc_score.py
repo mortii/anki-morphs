@@ -147,6 +147,9 @@ def get_card_score_values(  # pylint:disable=too-many-locals, too-many-statement
     num_learning_morphs = 0
 
     for morph in card_morphs:
+
+        # print(f"morph: {morph}")
+
         assert morph.highest_inflection_learning_interval is not None
 
         morph_priority = no_morph_priority_value
@@ -166,16 +169,31 @@ def get_card_score_values(  # pylint:disable=too-many-locals, too-many-statement
 
         total_priority_all_morphs += morph_priority
 
-        if morph.highest_inflection_learning_interval == 0:
-            unknown_morphs.append(morph)
-            total_priority_unknown_morphs += morph_priority
+        if am_config.algorithm_lemma_priority:
+            assert morph.highest_lemma_learning_interval is not None
 
-        elif (
-            morph.highest_inflection_learning_interval
-            < am_config.recalc_interval_for_known
-        ):
-            has_learning_morph = True
-            num_learning_morphs += 1
+            if morph.highest_lemma_learning_interval == 0:
+                unknown_morphs.append(morph)
+                total_priority_unknown_morphs += morph_priority
+
+            elif (
+                morph.highest_lemma_learning_interval
+                < am_config.recalc_interval_for_known
+            ):
+                has_learning_morph = True
+                num_learning_morphs += 1
+
+        else:
+            if morph.highest_inflection_learning_interval == 0:
+                unknown_morphs.append(morph)
+                total_priority_unknown_morphs += morph_priority
+
+            elif (
+                morph.highest_inflection_learning_interval
+                < am_config.recalc_interval_for_known
+            ):
+                has_learning_morph = True
+                num_learning_morphs += 1
 
     if len(unknown_morphs) == 0 and am_config.recalc_move_known_new_cards_to_the_end:
         # Move stale cards to the end of the queue

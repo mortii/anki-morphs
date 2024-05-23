@@ -33,7 +33,7 @@ class MorphToolbarStats:
                 """
                 SELECT COUNT(DISTINCT lemma)
                 FROM Morphs
-                WHERE highest_learning_interval >= ?
+                WHERE highest_inflection_learning_interval >= ?
                 """,
                 (learning_interval,),
             ).fetchone()[0]
@@ -42,7 +42,7 @@ class MorphToolbarStats:
                 """
                 SELECT COUNT(*)
                 FROM Morphs
-                WHERE highest_learning_interval >= ?
+                WHERE highest_inflection_learning_interval >= ?
                 """,
                 (learning_interval,),
             ).fetchone()[0]
