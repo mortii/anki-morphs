@@ -531,6 +531,8 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
     modified_cards: dict[int, Card],
     handled_cards: dict[int, None],
 ) -> dict[int, Card]:
+    # todo: make this compatible with lemma only
+
     # This essentially replaces the need for the "skip" options, which in turn
     # makes reviewing cards on mobile a viable alternative.
     assert mw is not None
