@@ -77,7 +77,7 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
                 ankimorphs_globals.ankimorphs_broken = True
 
 
-class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes
+class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many-statements
     def __init__(self, is_default: bool = False) -> None:
         try:
             self.shortcut_recalc: QKeySequence = _get_key_sequence_config(

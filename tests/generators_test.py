@@ -36,7 +36,7 @@ from .environment_setup_for_tests import (  # pylint:disable=unused-import
     "comprehension_cutoff",
     [True, False],
 )
-def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-locals
+def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-locals, too-many-branches
     fake_environment, morphemizer_description, only_lemma, comprehension_cutoff, qtbot
 ):
     """
