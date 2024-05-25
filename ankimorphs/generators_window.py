@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import copy
 import csv
 import os
+import pprint
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable
@@ -717,15 +719,6 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
                 else:
                     total_morph_occurrences[key] += file_morph_dict[key]
 
-        # todo this should not be done here since we don't always need it
-        # sorted_morph_frequency = dict(
-        #     sorted(
-        #         total_morph_occurrences.items(),
-        #         key=lambda item: item[1].occurrence,
-        #         reverse=True,
-        #     )
-        # )
-
         # self._write_out_frequency_file(selected_output_options, sorted_morph_frequency)
         self._write_out_frequency_file(selected_output_options, total_morph_occurrences)
 
@@ -741,23 +734,6 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         # make sure the parent dirs exist before creating the file
         Path(output_file).parent.mkdir(parents=True, exist_ok=True)
 
-        # selected_min_occurrence: bool = selected_output_options.min_occurrence
-        # selected_comprehension: bool = selected_output_options.comprehension
-        #
-        # min_occurrence_threshold: int = selected_output_options.min_occurrence_threshold
-        # comprehension_threshold: int = selected_output_options.comprehension_threshold
-
-        # morph_key_cutoff: str | None = None
-        #
-        # if selected_comprehension:
-        #     morph_key_cutoff = self._get_comprehension_cutoff(
-        #         sorted_morph_occurrences, comprehension_threshold
-        #     )
-        # elif selected_min_occurrence:
-        #     morph_key_cutoff = self._get_min_occurrence_cutoff(
-        #         sorted_morph_occurrences, min_occurrence_threshold
-        #     )
-
         if selected_output_options.store_only_lemma:
             self._lemma_only_writer(
                 selected_output_options=selected_output_options,
@@ -771,24 +747,35 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
 
     @staticmethod
     def _get_sorted_lemma_occurrence_dict(
-        morph_occurrence_dict: dict[str, MorphOccurrence]
-    ) -> dict[str, int]:
-        lemma_occurrence: dict[str, int] = {}
+        morph_occurrence_dict_original: dict[str, MorphOccurrence]
+    ) -> dict[str, MorphOccurrence]:
+        """
+        This creates a new dict with keys that only consist of the lemma, and
+        sums all the inflections into the respective lemma occurrences.
+        """
+
+        # we clone the original dict to prevent mutation problems
+        morph_occurrence_dict = copy.deepcopy(morph_occurrence_dict_original)
+        lemma_occurrence: dict[str, MorphOccurrence] = {}
 
         for morph_occurrence in morph_occurrence_dict.values():
             lemma: str = morph_occurrence.morph.lemma
             if lemma in lemma_occurrence:
-                lemma_occurrence[lemma] += morph_occurrence.occurrence
+                lemma_occurrence[lemma] += morph_occurrence
             else:
-                lemma_occurrence[lemma] = morph_occurrence.occurrence
+                lemma_occurrence[lemma] = morph_occurrence
 
-        sorted_lemma_frequency: dict[str, int] = dict(
+        sorted_lemma_frequency: dict[str, MorphOccurrence] = dict(
             sorted(
                 lemma_occurrence.items(),
-                key=lambda item: item[1],
+                key=lambda item: item[1].occurrence,
                 reverse=True,
             )
         )
+
+        print("sorted _get_sorted_lemma_occurrence_dict deep copy")
+        for key, morph_occurrence in sorted_lemma_frequency.items():
+            print(f"key: {key}, occurrence: {morph_occurrence.occurrence}")
 
         return sorted_lemma_frequency
 
@@ -803,42 +790,14 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         if selected_output_options.selected_extra_occurrences_column:
             headers.append(ankimorphs_globals.OCCURRENCES_HEADER)
 
-        # We use a dict of MorphOccurrence for easier compatibility
-        # with other helper functions like the cutoff getter.
-        lemma_occurrence: dict[str, MorphOccurrence] = {}
-
-        for morph_occurrence in total_morph_occurrences.values():
-            lemma: str = morph_occurrence.morph.lemma
-            if lemma in lemma_occurrence:
-                lemma_occurrence[lemma] += morph_occurrence
-            else:
-                # todo this is horrible
-                # mostly a stub object (see comment above)
-                morph = Morpheme(lemma=lemma, inflection=lemma)
-                new_morph_occurrence = MorphOccurrence(
-                    morph, occurrence=morph_occurrence.occurrence
-                )
-                lemma_occurrence[lemma] = new_morph_occurrence
-
-        sorted_lemma_occurrences = dict(
-            sorted(
-                lemma_occurrence.items(),
-                key=lambda item: item[1].occurrence,
-                reverse=True,
-            )
+        sorted_lemma_occurrences: dict[str, MorphOccurrence] = (
+            self._get_sorted_lemma_occurrence_dict(total_morph_occurrences)
         )
-
-        # todo make this into a separate function
-        if selected_output_options.comprehension:
-            morph_key_cutoff = self._get_comprehension_cutoff(
-                sorted_lemma_occurrences,
-                selected_output_options.comprehension_threshold,
-            )
-        else:
-            morph_key_cutoff = self._get_min_occurrence_cutoff(
-                sorted_lemma_occurrences,
-                selected_output_options.min_occurrence_threshold,
-            )
+        morph_key_cutoff = self._get_morph_key_cutoff(
+            selected_output_options, sorted_lemma_occurrences
+        )
+        # print(f"morph_key_cutoff: {morph_key_cutoff}")
+        # pprint.pp(sorted_lemma_occurrences)
 
         with open(output_file, mode="w+", encoding="utf-8", newline="") as csvfile:
             morph_writer = csv.writer(csvfile)
@@ -850,13 +809,30 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
 
                 morph = morph_occurrence.morph
                 occurrence = morph_occurrence.occurrence
-
                 row_values: list[str | int] = [morph.lemma]
 
                 if selected_output_options.selected_extra_occurrences_column:
                     row_values.append(occurrence)
 
                 morph_writer.writerow(row_values)
+
+    def _get_morph_key_cutoff(
+        self,
+        selected_output_options: OutputOptions,
+        sorted_morph_occurrences: dict[str, MorphOccurrence],
+    ) -> str | None:
+        if selected_output_options.comprehension:
+            morph_key_cutoff = self._get_comprehension_cutoff(
+                sorted_morph_occurrences,
+                selected_output_options.comprehension_threshold,
+            )
+        else:
+            morph_key_cutoff = self._get_min_occurrence_cutoff(
+                sorted_morph_occurrences,
+                selected_output_options.min_occurrence_threshold,
+            )
+
+        return morph_key_cutoff
 
     def _lemma_and_inflection_writer(
         self,
@@ -880,33 +856,54 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             )
         )
 
-        lemma_occurrence: dict[str, int] = {}
-        sorted_index_replaced_lemma_dict: dict[str, int] = {}
+        print("sorted inflection occurrence")
+        for key, morph_occurrence in sorted_inflection_occurrences.items():
+            print(f"key: {key}, occurrence: {morph_occurrence.occurrence}")
+        # pprint.pp(sorted_inflection_occurrences)
+        print()
 
-        if selected_output_options.store_lemma_and_inflection:
+        sorted_lemma_occurrences: dict[str, MorphOccurrence] = (
+            self._get_sorted_lemma_occurrence_dict(total_morph_occurrences)
+        )
+        sorted_index_replaced_lemma_dict: dict[str, int] = {
+            morph_lemma: index
+            for index, morph_lemma in enumerate(sorted_lemma_occurrences)
+        }
 
-            for morph_occurrence in total_morph_occurrences.values():
-                lemma: str = morph_occurrence.morph.lemma
-                if lemma in lemma_occurrence:
-                    lemma_occurrence[lemma] += morph_occurrence.occurrence
-                else:
-                    lemma_occurrence[lemma] = morph_occurrence.occurrence
+        # print("sorted_index_replaced_lemma_dict")
+        # pprint.pp(sorted_index_replaced_lemma_dict)
+        # raise Exception
 
-            sorted_items: list[tuple[str, int]] = sorted(
-                lemma_occurrence.items(), key=lambda item: item[1], reverse=True
-            )
-
-            # print("sorted lemma frequency dict")
-            # pprint.pp(sorted_lemma_frequency)
-
-            # print(f"sorted: {sorted_items}")
-
-            sorted_index_replaced_lemma_dict = {
-                k: index for index, (k, v) in enumerate(sorted_items)
-            }
+        # lemma_occurrence: dict[str, int] = {}
+        # sorted_index_replaced_lemma_dict: dict[str, int] = {}
+        #
+        # if selected_output_options.store_lemma_and_inflection:
+        #     for morph_occurrence in total_morph_occurrences.values():
+        #         lemma: str = morph_occurrence.morph.lemma
+        #         if lemma in lemma_occurrence:
+        #             lemma_occurrence[lemma] += morph_occurrence.occurrence
+        #         else:
+        #             lemma_occurrence[lemma] = morph_occurrence.occurrence
+        #
+        #     sorted_items: list[tuple[str, int]] = sorted(
+        #         lemma_occurrence.items(), key=lambda item: item[1], reverse=True
+        #     )
+        #
+        #     # print("sorted lemma frequency dict")
+        #     # pprint.pp(sorted_lemma_frequency)
+        #
+        #     # print(f"sorted: {sorted_items}")
+        #
+        #     sorted_index_replaced_lemma_dict = {
+        #         k: index for index, (k, _) in enumerate(sorted_items)
+        #     }
 
         if selected_output_options.selected_extra_occurrences_column:
             headers.append("Occurrence")
+
+        # morph_key_cutoff = self._get_morph_key_cutoff(
+        #     selected_output_options, sorted_inflection_occurrences
+        # )
 
         # todo make this into a separate function
         if selected_output_options.comprehension:
@@ -932,7 +929,6 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
 
                 morph = morph_occurrence.morph
                 occurrence = morph_occurrence.occurrence
-
                 row_values: list[str | int] = [morph.lemma]
 
                 # todo all these if statements are slow, but that's fine?
@@ -944,6 +940,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
                 if selected_output_options.selected_extra_occurrences_column:
                     row_values.append(occurrence)
 
+                print(f"row_values: {row_values}")
                 morph_writer.writerow(row_values)
 
     ##############################################################################

@@ -36,20 +36,32 @@ def test_highlighting(  # pylint:disable=unused-argument
 
     am_config = AnkiMorphsConfig()
     card_morphs: list[Morpheme] = [
-        Morpheme(lemma="お前", inflection="お前", highest_learning_interval=0),
-        Morpheme(lemma="が", inflection="が", highest_learning_interval=0),
-        Morpheme(lemma="た", inflection="た", highest_learning_interval=0),
-        Morpheme(lemma="たち", inflection="たち", highest_learning_interval=0),
-        Morpheme(lemma="な", inflection="な", highest_learning_interval=0),
-        Morpheme(lemma="に", inflection="に", highest_learning_interval=0),
-        Morpheme(lemma="の", inflection="の", highest_learning_interval=0),
-        Morpheme(lemma="ので", inflection="ので", highest_learning_interval=0),
-        Morpheme(lemma="を", inflection="を", highest_learning_interval=0),
-        Morpheme(lemma="時間", inflection="時間", highest_learning_interval=0),
-        Morpheme(lemma="珍しい", inflection="珍しく", highest_learning_interval=0),
-        Morpheme(lemma="空く", inflection="空い", highest_learning_interval=0),
-        Morpheme(lemma="見る", inflection="見", highest_learning_interval=0),
-        Morpheme(lemma="顔", inflection="顔", highest_learning_interval=0),
+        Morpheme(
+            lemma="お前", inflection="お前", highest_inflection_learning_interval=0
+        ),
+        Morpheme(lemma="が", inflection="が", highest_inflection_learning_interval=0),
+        Morpheme(lemma="た", inflection="た", highest_inflection_learning_interval=0),
+        Morpheme(
+            lemma="たち", inflection="たち", highest_inflection_learning_interval=0
+        ),
+        Morpheme(lemma="な", inflection="な", highest_inflection_learning_interval=0),
+        Morpheme(lemma="に", inflection="に", highest_inflection_learning_interval=0),
+        Morpheme(lemma="の", inflection="の", highest_inflection_learning_interval=0),
+        Morpheme(
+            lemma="ので", inflection="ので", highest_inflection_learning_interval=0
+        ),
+        Morpheme(lemma="を", inflection="を", highest_inflection_learning_interval=0),
+        Morpheme(
+            lemma="時間", inflection="時間", highest_inflection_learning_interval=0
+        ),
+        Morpheme(
+            lemma="珍しい", inflection="珍しく", highest_inflection_learning_interval=0
+        ),
+        Morpheme(
+            lemma="空く", inflection="空い", highest_inflection_learning_interval=0
+        ),
+        Morpheme(lemma="見る", inflection="見", highest_inflection_learning_interval=0),
+        Morpheme(lemma="顔", inflection="顔", highest_inflection_learning_interval=0),
     ]
 
     highlighted_text: str = text_highlighting.get_highlighted_text(
@@ -64,7 +76,9 @@ def test_highlighting(  # pylint:disable=unused-argument
     input_text = "そうです ね"
     card_morphs = [
         Morpheme(
-            lemma="そうですね", inflection="そうですね", highest_learning_interval=0
+            lemma="そうですね",
+            inflection="そうですね",
+            highest_inflection_learning_interval=0,
         ),
     ]
     correct_result = "そうです ね"
@@ -78,30 +92,70 @@ def test_highlighting(  # pylint:disable=unused-argument
     input_text = "Das sind doch die Schädel von den Flüchtlingen, die wir gefunden hatten! Keine Sorge, dein Kopf wird auch schon bald in meiner Sammlung sein."
     card_morphs = [
         Morpheme(
-            lemma="Flüchtling", inflection="flüchtlingen", highest_learning_interval=0
+            lemma="Flüchtling",
+            inflection="flüchtlingen",
+            highest_inflection_learning_interval=0,
         ),
-        Morpheme(lemma="Sammlung", inflection="sammlung", highest_learning_interval=0),
-        Morpheme(lemma="finden", inflection="gefunden", highest_learning_interval=0),
-        Morpheme(lemma="Schädel", inflection="schädel", highest_learning_interval=0),
-        Morpheme(lemma="haben", inflection="hatten", highest_learning_interval=0),
-        Morpheme(lemma="mein", inflection="meiner", highest_learning_interval=0),
-        Morpheme(lemma="Sorge", inflection="sorge", highest_learning_interval=0),
-        Morpheme(lemma="kein", inflection="keine", highest_learning_interval=0),
-        Morpheme(lemma="schon", inflection="schon", highest_learning_interval=0),
-        Morpheme(lemma="Kopf", inflection="kopf", highest_learning_interval=0),
-        Morpheme(lemma="auch", inflection="auch", highest_learning_interval=0),
-        Morpheme(lemma="bald", inflection="bald", highest_learning_interval=0),
-        Morpheme(lemma="dein", inflection="dein", highest_learning_interval=0),
-        Morpheme(lemma="doch", inflection="doch", highest_learning_interval=0),
-        Morpheme(lemma="sein", inflection="sein", highest_learning_interval=0),
-        Morpheme(lemma="sein", inflection="sind", highest_learning_interval=0),
-        Morpheme(lemma="werden", inflection="wird", highest_learning_interval=0),
-        Morpheme(lemma="der", inflection="das", highest_learning_interval=0),
-        Morpheme(lemma="der", inflection="den", highest_learning_interval=0),
-        Morpheme(lemma="der", inflection="die", highest_learning_interval=0),
-        Morpheme(lemma="von", inflection="von", highest_learning_interval=0),
-        Morpheme(lemma="wir", inflection="wir", highest_learning_interval=0),
-        Morpheme(lemma="in", inflection="in", highest_learning_interval=0),
+        Morpheme(
+            lemma="Sammlung",
+            inflection="sammlung",
+            highest_inflection_learning_interval=0,
+        ),
+        Morpheme(
+            lemma="finden",
+            inflection="gefunden",
+            highest_inflection_learning_interval=0,
+        ),
+        Morpheme(
+            lemma="Schädel",
+            inflection="schädel",
+            highest_inflection_learning_interval=0,
+        ),
+        Morpheme(
+            lemma="haben", inflection="hatten", highest_inflection_learning_interval=0
+        ),
+        Morpheme(
+            lemma="mein", inflection="meiner", highest_inflection_learning_interval=0
+        ),
+        Morpheme(
+            lemma="Sorge", inflection="sorge", highest_inflection_learning_interval=0
+        ),
+        Morpheme(
+            lemma="kein", inflection="keine", highest_inflection_learning_interval=0
+        ),
+        Morpheme(
+            lemma="schon", inflection="schon", highest_inflection_learning_interval=0
+        ),
+        Morpheme(
+            lemma="Kopf", inflection="kopf", highest_inflection_learning_interval=0
+        ),
+        Morpheme(
+            lemma="auch", inflection="auch", highest_inflection_learning_interval=0
+        ),
+        Morpheme(
+            lemma="bald", inflection="bald", highest_inflection_learning_interval=0
+        ),
+        Morpheme(
+            lemma="dein", inflection="dein", highest_inflection_learning_interval=0
+        ),
+        Morpheme(
+            lemma="doch", inflection="doch", highest_inflection_learning_interval=0
+        ),
+        Morpheme(
+            lemma="sein", inflection="sein", highest_inflection_learning_interval=0
+        ),
+        Morpheme(
+            lemma="sein", inflection="sind", highest_inflection_learning_interval=0
+        ),
+        Morpheme(
+            lemma="werden", inflection="wird", highest_inflection_learning_interval=0
+        ),
+        Morpheme(lemma="der", inflection="das", highest_inflection_learning_interval=0),
+        Morpheme(lemma="der", inflection="den", highest_inflection_learning_interval=0),
+        Morpheme(lemma="der", inflection="die", highest_inflection_learning_interval=0),
+        Morpheme(lemma="von", inflection="von", highest_inflection_learning_interval=0),
+        Morpheme(lemma="wir", inflection="wir", highest_inflection_learning_interval=0),
+        Morpheme(lemma="in", inflection="in", highest_inflection_learning_interval=0),
     ]
     correct_result = '<span morph-status="unknown">Das</span> <span morph-status="unknown">sind</span> <span morph-status="unknown">doch</span> <span morph-status="unknown">die</span> <span morph-status="unknown">Schädel</span> <span morph-status="unknown">von</span> <span morph-status="unknown">den</span> <span morph-status="unknown">Flüchtlingen</span>, <span morph-status="unknown">die</span> <span morph-status="unknown">wir</span> <span morph-status="unknown">gefunden</span> <span morph-status="unknown">hatten</span>! <span morph-status="unknown">Keine</span> <span morph-status="unknown">Sorge</span>, <span morph-status="unknown">dein</span> <span morph-status="unknown">Kopf</span> <span morph-status="unknown">wird</span> <span morph-status="unknown">auch</span> <span morph-status="unknown">schon</span> <span morph-status="unknown">bald</span> <span morph-status="unknown">in</span> <span morph-status="unknown">meiner</span> <span morph-status="unknown">Sammlung</span> <span morph-status="unknown">sein</span>.'
     highlighted_text = text_highlighting.get_highlighted_text(
@@ -113,8 +167,8 @@ def test_highlighting(  # pylint:disable=unused-argument
     # This fourth example checks if morphs with special regex characters are escaped properly
     input_text = "몇...?<div><br></div><div>몇...</div>"
     card_morphs = [
-        Morpheme(lemma="?몇", inflection="?몇", highest_learning_interval=0),
-        Morpheme(lemma="몇", inflection="몇", highest_learning_interval=0),
+        Morpheme(lemma="?몇", inflection="?몇", highest_inflection_learning_interval=0),
+        Morpheme(lemma="몇", inflection="몇", highest_inflection_learning_interval=0),
     ]
     correct_result = '<span morph-status="unknown">몇</span>...?<div><br></div><div><span morph-status="unknown">몇</span>...</div>'
     highlighted_text = text_highlighting.get_highlighted_text(

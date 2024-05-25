@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 from unittest import mock
 
+import anki
 import aqt
 import pytest
 from _pytest.fixtures import SubRequest
@@ -237,6 +238,10 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
             original_collection=Collection(str(collection_path_original)),
             modified_collection=mock_mw.col,
         )
+
+    except anki.errors.DBError:
+        yield None
+
     finally:
         mock_mw.col.close()
 

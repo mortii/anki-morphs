@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import functools
 import os
-import pprint
 import sqlite3
 from collections import Counter
 from collections.abc import Sequence

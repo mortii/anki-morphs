@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from csv_diff import compare, load_csv
 
-from ankimorphs import AnkiMorphsDB
+# from ankimorphs import AnkiMorphsDB
 from ankimorphs.generators_output_dialog import GeneratorOutputDialog, OutputOptions
 from ankimorphs.generators_window import GeneratorWindow
 
@@ -29,27 +29,47 @@ from .environment_setup_for_tests import (  # pylint:disable=unused-import
     ["spaCy: ja_core_news_sm", "AnkiMorphs: Japanese"],
 )
 @pytest.mark.parametrize(
-    "full_format",
+    "only_lemma",
+    [True, False],
+)
+@pytest.mark.parametrize(
+    "comprehension_cutoff",
     [True, False],
 )
 def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-locals
-    fake_environment, morphemizer_description, full_format, qtbot
+    fake_environment, morphemizer_description, only_lemma, comprehension_cutoff, qtbot
 ):
+    """
+    All of these files has the additional "occurrences" column, i.e. the
+    option "add occurrences column" is always used.
+    """
     gw = GeneratorWindow()
 
     input_folder = Path(TESTS_DATA_PATH, "ja_subs")
     test_output_file = Path(TESTS_DATA_TESTS_OUTPUTS_PATH, "test_output_file.csv")
 
     if morphemizer_description == "AnkiMorphs: Japanese":
-        if full_format:
-            _file_name = "mecab_freq_full.csv"
+        if only_lemma:
+            if comprehension_cutoff:
+                _file_name = "mecab_freq_lemma_comprehension.csv"
+            else:
+                _file_name = "mecab_freq_lemma_min_occurrence.csv"
         else:
-            _file_name = "mecab_freq_min.csv"
+            if comprehension_cutoff:
+                _file_name = "mecab_freq_inflection_comprehension.csv"
+            else:
+                _file_name = "mecab_freq_inflection_min_occurrence.csv"
     else:
-        if full_format:
-            _file_name = "ja_core_news_sm_freq_full.csv"
+        if only_lemma:
+            if comprehension_cutoff:
+                _file_name = "ja_core_news_sm_freq_lemma_comprehension.csv"
+            else:
+                _file_name = "ja_core_news_sm_freq_lemma_min_occurrence.csv"
         else:
-            _file_name = "ja_core_news_sm_freq_min.csv"
+            if comprehension_cutoff:
+                _file_name = "ja_core_news_sm_freq_inflection_comprehension.csv"
+            else:
+                _file_name = "ja_core_news_sm_freq_inflection_min_occurrence.csv"
 
     correct_output_file = Path(
         TESTS_DATA_CORRECT_OUTPUTS_PATH,
@@ -74,12 +94,12 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-l
     selected_output = GeneratorOutputDialog(_default_output_file)
     selected_output.ui.addOccurrencesColumnCheckBox.setChecked(True)
 
-    if not full_format:
-        # To minimize the permutations we use the "comprehension" option along with the minimum
-        # format, so we test both of those at the same time.
+    if only_lemma:
         selected_output.ui.storeOnlyMorphLemmaRadioButton.setChecked(True)
         selected_output.ui.storeMorphLemmaAndInflectionRadioButton.setChecked(False)
+    if comprehension_cutoff:
         selected_output.ui.comprehensionRadioButton.setChecked(True)
+        selected_output.ui.minOccurrenceRadioButton.setChecked(False)
 
     selected_output_options: OutputOptions = selected_output.get_selected_options()
 

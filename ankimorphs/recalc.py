@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import csv
-import pprint
 import time
 from functools import partial
 from pathlib import Path
@@ -557,9 +556,9 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
             card = mw.col.get_card(card_id)
 
             for morph in card_morphs:
-                assert morph.highest_learning_interval is not None
+                assert morph.highest_inflection_learning_interval is not None
 
-                if morph.highest_learning_interval == 0:
+                if morph.highest_inflection_learning_interval == 0:
                     card_unknown_morphs.add(morph)
 
                     # we don't want to do anything to cards that have

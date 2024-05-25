@@ -8,7 +8,7 @@ from aqt.utils import tooltip
 from .ui.generator_output_dialog_ui import Ui_GeneratorOutputDialog
 
 
-class OutputOptions:
+class OutputOptions:  # pylint:disable=too-many-instance-attributes
     def __init__(self, ui: Ui_GeneratorOutputDialog):
         self.output_path: Path = Path(ui.outputLineEdit.text())
 
