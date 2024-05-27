@@ -60,7 +60,7 @@ Inflection : Base
 Using an int as a primary key is preferable over text objects, but hashing the norm and base would lead to a high
 likelihood of collisions because of the following:
 
-    # sqllite integers are max 2^(63)-1 = 9,223,372,036,854,775,807
+    # sqlite integers are max 2^(63)-1 = 9,223,372,036,854,775,807
     # The chance of hash collision is 50% when sqrt(2^(n/2)) where n is bits of the hash
     # With 64 bits the prob of collision becomes sqrt(2^(64/2)) = 65,536
 
