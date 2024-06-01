@@ -27,7 +27,12 @@ assignees: mortii
 
 [//]: # (If applicable, add screenshots to help explain your problem, otherwise you can delete this section.)
 
-### My setup
+### My AnkiMorphs settings
+
+[//]: # (Copy and paste the json configs displayed when you go to:)
+[//]: # (Tools -> Add-ons -> select "AnkiMorphs" -> click on the "Config" button on the lower right sidebar.)
+
+### My system
 
 [//]: # (Note: the AnkiMorphs version is found on the bottom of the AnkiMorphs settings window)
 
