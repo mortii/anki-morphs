@@ -240,4 +240,11 @@ If you want to permanently remove this restriction for your user, then use the c
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
 ````
 
+
+###  ImportError: cannot import name 'ModelMetaclass' from 'pydantic.main'
+
+Some people on Arch have experienced problems getting spaCy for work when they already have installed the [python-spacy](https://aur.archlinux.org/packages/python-spacy)
+and [python-thinc](https://aur.archlinux.org/packages/python-thinc) AUR packages. Uninstalling those packages can potentially fix this
+import error. For more info see [issue #239](https://github.com/mortii/anki-morphs/issues/239).
+
 </details>
