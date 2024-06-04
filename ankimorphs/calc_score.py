@@ -100,26 +100,6 @@ class ScoreValues:
 #######################################
 
 
-def _get_morph_targets_difference(
-    num_morphs: int,
-    high_target: int,
-    low_target: int,
-    coefficients_high: tuple[int, int, int],
-    coefficients_low: tuple[int, int, int],
-) -> int:
-    if num_morphs > high_target:
-        difference = abs(num_morphs - high_target)
-        a, b, c = coefficients_high
-    elif num_morphs < low_target:
-        difference = abs(num_morphs - low_target)
-        a, b, c = coefficients_low
-    else:
-        return 0
-
-    # https://www.geogebra.org/graphing/ta3eqb8y
-    return a * (difference**2) + b * difference + c
-
-
 def get_card_score_values(  # pylint:disable=too-many-locals, too-many-statements
     am_config: AnkiMorphsConfig,
     card_id: int,
@@ -146,8 +126,8 @@ def get_card_score_values(  # pylint:disable=too-many-locals, too-many-statement
     total_priority_all_morphs = 0
     num_learning_morphs = 0
 
+    # todo: make this a separate function
     for morph in card_morphs:
-
         # print(f"morph: {morph}")
 
         assert morph.highest_inflection_learning_interval is not None
@@ -204,63 +184,34 @@ def get_card_score_values(  # pylint:disable=too-many-locals, too-many-statement
             card_has_learning_morphs=has_learning_morph,
         )
 
-    # todo: all these parameters are annoying, create two separate functions and just pass am_config
-    all_morphs_target_difference: int = _get_morph_targets_difference(
+    all_morphs_target_difference: int = _get_all_morphs_target_difference(
+        am_config=am_config,
         num_morphs=len(card_morphs),
-        high_target=am_config.algorithm_upper_target_all_morphs,
-        low_target=am_config.algorithm_lower_target_all_morphs,
-        coefficients_high=(
-            am_config.algorithm_upper_target_all_morphs_coefficient_a,
-            am_config.algorithm_upper_target_all_morphs_coefficient_b,
-            am_config.algorithm_upper_target_all_morphs_coefficient_c,
-        ),
-        coefficients_low=(
-            am_config.algorithm_lower_target_all_morphs_coefficient_a,
-            am_config.algorithm_lower_target_all_morphs_coefficient_b,
-            am_config.algorithm_lower_target_all_morphs_coefficient_c,
-        ),
     )
-    learning_morphs_target_difference: int = _get_morph_targets_difference(
+
+    learning_morphs_target_difference: int = _get_learning_morphs_target_difference(
+        am_config=am_config,
         num_morphs=num_learning_morphs,
-        high_target=am_config.algorithm_upper_target_learning_morphs,
-        low_target=am_config.algorithm_lower_target_learning_morphs,
-        coefficients_high=(
-            am_config.algorithm_upper_target_learning_morphs_coefficient_a,
-            am_config.algorithm_upper_target_learning_morphs_coefficient_b,
-            am_config.algorithm_upper_target_learning_morphs_coefficient_c,
-        ),
-        coefficients_low=(
-            am_config.algorithm_lower_target_learning_morphs_coefficient_a,
-            am_config.algorithm_lower_target_learning_morphs_coefficient_b,
-            am_config.algorithm_lower_target_learning_morphs_coefficient_c,
-        ),
     )
+
     all_morphs_avg_priority = int(total_priority_all_morphs / len(card_morphs))
 
     unknown_morphs_total_priority_score = (
-        # TOTAL_PRIORITY_UNKNOWN_MORPHS_WEIGHT * total_priority_unknown_morphs
         am_config.algorithm_total_priority_unknown_morphs
         * total_priority_unknown_morphs
     )
     all_morphs_avg_priority_score = (
-        # AVG_PRIORITY_ALL_MORPHS_WEIGHT * all_morphs_avg_priority
-        am_config.algorithm_average_priority_all_morphs
-        * all_morphs_avg_priority
+        am_config.algorithm_average_priority_all_morphs * all_morphs_avg_priority
     )
     all_morphs_total_priority_score = (
-        # TOTAL_PRIORITY_ALL_MORPHS_WEIGHT * total_priority_all_morphs
-        am_config.algorithm_total_priority_all_morphs
-        * total_priority_all_morphs
+        am_config.algorithm_total_priority_all_morphs * total_priority_all_morphs
     )
     leaning_morphs_target_difference_score = (
-        # LEARNING_MORPHS_TARGET_DISTANCE_WEIGHT * learning_morphs_target_difference
         am_config.algorithm_learning_morphs_target_distance
         * learning_morphs_target_difference
     )
     all_morphs_target_difference_score = (
-        # ALL_MORPHS_TARGET_DISTANCE_WEIGHT * all_morphs_target_difference
-        am_config.algorithm_all_morphs_target_distance
-        * all_morphs_target_difference
+        am_config.algorithm_all_morphs_target_distance * all_morphs_target_difference
     )
 
     score = (
@@ -311,4 +262,72 @@ def get_card_score_values(  # pylint:disable=too-many-locals, too-many-statement
         card_unknown_morphs=unknown_morphs,
         card_has_learning_morphs=has_learning_morph,
         score_terms=score_terms,
+    )
+
+
+def _get_morph_targets_difference(
+    num_morphs: int,
+    high_target: int,
+    low_target: int,
+    coefficients_high: tuple[int, int, int],
+    coefficients_low: tuple[int, int, int],
+) -> int:
+    if num_morphs > high_target:
+        difference = abs(num_morphs - high_target)
+        a, b, c = coefficients_high
+    elif num_morphs < low_target:
+        difference = abs(num_morphs - low_target)
+        a, b, c = coefficients_low
+    else:
+        return 0
+
+    # https://www.geogebra.org/graphing/ta3eqb8y
+    return a * (difference**2) + b * difference + c
+
+
+def _get_all_morphs_target_difference(
+    am_config: AnkiMorphsConfig, num_morphs: int
+) -> int:
+    high_target = am_config.algorithm_upper_target_all_morphs
+    low_target = am_config.algorithm_lower_target_all_morphs
+    coefficients_high = (
+        am_config.algorithm_upper_target_all_morphs_coefficient_a,
+        am_config.algorithm_upper_target_all_morphs_coefficient_b,
+        am_config.algorithm_upper_target_all_morphs_coefficient_c,
+    )
+    coefficients_low = (
+        am_config.algorithm_lower_target_all_morphs_coefficient_a,
+        am_config.algorithm_lower_target_all_morphs_coefficient_b,
+        am_config.algorithm_lower_target_all_morphs_coefficient_c,
+    )
+    return _get_morph_targets_difference(
+        num_morphs=num_morphs,
+        high_target=high_target,
+        low_target=low_target,
+        coefficients_high=coefficients_high,
+        coefficients_low=coefficients_low,
+    )
+
+
+def _get_learning_morphs_target_difference(
+    am_config: AnkiMorphsConfig, num_morphs: int
+) -> int:
+    high_target = am_config.algorithm_upper_target_learning_morphs
+    low_target = am_config.algorithm_lower_target_learning_morphs
+    coefficients_high = (
+        am_config.algorithm_upper_target_learning_morphs_coefficient_a,
+        am_config.algorithm_upper_target_learning_morphs_coefficient_b,
+        am_config.algorithm_upper_target_learning_morphs_coefficient_c,
+    )
+    coefficients_low = (
+        am_config.algorithm_lower_target_learning_morphs_coefficient_a,
+        am_config.algorithm_lower_target_learning_morphs_coefficient_b,
+        am_config.algorithm_lower_target_learning_morphs_coefficient_c,
+    )
+    return _get_morph_targets_difference(
+        num_morphs=num_morphs,
+        high_target=high_target,
+        low_target=low_target,
+        coefficients_high=coefficients_high,
+        coefficients_low=coefficients_low,
     )
