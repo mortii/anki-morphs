@@ -48,19 +48,19 @@
 
 
 <details>
-  <summary style="display:list-item">Morphs don't split on punctuation marks</summary>
+  <summary style="display:list-item">Morphs don't split correctly</summary>
 
-> Most morphemizers don't split text on punctuation marks because it would split phrases like `10 a.m.`
-> into `[10, a, m]`, which would be unideal.
+> Anki stores text on cards as HTML, and this can cause some weird/unexpected problems. One such problems is that
+> line breaks are actually stored as `<br>`.
 >
->This can cause problems when there are line breaks on Anki cards:
+> Here is how it looks on the card:
 >
 >```plaintext
 >Hello.
 >Goodbye.
 >```
 >
->The text is actually stored as:
+>This is how it is actually stored:
 >
 >```plaintext
 >Hello.<br>Goodbye.
@@ -72,14 +72,21 @@
 >Hello.Goodbye.
 >```
 >
->To fix this problem, you can add a whitespace between the punctuation mark and the `<br>` tag.
->```plaintext
->.<br>
->. <br>
->```
->This can be done in bulk with
-> the `find and replace` feature in the Anki browser:
+>To fix this problem, we can use the [find and replace feature](https://docs.ankiweb.net/browsing.html#find-and-replace)
+> in Anki to add a whitespace between before the `<br>` on all our cards:
 ![find_and_replace_split.png](../img/find_and_replace_split.png)
+> Where the `Find` field has this:
+>```plaintext
+>(\S)<br>
+>```
+>The `(\S)` part finds a non-whitespace character and saves it for later.
+>
+>And then the `Replace With` field has this:
+>```plaintext
+>${1} <br>
+>```
+>The `${1}` part re-inserts the `(\S)` character that was found earlier.
+
 
 
 </details>
