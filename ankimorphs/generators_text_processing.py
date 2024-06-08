@@ -9,7 +9,7 @@ from typing import Any, TextIO
 
 from . import text_preprocessing
 from .morpheme import Morpheme, MorphOccurrence
-from .morphemizer import Morphemizer
+from .morphemizers.morphemizer import Morphemizer
 from .text_preprocessing import (
     remove_names_textfile,
     round_brackets_regex,

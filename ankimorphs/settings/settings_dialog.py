@@ -28,7 +28,7 @@ from ..ankimorphs_config import (
     AnkiMorphsConfigFilter,
     FilterTypeAlias,
 )
-from ..morphemizer import get_all_morphemizers
+from ..morphemizers.morphemizer import get_all_morphemizers
 from ..tag_selection_dialog import TagSelectionDialog
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_algorithm_tab import AlgorithmTab

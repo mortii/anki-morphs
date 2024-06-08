@@ -26,9 +26,7 @@ from . import (
     ankimorphs_globals,
     generators_text_processing,
     generators_utils,
-    morphemizer,
     readability_report_utils,
-    spacy_wrapper,
 )
 from .ankimorphs_config import AnkiMorphsConfig
 from .ankimorphs_db import AnkiMorphsDB
@@ -36,7 +34,8 @@ from .exceptions import CancelledOperationException, EmptyFileSelectionException
 from .generators_output_dialog import GeneratorOutputDialog, OutputOptions
 from .generators_text_processing import PreprocessOptions
 from .morpheme import MorphOccurrence
-from .morphemizer import Morphemizer, SpacyMorphemizer
+from .morphemizers import morphemizer, spacy_wrapper
+from .morphemizers.morphemizer import Morphemizer, SpacyMorphemizer
 from .readability_report_utils import FileMorphsStats
 from .table_utils import QTableWidgetIntegerItem, QTableWidgetPercentItem
 from .ui.generators_window_ui import Ui_GeneratorsWindow

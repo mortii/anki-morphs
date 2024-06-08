@@ -4,9 +4,9 @@ from unittest import mock
 
 import pytest
 
-from ankimorphs import spacy_wrapper
 from ankimorphs.morpheme import Morpheme
-from ankimorphs.morphemizer import get_morphemizer_by_description
+from ankimorphs.morphemizers import spacy_wrapper
+from ankimorphs.morphemizers.morphemizer import get_morphemizer_by_description
 
 from .environment_setup_for_tests import TESTS_DATA_PATH
 

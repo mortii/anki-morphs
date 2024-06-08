@@ -9,7 +9,7 @@ import sys
 from types import ModuleType
 from typing import IO, Any
 
-from .morpheme import Morpheme
+from ..morpheme import Morpheme
 
 _MECAB_NODE_IPADIC_PARTS = ["%f[6]", "%m", "%f[7]", "%f[0]", "%f[1]"]
 _MECAB_NODE_LENGTH_IPADIC = len(_MECAB_NODE_IPADIC_PARTS)

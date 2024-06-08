@@ -4,7 +4,7 @@ from typing import Any
 from . import name_file_utils
 from .ankimorphs_config import AnkiMorphsConfig
 from .morpheme import Morpheme
-from .morphemizer import Morphemizer
+from .morphemizers.morphemizer import Morphemizer
 
 square_brackets_regex = re.compile(r"\[[^]]*]")
 round_brackets_regex = re.compile(r"（[^）]*）")

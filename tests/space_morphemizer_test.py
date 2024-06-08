@@ -2,10 +2,10 @@ from unittest import mock
 
 import pytest
 
-import ankimorphs.morphemizer
-from ankimorphs import spacy_wrapper
+import ankimorphs.morphemizers.morphemizer
 from ankimorphs.morpheme import Morpheme
-from ankimorphs.morphemizer import get_morphemizer_by_description
+from ankimorphs.morphemizers import spacy_wrapper
+from ankimorphs.morphemizers.morphemizer import get_morphemizer_by_description
 
 
 @pytest.fixture(scope="function")
@@ -17,7 +17,7 @@ def fake_environment():
     yield
     patch_testing_variable.stop()
     # this resets the morphemizers for the future tests
-    ankimorphs.morphemizer.morphemizers = None
+    ankimorphs.morphemizers.morphemizer.morphemizers = None
 
 
 def test_french(fake_environment):  # pylint:disable=unused-argument

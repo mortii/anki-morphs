@@ -75,8 +75,8 @@ exclude = [
   "ankimorphs/ui/",
   "ankimorphs/debug_utils.py",
   "ankimorphs/table_utils.py",
-  "ankimorphs/spacy_wrapper.py",
-  "ankimorphs/mecab_wrapper.py"
+  "ankimorphs/morphemizers/spacy_wrapper.py",
+  "ankimorphs/morphemizers/mecab_wrapper.py"
 ]
 ignore_names = ["print_*", "_refresh_needed", "_v3", "reopen", "closeWithCallback"]
 min_confidence = 60

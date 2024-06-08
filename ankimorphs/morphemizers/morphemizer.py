@@ -3,8 +3,8 @@ from __future__ import annotations
 import functools
 import re
 
+from ..morpheme import Morpheme
 from . import jieba_wrapper, mecab_wrapper, spacy_wrapper
-from .morpheme import Morpheme
 
 space_char_regex = re.compile(" ")
 

@@ -21,8 +21,6 @@ from . import (
     extra_field_utils,
     message_box_utils,
 )
-from . import morphemizer as morphemizer_module
-from . import spacy_wrapper
 from .anki_data_utils import AnkiCardData, AnkiMorphsCardData
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
@@ -38,7 +36,9 @@ from .exceptions import (
 )
 from .morph_priority_utils import _get_morph_priority
 from .morpheme import Morpheme
-from .morphemizer import SpacyMorphemizer
+from .morphemizers import morphemizer as morphemizer_module
+from .morphemizers import spacy_wrapper
+from .morphemizers.morphemizer import SpacyMorphemizer
 from .text_preprocessing import (
     get_processed_expression,
     get_processed_morphemizer_morphs,

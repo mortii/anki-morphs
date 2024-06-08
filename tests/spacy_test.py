@@ -5,9 +5,10 @@ import aqt
 import pytest
 import spacy
 
-from ankimorphs import AnkiMorphsConfig, ankimorphs_config, spacy_wrapper
+from ankimorphs import AnkiMorphsConfig, ankimorphs_config
 from ankimorphs.morpheme import Morpheme
-from ankimorphs.spacy_wrapper import get_nlp
+from ankimorphs.morphemizers import spacy_wrapper
+from ankimorphs.morphemizers.spacy_wrapper import get_nlp
 from ankimorphs.text_preprocessing import get_processed_spacy_morphs
 
 

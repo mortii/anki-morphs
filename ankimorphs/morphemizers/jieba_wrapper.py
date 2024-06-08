@@ -5,7 +5,7 @@ import importlib.util
 import sys
 from types import ModuleType
 
-from .morpheme import Morpheme
+from ..morpheme import Morpheme
 
 posseg: ModuleType | None = None
 successful_startup: bool = False

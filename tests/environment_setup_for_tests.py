@@ -28,9 +28,9 @@ from ankimorphs import (
     name_file_utils,
     recalc,
     reviewing_utils,
-    spacy_wrapper,
 )
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
+from ankimorphs.morphemizers import spacy_wrapper
 
 TESTS_DATA_PATH = Path(Path(__file__).parent, "data")
 TESTS_DATA_CORRECT_OUTPUTS_PATH = Path(TESTS_DATA_PATH, "correct_outputs")
