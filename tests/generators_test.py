@@ -6,8 +6,11 @@ import pytest
 from csv_diff import compare, load_csv
 
 # from ankimorphs import AnkiMorphsDB
-from ankimorphs.generators_output_dialog import GeneratorOutputDialog, OutputOptions
-from ankimorphs.generators_window import GeneratorWindow
+from ankimorphs.generators.generators_output_dialog import (
+    GeneratorOutputDialog,
+    OutputOptions,
+)
+from ankimorphs.generators.generators_window import GeneratorWindow
 
 from .environment_setup_for_tests import (  # pylint:disable=unused-import
     TESTS_DATA_CORRECT_OUTPUTS_PATH,
@@ -166,3 +169,9 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-l
 #             assert len(changes) == 0
 #
 #     os.remove(test_output_file)
+
+
+@pytest.mark.xfail
+def test_readability_report(fake_environment):
+    # todo: readability report currently fails
+    assert False

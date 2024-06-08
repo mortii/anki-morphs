@@ -7,16 +7,16 @@
 import re
 from typing import Any, TextIO
 
-from . import text_preprocessing
-from .morpheme import Morpheme, MorphOccurrence
-from .morphemizers.morphemizer import Morphemizer
-from .text_preprocessing import (
+from .. import text_preprocessing
+from ..morpheme import Morpheme, MorphOccurrence
+from ..morphemizers.morphemizer import Morphemizer
+from ..text_preprocessing import (
     remove_names_textfile,
     round_brackets_regex,
     slim_round_brackets_regexp,
     square_brackets_regex,
 )
-from .ui.generators_window_ui import Ui_GeneratorsWindow
+from ..ui.generators_window_ui import Ui_GeneratorsWindow
 
 
 class PreprocessOptions:

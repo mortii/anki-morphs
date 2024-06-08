@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from .ankimorphs_config import AnkiMorphsConfig
-from .ankimorphs_db import AnkiMorphsDB
-from .morpheme import Morpheme, MorphOccurrence
+from ..ankimorphs_config import AnkiMorphsConfig
+from ..ankimorphs_db import AnkiMorphsDB
+from ..morpheme import Morpheme, MorphOccurrence
 
 
 class FileMorphsStats:

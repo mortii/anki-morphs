@@ -4,10 +4,10 @@ import copy
 import csv
 from pathlib import Path
 
-from . import ankimorphs_globals
-from .ankimorphs_db import AnkiMorphsDB
+from .. import ankimorphs_globals
+from ..ankimorphs_db import AnkiMorphsDB
+from ..morpheme import MorphOccurrence
 from .generators_output_dialog import OutputOptions
-from .morpheme import MorphOccurrence
 
 
 def get_total_morph_occurrences_dict(

@@ -48,7 +48,7 @@ from . import (
 )
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
-from .generators_window import GeneratorWindow
+from .generators.generators_window import GeneratorWindow
 from .known_morphs_exporter import KnownMorphsExporterDialog
 from .settings import settings_dialog
 from .settings.settings_dialog import SettingsDialog

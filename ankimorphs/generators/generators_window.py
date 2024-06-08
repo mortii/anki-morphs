@@ -22,23 +22,23 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from . import (
-    ankimorphs_globals,
-    generators_text_processing,
-    generators_utils,
-    readability_report_utils,
+from ankimorphs.exceptions import (
+    CancelledOperationException,
+    EmptyFileSelectionException,
 )
-from .ankimorphs_config import AnkiMorphsConfig
-from .ankimorphs_db import AnkiMorphsDB
-from .exceptions import CancelledOperationException, EmptyFileSelectionException
+
+from .. import ankimorphs_globals
+from ..ankimorphs_config import AnkiMorphsConfig
+from ..ankimorphs_db import AnkiMorphsDB
+from ..morpheme import MorphOccurrence
+from ..morphemizers import morphemizer, spacy_wrapper
+from ..morphemizers.morphemizer import Morphemizer, SpacyMorphemizer
+from ..table_utils import QTableWidgetIntegerItem, QTableWidgetPercentItem
+from ..ui.generators_window_ui import Ui_GeneratorsWindow
+from . import generators_text_processing, generators_utils, readability_report_utils
 from .generators_output_dialog import GeneratorOutputDialog, OutputOptions
 from .generators_text_processing import PreprocessOptions
-from .morpheme import MorphOccurrence
-from .morphemizers import morphemizer, spacy_wrapper
-from .morphemizers.morphemizer import Morphemizer, SpacyMorphemizer
 from .readability_report_utils import FileMorphsStats
-from .table_utils import QTableWidgetIntegerItem, QTableWidgetPercentItem
-from .ui.generators_window_ui import Ui_GeneratorsWindow
 
 
 class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attributes

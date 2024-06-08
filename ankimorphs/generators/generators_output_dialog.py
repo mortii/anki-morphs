@@ -5,7 +5,7 @@ from pathlib import Path
 from aqt.qt import QDialog, QDir, QFileDialog  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
-from .ui.generator_output_dialog_ui import Ui_GeneratorOutputDialog
+from ..ui.generator_output_dialog_ui import Ui_GeneratorOutputDialog
 
 
 class OutputOptions:  # pylint:disable=too-many-instance-attributes

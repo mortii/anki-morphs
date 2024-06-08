@@ -24,12 +24,12 @@ from ankimorphs import (
     ankimorphs_config,
     ankimorphs_db,
     ankimorphs_globals,
-    generators_window,
     name_file_utils,
     recalc,
     reviewing_utils,
 )
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
+from ankimorphs.generators import generators_window
 from ankimorphs.morphemizers import spacy_wrapper
 
 TESTS_DATA_PATH = Path(Path(__file__).parent, "data")
