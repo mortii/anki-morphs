@@ -22,12 +22,21 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from . import ankimorphs_config, ankimorphs_globals, table_utils
-from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter, FilterTypeAlias
-from .message_box_utils import show_warning_box
-from .morphemizer import get_all_morphemizers
-from .tag_selection_dialog import TagSelectionDialog
-from .ui.settings_dialog_ui import Ui_SettingsDialog
+from .. import ankimorphs_config, ankimorphs_globals, message_box_utils, table_utils
+from ..ankimorphs_config import (
+    AnkiMorphsConfig,
+    AnkiMorphsConfigFilter,
+    FilterTypeAlias,
+)
+from ..morphemizer import get_all_morphemizers
+from ..tag_selection_dialog import TagSelectionDialog
+from ..ui.settings_dialog_ui import Ui_SettingsDialog
+from .settings_algorithm_tab import AlgorithmTab
+from .settings_preprocess_tab import PreprocessTab
+from .settings_recalc_tab import RecalcTab
+from .settings_shortcuts_tab import ShortcutTab
+from .settings_skip_tab import SkipTab
+from .settings_tags_tab import TagsTab
 
 
 class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
@@ -74,14 +83,59 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         ]
         self._config = AnkiMorphsConfig()
         self._default_config = AnkiMorphsConfig(is_default=True)
+
+        self._shortcut_tab = ShortcutTab(
+            parent=self,
+            ui=self.ui,
+            config=self._config,
+            default_config=self._default_config,
+        )
+
+        self._algorithm_tab = AlgorithmTab(
+            parent=self,
+            ui=self.ui,
+            config=self._config,
+            default_config=self._default_config,
+        )
+
+        self._recalc_tab = RecalcTab(
+            parent=self,
+            ui=self.ui,
+            config=self._config,
+            default_config=self._default_config,
+        )
+
+        self._skip_tab = SkipTab(
+            parent=self,
+            ui=self.ui,
+            config=self._config,
+            default_config=self._default_config,
+        )
+
+        self._preprocess_tab = PreprocessTab(
+            parent=self,
+            ui=self.ui,
+            config=self._config,
+            default_config=self._default_config,
+        )
+
+        self._tags_tab = TagsTab(
+            parent=self,
+            ui=self.ui,
+            config=self._config,
+            default_config=self._default_config,
+        )
+
         self._setup_note_filters_table(self._config.filters)
         self._setup_extra_fields_tree_widget(self._config.filters)
-        self._populate_tags_tab()
-        self._populate_preprocess_tab()
-        self._populate_skip_tab()
-        self._populate_algorithm_tab()
-        self._populate_recalc_tab()
-        self._populate_shortcuts_tab()
+
+        self._tags_tab.populate()
+        self._preprocess_tab.populate()
+        self._skip_tab.populate()
+        self._algorithm_tab.populate()
+        self._recalc_tab.populate()
+        self._shortcut_tab.populate()
+
         self._setup_buttons()
         self.ui.treeWidget.itemChanged.connect(self._tree_item_changed)
         self.ui.tabWidget.currentChanged.connect(self._on_tab_changed)
@@ -295,442 +349,21 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
             self.ui.treeWidget.addTopLevelItem(top_node)
 
-    def _populate_tags_tab(self) -> None:
-        self.ui.tagReadyLineEdit.setText(self._config.tag_ready)
-        self.ui.tagNotReadyLineEdit.setText(self._config.tag_not_ready)
-        self.ui.tagKnownAutomaticallyLineEdit.setText(
-            self._config.tag_known_automatically
-        )
-        self.ui.tagKnownManuallyLineEdit.setText(self._config.tag_known_manually)
-        self.ui.tagLearnCardNowLineEdit.setText(self._config.tag_learn_card_now)
-
-    def _restore_tags_defaults(self, skip_confirmation: bool = False) -> None:
-        if not skip_confirmation:
-            title = "Confirmation"
-            text = "Are you sure you want to restore default tags settings?"
-            confirmed = self._warning_dialog(title, text)
-
-            if not confirmed:
-                return
-
-        self.ui.tagReadyLineEdit.setText(self._default_config.tag_ready)
-        self.ui.tagNotReadyLineEdit.setText(self._default_config.tag_not_ready)
-        self.ui.tagKnownAutomaticallyLineEdit.setText(
-            self._default_config.tag_known_automatically
-        )
-        self.ui.tagKnownManuallyLineEdit.setText(
-            self._default_config.tag_known_manually
-        )
-        self.ui.tagLearnCardNowLineEdit.setText(self._default_config.tag_learn_card_now)
-
-    def _populate_preprocess_tab(self) -> None:
-        self.ui.preprocessIgnoreSquareCheckBox.setChecked(
-            self._config.preprocess_ignore_bracket_contents
-        )
-        self.ui.preprocessIgnoreRoundCheckBox.setChecked(
-            self._config.preprocess_ignore_round_bracket_contents
-        )
-        self.ui.preprocessIgnoreSlimCheckBox.setChecked(
-            self._config.preprocess_ignore_slim_round_bracket_contents
-        )
-        self.ui.preprocessIgnoreNamesMizerCheckBox.setChecked(
-            self._config.preprocess_ignore_names_morphemizer
-        )
-        self.ui.preprocessIgnoreNamesFileCheckBox.setChecked(
-            self._config.preprocess_ignore_names_textfile
-        )
-        self.ui.preprocessIgnoreSuspendedCheckBox.setChecked(
-            self._config.preprocess_ignore_suspended_cards_content
-        )
-
-    def _restore_preprocess_defaults(self, skip_confirmation: bool = False) -> None:
-        if not skip_confirmation:
-            title = "Confirmation"
-            text = "Are you sure you want to restore default preprocess settings?"
-            confirmed = self._warning_dialog(title, text)
-
-            if not confirmed:
-                return
-
-        self.ui.preprocessIgnoreSquareCheckBox.setChecked(
-            self._default_config.preprocess_ignore_bracket_contents
-        )
-        self.ui.preprocessIgnoreRoundCheckBox.setChecked(
-            self._default_config.preprocess_ignore_round_bracket_contents
-        )
-        self.ui.preprocessIgnoreSlimCheckBox.setChecked(
-            self._default_config.preprocess_ignore_slim_round_bracket_contents
-        )
-        self.ui.preprocessIgnoreNamesMizerCheckBox.setChecked(
-            self._default_config.preprocess_ignore_names_morphemizer
-        )
-        self.ui.preprocessIgnoreNamesFileCheckBox.setChecked(
-            self._default_config.preprocess_ignore_names_textfile
-        )
-        self.ui.preprocessIgnoreSuspendedCheckBox.setChecked(
-            self._default_config.preprocess_ignore_suspended_cards_content
-        )
-
-    def _populate_shortcuts_tab(self) -> None:
-        self.ui.shortcutRecalcKeySequenceEdit.setKeySequence(
-            self._config.shortcut_recalc
-        )
-        self.ui.shortcutSettingsKeySequenceEdit.setKeySequence(
-            self._config.shortcut_settings
-        )
-        self.ui.shortcutBrowseReadyKeySequenceEdit.setKeySequence(
-            self._config.shortcut_browse_ready_same_unknown.toString()
-        )
-        self.ui.shortcutBrowseAllKeySequenceEdit.setKeySequence(
-            self._config.shortcut_browse_all_same_unknown.toString()
-        )
-        self.ui.shortcutBrowseReadyLemmaKeySequenceEdit.setKeySequence(
-            self._config.shortcut_browse_ready_same_unknown_lemma.toString()
-        )
-        self.ui.shortcutKnownAndSkipKeySequenceEdit.setKeySequence(
-            self._config.shortcut_set_known_and_skip.toString()
-        )
-        self.ui.shortcutLearnNowKeySequenceEdit.setKeySequence(
-            self._config.shortcut_learn_now.toString()
-        )
-        self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
-            self._config.shortcut_view_morphemes.toString()
-        )
-        self.ui.shortcutGeneratorsKeySequenceEdit.setKeySequence(
-            self._config.shortcut_generators.toString()
-        )
-        self.ui.shortcutKnownMorphsExporterKeySequenceEdit.setKeySequence(
-            self._config.shortcut_known_morphs_exporter.toString()
-        )
-
-    def _restore_shortcuts_defaults(self, skip_confirmation: bool = False) -> None:
-        if not skip_confirmation:
-            title = "Confirmation"
-            text = "Are you sure you want to restore default shortcuts settings?"
-            confirmed = self._warning_dialog(title, text)
-
-            if not confirmed:
-                return
-
-        self.ui.shortcutRecalcKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_recalc
-        )
-        self.ui.shortcutSettingsKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_settings
-        )
-        self.ui.shortcutBrowseReadyKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_browse_ready_same_unknown
-        )
-        self.ui.shortcutBrowseAllKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_browse_all_same_unknown
-        )
-        self.ui.shortcutBrowseReadyLemmaKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_browse_ready_same_unknown_lemma.toString()
-        )
-        self.ui.shortcutKnownAndSkipKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_set_known_and_skip
-        )
-        self.ui.shortcutLearnNowKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_learn_now
-        )
-        self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_view_morphemes
-        )
-        self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_view_morphemes.toString()
-        )
-        self.ui.shortcutKnownMorphsExporterKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_known_morphs_exporter.toString()
-        )
-
-    def _populate_recalc_tab(self) -> None:
-        self.ui.recalcIntervalSpinBox.setValue(self._config.recalc_interval_for_known)
-        self.ui.dueOffsetSpinBox.setValue(self._config.recalc_due_offset)
-        self.ui.offsetFirstMorphsSpinBox.setValue(
-            self._config.recalc_number_of_morphs_to_offset
-        )
-
-        self.ui.recalcBeforeSyncCheckBox.setChecked(self._config.recalc_on_sync)
-        self.ui.recalcSuspendKnownCheckBox.setChecked(
-            self._config.recalc_suspend_known_new_cards
-        )
-        self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.setChecked(
-            self._config.recalc_move_known_new_cards_to_the_end
-        )
-        self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
-            self._config.recalc_read_known_morphs_folder
-        )
-        self.ui.toolbarStatsUseSeenRadioButton.setChecked(
-            self._config.recalc_toolbar_stats_use_seen
-        )
-        self.ui.toolbarStatsUseKnownRadioButton.setChecked(
-            self._config.recalc_toolbar_stats_use_known
-        )
-        self.ui.unknownsFieldShowsInflectionsRadioButton.setChecked(
-            self._config.recalc_unknowns_field_shows_inflections
-        )
-        self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
-            self._config.recalc_unknowns_field_shows_lemmas
-        )
-        self.ui.shiftNewCardsCheckBox.setChecked(self._config.recalc_offset_new_cards)
-
-    def _restore_recalc_defaults(self, skip_confirmation: bool = False) -> None:
-        if not skip_confirmation:
-            title = "Confirmation"
-            text = "Are you sure you want to restore default recalc settings?"
-            confirmed = self._warning_dialog(title, text)
-
-            if not confirmed:
-                return
-
-        self.ui.recalcIntervalSpinBox.setValue(
-            self._default_config.recalc_interval_for_known
-        )
-        self.ui.dueOffsetSpinBox.setValue(self._default_config.recalc_due_offset)
-        self.ui.offsetFirstMorphsSpinBox.setValue(
-            self._default_config.recalc_number_of_morphs_to_offset
-        )
-
-        self.ui.recalcBeforeSyncCheckBox.setChecked(self._default_config.recalc_on_sync)
-        self.ui.recalcSuspendKnownCheckBox.setChecked(
-            self._default_config.recalc_suspend_known_new_cards
-        )
-        self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.setChecked(
-            self._default_config.recalc_move_known_new_cards_to_the_end
-        )
-        self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
-            self._default_config.recalc_read_known_morphs_folder
-        )
-        self.ui.toolbarStatsUseSeenRadioButton.setChecked(
-            self._default_config.recalc_toolbar_stats_use_seen
-        )
-        self.ui.toolbarStatsUseKnownRadioButton.setChecked(
-            self._default_config.recalc_toolbar_stats_use_known
-        )
-        self.ui.unknownsFieldShowsInflectionsRadioButton.setChecked(
-            self._default_config.recalc_unknowns_field_shows_inflections
-        )
-        self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
-            self._default_config.recalc_unknowns_field_shows_lemmas
-        )
-        self.ui.shiftNewCardsCheckBox.setChecked(
-            self._default_config.recalc_offset_new_cards
-        )
-
-    def _populate_skip_tab(self) -> None:
-        self.ui.skipKnownCheckBox.setChecked(self._config.skip_only_known_morphs_cards)
-        self.ui.skipAlreadySeenCheckBox.setChecked(
-            self._config.skip_unknown_morph_seen_today_cards
-        )
-        self.ui.skipNotificationsCheckBox.setChecked(
-            self._config.skip_show_num_of_skipped_cards
-        )
-
-    def _restore_skip_defaults(self, skip_confirmation: bool = False) -> None:
-        if not skip_confirmation:
-            title = "Confirmation"
-            text = "Are you sure you want to restore default skip settings?"
-            confirmed = self._warning_dialog(title, text)
-
-            if not confirmed:
-                return
-
-        self.ui.skipKnownCheckBox.setChecked(
-            self._default_config.skip_only_known_morphs_cards
-        )
-        self.ui.skipAlreadySeenCheckBox.setChecked(
-            self._default_config.skip_unknown_morph_seen_today_cards
-        )
-        self.ui.skipNotificationsCheckBox.setChecked(
-            self._default_config.skip_show_num_of_skipped_cards
-        )
-
-    def _populate_algorithm_tab(self) -> None:
-
-        # making sure the lower values are always smaller the upper ones
-        self.ui.upperTargetAllMorphsSpinBox.valueChanged.connect(
-            lambda: self.ui.lowerTargetAllMorphsSpinBox.setMaximum(
-                self.ui.upperTargetAllMorphsSpinBox.value()
-            )
-        )
-
-        self.ui.upperTargetLearningMorphsSpinBox.valueChanged.connect(
-            lambda: self.ui.lowerTargetLearningMorphsSpinBox.setMaximum(
-                self.ui.upperTargetLearningMorphsSpinBox.value()
-            )
-        )
-
-        self.ui.priorityLemmaRadioButton.setChecked(
-            self._config.algorithm_lemma_priority
-        )
-        self.ui.priorityInflectionRadioButton.setChecked(
-            self._config.algorithm_inflection_priority
-        )
-        self.ui.totalPriorityUknownMorphsSpinBox.setValue(
-            self._config.algorithm_total_priority_unknown_morphs
-        )
-        self.ui.totalPriorityAllMorphsSpinBox.setValue(
-            self._config.algorithm_total_priority_all_morphs
-        )
-        self.ui.averagePriorityAllMorphsSpinBox.setValue(
-            self._config.algorithm_average_priority_all_morphs
-        )
-        self.ui.allMorphsTargetDistanceSpinBox.setValue(
-            self._config.algorithm_all_morphs_target_distance
-        )
-        self.ui.learningMorphsTargetDistanceSpinBox.setValue(
-            self._config.algorithm_learning_morphs_target_distance
-        )
-        self.ui.upperTargetAllMorphsSpinBox.setValue(
-            self._config.algorithm_upper_target_all_morphs
-        )
-        self.ui.lowerTargetAllMorphsSpinBox.setValue(
-            self._config.algorithm_lower_target_all_morphs
-        )
-        self.ui.upperTargetAllMorphsCoefficientA.setValue(
-            self._config.algorithm_upper_target_all_morphs_coefficient_a
-        )
-        self.ui.upperTargetAllMorphsCoefficientB.setValue(
-            self._config.algorithm_upper_target_all_morphs_coefficient_b
-        )
-        self.ui.upperTargetAllMorphsCoefficientC.setValue(
-            self._config.algorithm_upper_target_all_morphs_coefficient_c
-        )
-        self.ui.lowerTargetAllMorphsCoefficientA.setValue(
-            self._config.algorithm_lower_target_all_morphs_coefficient_a
-        )
-        self.ui.lowerTargetAllMorphsCoefficientB.setValue(
-            self._config.algorithm_lower_target_all_morphs_coefficient_b
-        )
-        self.ui.lowerTargetAllMorphsCoefficientC.setValue(
-            self._config.algorithm_lower_target_all_morphs_coefficient_c
-        )
-        self.ui.upperTargetLearningMorphsSpinBox.setValue(
-            self._config.algorithm_upper_target_learning_morphs
-        )
-        self.ui.lowerTargetLearningMorphsSpinBox.setValue(
-            self._config.algorithm_lower_target_learning_morphs
-        )
-        self.ui.upperTargetLearningMorphsCoefficientA.setValue(
-            self._config.algorithm_upper_target_learning_morphs_coefficient_a
-        )
-        self.ui.upperTargetLearningMorphsCoefficientB.setValue(
-            self._config.algorithm_upper_target_learning_morphs_coefficient_b
-        )
-        self.ui.upperTargetLearningMorphsCoefficientC.setValue(
-            self._config.algorithm_upper_target_learning_morphs_coefficient_c
-        )
-        self.ui.lowerTargetLearningMorphsCoefficientA.setValue(
-            self._config.algorithm_lower_target_learning_morphs_coefficient_a
-        )
-        self.ui.lowerTargetLearningMorphsCoefficientB.setValue(
-            self._config.algorithm_lower_target_learning_morphs_coefficient_b
-        )
-        self.ui.lowerTargetLearningMorphsCoefficientC.setValue(
-            self._config.algorithm_lower_target_learning_morphs_coefficient_c
-        )
-
-    def _restore_algorithm_defaults(self, skip_confirmation: bool = False) -> None:
-        if not skip_confirmation:
-            title = "Confirmation"
-            text = "Are you sure you want to restore default algorithm settings?"
-            confirmed = self._warning_dialog(title, text)
-
-            if not confirmed:
-                return
-
-        self.ui.priorityLemmaRadioButton.setChecked(
-            self._default_config.algorithm_lemma_priority
-        )
-        self.ui.priorityInflectionRadioButton.setChecked(
-            self._default_config.algorithm_inflection_priority
-        )
-
-        self.ui.totalPriorityUknownMorphsSpinBox.setValue(
-            self._default_config.algorithm_total_priority_unknown_morphs
-        )
-        self.ui.totalPriorityAllMorphsSpinBox.setValue(
-            self._default_config.algorithm_total_priority_all_morphs
-        )
-        self.ui.averagePriorityAllMorphsSpinBox.setValue(
-            self._default_config.algorithm_average_priority_all_morphs
-        )
-
-        self.ui.allMorphsTargetDistanceSpinBox.setValue(
-            self._default_config.algorithm_all_morphs_target_distance
-        )
-        self.ui.learningMorphsTargetDistanceSpinBox.setValue(
-            self._default_config.algorithm_learning_morphs_target_distance
-        )
-
-        self.ui.upperTargetAllMorphsSpinBox.setValue(
-            self._default_config.algorithm_upper_target_all_morphs
-        )
-        self.ui.lowerTargetAllMorphsSpinBox.setValue(
-            self._default_config.algorithm_lower_target_all_morphs
-        )
-
-        self.ui.upperTargetAllMorphsCoefficientA.setValue(
-            self._default_config.algorithm_upper_target_all_morphs_coefficient_a
-        )
-        self.ui.upperTargetAllMorphsCoefficientB.setValue(
-            self._default_config.algorithm_upper_target_all_morphs_coefficient_b
-        )
-        self.ui.upperTargetAllMorphsCoefficientC.setValue(
-            self._default_config.algorithm_upper_target_all_morphs_coefficient_c
-        )
-
-        self.ui.lowerTargetAllMorphsCoefficientA.setValue(
-            self._default_config.algorithm_lower_target_all_morphs_coefficient_a
-        )
-        self.ui.lowerTargetAllMorphsCoefficientB.setValue(
-            self._default_config.algorithm_lower_target_all_morphs_coefficient_b
-        )
-        self.ui.lowerTargetAllMorphsCoefficientC.setValue(
-            self._default_config.algorithm_lower_target_all_morphs_coefficient_c
-        )
-
-        self.ui.upperTargetLearningMorphsSpinBox.setValue(
-            self._default_config.algorithm_upper_target_learning_morphs
-        )
-        self.ui.lowerTargetLearningMorphsSpinBox.setValue(
-            self._default_config.algorithm_lower_target_learning_morphs
-        )
-
-        self.ui.upperTargetLearningMorphsCoefficientA.setValue(
-            self._default_config.algorithm_upper_target_learning_morphs_coefficient_a
-        )
-        self.ui.upperTargetLearningMorphsCoefficientB.setValue(
-            self._default_config.algorithm_upper_target_learning_morphs_coefficient_b
-        )
-        self.ui.upperTargetLearningMorphsCoefficientC.setValue(
-            self._default_config.algorithm_upper_target_learning_morphs_coefficient_c
-        )
-
-        self.ui.lowerTargetLearningMorphsCoefficientA.setValue(
-            self._default_config.algorithm_lower_target_learning_morphs_coefficient_a
-        )
-        self.ui.lowerTargetLearningMorphsCoefficientB.setValue(
-            self._default_config.algorithm_lower_target_learning_morphs_coefficient_b
-        )
-        self.ui.lowerTargetLearningMorphsCoefficientC.setValue(
-            self._default_config.algorithm_lower_target_learning_morphs_coefficient_c
-        )
-
     def _restore_all_defaults(self) -> None:
         title = "Confirmation"
         text = "Are you sure you want to restore <b>all</b> default settings?"
-        confirmed = self._warning_dialog(title, text)
+        confirmed = message_box_utils.warning_dialog(title, text, parent=self)
 
         if confirmed:
             default_filters = self._default_config.filters
             self._setup_note_filters_table(default_filters)
             self._setup_extra_fields_tree_widget(default_filters)
-            self._restore_tags_defaults(skip_confirmation=True)
-            self._restore_preprocess_defaults(skip_confirmation=True)
-            self._restore_skip_defaults(skip_confirmation=True)
-            self._restore_recalc_defaults(skip_confirmation=True)
-            self._restore_shortcuts_defaults(skip_confirmation=True)
+            self._tags_tab.restore_defaults(skip_confirmation=True)
+            self._preprocess_tab.restore_defaults(skip_confirmation=True)
+            self._skip_tab.restore_defaults(skip_confirmation=True)
+            self._algorithm_tab.restore_defaults(skip_confirmation=True)
+            self._recalc_tab.restore_defaults(skip_confirmation=True)
+            self._shortcut_tab.restore_defaults(skip_confirmation=True)
 
     def _setup_buttons(self) -> None:
         style: QStyle | None = self.style()
@@ -759,24 +392,27 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.addNewRowPushButton.clicked.connect(self._add_new_row)
         self.ui.deleteRowPushButton.clicked.connect(self._delete_row)
 
-        self.ui.restoreTagsPushButton.clicked.connect(self._restore_tags_defaults)
-        self.ui.restoreRecalcPushButton.clicked.connect(self._restore_recalc_defaults)
+        self.ui.restoreTagsPushButton.clicked.connect(self._tags_tab.restore_defaults)
+        self.ui.restoreRecalcPushButton.clicked.connect(
+            self._recalc_tab.restore_defaults
+        )
         self.ui.restoreShortcutsPushButton.clicked.connect(
-            self._restore_shortcuts_defaults
+            self._shortcut_tab.restore_defaults
         )
         self.ui.restorePreprocessPushButton.clicked.connect(
-            self._restore_preprocess_defaults
+            self._preprocess_tab.restore_defaults
         )
-        self.ui.restoreSkipPushButton.clicked.connect(self._restore_skip_defaults)
+        self.ui.restoreSkipPushButton.clicked.connect(self._skip_tab.restore_defaults)
         self.ui.restoreAlgorithmPushButton.clicked.connect(
-            self._restore_algorithm_defaults
+            self._algorithm_tab.restore_defaults
         )
         self.ui.restoreAllDefaultsPushButton.clicked.connect(self._restore_all_defaults)
 
     def _delete_row(self) -> None:
         title = "Confirmation"
         text = "Are you sure you want to delete the selected row?"
-        confirmed = self._warning_dialog(title, text)
+        confirmed = message_box_utils.warning_dialog(title, text, parent=self)
+
         if confirmed:
             selected_row = self.ui.note_filters_table.currentRow()
             self.ui.note_filters_table.removeRow(selected_row)
@@ -1069,13 +705,3 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
     def reopen(self) -> None:
         # This is used by the Anki dialog manager
         self.show()
-
-    def _warning_dialog(
-        self, title: str, text: str, display_tooltip: bool = True
-    ) -> bool:
-        answer = show_warning_box(title, text, parent=self)
-        if answer is True:
-            if display_tooltip:
-                tooltip("Remember to save!", parent=self)
-            return True
-        return False

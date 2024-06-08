@@ -44,14 +44,14 @@ from . import (
     name_file_utils,
     recalc,
     reviewing_utils,
-    settings_dialog,
     toolbar_stats,
 )
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
 from .generators_window import GeneratorWindow
 from .known_morphs_exporter import KnownMorphsExporterDialog
-from .settings_dialog import SettingsDialog
+from .settings import settings_dialog
+from .settings.settings_dialog import SettingsDialog
 from .tag_selection_dialog import TagSelectionDialog
 from .toolbar_stats import MorphToolbarStats
 

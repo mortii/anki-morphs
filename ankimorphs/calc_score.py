@@ -100,7 +100,7 @@ class ScoreValues:
 #######################################
 
 
-def get_card_score_values(  # pylint:disable=too-many-locals, too-many-statements
+def get_card_score_values(  # pylint:disable=too-many-locals, too-many-statements, too-many-branches
     am_config: AnkiMorphsConfig,
     card_id: int,
     card_morph_map_cache: dict[int, list[Morpheme]],
