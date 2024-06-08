@@ -88,7 +88,6 @@
 >The `${1}` part re-inserts the `(\S)` character that was found earlier.
 
 
-
 </details>
 
 
@@ -118,3 +117,14 @@
 
 </details>
 
+</details>
+
+
+<details>
+  <summary style="display:list-item">Incorrect highlighting of ignored names</summary>
+
+> When names are ignored, either by the morphemizer or those found in the `names.txt`, then the highlighting
+> is prone to false-positives where other morphs also found in the text can mistakenly get highlighted in the names:
+>![names_incorrectly_highlighted.png](../img/names_incorrectly_highlighted.png)
+
+</details>
