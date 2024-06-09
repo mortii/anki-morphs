@@ -52,7 +52,7 @@ Current card collections (tests/data/card_collections):
 - ignore_names_txt_collection.anki2
 - known-morphs-test-collection.anki2
 - offset_new_cards_test_collection.anki2
-
+- lemma_priority_collection.anki2
 
 Right now we have one monolithic card collection (which comes from here: https://github.com/mortii/anki-decks). This
 collection is used for catching unexpected edge cases. This collection does not lend itself for engineering edge cases

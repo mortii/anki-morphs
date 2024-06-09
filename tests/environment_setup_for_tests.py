@@ -46,6 +46,7 @@ default_config_dict["filters"][0]["extra_highlighted"] = True
 default_config_dict["filters"][0]["extra_score"] = True
 default_config_dict["filters"][0]["extra_unknowns"] = True
 default_config_dict["filters"][0]["extra_unknowns_count"] = True
+default_config_dict["filters"][0]["extra_score_terms"] = True
 default_config_dict["filters"][0]["field_index"] = 0
 default_config_dict["filters"][0]["morph_priority"] = "Collection frequency"
 default_config_dict["filters"][0]["morph_priority_index"] = 0
@@ -80,6 +81,14 @@ config_known_morphs_enabled["filters"][0]["field"] = "Front"
 config_known_morphs_enabled["filters"][0][
     "morphemizer_description"
 ] = "AnkiMorphs: Language w/ Spaces"
+
+config_lemma_priority = copy.deepcopy(default_config_dict)
+config_lemma_priority["filters"][0]["note_type"] = "Basic"
+config_lemma_priority["filters"][0]["field"] = "Front"
+config_lemma_priority["filters"][0]["morphemizer_description"] = "spaCy: en_core_web_sm"
+config_lemma_priority["algorithm_inflection_priority"] = False
+config_lemma_priority["algorithm_lemma_priority"] = True
+
 
 config_ignore_names_txt_enabled = copy.deepcopy(default_config_dict)
 config_ignore_names_txt_enabled["preprocess_ignore_names_textfile"] = True
