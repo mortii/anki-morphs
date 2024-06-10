@@ -32,6 +32,7 @@ from .environment_setup_for_tests import (  # pylint:disable=unused-import
     fake_environment,
 )
 
+# these gave to be placed here to avoid cyclical imports
 from anki.cards import Card  # isort:skip  pylint:disable=wrong-import-order
 from anki.models import (  # isort:skip pylint:disable=wrong-import-order
     ModelManager,
@@ -102,7 +103,6 @@ class CardData:
 # receiving the values before passing them to a test"
 # - https://docs.pytest.org/en/7.1.x/example/parametrize.html#indirect-parametrization
 # This means that we run the fixture AND the test function for each parameter.
-# todo: temporarily disabled while working on the new algorithm
 @pytest.mark.external_morphemizers
 @pytest.mark.parametrize(
     "fake_environment",

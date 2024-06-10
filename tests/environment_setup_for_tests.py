@@ -139,14 +139,16 @@ class MockDB(AnkiMorphsDB):
 
 class FakeEnvironment:
 
-    def __init__(
+    def __init__(  # pylint:disable=too-many-arguments
         self,
         mock_mw: mock.Mock,
+        mock_db: MockDB,
         config: dict[str, Any],
         original_collection: Collection,
         modified_collection: Collection,
     ) -> None:
         self.mock_mw = mock_mw
+        self.mock_db = mock_db
         self.config = config
         self.original_collection = original_collection
         self.modified_collection = modified_collection
@@ -190,7 +192,13 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     )
     fake_morphemizers_path = Path(TESTS_DATA_PATH, "morphemizers")
 
-    test_db_original_path = Path(TESTS_DATA_PATH, "populated_ankimorphs.db")
+    # test_db_original_path = Path(TESTS_DATA_PATH, "populated_ankimorphs.db")
+    test_db_original_path = Path(
+        # TESTS_DATA_PATH, "populated_am_dbs", "lemma_priority.db"
+        TESTS_DATA_PATH,
+        "populated_am_dbs",
+        "lemma_priority.db",
+    )
     test_db_copy_path = Path(TESTS_DATA_PATH, "populated_ankimorphs_copy.db")
 
     # If the destination already exists, it will be replaced
@@ -208,9 +216,6 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     mock_mw.reviewer = Reviewer(mock_mw)
     mock_mw.reviewer._showQuestion = lambda: None
 
-    # tooltip tries to do gui stuff which breaks test
-    mock_tooltip = mock.Mock(spec=aqt.utils.tooltip)
-
     patch_recalc_mw = mock.patch.object(recalc, "mw", mock_mw)
     patch_am_db_mw = mock.patch.object(ankimorphs_db, "mw", mock_mw)
     patch_config_mw = mock.patch.object(ankimorphs_config, "mw", mock_mw)
@@ -219,13 +224,6 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     patch_reviewing_mw = mock.patch.object(reviewing_utils, "mw", mock_mw)
     patch_gd_mw = mock.patch.object(generators_window, "mw", mock_mw)
 
-    patch_am_db = mock.patch.object(reviewing_utils, "AnkiMorphsDB", MockDB)
-    patch_tooltip = mock.patch.object(reviewing_utils, "tooltip", mock_tooltip)
-
-    patch_testing_variable = mock.patch.object(
-        spacy_wrapper, "testing_environment", True
-    )
-
     patch_recalc_mw.start()
     patch_am_db_mw.start()
     patch_config_mw.start()
@@ -233,6 +231,17 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     patch_anki_data_utils_mw.start()
     patch_reviewing_mw.start()
     patch_gd_mw.start()
+
+    patch_am_db = mock.patch.object(reviewing_utils, "AnkiMorphsDB", MockDB)
+    mock_db = MockDB()
+
+    # tooltip tries to do gui stuff which breaks test
+    mock_tooltip = mock.Mock(spec=aqt.utils.tooltip)
+    patch_tooltip = mock.patch.object(reviewing_utils, "tooltip", mock_tooltip)
+
+    patch_testing_variable = mock.patch.object(
+        spacy_wrapper, "testing_environment", True
+    )
 
     patch_am_db.start()
     patch_tooltip.start()
@@ -243,6 +252,7 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     try:
         yield FakeEnvironment(
             mock_mw=mock_mw,
+            mock_db=mock_db,
             config=_config_data,
             original_collection=Collection(str(collection_path_original)),
             modified_collection=mock_mw.col,

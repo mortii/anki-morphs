@@ -6,7 +6,7 @@ that file and not here.
 
 __version__ = "3.0.0-testing-3"
 
-DEV_MODE: bool = False
+DEV_MODE: bool = True
 
 PROFILE_SETTINGS_FILE_NAME = "ankimorphs_profile_settings.json"
 NAMES_TXT_FILE_NAME = "names.txt"

@@ -25,7 +25,7 @@ repos:
               docs/src/img/learn-now.mp4|
               docs/src/img/adding-extra-fields.mp4|
               tests/data/card_collections/big-japanese-collection.anki2|
-              tests/data/populated_ankimorphs.db|
+              tests/data/populated_am_dbs/populated_ankimorphs.db|
           )$
       - id: check-case-conflict
       - id: check-json

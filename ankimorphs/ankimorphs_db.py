@@ -36,6 +36,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         self.create_seen_morph_table()
 
     def create_cards_table(self) -> None:
+        # todo, im not sure "field" is needed...
         with self.con:
             self.con.execute(
                 """
