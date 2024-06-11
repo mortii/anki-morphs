@@ -31,7 +31,6 @@ default_config_dict["filters"][0]["morph_priority_index"] = 0
 #
 #
 ################################################################
-
 config_big_japanese_collection = copy.deepcopy(default_config_dict)
 config_big_japanese_collection["preprocess_ignore_bracket_contents"] = True
 config_big_japanese_collection["preprocess_ignore_names_morphemizer"] = True
@@ -51,7 +50,6 @@ config_big_japanese_collection["filters"][0][
 #
 #
 ################################################################
-
 config_offset_enabled = copy.deepcopy(default_config_dict)
 config_offset_enabled["recalc_offset_new_cards"] = True
 config_offset_enabled["filters"][0]["note_type"] = "note-type-with-offset"
@@ -68,7 +66,6 @@ config_offset_enabled["filters"][0][
 #
 #
 ################################################################
-
 config_known_morphs_enabled = copy.deepcopy(default_config_dict)
 config_known_morphs_enabled["recalc_read_known_morphs_folder"] = True
 config_known_morphs_enabled["recalc_move_known_new_cards_to_the_end"] = False
@@ -85,13 +82,23 @@ config_known_morphs_enabled["filters"][0][
 # Matches the "lemma_priority_collection.anki2" collection
 #
 ################################################################
-
 config_lemma_priority = copy.deepcopy(default_config_dict)
 config_lemma_priority["filters"][0]["note_type"] = "Basic"
 config_lemma_priority["filters"][0]["field"] = "Front"
 config_lemma_priority["filters"][0]["morphemizer_description"] = "spaCy: en_core_web_sm"
 config_lemma_priority["algorithm_inflection_priority"] = False
 config_lemma_priority["algorithm_lemma_priority"] = True
+
+
+################################################################
+#             inflection_priority config
+################################################################
+# The inverse of "config_lemma_priority"
+################################################################
+config_inflection_priority = copy.deepcopy(config_lemma_priority)
+config_inflection_priority["algorithm_inflection_priority"] = True
+config_inflection_priority["algorithm_lemma_priority"] = False
+
 
 ################################################################
 #             ignore_names_txt_enabled config

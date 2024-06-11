@@ -11,15 +11,27 @@ from .environment_setup_for_tests import (  # pylint:disable=unused-import
     FakeEnvironment,
     fake_environment,
 )
-from .fake_configs import config_lemma_priority
+from .fake_configs import config_inflection_priority, config_lemma_priority
+
+expected_lemma_priority_cards = [1715776939301, 1717943898444]
+expected_inflection_priority_cards = [1715776939301, 1715776946917]
 
 
 @pytest.mark.parametrize(
-    "fake_environment",
-    [("lemma_priority_collection", config_lemma_priority)],
-    indirect=True,
+    "fake_environment, expected_results",
+    [
+        (
+            ("lemma_priority_collection", config_lemma_priority),
+            expected_lemma_priority_cards,
+        ),
+        (
+            ("lemma_priority_collection", config_inflection_priority),
+            expected_inflection_priority_cards,
+        ),
+    ],
+    indirect=["fake_environment"],
 )
-def test_custom_review(fake_environment: FakeEnvironment):
+def test_custom_review(fake_environment: FakeEnvironment, expected_results: list[int]):
     mock_mw = fake_environment.mock_mw
     mock_db = fake_environment.mock_db
     am_config = AnkiMorphsConfig()
@@ -38,15 +50,8 @@ def test_custom_review(fake_environment: FakeEnvironment):
         _old=Reviewer._shortcutKeys,
     )
 
-    first_card = 1715776939301
-    second_card = 1717943898444
-
-    # print("cards:")
-    # mock_db.print_table("Cards")
-    # print("Card_Morph_Map:")
-    # mock_db.print_table("Card_Morph_Map")
-    # print("Morphs:")
-    # mock_db.print_table("Morphs")
+    first_card = expected_results[0]
+    second_card = expected_results[1]
 
     mock_mw.reviewer.nextCard()
     assert mock_mw.reviewer.card.id == first_card
