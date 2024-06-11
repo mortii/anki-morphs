@@ -16,20 +16,18 @@ from ankimorphs.exceptions import (
 
 from .environment_setup_for_tests import (  # pylint:disable=unused-import
     FakeEnvironment,
-    config_big_japanese_collection,
+    fake_environment,
+)
+from .fake_configs import (
     config_default_field,
     config_default_morph_priority,
     config_default_morphemizer,
     config_default_note_type,
-    config_ignore_names_txt_enabled,
-    config_known_morphs_enabled,
     config_lemma_priority,
-    config_offset_enabled,
     config_wrong_field_name,
     config_wrong_morph_priority,
     config_wrong_morphemizer_description,
     config_wrong_note_type,
-    fake_environment,
 )
 
 # these gave to be placed here to avoid cyclical imports

@@ -16,9 +16,9 @@ from .environment_setup_for_tests import (  # pylint:disable=unused-import
     TESTS_DATA_CORRECT_OUTPUTS_PATH,
     TESTS_DATA_PATH,
     TESTS_DATA_TESTS_OUTPUTS_PATH,
-    config_big_japanese_collection,
     fake_environment,
 )
+from .fake_configs import config_big_japanese_collection
 
 
 # when stacking 'parametrize' we run the function with all permutations

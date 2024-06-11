@@ -41,6 +41,7 @@ repos:
         exclude: |
           (?x)^(
               ^tests/environment_setup_for_tests.py|
+              ^tests/fake_configs.py|
               ^tests/README.md|
               ^tests/data/.*|
           )$

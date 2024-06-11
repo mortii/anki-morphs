@@ -9,9 +9,9 @@ from ankimorphs.reviewing_utils import SkippedCards
 
 from .environment_setup_for_tests import (  # pylint:disable=unused-import
     FakeEnvironment,
-    config_lemma_priority,
     fake_environment,
 )
+from .fake_configs import config_lemma_priority
 
 
 @pytest.mark.parametrize(

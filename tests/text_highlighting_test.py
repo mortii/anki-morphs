@@ -8,9 +8,9 @@ from ankimorphs.morpheme import Morpheme
 
 from .environment_setup_for_tests import (  # pylint:disable=unused-import
     FakeEnvironment,
-    config_big_japanese_collection,
     fake_environment,
 )
+from .fake_configs import config_big_japanese_collection
 
 
 # the collection isn't actually used, so it is an arbitrary choice, but the config needs to have
