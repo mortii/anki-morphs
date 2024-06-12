@@ -24,8 +24,8 @@ repos:
               docs/src/img/deck-options.mp4|
               docs/src/img/learn-now.mp4|
               docs/src/img/adding-extra-fields.mp4|
-              tests/data/card_collections/big-japanese-collection.anki2|
-              tests/data/populated_am_dbs/populated_ankimorphs.db|
+              tests/data/card_collections/big_japanese_collection.anki2|
+              tests/data/am_dbs/big_japanese_collection.db|
           )$
       - id: check-case-conflict
       - id: check-json
@@ -42,6 +42,7 @@ repos:
           (?x)^(
               ^tests/environment_setup_for_tests.py|
               ^tests/fake_configs.py|
+              ^tests/card_data.py|
               ^tests/README.md|
               ^tests/data/.*|
           )$

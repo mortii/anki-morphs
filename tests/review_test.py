@@ -10,25 +10,45 @@ from ankimorphs.reviewing_utils import SkippedCards
 
 from .environment_setup_for_tests import (  # pylint:disable=unused-import
     FakeEnvironment,
+    FakeEnvironmentParams,
     fake_environment,
 )
 from .fake_configs import config_inflection_priority, config_lemma_priority
 
-expected_lemma_priority_cards = [1715776939301, 1718190526053, 1717943898444]
-expected_inflection_priority_cards = [1715776939301, 1715776946917, 1715776953867]
+################################################################
+#                  CASE: SKIP INFLECTIONS
+################################################################
+# Config contains "lemma priority", i.e. we want to skip subsequent
+# cards that have the same lemmas as those studied before
+################################################################
+case_skip_inflections_params = FakeEnvironmentParams(
+    collection="lemma_priority_collection",
+    config=config_lemma_priority,
+    am_db="lemma_priority.db",
+)
+case_skip_inflections_expected = [1715776939301, 1718190526053, 1717943898444]
+
+
+################################################################
+#               CASE: DON'T SKIP INFLECTIONS
+################################################################
+# Config contains "inflection priority", i.e. we DON'T want to
+# skip any subsequent cards that have the same lemmas as those
+# studied before
+################################################################
+case_dont_skip_inflections_params = FakeEnvironmentParams(
+    collection="lemma_priority_collection",
+    config=config_inflection_priority,
+    am_db="lemma_priority.db",
+)
+case_dont_skip_inflections_expected = [1715776939301, 1715776946917, 1715776953867]
 
 
 @pytest.mark.parametrize(
     "fake_environment, expected_results",
     [
-        (
-            ("lemma_priority_collection", config_lemma_priority),
-            expected_lemma_priority_cards,
-        ),
-        (
-            ("lemma_priority_collection", config_inflection_priority),
-            expected_inflection_priority_cards,
-        ),
+        (case_skip_inflections_params, case_skip_inflections_expected),
+        (case_dont_skip_inflections_params, case_dont_skip_inflections_expected),
     ],
     indirect=["fake_environment"],
 )

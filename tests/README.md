@@ -48,14 +48,17 @@ pytest --randomly-seed=last
 ## Card collections
 
 Current card collections (tests/data/card_collections):
-- big-japanese-collection.anki2 (https://github.com/mortii/anki-decks)
-- ignore_names_txt_collection.anki2
-- known-morphs-test-collection.anki2
-- offset_new_cards_test_collection.anki2
-- lemma_priority_collection.anki2
-  - contains two "known" cards (the, man), and then 9 cards with 4 lemmas and 9 inflections.
+- `big-japanese-collection.anki2` (https://github.com/mortii/anki-decks)
+- `ignore_names_txt_collection.anki2`
+- `known-morphs-test-collection.anki2`
+- `offset_new_cards_test_collection.anki2`
+- `lemma_priority_collection.anki2`
+  - contains two "known" cards ("the", "man"), and then 9 cards with 4 lemmas and 9 inflections.
   this is used for testing if the inflections are given the scores of their respective lemmas and
   the inflections are skipped on review.
+- `some_studied_lemmas_collection.anki2`
+  - duplicate of the `lemma_priority_collection.anki2` collection, but one card for each lemma
+  has been studied, so the other cards that have those lemmas should contain no unknowns.
 
 Right now we have one monolithic card collection (which comes from here: https://github.com/mortii/anki-decks). This
 collection is used for catching unexpected edge cases. This collection does not lend itself for engineering edge cases

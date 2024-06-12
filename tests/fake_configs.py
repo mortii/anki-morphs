@@ -25,7 +25,7 @@ default_config_dict["filters"][0]["morph_priority_index"] = 0
 # pprint.pp(default_config_dict)
 
 ################################################################
-#             big_japanese_collection config
+#             config_big_japanese_collection
 ################################################################
 #
 #
@@ -44,7 +44,7 @@ config_big_japanese_collection["filters"][0][
 
 
 ################################################################
-#             offset_enabled config
+#             config_offset_enabled
 ################################################################
 #
 #
@@ -60,7 +60,7 @@ config_offset_enabled["filters"][0][
 
 
 ################################################################
-#             known_morphs_enabled config
+#             config_known_morphs_enabled
 ################################################################
 #
 #
@@ -77,9 +77,9 @@ config_known_morphs_enabled["filters"][0][
 
 
 ################################################################
-#             lemma_priority config
+#             config_lemma_priority
 ################################################################
-# Matches the "lemma_priority_collection.anki2" collection
+# Matches the "lemma_priority_collection.anki2" collection.
 #
 ################################################################
 config_lemma_priority = copy.deepcopy(default_config_dict)
@@ -91,7 +91,7 @@ config_lemma_priority["algorithm_lemma_priority"] = True
 
 
 ################################################################
-#             inflection_priority config
+#             config_inflection_priority
 ################################################################
 # The inverse of "config_lemma_priority"
 ################################################################
@@ -101,7 +101,7 @@ config_inflection_priority["algorithm_lemma_priority"] = False
 
 
 ################################################################
-#             ignore_names_txt_enabled config
+#            config_ignore_names_txt_enabled
 ################################################################
 #
 #
@@ -117,7 +117,7 @@ config_ignore_names_txt_enabled["filters"][0][
 
 
 ################################################################
-#             wrong_note_type config
+#             config_wrong_note_type
 ################################################################
 #
 #
@@ -127,7 +127,7 @@ config_wrong_note_type = copy.deepcopy(config_ignore_names_txt_enabled)
 config_wrong_note_type["filters"][0]["note_type"] = "random_wrong_value"
 
 ################################################################
-#             wrong_field_name config
+#             config_wrong_field_name
 ################################################################
 #
 #
@@ -137,7 +137,7 @@ config_wrong_field_name = copy.deepcopy(config_ignore_names_txt_enabled)
 config_wrong_field_name["filters"][0]["field"] = "random_wrong_value"
 
 ################################################################
-#             wrong_morph_priority config
+#            config_wrong_morph_priority
 ################################################################
 #
 #
@@ -147,7 +147,7 @@ config_wrong_morph_priority = copy.deepcopy(config_ignore_names_txt_enabled)
 config_wrong_morph_priority["filters"][0]["morph_priority"] = "random_wrong_value"
 
 ################################################################
-#             wrong_morphemizer_description config
+#             config_wrong_morphemizer_description
 ################################################################
 #
 #
@@ -159,7 +159,7 @@ config_wrong_morphemizer_description["filters"][0][
 ] = "random_wrong_value"
 
 ################################################################
-#             default_note_type config
+#             config_default_note_type
 ################################################################
 #
 #
@@ -169,7 +169,7 @@ config_default_note_type = copy.deepcopy(config_ignore_names_txt_enabled)
 config_default_note_type["filters"][0]["note_type"] = ankimorphs_globals.NONE_OPTION
 
 ################################################################
-#             default_field config
+#             config_default_field
 ################################################################
 #
 #
@@ -180,7 +180,7 @@ config_default_field["filters"][0]["field"] = ankimorphs_globals.NONE_OPTION
 
 
 ################################################################
-#             default_morph_priority config
+#            config_default_morph_priority
 ################################################################
 #
 #
@@ -193,7 +193,7 @@ config_default_morph_priority["filters"][0][
 
 
 ################################################################
-#             default_morph_priority config
+#             config_default_morphemizer
 ################################################################
 #
 #

@@ -38,8 +38,16 @@ class MockDB(AnkiMorphsDB):
     # We subclass to use a db with a different file name
     def __init__(self) -> None:
         super().__init__()
+        # TODO: rename and move
         tests_path = Path(TESTS_DATA_PATH, "populated_ankimorphs_copy.db")
         self.con: sqlite3.Connection = sqlite3.connect(tests_path)
+
+
+class FakeEnvironmentParams:
+    def __init__(self, collection: str, config: dict[str, Any], am_db: str):
+        self.collection = collection
+        self.config = config
+        self.am_db = am_db
 
 
 class FakeEnvironment:
@@ -67,12 +75,18 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     # approach of using the "request" fixture as an input, which
     # will then contain the parameters
 
+    # print(f"request.param: {request.param}")
+    # print(f"request.param: {request.param[0]}")
+
     try:
-        _collection_file_name: str = request.param[0]
+        _collection_file_name: str = request.param.collection
         assert isinstance(_collection_file_name, str)
 
-        _config_data: dict[str, Any] = request.param[1]
+        _config_data: dict[str, Any] = request.param.config
         assert isinstance(_config_data, dict)
+
+        _am_db_name: str = request.param.am_db
+        assert isinstance(_am_db_name, str)
 
     except AttributeError as _error:
         print('Missing "@pytest.mark.parametrize"')
@@ -101,8 +115,8 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     test_db_original_path = Path(
         # TESTS_DATA_PATH, "populated_am_dbs", "lemma_priority.db"
         TESTS_DATA_PATH,
-        "populated_am_dbs",
-        "lemma_priority.db",
+        "am_dbs",
+        _am_db_name,
     )
     test_db_copy_path = Path(TESTS_DATA_PATH, "populated_ankimorphs_copy.db")
 
@@ -137,6 +151,7 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     patch_reviewing_mw.start()
     patch_gd_mw.start()
 
+    # 'mw' has to be patched before we can before we can create a db instance
     patch_am_db = mock.patch.object(reviewing_utils, "AnkiMorphsDB", MockDB)
     mock_db = MockDB()
 

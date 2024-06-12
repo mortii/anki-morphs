@@ -16,15 +16,30 @@ from .environment_setup_for_tests import (  # pylint:disable=unused-import
     TESTS_DATA_CORRECT_OUTPUTS_PATH,
     TESTS_DATA_PATH,
     TESTS_DATA_TESTS_OUTPUTS_PATH,
+    FakeEnvironmentParams,
     fake_environment,
 )
 from .fake_configs import config_big_japanese_collection
+
+################################################################
+#            CASE: BIG JAPANESE COLLECTION
+################################################################
+# Checks the frequency files generated with using the am_db from
+# the `big_japanese_collection.anki2`.
+# The collection is arbitrary since the generators only use the
+# found db.
+################################################################
+case_big_japanese_collection_params = FakeEnvironmentParams(
+    collection="ignore_names_txt_collection",
+    config=config_big_japanese_collection,
+    am_db="big_japanese_collection.db",
+)
 
 
 # when stacking 'parametrize' we run the function with all permutations
 @pytest.mark.parametrize(
     "fake_environment",
-    [("big-japanese-collection", config_big_japanese_collection)],
+    [case_big_japanese_collection_params],
     indirect=True,
 )
 @pytest.mark.parametrize(

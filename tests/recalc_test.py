@@ -14,8 +14,10 @@ from ankimorphs.exceptions import (
     MorphemizerNotFoundException,
 )
 
+from .card_data import CardData
 from .environment_setup_for_tests import (  # pylint:disable=unused-import
     FakeEnvironment,
+    FakeEnvironmentParams,
     fake_environment,
 )
 from .fake_configs import (
@@ -39,77 +41,49 @@ from anki.models import (  # isort:skip pylint:disable=wrong-import-order
 from anki.notes import Note  # isort:skip  pylint:disable=wrong-import-order
 
 
-class CardData:
-
-    def __init__(  # pylint:disable=too-many-arguments
-        self,
-        due: int,
-        extra_field_unknowns: str,
-        extra_field_unknowns_count: str,
-        extra_field_highlighted: str,
-        extra_field_score: str,
-        extra_field_score_terms: str,
-        tags: list[str],
-    ):
-        self.due = due
-        self.extra_field_unknowns = extra_field_unknowns
-        self.extra_field_unknowns_count = extra_field_unknowns_count
-        self.extra_field_highlighted = extra_field_highlighted
-        self.extra_field_score = extra_field_score
-        self.extra_field_score_terms = extra_field_score_terms
-        self.tags = tags
-
-    def __eq__(self, other: object) -> bool:
-        assert isinstance(other, CardData)
-        is_equal = True
-
-        # use "if" for everything to get more feedback
-        if self.due != other.due:
-            print("Due mismatch!")
-            is_equal = False
-
-        if self.extra_field_unknowns != other.extra_field_unknowns:
-            print("extra_field_unknowns mismatch!")
-            is_equal = False
-
-        if self.extra_field_unknowns_count != other.extra_field_unknowns_count:
-            print("extra_field_unknowns_count mismatch!")
-            is_equal = False
-
-        if self.extra_field_highlighted != other.extra_field_highlighted:
-            print("extra_field_highlighted mismatch!")
-            is_equal = False
-
-        if self.extra_field_score != other.extra_field_score:
-            print("extra_field_score mismatch!")
-            is_equal = False
-
-        if self.tags != other.tags:
-            print("tags mismatch!")
-            is_equal = False
-
-        if is_equal is False:
-            print("self:")
-            pprint.pp(vars(self))
-            print("other:")
-            pprint.pp(vars(other))
-
-        return is_equal
+################################################################
+#             CASE: SAME INFLECTION AND LEMMA SCORES
+################################################################
+# Config contains "lemma priority", therefore we check that all
+# the inflections are given the same score as their respective
+# lemmas.
+# Database choice is arbitrary.
+################################################################
+case_same_lemma_and_inflection_scores_params = FakeEnvironmentParams(
+    collection="lemma_priority_collection",
+    config=config_lemma_priority,
+    am_db="empty_skeleton.db",
+)
 
 
-# "Using the indirect=True parameter when parametrizing a test allows to parametrize a test with a fixture
-# receiving the values before passing them to a test"
+################################################################
+#                 CASE: INFLECTIONS ARE KNOWN
+################################################################
+# Same as case 1, but at least one card of each lemma has been
+# studied, so here we check that all inflections are set to "known".
+# Database choice is arbitrary.
+################################################################
+case_inflections_are_known_params = FakeEnvironmentParams(
+    collection="some_studied_lemmas_collection",
+    config=config_lemma_priority,
+    am_db="empty_skeleton.db",
+)
+
+
+# "Using the indirect=True parameter when parametrizing a test allows to parametrize a
+# test with a fixture receiving the values before passing them to a test"
 # - https://docs.pytest.org/en/7.1.x/example/parametrize.html#indirect-parametrization
 # This means that we run the fixture AND the test function for each parameter.
 @pytest.mark.external_morphemizers
 @pytest.mark.parametrize(
     "fake_environment",
     [
+        case_same_lemma_and_inflection_scores_params,
+        case_inflections_are_known_params,
         # ("big-japanese-collection", config_big_japanese_collection),
         # ("offset_new_cards_test_collection", config_offset_enabled),
         # ("known-morphs-test-collection", config_known_morphs_enabled),
         # ("ignore_names_txt_collection", config_ignore_names_txt_enabled),
-        ("lemma_priority_collection", config_lemma_priority),
     ],
     indirect=True,
 )
@@ -214,12 +188,25 @@ def test_recalc(  # pylint:disable=too-many-locals
         assert original_card_data == new_card_data
 
 
+################################################################
+#                  CASE: WRONG NOTE TYPE
+################################################################
+# Checks if "AnkiNoteTypeNotFound" exception is raised correctly
+# when we supply an invalid note type in the config.
+# Collection choice is arbitrary.
+# Database choice is arbitrary.
+################################################################
+case_wrong_note_type_params = FakeEnvironmentParams(
+    collection="ignore_names_txt_collection",
+    config=config_wrong_note_type,
+    am_db="empty_skeleton.db",
+)
+
+
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
     "fake_environment",
-    [
-        ("ignore_names_txt_collection", config_wrong_note_type),
-    ],
+    [case_wrong_note_type_params],
     indirect=True,
 )
 def test_recalc_with_wrong_note_type(  # pylint:disable=unused-argument
@@ -233,12 +220,25 @@ def test_recalc_with_wrong_note_type(  # pylint:disable=unused-argument
     assert isinstance(settings_error, AnkiNoteTypeNotFound)
 
 
+################################################################
+#                  CASE: WRONG FIELD NAME
+################################################################
+# Checks if "AnkiFieldNotFound" exception is raised correctly
+# when we supply an invalid field name in the config.
+# Collection choice is arbitrary.
+# Database choice is arbitrary.
+################################################################
+case_wrong_field_name_params = FakeEnvironmentParams(
+    collection="ignore_names_txt_collection",
+    config=config_wrong_field_name,
+    am_db="empty_skeleton.db",
+)
+
+
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
     "fake_environment",
-    [
-        ("ignore_names_txt_collection", config_wrong_field_name),
-    ],
+    [case_wrong_field_name_params],
     indirect=True,
 )
 def test_recalc_with_wrong_field(  # pylint:disable=unused-argument
@@ -252,12 +252,25 @@ def test_recalc_with_wrong_field(  # pylint:disable=unused-argument
     assert isinstance(settings_error, AnkiFieldNotFound)
 
 
+################################################################
+#                CASE: WRONG MORPH PRIORITY
+################################################################
+# Checks if "FrequencyFileNotFoundException" exception is raised
+# correctly when we supply an invalid frequency file in the config.
+# Collection choice is arbitrary.
+# Database choice is arbitrary.
+################################################################
+case_wrong_morph_priority_params = FakeEnvironmentParams(
+    collection="ignore_names_txt_collection",
+    config=config_wrong_morph_priority,
+    am_db="empty_skeleton.db",
+)
+
+
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
     "fake_environment",
-    [
-        ("ignore_names_txt_collection", config_wrong_morph_priority),
-    ],
+    [case_wrong_morph_priority_params],
     indirect=True,
 )
 def test_recalc_with_wrong_frequency_file(  # pylint:disable=unused-argument
@@ -271,12 +284,26 @@ def test_recalc_with_wrong_frequency_file(  # pylint:disable=unused-argument
     assert isinstance(settings_error, FrequencyFileNotFoundException)
 
 
+################################################################
+#            CASE: WRONG MORPHEMIZER DESCRIPTION
+################################################################
+# Checks if "MorphemizerNotFoundException" exception is raised
+# correctly when we supply an invalid morphemizer description
+# in the config.
+# Collection choice is arbitrary.
+# Database choice is arbitrary.
+################################################################
+case_wrong_morphemizer_description_params = FakeEnvironmentParams(
+    collection="ignore_names_txt_collection",
+    config=config_wrong_morphemizer_description,
+    am_db="empty_skeleton.db",
+)
+
+
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
     "fake_environment",
-    [
-        ("ignore_names_txt_collection", config_wrong_morphemizer_description),
-    ],
+    [case_wrong_morphemizer_description_params],
     indirect=True,
 )
 def test_recalc_with_wrong_morphemizer(  # pylint:disable=unused-argument
@@ -290,14 +317,47 @@ def test_recalc_with_wrong_morphemizer(  # pylint:disable=unused-argument
     assert isinstance(settings_error, MorphemizerNotFoundException)
 
 
+################################################################
+#            CASES: DEFAULT NOTE FILTER SETTINGS
+################################################################
+# Checks if "MorphemizerNotFoundException" exception is raised
+# when any note filters contain the default `(none)` selection.
+# Collection choice is arbitrary.
+# Database choice is arbitrary.
+################################################################
+case_default_note_type_params = FakeEnvironmentParams(
+    collection="ignore_names_txt_collection",
+    config=config_default_note_type,
+    am_db="empty_skeleton.db",
+)
+
+case_default_field_params = FakeEnvironmentParams(
+    collection="ignore_names_txt_collection",
+    config=config_default_field,
+    am_db="empty_skeleton.db",
+)
+
+case_default_morph_priority_params = FakeEnvironmentParams(
+    collection="ignore_names_txt_collection",
+    config=config_default_morph_priority,
+    am_db="empty_skeleton.db",
+)
+
+case_default_morphemizer_params = FakeEnvironmentParams(
+    collection="ignore_names_txt_collection",
+    config=config_default_morphemizer,
+    am_db="empty_skeleton.db",
+)
+
+
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
     "fake_environment",
     [
-        ("ignore_names_txt_collection", config_default_note_type),
-        ("ignore_names_txt_collection", config_default_field),
-        ("ignore_names_txt_collection", config_default_morph_priority),
-        ("ignore_names_txt_collection", config_default_morphemizer),
+        case_default_note_type_params,
+        case_default_field_params,
+        case_default_morph_priority_params,
+        case_default_morphemizer_params,
     ],
     indirect=True,
 )
