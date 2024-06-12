@@ -1,7 +1,23 @@
 from __future__ import annotations
 
-import pprint
 from collections.abc import Sequence
+from test.card_data import CardData
+from test.fake_configs import (
+    config_default_field,
+    config_default_morph_priority,
+    config_default_morphemizer,
+    config_default_note_type,
+    config_lemma_priority,
+    config_wrong_field_name,
+    config_wrong_morph_priority,
+    config_wrong_morphemizer_description,
+    config_wrong_note_type,
+)
+from test.fake_environment_module import (  # pylint:disable=unused-import
+    FakeEnvironment,
+    FakeEnvironmentParams,
+    fake_environment,
+)
 
 import pytest
 
@@ -12,24 +28,6 @@ from ankimorphs.exceptions import (
     DefaultSettingsException,
     FrequencyFileNotFoundException,
     MorphemizerNotFoundException,
-)
-
-from .card_data import CardData
-from .environment_setup_for_tests import (  # pylint:disable=unused-import
-    FakeEnvironment,
-    FakeEnvironmentParams,
-    fake_environment,
-)
-from .fake_configs import (
-    config_default_field,
-    config_default_morph_priority,
-    config_default_morphemizer,
-    config_default_note_type,
-    config_lemma_priority,
-    config_wrong_field_name,
-    config_wrong_morph_priority,
-    config_wrong_morphemizer_description,
-    config_wrong_note_type,
 )
 
 # these gave to be placed here to avoid cyclical imports
@@ -93,14 +91,11 @@ def test_recalc(  # pylint:disable=too-many-locals
     modified_collection = fake_environment.modified_collection
     original_collection = fake_environment.original_collection
 
-    pprint.pp(fake_environment.config)
-
     model_manager: ModelManager = ModelManager(modified_collection)
 
     note_type_dict: NotetypeDict | None = model_manager.by_name(
         fake_environment.config["filters"][0]["note_type"]
     )
-
     assert note_type_dict is not None
     note_type_field_name_dict = model_manager.field_map(note_type_dict)
 

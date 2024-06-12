@@ -16,7 +16,7 @@ the tests found in the `tests` directory.
 
 You can restrict the tests to a specific file by appending the path(s) to the command, e.g:
 ```
-pytest tests/recalc_test.py tests/review_test.py
+pytest test/tests/recalc_test.py test/tests/review_test.py
 ```
 
 You can also add "tags" to specific tests and run all the tests that have those tags. This is done by adding the
@@ -47,7 +47,7 @@ pytest --randomly-seed=last
 
 ## Card collections
 
-Current card collections (tests/data/card_collections):
+Current card collections (test/data/card_collections):
 - `big-japanese-collection.anki2` (https://github.com/mortii/anki-decks)
 - `ignore_names_txt_collection.anki2`
 - `known-morphs-test-collection.anki2`
@@ -73,7 +73,7 @@ that have been found elsewhere, so for that we make smaller collection that we t
 5. change the ankimorphs settings to fit the use case and recalc
 6. exit anki/close the profile
 7. extract the `collection.anki2` file from the profile directory and rename it
-8. place the renamed collection file in `tests/data/card_collections`
+8. place the renamed collection file in `test/data/card_collections`
 9. create a new config copy in `environment_setup_for_tests.py` and make any necessary adjustments
 
 ## Investigating collections

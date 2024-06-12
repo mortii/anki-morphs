@@ -1,17 +1,17 @@
 from __future__ import annotations
 
+from test.fake_configs import config_big_japanese_collection
+from test.fake_environment_module import (  # pylint:disable=unused-import
+    FakeEnvironment,
+    FakeEnvironmentParams,
+    fake_environment,
+)
+
 import pytest
 
 from ankimorphs import text_highlighting
 from ankimorphs.ankimorphs_config import AnkiMorphsConfig
 from ankimorphs.morpheme import Morpheme
-
-from .environment_setup_for_tests import (  # pylint:disable=unused-import
-    FakeEnvironment,
-    FakeEnvironmentParams,
-    fake_environment,
-)
-from .fake_configs import config_big_japanese_collection
 
 ##############################################################################################
 #                                    CASE: JAPANESE ONE

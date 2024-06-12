@@ -2,10 +2,16 @@ from __future__ import annotations
 
 import os
 import shutil
-import sqlite3
 import sys
 from collections.abc import Iterator
 from pathlib import Path
+from test.fake_db import FakeDB
+from test.test_globals import (
+    PATH_CARD_COLLECTIONS,
+    PATH_DB_COPY,
+    PATH_TESTS_DATA,
+    PATH_TESTS_DATA_DBS,
+)
 from typing import Any
 from unittest import mock
 
@@ -25,22 +31,8 @@ from ankimorphs import (
     recalc,
     reviewing_utils,
 )
-from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.generators import generators_window
 from ankimorphs.morphemizers import spacy_wrapper
-
-TESTS_DATA_PATH = Path(Path(__file__).parent, "data")
-TESTS_DATA_CORRECT_OUTPUTS_PATH = Path(TESTS_DATA_PATH, "correct_outputs")
-TESTS_DATA_TESTS_OUTPUTS_PATH = Path(TESTS_DATA_PATH, "tests_outputs")
-
-
-class MockDB(AnkiMorphsDB):
-    # We subclass to use a db with a different file name
-    def __init__(self) -> None:
-        super().__init__()
-        # TODO: rename and move
-        tests_path = Path(TESTS_DATA_PATH, "populated_ankimorphs_copy.db")
-        self.con: sqlite3.Connection = sqlite3.connect(tests_path)
 
 
 class FakeEnvironmentParams:
@@ -55,7 +47,7 @@ class FakeEnvironment:
     def __init__(  # pylint:disable=too-many-arguments
         self,
         mock_mw: mock.Mock,
-        mock_db: MockDB,
+        mock_db: FakeDB,
         config: dict[str, Any],
         original_collection: Collection,
         modified_collection: Collection,
@@ -75,9 +67,6 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     # approach of using the "request" fixture as an input, which
     # will then contain the parameters
 
-    # print(f"request.param: {request.param}")
-    # print(f"request.param: {request.param[0]}")
-
     try:
         _collection_file_name: str = request.param.collection
         assert isinstance(_collection_file_name, str)
@@ -92,37 +81,24 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
         print('Missing "@pytest.mark.parametrize"')
         raise _error
 
-    # print(f"_collection_file_name: {_collection_file_name}")
-    # print(f"_config_data: {_config_data}")
-    # print(f"current dir: {os.getcwd()}")
-
-    card_collections_path = Path(TESTS_DATA_PATH, "card_collections")
-    collection_path_original = Path(
-        card_collections_path, f"{_collection_file_name}.anki2"
+    path_original_collection = Path(
+        PATH_CARD_COLLECTIONS, f"{_collection_file_name}.anki2"
     )
-    collection_path_original_media = Path(
-        card_collections_path, f"{_collection_file_name}.media"
+    path_original_collection_media = Path(
+        PATH_CARD_COLLECTIONS, f"{_collection_file_name}.media"
     )
     collection_path_duplicate = Path(
-        card_collections_path, f"duplicate_{_collection_file_name}.anki2"
+        PATH_CARD_COLLECTIONS, f"duplicate_{_collection_file_name}.anki2"
     )
     collection_path_duplicate_media = Path(
-        card_collections_path, f"duplicate_{_collection_file_name}.media"
+        PATH_CARD_COLLECTIONS, f"duplicate_{_collection_file_name}.media"
     )
-    fake_morphemizers_path = Path(TESTS_DATA_PATH, "morphemizers")
-
-    # test_db_original_path = Path(TESTS_DATA_PATH, "populated_ankimorphs.db")
-    test_db_original_path = Path(
-        # TESTS_DATA_PATH, "populated_am_dbs", "lemma_priority.db"
-        TESTS_DATA_PATH,
-        "am_dbs",
-        _am_db_name,
-    )
-    test_db_copy_path = Path(TESTS_DATA_PATH, "populated_ankimorphs_copy.db")
+    fake_morphemizers_path = Path(PATH_TESTS_DATA, "morphemizers")
+    test_db_original_path = Path(PATH_TESTS_DATA_DBS, _am_db_name)
 
     # If the destination already exists, it will be replaced
-    shutil.copyfile(collection_path_original, collection_path_duplicate)
-    shutil.copyfile(test_db_original_path, test_db_copy_path)
+    shutil.copyfile(path_original_collection, collection_path_duplicate)
+    shutil.copyfile(test_db_original_path, PATH_DB_COPY)
 
     mock_mw = mock.Mock(spec=aqt.mw)
     mock_mw.col = Collection(str(collection_path_duplicate))
@@ -152,8 +128,9 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     patch_gd_mw.start()
 
     # 'mw' has to be patched before we can before we can create a db instance
-    patch_am_db = mock.patch.object(reviewing_utils, "AnkiMorphsDB", MockDB)
-    mock_db = MockDB()
+    patch_reviewing_am_db = mock.patch.object(reviewing_utils, "AnkiMorphsDB", FakeDB)
+    patch_recalc_am_db = mock.patch.object(recalc, "AnkiMorphsDB", FakeDB)
+    mock_db = FakeDB()
 
     # tooltip tries to do gui stuff which breaks test
     mock_tooltip = mock.Mock(spec=aqt.utils.tooltip)
@@ -163,7 +140,8 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
         spacy_wrapper, "testing_environment", True
     )
 
-    patch_am_db.start()
+    patch_reviewing_am_db.start()
+    patch_recalc_am_db.start()
     patch_tooltip.start()
 
     patch_testing_variable.start()
@@ -174,7 +152,7 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
             mock_mw=mock_mw,
             mock_db=mock_db,
             config=_config_data,
-            original_collection=Collection(str(collection_path_original)),
+            original_collection=Collection(str(path_original_collection)),
             modified_collection=mock_mw.col,
         )
 
@@ -193,13 +171,14 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
         patch_reviewing_mw.stop()
         patch_gd_mw.stop()
 
-        patch_am_db.stop()
+        patch_reviewing_am_db.stop()
+        patch_recalc_am_db.stop()
         patch_tooltip.stop()
 
         patch_testing_variable.stop()
         sys.path.remove(str(fake_morphemizers_path))
 
-        Path.unlink(test_db_copy_path, missing_ok=True)
+        Path.unlink(PATH_DB_COPY, missing_ok=True)
         Path.unlink(collection_path_duplicate, missing_ok=True)
-        shutil.rmtree(collection_path_original_media, ignore_errors=True)
+        shutil.rmtree(path_original_collection_media, ignore_errors=True)
         shutil.rmtree(collection_path_duplicate_media, ignore_errors=True)

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import functools
-import os
 import sqlite3
 from collections import Counter
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
 from anki.collection import Collection, SearchNode
@@ -23,11 +23,17 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
     # therefore, we need a many-to-many db structure:
     # Cards -> Card_Morph_Map <- Morphs
 
-    def __init__(self) -> None:
+    def __init__(self, db_path: Path | None = None) -> None:
+        """
+        db_path is used for swapping dbs during testing
+        """
         assert mw is not None
         assert mw.pm is not None
-        path: str = os.path.join(mw.pm.profileFolder(), "ankimorphs.db")
-        self.con: sqlite3.Connection = sqlite3.connect(path)
+
+        if db_path is None:
+            db_path = Path(mw.pm.profileFolder(), "ankimorphs.db")
+
+        self.con: sqlite3.Connection = sqlite3.connect(db_path)
 
     def create_all_tables(self) -> None:
         self.create_morph_table()

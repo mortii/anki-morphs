@@ -36,7 +36,7 @@ min-similarity-lines = 7
 # Docs: https://docs.pytest.org/en/7.1.x/reference/reference.html#ini-options-ref
 [tool.pytest.ini_options]
 # testpaths: directories that should be searched when no specific directories, files or test ids are given
-testpaths = "tests"
+testpaths = "test/tests"
 # python_files: determining which python files are considered as test modules.
 python_files = "*_test.py"
 # python_functions: which test functions and methods are considered tests
@@ -66,7 +66,8 @@ markers = [
   "slow",
   "recalc",
   "external_morphemizers",
-  "should_cause_exception"
+  "should_cause_exception",
+  "debug"
 ]
 
 [tool.vulture]

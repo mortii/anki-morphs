@@ -1,4 +1,10 @@
 from functools import partial
+from test.fake_configs import config_inflection_priority, config_lemma_priority
+from test.fake_environment_module import (  # pylint:disable=unused-import
+    FakeEnvironment,
+    FakeEnvironmentParams,
+    fake_environment,
+)
 
 import pytest
 from anki.consts import CardQueue
@@ -7,13 +13,6 @@ from aqt.reviewer import Reviewer
 from ankimorphs import reviewing_utils
 from ankimorphs.ankimorphs_config import AnkiMorphsConfig
 from ankimorphs.reviewing_utils import SkippedCards
-
-from .environment_setup_for_tests import (  # pylint:disable=unused-import
-    FakeEnvironment,
-    FakeEnvironmentParams,
-    fake_environment,
-)
-from .fake_configs import config_inflection_priority, config_lemma_priority
 
 ################################################################
 #                  CASE: SKIP INFLECTIONS

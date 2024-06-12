@@ -1,6 +1,16 @@
 import os
 import pprint
 from pathlib import Path
+from test.fake_configs import config_big_japanese_collection
+from test.fake_environment_module import (  # pylint:disable=unused-import
+    FakeEnvironmentParams,
+    fake_environment,
+)
+from test.test_globals import (
+    PATH_TESTS_DATA,
+    PATH_TESTS_DATA_CORRECT_OUTPUTS,
+    PATH_TESTS_DATA_TESTS_OUTPUTS,
+)
 
 import pytest
 from csv_diff import compare, load_csv
@@ -11,15 +21,6 @@ from ankimorphs.generators.generators_output_dialog import (
     OutputOptions,
 )
 from ankimorphs.generators.generators_window import GeneratorWindow
-
-from .environment_setup_for_tests import (  # pylint:disable=unused-import
-    TESTS_DATA_CORRECT_OUTPUTS_PATH,
-    TESTS_DATA_PATH,
-    TESTS_DATA_TESTS_OUTPUTS_PATH,
-    FakeEnvironmentParams,
-    fake_environment,
-)
-from .fake_configs import config_big_japanese_collection
 
 ################################################################
 #            CASE: BIG JAPANESE COLLECTION
@@ -63,8 +64,8 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-l
     """
     gw = GeneratorWindow()
 
-    input_folder = Path(TESTS_DATA_PATH, "ja_subs")
-    test_output_file = Path(TESTS_DATA_TESTS_OUTPUTS_PATH, "test_output_file.csv")
+    input_folder = Path(PATH_TESTS_DATA, "ja_subs")
+    test_output_file = Path(PATH_TESTS_DATA_TESTS_OUTPUTS, "test_output_file.csv")
 
     if morphemizer_description == "AnkiMorphs: Japanese":
         if only_lemma:
@@ -90,7 +91,7 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-l
                 _file_name = "ja_core_news_sm_freq_inflection_min_occurrence.csv"
 
     correct_output_file = Path(
-        TESTS_DATA_CORRECT_OUTPUTS_PATH,
+        PATH_TESTS_DATA_CORRECT_OUTPUTS,
         _file_name,
     )
 
