@@ -1,6 +1,7 @@
 from functools import partial
 
 import pytest
+from anki.consts import CardQueue
 from aqt.reviewer import Reviewer
 
 from ankimorphs import reviewing_utils
@@ -13,8 +14,8 @@ from .environment_setup_for_tests import (  # pylint:disable=unused-import
 )
 from .fake_configs import config_inflection_priority, config_lemma_priority
 
-expected_lemma_priority_cards = [1715776939301, 1717943898444]
-expected_inflection_priority_cards = [1715776939301, 1715776946917]
+expected_lemma_priority_cards = [1715776939301, 1718190526053, 1717943898444]
+expected_inflection_priority_cards = [1715776939301, 1715776946917, 1715776953867]
 
 
 @pytest.mark.parametrize(
@@ -52,6 +53,7 @@ def test_custom_review(fake_environment: FakeEnvironment, expected_results: list
 
     first_card = expected_results[0]
     second_card = expected_results[1]
+    third_card = expected_results[2]
 
     mock_mw.reviewer.nextCard()
     assert mock_mw.reviewer.card.id == first_card
@@ -64,6 +66,6 @@ def test_custom_review(fake_environment: FakeEnvironment, expected_results: list
     assert mock_mw.reviewer.card.id == second_card
 
     # check if 'set known and skip' works
-    # reviewing_utils._set_card_as_known_and_skip(am_config)
-    # assert mock_mw.col.get_card(second_card).queue == CardQueue(-2)  # buried
-    # assert mock_mw.reviewer.card.id == third_card
+    reviewing_utils._set_card_as_known_and_skip(am_config)
+    assert mock_mw.col.get_card(second_card).queue == CardQueue(-2)  # buried
+    assert mock_mw.reviewer.card.id == third_card

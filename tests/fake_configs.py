@@ -107,7 +107,6 @@ config_inflection_priority["algorithm_lemma_priority"] = False
 #
 #
 ################################################################
-
 config_ignore_names_txt_enabled = copy.deepcopy(default_config_dict)
 config_ignore_names_txt_enabled["preprocess_ignore_names_textfile"] = True
 config_ignore_names_txt_enabled["filters"][0]["note_type"] = "note-type-with-names"
