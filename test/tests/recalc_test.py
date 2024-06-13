@@ -198,23 +198,6 @@ case_wrong_note_type_params = FakeEnvironmentParams(
 )
 
 
-@pytest.mark.should_cause_exception
-@pytest.mark.parametrize(
-    "fake_environment",
-    [case_wrong_note_type_params],
-    indirect=True,
-)
-def test_recalc_with_wrong_note_type(  # pylint:disable=unused-argument
-    fake_environment: FakeEnvironment,
-):
-    read_enabled_config_filters = ankimorphs_config.get_read_enabled_filters()
-    modify_enabled_config_filters = ankimorphs_config.get_modify_enabled_filters()
-    settings_error: Exception | None = recalc._check_selected_settings_for_errors(
-        read_enabled_config_filters, modify_enabled_config_filters
-    )
-    assert isinstance(settings_error, AnkiNoteTypeNotFound)
-
-
 ################################################################
 #                  CASE: WRONG FIELD NAME
 ################################################################
@@ -230,23 +213,6 @@ case_wrong_field_name_params = FakeEnvironmentParams(
 )
 
 
-@pytest.mark.should_cause_exception
-@pytest.mark.parametrize(
-    "fake_environment",
-    [case_wrong_field_name_params],
-    indirect=True,
-)
-def test_recalc_with_wrong_field(  # pylint:disable=unused-argument
-    fake_environment: FakeEnvironment,
-):
-    read_enabled_config_filters = ankimorphs_config.get_read_enabled_filters()
-    modify_enabled_config_filters = ankimorphs_config.get_modify_enabled_filters()
-    settings_error: Exception | None = recalc._check_selected_settings_for_errors(
-        read_enabled_config_filters, modify_enabled_config_filters
-    )
-    assert isinstance(settings_error, AnkiFieldNotFound)
-
-
 ################################################################
 #                CASE: WRONG MORPH PRIORITY
 ################################################################
@@ -260,23 +226,6 @@ case_wrong_morph_priority_params = FakeEnvironmentParams(
     config=config_wrong_morph_priority,
     am_db="empty_skeleton.db",
 )
-
-
-@pytest.mark.should_cause_exception
-@pytest.mark.parametrize(
-    "fake_environment",
-    [case_wrong_morph_priority_params],
-    indirect=True,
-)
-def test_recalc_with_wrong_frequency_file(  # pylint:disable=unused-argument
-    fake_environment: FakeEnvironment,
-):
-    read_enabled_config_filters = ankimorphs_config.get_read_enabled_filters()
-    modify_enabled_config_filters = ankimorphs_config.get_modify_enabled_filters()
-    settings_error: Exception | None = recalc._check_selected_settings_for_errors(
-        read_enabled_config_filters, modify_enabled_config_filters
-    )
-    assert isinstance(settings_error, FrequencyFileNotFoundException)
 
 
 ################################################################
@@ -295,27 +244,10 @@ case_wrong_morphemizer_description_params = FakeEnvironmentParams(
 )
 
 
-@pytest.mark.should_cause_exception
-@pytest.mark.parametrize(
-    "fake_environment",
-    [case_wrong_morphemizer_description_params],
-    indirect=True,
-)
-def test_recalc_with_wrong_morphemizer(  # pylint:disable=unused-argument
-    fake_environment: FakeEnvironment,
-):
-    read_enabled_config_filters = ankimorphs_config.get_read_enabled_filters()
-    modify_enabled_config_filters = ankimorphs_config.get_modify_enabled_filters()
-    settings_error: Exception | None = recalc._check_selected_settings_for_errors(
-        read_enabled_config_filters, modify_enabled_config_filters
-    )
-    assert isinstance(settings_error, MorphemizerNotFoundException)
-
-
 ################################################################
 #            CASES: DEFAULT NOTE FILTER SETTINGS
 ################################################################
-# Checks if "MorphemizerNotFoundException" exception is raised
+# Checks if "DefaultSettingsException" exception is raised
 # when any note filters contain the default `(none)` selection.
 # Collection choice is arbitrary.
 # Database choice is arbitrary.
@@ -347,24 +279,28 @@ case_default_morphemizer_params = FakeEnvironmentParams(
 
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
-    "fake_environment",
+    "fake_environment, _exception",
     [
-        case_default_note_type_params,
-        case_default_field_params,
-        case_default_morph_priority_params,
-        case_default_morphemizer_params,
+        (case_default_note_type_params, DefaultSettingsException),
+        (case_default_field_params, DefaultSettingsException),
+        (case_default_morph_priority_params, DefaultSettingsException),
+        (case_default_morphemizer_params, DefaultSettingsException),
+        (case_wrong_morphemizer_description_params, MorphemizerNotFoundException),
+        (case_wrong_morph_priority_params, FrequencyFileNotFoundException),
+        (case_wrong_field_name_params, AnkiFieldNotFound),
+        (case_wrong_note_type_params, AnkiNoteTypeNotFound),
     ],
-    indirect=True,
+    indirect=["fake_environment"],
 )
 def test_recalc_with_default_settings(  # pylint:disable=unused-argument
-    fake_environment: FakeEnvironment,
+    fake_environment: FakeEnvironment, _exception
 ):
     read_enabled_config_filters = ankimorphs_config.get_read_enabled_filters()
     modify_enabled_config_filters = ankimorphs_config.get_modify_enabled_filters()
     settings_error: Exception | None = recalc._check_selected_settings_for_errors(
         read_enabled_config_filters, modify_enabled_config_filters
     )
-    assert isinstance(settings_error, DefaultSettingsException)
+    assert isinstance(settings_error, _exception)
 
 
 @pytest.mark.xfail
