@@ -1,5 +1,5 @@
 from ..ankimorphs_config import AnkiMorphsConfig
-from ..morpheme import Morpheme
+from .card_morph_metrics import CardMorphMetrics
 
 # Anki stores the 'due' value of cards as a 32-bit integer
 # on the backend, with '2147483647' being the max value before
@@ -9,109 +9,6 @@ from ..morpheme import Morpheme
 _DEFAULT_SCORE: int = 2_047_483_647
 
 morph_unknown_penalty: int = 1_000_000
-
-
-class CardScoreValues:
-    __slots__ = (
-        "unknown_morphs",
-        "card_score",
-        "score_terms",
-        "num_learning_morphs",
-        "has_learning_morphs",
-        "total_priority_unknown_morphs",
-        "total_priority_all_morphs",
-    )
-
-    def __init__(self) -> None:
-        self.unknown_morphs: list[Morpheme] = []
-        self.card_score: int = _DEFAULT_SCORE
-        self.score_terms: str = "N/A"
-        self.num_learning_morphs: int = 0
-        self.has_learning_morphs: bool = False
-        self.total_priority_unknown_morphs = 0
-        self.total_priority_all_morphs = 0
-
-    def set_score(self, score: int) -> None:
-        self.card_score = score
-
-    def set_score_terms(self, score_terms: str) -> None:
-        self.score_terms = score_terms
-
-    def process(
-        self,
-        am_config: AnkiMorphsConfig,
-        morph_priorities: dict[str, int],
-        card_morphs: list[Morpheme],
-    ) -> None:
-
-        # setting default avoid an extra if statement
-        default_morph_priority = len(morph_priorities) + 1
-
-        if am_config.algorithm_lemma_priority:
-            self._process_using_lemma(
-                am_config, default_morph_priority, morph_priorities, card_morphs
-            )
-        else:
-            self._process_using_inflection(
-                am_config, default_morph_priority, morph_priorities, card_morphs
-            )
-
-        if self.num_learning_morphs > 0:
-            self.has_learning_morphs = True
-
-    def _process_using_lemma(
-        self,
-        am_config: AnkiMorphsConfig,
-        default_morph_priority: int,
-        morph_priorities: dict[str, int],
-        card_morphs: list[Morpheme],
-    ) -> None:
-        morph_priority = default_morph_priority
-
-        for morph in card_morphs:
-            assert morph.highest_lemma_learning_interval is not None
-
-            key = morph.lemma + morph.lemma
-            if key in morph_priorities:
-                morph_priority = morph_priorities[key]
-
-            self.total_priority_all_morphs += morph_priority
-
-            if morph.highest_lemma_learning_interval == 0:
-                self.unknown_morphs.append(morph)
-                self.total_priority_unknown_morphs += morph_priority
-            elif (
-                morph.highest_lemma_learning_interval
-                < am_config.recalc_interval_for_known
-            ):
-                self.num_learning_morphs += 1
-
-    def _process_using_inflection(
-        self,
-        am_config: AnkiMorphsConfig,
-        default_morph_priority: int,
-        morph_priorities: dict[str, int],
-        card_morphs: list[Morpheme],
-    ) -> None:
-        morph_priority = default_morph_priority
-
-        for morph in card_morphs:
-            assert morph.highest_inflection_learning_interval is not None
-
-            key = morph.lemma + morph.inflection
-            if key in morph_priorities:
-                morph_priority = morph_priorities[key]
-
-            self.total_priority_all_morphs += morph_priority
-
-            if morph.highest_inflection_learning_interval == 0:
-                self.unknown_morphs.append(morph)
-                self.total_priority_unknown_morphs += morph_priority
-            elif (
-                morph.highest_inflection_learning_interval
-                < am_config.recalc_interval_for_known
-            ):
-                self.num_learning_morphs += 1
 
 
 ####################################################################################
@@ -189,110 +86,105 @@ class CardScoreValues:
 #######################################
 
 
-def get_card_score_values(  # pylint:disable=(too-many-locals
-    am_config: AnkiMorphsConfig,
-    card_id: int,
-    card_morph_map_cache: dict[int, list[Morpheme]],
-    morph_priorities: dict[str, int],
-) -> CardScoreValues:
-
-    card_score_object = CardScoreValues()
-
-    try:
-        card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
-    except KeyError:
-        # card does not have morphs or is buggy in some way
-        return card_score_object
-
-    card_score_object.process(am_config, morph_priorities, card_morphs)
-
-    if am_config.recalc_move_known_new_cards_to_the_end:
-        if len(card_score_object.unknown_morphs) == 0:
-            # Move stale cards to the end of the queue
-            return card_score_object
-
-    all_morphs_target_difference: int = _get_all_morphs_target_difference(
-        am_config=am_config,
-        num_morphs=len(card_morphs),
+class CardScore:
+    __slots__ = (
+        "score",
+        "terms",
     )
 
-    learning_morphs_target_difference: int = _get_learning_morphs_target_difference(
-        am_config=am_config,
-        num_morphs=card_score_object.num_learning_morphs,
-    )
+    def __init__(
+        self, am_config: AnkiMorphsConfig, card_morph_metrics: CardMorphMetrics
+    ) -> None:
+        self.score = _DEFAULT_SCORE
+        self.terms = "N/A"
 
-    all_morphs_avg_priority = int(
-        card_score_object.total_priority_all_morphs / len(card_morphs)
-    )
+        if len(card_morph_metrics.all_morphs) == 0:
+            return
 
-    unknown_morphs_total_priority_score = (
-        am_config.algorithm_total_priority_unknown_morphs
-        * card_score_object.total_priority_unknown_morphs
-    )
-    all_morphs_avg_priority_score = (
-        am_config.algorithm_average_priority_all_morphs * all_morphs_avg_priority
-    )
-    all_morphs_total_priority_score = (
-        am_config.algorithm_total_priority_all_morphs
-        * card_score_object.total_priority_all_morphs
-    )
-    leaning_morphs_target_difference_score = (
-        am_config.algorithm_learning_morphs_target_distance
-        * learning_morphs_target_difference
-    )
-    all_morphs_target_difference_score = (
-        am_config.algorithm_all_morphs_target_distance * all_morphs_target_difference
-    )
+        if am_config.recalc_move_known_new_cards_to_the_end:
+            if len(card_morph_metrics.unknown_morphs) == 0:
+                # Move stale cards to the end of the queue
+                return
 
-    score = (
-        unknown_morphs_total_priority_score
-        + all_morphs_avg_priority_score
-        + all_morphs_total_priority_score
-        + leaning_morphs_target_difference_score
-        + all_morphs_target_difference_score
-    )
+        all_morphs_target_difference: int = _get_all_morphs_target_difference(
+            am_config=am_config,
+            num_morphs=len(card_morph_metrics.all_morphs),
+        )
 
-    if score >= morph_unknown_penalty:
-        # Cap morph priority penalties as described in #(2.2)
-        score = morph_unknown_penalty - 1
+        learning_morphs_target_difference: int = _get_learning_morphs_target_difference(
+            am_config=am_config,
+            num_morphs=card_morph_metrics.num_learning_morphs,
+        )
 
-    unknown_morphs_amount_score = (
-        len(card_score_object.unknown_morphs) * morph_unknown_penalty
-    )
-    score += unknown_morphs_amount_score
+        all_morphs_avg_priority = int(
+            card_morph_metrics.total_priority_all_morphs
+            / len(card_morph_metrics.all_morphs)
+        )
 
-    # cap score to prevent 32-bit integer overflow
-    score = min(score, _DEFAULT_SCORE)
+        unknown_morphs_total_priority_score = (
+            am_config.algorithm_total_priority_unknown_morphs
+            * card_morph_metrics.total_priority_unknown_morphs
+        )
+        all_morphs_avg_priority_score = (
+            am_config.algorithm_average_priority_all_morphs * all_morphs_avg_priority
+        )
+        all_morphs_total_priority_score = (
+            am_config.algorithm_total_priority_all_morphs
+            * card_morph_metrics.total_priority_all_morphs
+        )
+        leaning_morphs_target_difference_score = (
+            am_config.algorithm_learning_morphs_target_distance
+            * learning_morphs_target_difference
+        )
+        all_morphs_target_difference_score = (
+            am_config.algorithm_all_morphs_target_distance
+            * all_morphs_target_difference
+        )
 
-    # print(f"card id: {card_id}")
-    # print(f"card_morphs_inflections: {[morph.inflection for morph in card_morphs]}")
-    # print(f"unknown_morphs: {len(unknown_morphs)}")
-    # print(f"learning_morphs: {num_learning_morphs}")
-    # print(f"unknown_morphs_amount_score: {unknown_morphs_amount_score}")
-    # print(f"unknown_morphs_total_priority_score: {unknown_morphs_total_priority_score}")
-    # print(f"all_morphs_avg_priority_score: {all_morphs_avg_priority_score}")
-    # print(f"all_morphs_total_priority_score: {all_morphs_total_priority_score}")
-    # print(
-    #     f"leaning_morphs_target_difference_score: {leaning_morphs_target_difference_score}"
-    # )
-    # print(f"all_morphs_target_difference_score: {all_morphs_target_difference_score}")
-    # print(f"score: {score}")
-    # print()
+        _score: int = (
+            unknown_morphs_total_priority_score
+            + all_morphs_avg_priority_score
+            + all_morphs_total_priority_score
+            + leaning_morphs_target_difference_score
+            + all_morphs_target_difference_score
+        )
 
-    # Note: have a whitespace before the <br> tags to avoid bugs
-    score_terms: str = f"""
-        unknown_morphs_amount_score: {unknown_morphs_amount_score}, <br>
-        unknown_morphs_total_priority_score: {unknown_morphs_total_priority_score}, <br>
-        all_morphs_avg_priority_score: {all_morphs_avg_priority_score}, <br>
-        all_morphs_total_priority_score: {all_morphs_total_priority_score}, <br>
-        leaning_morphs_target_difference_score: {leaning_morphs_target_difference_score}, <br>
-        all_morphs_target_difference_score: {all_morphs_target_difference_score}
-    """
+        if _score >= morph_unknown_penalty:
+            # Cap morph priority penalties as described in #(2.2)
+            _score = morph_unknown_penalty - 1
 
-    card_score_object.set_score(score)
-    card_score_object.set_score_terms(score_terms)
+        unknown_morphs_amount_score = (
+            len(card_morph_metrics.unknown_morphs) * morph_unknown_penalty
+        )
+        _score += unknown_morphs_amount_score
 
-    return card_score_object
+        # cap score to prevent 32-bit integer overflow
+        self.score = min(_score, _DEFAULT_SCORE)
+
+        # print(f"card id: {card_id}")
+        # print(f"card_morphs_inflections: {[morph.inflection for morph in card_morphs]}")
+        # print(f"unknown_morphs: {len(unknown_morphs)}")
+        # print(f"learning_morphs: {num_learning_morphs}")
+        # print(f"unknown_morphs_amount_score: {unknown_morphs_amount_score}")
+        # print(f"unknown_morphs_total_priority_score: {unknown_morphs_total_priority_score}")
+        # print(f"all_morphs_avg_priority_score: {all_morphs_avg_priority_score}")
+        # print(f"all_morphs_total_priority_score: {all_morphs_total_priority_score}")
+        # print(
+        #     f"leaning_morphs_target_difference_score: {leaning_morphs_target_difference_score}"
+        # )
+        # print(f"all_morphs_target_difference_score: {all_morphs_target_difference_score}")
+        # print(f"score: {score}")
+        # print()
+
+        # Note: have a whitespace before the <br> tags to avoid bugs
+        self.terms = f"""
+                unknown_morphs_amount_score: {unknown_morphs_amount_score}, <br>
+                unknown_morphs_total_priority_score: {unknown_morphs_total_priority_score}, <br>
+                all_morphs_avg_priority_score: {all_morphs_avg_priority_score}, <br>
+                all_morphs_total_priority_score: {all_morphs_total_priority_score}, <br>
+                leaning_morphs_target_difference_score: {leaning_morphs_target_difference_score}, <br>
+                all_morphs_target_difference_score: {all_morphs_target_difference_score}
+            """
 
 
 def _get_morph_targets_difference(

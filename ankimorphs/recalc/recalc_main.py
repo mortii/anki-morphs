@@ -37,7 +37,8 @@ from ..text_preprocessing import (
 )
 from . import anki_data_utils, extra_field_utils
 from .anki_data_utils import AnkiCardData, AnkiMorphsCardData
-from .calc_score import _DEFAULT_SCORE, CardScoreValues, get_card_score_values
+from .calc_score import _DEFAULT_SCORE, CardScore
+from .card_morph_metrics import CardMorphMetrics
 from .morph_priority_utils import _get_morph_priority
 
 
@@ -440,21 +441,24 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
             original_tags: list[str] = note.tags.copy()
 
             if card.type == CARD_TYPE_NEW:
-                score_values: CardScoreValues = get_card_score_values(
+
+                cards_morph_metrics = CardMorphMetrics(
                     am_config,
                     card_id,
                     card_morph_map_cache,
                     morph_priorities,
                 )
 
-                card.due = score_values.card_score
+                score_values = CardScore(am_config, cards_morph_metrics)
+
+                card.due = score_values.score
 
                 _update_tags_and_queue(
                     am_config,
                     note,
                     card,
-                    len(score_values.unknown_morphs),
-                    score_values.has_learning_morphs,
+                    len(cards_morph_metrics.unknown_morphs),
+                    cards_morph_metrics.has_learning_morphs,
                 )
 
                 if config_filter.extra_unknowns:
@@ -462,21 +466,21 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                         am_config,
                         note_type_field_name_dict,
                         note,
-                        score_values.unknown_morphs,
+                        cards_morph_metrics.unknown_morphs,
                     )
                 if config_filter.extra_unknowns_count:
                     extra_field_utils.update_unknowns_count_field(
                         note_type_field_name_dict,
                         note,
-                        score_values.unknown_morphs,
+                        cards_morph_metrics.unknown_morphs,
                     )
                 if config_filter.extra_score:
                     extra_field_utils.update_score_field(
-                        note_type_field_name_dict, note, score_values.card_score
+                        note_type_field_name_dict, note, score_values.score
                     )
                 if config_filter.extra_score_terms:
                     extra_field_utils.update_score_terms_field(
-                        note_type_field_name_dict, note, score_values.score_terms
+                        note_type_field_name_dict, note, score_values.terms
                     )
 
             if config_filter.extra_highlighted:
