@@ -1,5 +1,7 @@
 from functools import partial
 from test.fake_configs import config_inflection_priority, config_lemma_priority
+
+# todo: rename to "fake_environment" to "fake_environment_fixture"
 from test.fake_environment_module import (  # pylint:disable=unused-import
     FakeEnvironment,
     FakeEnvironmentParams,

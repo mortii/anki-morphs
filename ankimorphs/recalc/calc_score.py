@@ -1,5 +1,5 @@
-from .ankimorphs_config import AnkiMorphsConfig
-from .morpheme import Morpheme
+from ..ankimorphs_config import AnkiMorphsConfig
+from ..morpheme import Morpheme
 
 # Anki stores the 'due' value of cards as a 32-bit integer
 # on the backend, with '2147483647' being the max value before
@@ -15,9 +15,9 @@ class CardScoreValues:
     __slots__ = (
         "unknown_morphs",
         "card_score",
-        "has_learning_morph",
         "score_terms",
         "num_learning_morphs",
+        "has_learning_morphs",
         "total_priority_unknown_morphs",
         "total_priority_all_morphs",
     )
@@ -25,9 +25,9 @@ class CardScoreValues:
     def __init__(self) -> None:
         self.unknown_morphs: list[Morpheme] = []
         self.card_score: int = _DEFAULT_SCORE
-        self.has_learning_morph: bool = False
         self.score_terms: str = "N/A"
         self.num_learning_morphs: int = 0
+        self.has_learning_morphs: bool = False
         self.total_priority_unknown_morphs = 0
         self.total_priority_all_morphs = 0
 
@@ -57,7 +57,7 @@ class CardScoreValues:
             )
 
         if self.num_learning_morphs > 0:
-            self.has_learning_morph = True
+            self.has_learning_morphs = True
 
     def _process_using_lemma(
         self,

@@ -13,8 +13,8 @@ from anki.models import ModelManager, NotetypeDict, NotetypeId
 from anki.tags import TagManager
 from aqt import mw
 
-from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
-from .morpheme import Morpheme
+from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
+from ..morpheme import Morpheme
 
 
 class AnkiDBRowData:

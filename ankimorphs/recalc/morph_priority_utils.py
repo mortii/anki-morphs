@@ -6,10 +6,10 @@ from typing import Any
 
 from aqt import mw
 
-from . import ankimorphs_globals
-from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
-from .ankimorphs_db import AnkiMorphsDB
-from .exceptions import FrequencyFileMalformedException, FrequencyFileNotFoundException
+from .. import ankimorphs_globals
+from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
+from ..ankimorphs_db import AnkiMorphsDB
+from ..exceptions import FrequencyFileMalformedException, FrequencyFileNotFoundException
 
 _DEFAULT_SCORE: int = 2_047_483_647
 

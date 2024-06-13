@@ -21,7 +21,7 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 
 import pytest
 
-from ankimorphs import ankimorphs_config, ankimorphs_globals, recalc
+from ankimorphs import ankimorphs_config, ankimorphs_globals
 from ankimorphs.exceptions import (
     AnkiFieldNotFound,
     AnkiNoteTypeNotFound,
@@ -29,6 +29,7 @@ from ankimorphs.exceptions import (
     FrequencyFileNotFoundException,
     MorphemizerNotFoundException,
 )
+from ankimorphs.recalc import recalc_main
 
 # these gave to be placed here to avoid cyclical imports
 from anki.cards import Card  # isort:skip  pylint:disable=wrong-import-order
@@ -148,7 +149,7 @@ def test_recalc(  # pylint:disable=too-many-locals
     read_enabled_config_filters = ankimorphs_config.get_read_enabled_filters()
     modify_enabled_config_filters = ankimorphs_config.get_modify_enabled_filters()
 
-    recalc._recalc_background_op(
+    recalc_main._recalc_background_op(
         read_enabled_config_filters=read_enabled_config_filters,
         modify_enabled_config_filters=modify_enabled_config_filters,
     )
@@ -297,7 +298,7 @@ def test_recalc_with_default_settings(  # pylint:disable=unused-argument
 ):
     read_enabled_config_filters = ankimorphs_config.get_read_enabled_filters()
     modify_enabled_config_filters = ankimorphs_config.get_modify_enabled_filters()
-    settings_error: Exception | None = recalc._check_selected_settings_for_errors(
+    settings_error: Exception | None = recalc_main._check_selected_settings_for_errors(
         read_enabled_config_filters, modify_enabled_config_filters
     )
     assert isinstance(settings_error, _exception)

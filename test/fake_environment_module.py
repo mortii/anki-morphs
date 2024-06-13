@@ -24,15 +24,14 @@ from aqt import setupLangAndBackend
 from aqt.reviewer import Reviewer
 
 from ankimorphs import (
-    anki_data_utils,
     ankimorphs_config,
     ankimorphs_db,
     name_file_utils,
-    recalc,
     reviewing_utils,
 )
 from ankimorphs.generators import generators_window
 from ankimorphs.morphemizers import spacy_wrapper
+from ankimorphs.recalc import anki_data_utils, recalc_main
 
 
 class FakeEnvironmentParams:
@@ -111,7 +110,7 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     mock_mw.reviewer = Reviewer(mock_mw)
     mock_mw.reviewer._showQuestion = lambda: None
 
-    patch_recalc_mw = mock.patch.object(recalc, "mw", mock_mw)
+    patch_recalc_mw = mock.patch.object(recalc_main, "mw", mock_mw)
     patch_am_db_mw = mock.patch.object(ankimorphs_db, "mw", mock_mw)
     patch_config_mw = mock.patch.object(ankimorphs_config, "mw", mock_mw)
     patch_name_file_utils_mw = mock.patch.object(name_file_utils, "mw", mock_mw)
@@ -129,7 +128,7 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
 
     # 'mw' has to be patched before we can before we can create a db instance
     patch_reviewing_am_db = mock.patch.object(reviewing_utils, "AnkiMorphsDB", FakeDB)
-    patch_recalc_am_db = mock.patch.object(recalc, "AnkiMorphsDB", FakeDB)
+    patch_recalc_am_db = mock.patch.object(recalc_main, "AnkiMorphsDB", FakeDB)
     mock_db = FakeDB()
 
     # tooltip tries to do gui stuff which breaks test

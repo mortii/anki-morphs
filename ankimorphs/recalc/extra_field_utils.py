@@ -4,9 +4,9 @@ from anki.models import FieldDict, ModelManager, NotetypeDict
 from anki.notes import Note
 from aqt import mw
 
-from . import ankimorphs_config, ankimorphs_globals, text_highlighting
-from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
-from .morpheme import Morpheme
+from .. import ankimorphs_config, ankimorphs_globals, text_highlighting
+from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
+from ..morpheme import Morpheme
 
 
 def new_extra_fields_are_selected() -> bool:

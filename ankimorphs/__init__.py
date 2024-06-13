@@ -39,10 +39,7 @@ from . import (
     ankimorphs_config,
     ankimorphs_globals,
     browser_utils,
-    calc_score,
-    morph_priority_utils,
     name_file_utils,
-    recalc,
     reviewing_utils,
     toolbar_stats,
 )
@@ -50,6 +47,7 @@ from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
 from .generators.generators_window import GeneratorWindow
 from .known_morphs_exporter import KnownMorphsExporterDialog
+from .recalc import recalc_main
 from .settings import settings_dialog
 from .settings.settings_dialog import SettingsDialog
 from .tag_selection_dialog import TagSelectionDialog
@@ -101,7 +99,7 @@ def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
         toolbar.create_link(
             cmd="recalc_toolbar",
             label="Recalc",
-            func=recalc.recalc,
+            func=recalc_main.recalc,
             tip="AnkiMorphs Recalc",
             id="recalc_toolbar",
         )
@@ -291,7 +289,7 @@ def recalc_on_sync() -> None:
     else:
         am_config = AnkiMorphsConfig()
         if am_config.recalc_on_sync:
-            recalc.recalc()
+            recalc_main.recalc()
 
 
 def replace_reviewer_functions() -> None:
@@ -397,7 +395,7 @@ def create_am_tool_menu() -> QMenu:
 def create_recalc_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Recalc", mw)
     action.setShortcut(am_config.shortcut_recalc)
-    action.triggered.connect(recalc.recalc)
+    action.triggered.connect(recalc_main.recalc)
     return action
 
 

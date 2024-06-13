@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ankimorphs import calc_score
+from ankimorphs.recalc import calc_score
 
 
 def test_target_difference_function():

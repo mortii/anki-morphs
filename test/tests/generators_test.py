@@ -15,7 +15,6 @@ from test.test_globals import (
 import pytest
 from csv_diff import compare, load_csv
 
-# from ankimorphs import AnkiMorphsDB
 from ankimorphs.generators.generators_output_dialog import (
     GeneratorOutputDialog,
     OutputOptions,

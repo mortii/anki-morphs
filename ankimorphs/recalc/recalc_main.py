@@ -14,18 +14,10 @@ from aqt import mw
 from aqt.operations import QueryOp
 from aqt.utils import tooltip
 
-from . import (
-    anki_data_utils,
-    ankimorphs_config,
-    ankimorphs_globals,
-    extra_field_utils,
-    message_box_utils,
-)
-from .anki_data_utils import AnkiCardData, AnkiMorphsCardData
-from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
-from .ankimorphs_db import AnkiMorphsDB
-from .calc_score import _DEFAULT_SCORE, CardScoreValues, get_card_score_values
-from .exceptions import (
+from .. import ankimorphs_config, ankimorphs_globals, message_box_utils
+from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
+from ..ankimorphs_db import AnkiMorphsDB
+from ..exceptions import (
     AnkiFieldNotFound,
     AnkiNoteTypeNotFound,
     CancelledOperationException,
@@ -34,16 +26,19 @@ from .exceptions import (
     FrequencyFileNotFoundException,
     MorphemizerNotFoundException,
 )
-from .morph_priority_utils import _get_morph_priority
-from .morpheme import Morpheme
-from .morphemizers import morphemizer as morphemizer_module
-from .morphemizers import spacy_wrapper
-from .morphemizers.morphemizer import SpacyMorphemizer
-from .text_preprocessing import (
+from ..morpheme import Morpheme
+from ..morphemizers import morphemizer as morphemizer_module
+from ..morphemizers import spacy_wrapper
+from ..morphemizers.morphemizer import SpacyMorphemizer
+from ..text_preprocessing import (
     get_processed_expression,
     get_processed_morphemizer_morphs,
     get_processed_spacy_morphs,
 )
+from . import anki_data_utils, extra_field_utils
+from .anki_data_utils import AnkiCardData, AnkiMorphsCardData
+from .calc_score import _DEFAULT_SCORE, CardScoreValues, get_card_score_values
+from .morph_priority_utils import _get_morph_priority
 
 
 def recalc() -> None:
@@ -459,7 +454,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                     note,
                     card,
                     len(score_values.unknown_morphs),
-                    score_values.has_learning_morph,
+                    score_values.has_learning_morphs,
                 )
 
                 if config_filter.extra_unknowns:

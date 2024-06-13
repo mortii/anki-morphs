@@ -12,10 +12,10 @@ from anki.models import NotetypeId
 from aqt import mw
 from aqt.operations import QueryOp
 
-from .anki_data_utils import AnkiMorphsCardData
 from .ankimorphs_config import AnkiMorphsConfig
 from .morpheme import Morpheme
 from .name_file_utils import get_names_from_file_as_morphs
+from .recalc.anki_data_utils import AnkiMorphsCardData
 
 
 class AnkiMorphsDB:  # pylint:disable=too-many-public-methods

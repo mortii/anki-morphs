@@ -22,14 +22,10 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from ankimorphs.exceptions import (
-    CancelledOperationException,
-    EmptyFileSelectionException,
-)
-
 from .. import ankimorphs_globals
 from ..ankimorphs_config import AnkiMorphsConfig
 from ..ankimorphs_db import AnkiMorphsDB
+from ..exceptions import CancelledOperationException, EmptyFileSelectionException
 from ..morpheme import MorphOccurrence
 from ..morphemizers import morphemizer, spacy_wrapper
 from ..morphemizers.morphemizer import Morphemizer, SpacyMorphemizer

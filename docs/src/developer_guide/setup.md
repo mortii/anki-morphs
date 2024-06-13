@@ -74,12 +74,12 @@
       and re-run the commit. E.g:
 
       ```bash
-      $ vim recalc.py
+      $ vim recalc_main.py
       $ git commit -am "made changes"
       isort (python)..........Failed
         - hook id: isort
         - files were modified by this hook
-      Fixing /home/{...}/recalc.py
+      Fixing /home/{...}/recalc_main.py
       $ git commit -am "made changes"
         [main c0bd018] made changes
         1 file changed, 56 insertions(+)
