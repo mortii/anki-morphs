@@ -37,8 +37,8 @@ from ..text_preprocessing import (
 )
 from . import anki_data_utils, extra_field_utils
 from .anki_data_utils import AnkiCardData, AnkiMorphsCardData
-from .calc_score import _DEFAULT_SCORE, CardScore
 from .card_morph_metrics import CardMorphMetrics
+from .card_score import _DEFAULT_SCORE, CardScore
 from .morph_priority_utils import _get_morph_priority
 
 

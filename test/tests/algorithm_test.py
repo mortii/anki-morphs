@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ankimorphs.recalc import calc_score
+from ankimorphs.recalc import card_score
 
 
 def test_target_difference_function():
@@ -8,7 +8,7 @@ def test_target_difference_function():
     produced_values = []
 
     for num_all_morphs in range(1, 15):
-        _score = calc_score._get_morph_targets_difference(
+        _score = card_score._get_morph_targets_difference(
             num_morphs=num_all_morphs,
             high_target=6,
             low_target=4,
