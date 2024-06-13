@@ -24,7 +24,7 @@ from . import (
 from .anki_data_utils import AnkiCardData, AnkiMorphsCardData
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
-from .calc_score import _DEFAULT_SCORE, ScoreValues, get_card_score_values
+from .calc_score import _DEFAULT_SCORE, CardScoreValues, get_card_score_values
 from .exceptions import (
     AnkiFieldNotFound,
     AnkiNoteTypeNotFound,
@@ -445,7 +445,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
             original_tags: list[str] = note.tags.copy()
 
             if card.type == CARD_TYPE_NEW:
-                score_values: ScoreValues = get_card_score_values(
+                score_values: CardScoreValues = get_card_score_values(
                     am_config,
                     card_id,
                     card_morph_map_cache,
@@ -458,8 +458,8 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                     am_config,
                     note,
                     card,
-                    len(score_values.card_unknown_morphs),
-                    score_values.card_has_learning_morphs,
+                    len(score_values.unknown_morphs),
+                    score_values.has_learning_morph,
                 )
 
                 if config_filter.extra_unknowns:
@@ -467,13 +467,13 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                         am_config,
                         note_type_field_name_dict,
                         note,
-                        score_values.card_unknown_morphs,
+                        score_values.unknown_morphs,
                     )
                 if config_filter.extra_unknowns_count:
                     extra_field_utils.update_unknowns_count_field(
                         note_type_field_name_dict,
                         note,
-                        score_values.card_unknown_morphs,
+                        score_values.unknown_morphs,
                     )
                 if config_filter.extra_score:
                     extra_field_utils.update_score_field(
