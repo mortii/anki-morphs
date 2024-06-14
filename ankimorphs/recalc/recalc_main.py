@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import time
-from functools import partial
 from pathlib import Path
 
 from anki.cards import Card
@@ -170,34 +169,22 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
     am_db.get_morph_collection_priorities.cache_clear()
 
     for config_filter in modify_enabled_config_filters:
-        note_type_dict: NotetypeDict | None = model_manager.by_name(
-            config_filter.note_type
+        note_type_dict: NotetypeDict = extra_field_utils.add_extra_fields_to_note_type(
+            model_manager, config_filter
         )
-        assert note_type_dict is not None
-
-        did_add_fields: bool = extra_field_utils.add_extra_fields_to_note_type(
-            config_filter, note_type_dict, model_manager
-        )
-
-        if did_add_fields:
-            # fetch the updated note type dict
-            note_type_dict = model_manager.by_name(config_filter.note_type)
-            assert note_type_dict is not None
-
         note_type_field_name_dict: dict[str, tuple[int, FieldDict]] = (
             model_manager.field_map(note_type_dict)
         )
         morph_priorities: dict[str, int] = _get_morph_priority(
             am_db, am_config, config_filter
         )
-
         cards_data_dict: dict[int, AnkiMorphsCardData] = am_db.get_am_cards_data_dict(
             note_type_id=model_manager.id_for_name(config_filter.note_type)
         )
         card_amount = len(cards_data_dict)
 
         for counter, card_id in enumerate(cards_data_dict):
-            progress_utils.update_progress_potentially_cancel(
+            progress_utils.background_update_progress_potentially_cancel(
                 label=f"Updating {config_filter.note_type} cards<br>card: {counter} of {card_amount}",
                 counter=counter,
                 max_value=card_amount,
@@ -282,41 +269,33 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
 
     if am_config.recalc_offset_new_cards:
         modified_cards = _add_offsets_to_new_cards(
-            am_config,
-            card_morph_map_cache,
-            modified_cards,
-            handled_cards,
+            am_config=am_config,
+            card_morph_map_cache=card_morph_map_cache,
+            already_modified_cards=modified_cards,
+            handled_cards=handled_cards,
         )
 
-    # todo: move to progress utils
-    mw.taskman.run_on_main(
-        partial(
-            mw.progress.update,
-            label="Inserting into Anki collection",
-        )
-    )
-
+    progress_utils.background_update_progress(label="Inserting into Anki collection")
     mw.col.update_cards(list(modified_cards.values()))
     mw.col.update_notes(modified_notes)
 
 
-def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branches
+def _add_offsets_to_new_cards(
     am_config: AnkiMorphsConfig,
     card_morph_map_cache: dict[int, list[Morpheme]],
-    modified_cards: dict[int, Card],
+    already_modified_cards: dict[int, Card],
     handled_cards: dict[int, None],
 ) -> dict[int, Card]:
     # This essentially replaces the need for the "skip" options, which in turn
     # makes reviewing cards on mobile a viable alternative.
     assert mw is not None
 
-    modified_offset_cards: dict[int, Card] = {}
     earliest_due_card_for_unknown_morph: dict[str, Card] = {}
     cards_with_morph: dict[str, set[int]] = {}  # a set has faster lookup than a list
 
     card_amount = len(handled_cards)
     for counter, card_id in enumerate(handled_cards):
-        progress_utils.update_progress_potentially_cancel(
+        progress_utils.background_update_progress_potentially_cancel(
             label=f"Potentially offsetting cards<br>card: {counter} of {card_amount}",
             counter=counter,
             max_value=card_amount,
@@ -348,12 +327,7 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
             else:
                 cards_with_morph[unknown_morph].add(card_id)
 
-    mw.taskman.run_on_main(
-        partial(
-            mw.progress.update,
-            label="Applying offsets",
-        )
-    )
+    progress_utils.background_update_progress(label="Applying offsets")
 
     # sort so we can limit to the top x unknown morphs
     earliest_due_card_for_unknown_morph = dict(
@@ -361,27 +335,27 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
             earliest_due_card_for_unknown_morph.items(), key=lambda item: item[1].due
         )
     )
-    _apply_offsets(
+    modified_offset_cards: dict[int, Card] = _apply_offsets(
         am_config=am_config,
-        modified_cards=modified_cards,
-        modified_offset_cards=modified_offset_cards,
+        already_modified_cards=already_modified_cards,
         earliest_due_card_for_unknown_morph=earliest_due_card_for_unknown_morph,
         cards_with_morph=cards_with_morph,
     )
 
     # combine the "lists" of cards we want to modify
-    modified_cards.update(modified_offset_cards)
-    return modified_cards
+    already_modified_cards.update(modified_offset_cards)
+    return already_modified_cards
 
 
 def _apply_offsets(
     am_config: AnkiMorphsConfig,
-    modified_cards: dict[int, Card],
-    modified_offset_cards: dict[int, Card],
+    already_modified_cards: dict[int, Card],
     earliest_due_card_for_unknown_morph: dict[str, Card],
     cards_with_morph: dict[str, set[int]],
-) -> None:
+) -> dict[int, Card]:
     assert mw is not None
+
+    modified_offset_cards: dict[int, Card] = {}
 
     for counter, _unknown_morph in enumerate(earliest_due_card_for_unknown_morph):
         if counter > am_config.recalc_number_of_morphs_to_offset:
@@ -396,14 +370,14 @@ def _apply_offsets(
             score_and_offset: int | None = None
 
             # we don't want to offset the card due if it has already been offset previously
-            if card_id in modified_cards:
+            if card_id in already_modified_cards:
                 # limit to _DEFAULT_SCORE to prevent integer overflow
                 score_and_offset = min(
-                    modified_cards[card_id].due + am_config.recalc_due_offset,
+                    already_modified_cards[card_id].due + am_config.recalc_due_offset,
                     _DEFAULT_SCORE,
                 )
                 if _card.due == score_and_offset:
-                    del modified_cards[card_id]
+                    del already_modified_cards[card_id]
                     continue
 
             if score_and_offset is None:
@@ -414,6 +388,8 @@ def _apply_offsets(
 
             _card.due = score_and_offset
             modified_offset_cards[card_id] = _card
+
+    return modified_offset_cards
 
 
 def _on_success(_start_time: float) -> None:

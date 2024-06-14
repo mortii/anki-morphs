@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import csv
-from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -98,7 +97,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
         # we receive from the morphemizers into sets.
         if nlp is not None:
             for index, doc in enumerate(nlp.pipe(all_text)):
-                progress_utils.update_progress_potentially_cancel(
+                progress_utils.background_update_progress_potentially_cancel(
                     label=f"Extracting morphs from<br>{config_filter.note_type} cards<br>card: {index} of {card_amount}",
                     counter=index,
                     max_value=card_amount,
@@ -108,7 +107,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
                 cards_data_dict[key].morphs = morphs
         else:
             for index, _expression in enumerate(all_text):
-                progress_utils.update_progress_potentially_cancel(
+                progress_utils.background_update_progress_potentially_cancel(
                     label=f"Extracting morphs from<br>{config_filter.note_type} cards<br>card: {index} of {card_amount}",
                     counter=index,
                     max_value=card_amount,
@@ -122,7 +121,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
                 cards_data_dict[key].morphs = morphs
 
         for counter, card_id in enumerate(cards_data_dict):
-            progress_utils.update_progress_potentially_cancel(
+            progress_utils.background_update_progress_potentially_cancel(
                 label=f"Caching {config_filter.note_type} cards<br>card: {counter} of {card_amount}",
                 counter=counter,
                 max_value=card_amount,
@@ -171,12 +170,10 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
 
     morphs_from_files: list[dict[str, Any]] = []
     if am_config.recalc_read_known_morphs_folder is True:
-        mw.taskman.run_on_main(
-            partial(mw.progress.update, label="Importing known morphs")
-        )
+        progress_utils.background_update_progress(label="Importing known morphs")
         morphs_from_files = _get_morphs_from_files(am_config)
 
-    mw.taskman.run_on_main(partial(mw.progress.update, label="Saving to ankimorphs.db"))
+    progress_utils.background_update_progress(label="Saving to ankimorphs.db")
 
     if am_config.evaluate_morph_lemma:
         am_db.update_learning_intervals_and_insert_many_into_morph_table(
@@ -187,9 +184,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
 
     am_db.insert_many_into_card_table(card_table_data)
     am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
-
     # am_db.print_table("Morphs")
-
     am_db.con.close()
 
 
@@ -209,11 +204,8 @@ def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:
         if mw.progress.want_cancel():  # user clicked 'x'
             raise CancelledOperationException
 
-        mw.taskman.run_on_main(
-            partial(
-                mw.progress.update,
-                label=f"Importing known morphs from file:<br>{input_file.relative_to(known_morphs_dir_path)}",
-            )
+        progress_utils.background_update_progress(
+            label=f"Importing known morphs from file:<br>{input_file.relative_to(known_morphs_dir_path)}",
         )
 
         with open(input_file, encoding="utf-8") as csvfile:

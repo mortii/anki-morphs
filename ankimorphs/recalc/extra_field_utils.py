@@ -52,11 +52,12 @@ def new_extra_fields_are_selected() -> bool:
 
 
 def add_extra_fields_to_note_type(
-    config_filter: AnkiMorphsConfigFilter,
-    note_type_dict: NotetypeDict,
     model_manager: ModelManager,
-) -> bool:
-    did_add_fields: bool = False
+    config_filter: AnkiMorphsConfigFilter,
+) -> NotetypeDict:
+    note_type_dict: NotetypeDict | None = model_manager.by_name(config_filter.note_type)
+    assert note_type_dict is not None
+
     existing_field_names = model_manager.field_names(note_type_dict)
     new_field: FieldDict
 
@@ -65,7 +66,6 @@ def add_extra_fields_to_note_type(
             new_field = model_manager.new_field(ankimorphs_globals.EXTRA_FIELD_UNKNOWNS)
             model_manager.add_field(note_type_dict, new_field)
             model_manager.update_dict(note_type_dict)
-            did_add_fields = True
 
     if config_filter.extra_unknowns_count:
         if ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT not in existing_field_names:
@@ -74,7 +74,6 @@ def add_extra_fields_to_note_type(
             )
             model_manager.add_field(note_type_dict, new_field)
             model_manager.update_dict(note_type_dict)
-            did_add_fields = True
 
     if config_filter.extra_highlighted:
         if ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED not in existing_field_names:
@@ -83,14 +82,12 @@ def add_extra_fields_to_note_type(
             )
             model_manager.add_field(note_type_dict, new_field)
             model_manager.update_dict(note_type_dict)
-            did_add_fields = True
 
     if config_filter.extra_score:
         if ankimorphs_globals.EXTRA_FIELD_SCORE not in existing_field_names:
             new_field = model_manager.new_field(ankimorphs_globals.EXTRA_FIELD_SCORE)
             model_manager.add_field(note_type_dict, new_field)
             model_manager.update_dict(note_type_dict)
-            did_add_fields = True
 
     if config_filter.extra_score_terms:
         if ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS not in existing_field_names:
@@ -99,9 +96,10 @@ def add_extra_fields_to_note_type(
             )
             model_manager.add_field(note_type_dict, new_field)
             model_manager.update_dict(note_type_dict)
-            did_add_fields = True
 
-    return did_add_fields
+    note_type_dict = model_manager.by_name(config_filter.note_type)
+    assert note_type_dict is not None
+    return note_type_dict
 
 
 def update_unknowns_field(

@@ -5,7 +5,7 @@ from aqt import mw
 from ankimorphs.exceptions import CancelledOperationException
 
 
-def update_progress_potentially_cancel(
+def background_update_progress_potentially_cancel(
     label: str, counter: int, max_value: int
 ) -> None:
     assert mw is not None
@@ -22,3 +22,14 @@ def update_progress_potentially_cancel(
                 max=max_value,
             )
         )
+
+
+def background_update_progress(label: str) -> None:
+    assert mw is not None
+
+    mw.taskman.run_on_main(
+        partial(
+            mw.progress.update,
+            label=label,
+        )
+    )
