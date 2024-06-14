@@ -32,11 +32,11 @@ from ..morphemizers.morphemizer import get_all_morphemizers
 from ..tag_selection_dialog import TagSelectionDialog
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_algorithm_tab import AlgorithmTab
+from .settings_card_handling_tab import CardHandlingTab
 from .settings_general_tab import GeneralTab
 from .settings_preprocess_tab import PreprocessTab
 from .settings_recalc_tab import RecalcTab
 from .settings_shortcuts_tab import ShortcutTab
-from .settings_skip_tab import SkipTab
 from .settings_tags_tab import TagsTab
 
 
@@ -113,7 +113,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             default_config=self._default_config,
         )
 
-        self._skip_tab = SkipTab(
+        self._skip_tab = CardHandlingTab(
             parent=self,
             ui=self.ui,
             config=self._config,

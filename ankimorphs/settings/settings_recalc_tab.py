@@ -23,24 +23,11 @@ class RecalcTab(AbstractSettingsTab):
         self._default_config = default_config
 
     def populate(self) -> None:
-        self.ui.recalcIntervalSpinBox.setValue(self._config.recalc_interval_for_known)
-        self.ui.dueOffsetSpinBox.setValue(self._config.recalc_due_offset)
-        self.ui.offsetFirstMorphsSpinBox.setValue(
-            self._config.recalc_number_of_morphs_to_offset
-        )
-
         self.ui.recalcBeforeSyncCheckBox.setChecked(self._config.recalc_on_sync)
-        self.ui.recalcSuspendKnownCheckBox.setChecked(
-            self._config.recalc_suspend_known_new_cards
-        )
-        self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.setChecked(
-            self._config.recalc_move_known_new_cards_to_the_end
-        )
         self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
             self._config.recalc_read_known_morphs_folder
         )
-
-        self.ui.shiftNewCardsCheckBox.setChecked(self._config.recalc_offset_new_cards)
+        self.ui.recalcIntervalSpinBox.setValue(self._config.recalc_interval_for_known)
 
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -53,25 +40,10 @@ class RecalcTab(AbstractSettingsTab):
             if not confirmed:
                 return
 
-        self.ui.recalcIntervalSpinBox.setValue(
-            self._default_config.recalc_interval_for_known
-        )
-        self.ui.dueOffsetSpinBox.setValue(self._default_config.recalc_due_offset)
-        self.ui.offsetFirstMorphsSpinBox.setValue(
-            self._default_config.recalc_number_of_morphs_to_offset
-        )
-
         self.ui.recalcBeforeSyncCheckBox.setChecked(self._default_config.recalc_on_sync)
-        self.ui.recalcSuspendKnownCheckBox.setChecked(
-            self._default_config.recalc_suspend_known_new_cards
-        )
-        self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.setChecked(
-            self._default_config.recalc_move_known_new_cards_to_the_end
-        )
         self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
             self._default_config.recalc_read_known_morphs_folder
         )
-
-        self.ui.shiftNewCardsCheckBox.setChecked(
-            self._default_config.recalc_offset_new_cards
+        self.ui.recalcIntervalSpinBox.setValue(
+            self._default_config.recalc_interval_for_known
         )

@@ -8,7 +8,7 @@ from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_abstract_tab import AbstractSettingsTab
 
 
-class SkipTab(AbstractSettingsTab):
+class CardHandlingTab(AbstractSettingsTab):
     def __init__(
         self,
         parent: QDialog,
@@ -28,6 +28,17 @@ class SkipTab(AbstractSettingsTab):
         )
         self.ui.skipNotificationsCheckBox.setChecked(
             self._config.skip_show_num_of_skipped_cards
+        )
+        self.ui.recalcSuspendKnownCheckBox.setChecked(
+            self._config.recalc_suspend_known_new_cards
+        )
+        self.ui.shiftNewCardsCheckBox.setChecked(self._config.recalc_offset_new_cards)
+        self.ui.dueOffsetSpinBox.setValue(self._config.recalc_due_offset)
+        self.ui.offsetFirstMorphsSpinBox.setValue(
+            self._config.recalc_number_of_morphs_to_offset
+        )
+        self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.setChecked(
+            self._config.recalc_move_known_new_cards_to_the_end
         )
 
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
@@ -49,4 +60,17 @@ class SkipTab(AbstractSettingsTab):
         )
         self.ui.skipNotificationsCheckBox.setChecked(
             self._default_config.skip_show_num_of_skipped_cards
+        )
+        self.ui.recalcSuspendKnownCheckBox.setChecked(
+            self._default_config.recalc_suspend_known_new_cards
+        )
+        self.ui.shiftNewCardsCheckBox.setChecked(
+            self._default_config.recalc_offset_new_cards
+        )
+        self.ui.dueOffsetSpinBox.setValue(self._default_config.recalc_due_offset)
+        self.ui.offsetFirstMorphsSpinBox.setValue(
+            self._default_config.recalc_number_of_morphs_to_offset
+        )
+        self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.setChecked(
+            self._default_config.recalc_move_known_new_cards_to_the_end
         )

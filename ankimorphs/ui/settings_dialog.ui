@@ -22,7 +22,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>5</number>
        </property>
        <widget class="QWidget" name="tab">
         <attribute name="title">
@@ -511,11 +511,11 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="skip_tab">
+       <widget class="QWidget" name="card_handling_tab">
         <attribute name="title">
-         <string>Skip</string>
+         <string>Card Handling</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_20">
+        <layout class="QVBoxLayout" name="verticalLayout_36">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_11">
            <item>
@@ -536,6 +536,79 @@
             <widget class="QCheckBox" name="skipNotificationsCheckBox">
              <property name="text">
               <string>Show &quot;skipped x cards&quot; notifications</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_20">
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QCheckBox" name="recalcSuspendKnownCheckBox">
+             <property name="text">
+              <string>Suspend new cards with only known morphs</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_13">
+             <item>
+              <widget class="QCheckBox" name="shiftNewCardsCheckBox">
+               <property name="text">
+                <string>Shift new cards that are not the first to have the unknown morph, by</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="dueOffsetSpinBox">
+               <property name="maximum">
+                <number>500000</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_20">
+               <property name="text">
+                <string>due, for the first</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="offsetFirstMorphsSpinBox">
+               <property name="maximum">
+                <number>1000</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_21">
+               <property name="text">
+                <string>morphs</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_10">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="recalcMoveKnownNewCardsToTheEndCheckBox">
+             <property name="text">
+              <string>Move new cards without unknown morphs to the end of the due queue</string>
              </property>
             </widget>
            </item>
@@ -986,72 +1059,6 @@
                </property>
               </widget>
              </item>
-             <item>
-              <widget class="QCheckBox" name="recalcSuspendKnownCheckBox">
-               <property name="text">
-                <string>Suspend new cards with only known morphs</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="recalcMoveKnownNewCardsToTheEndCheckBox">
-               <property name="text">
-                <string>Move new cards without unknown morphs to the end of the due queue</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_13">
-             <item>
-              <widget class="QCheckBox" name="shiftNewCardsCheckBox">
-               <property name="text">
-                <string>Shift new cards that are not the first to have the unknown morph, by</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="dueOffsetSpinBox">
-               <property name="maximum">
-                <number>500000</number>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_20">
-               <property name="text">
-                <string>due, for the first</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="offsetFirstMorphsSpinBox">
-               <property name="maximum">
-                <number>1000</number>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_21">
-               <property name="text">
-                <string>morphs</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_10">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
             </layout>
            </item>
            <item>
@@ -1406,8 +1413,8 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="recalcToolbarKnownRadioButtonGroup"/>
   <buttongroup name="recalcUnknownFieldRadioButtonGroup"/>
+  <buttongroup name="recalcToolbarKnownRadioButtonGroup"/>
   <buttongroup name="buttonGroup"/>
  </buttongroups>
 </ui>
