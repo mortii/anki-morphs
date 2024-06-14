@@ -528,17 +528,13 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
     modified_cards: dict[int, Card],
     handled_cards: dict[int, None],
 ) -> dict[int, Card]:
-    # todo: make this compatible with lemma only
-
     # This essentially replaces the need for the "skip" options, which in turn
     # makes reviewing cards on mobile a viable alternative.
     assert mw is not None
 
     modified_offset_cards: dict[int, Card] = {}
-    earliest_due_card_for_unknown_morph: dict[Morpheme, Card] = {}
-    cards_with_morph: dict[Morpheme, set[int]] = (
-        {}  # a set has faster lookup than a list
-    )
+    earliest_due_card_for_unknown_morph: dict[str, Card] = {}
+    cards_with_morph: dict[str, set[int]] = {}  # a set has faster lookup than a list
 
     card_amount = len(handled_cards)
     for counter, card_id in enumerate(handled_cards):
@@ -548,38 +544,30 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
             max_value=card_amount,
         )
 
-        try:
-            card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
-            card_unknown_morphs: set[Morpheme] = set()
+        if am_config.evaluate_morph_inflection:
+            card_unknown_morphs = _get_unknown_inflections(
+                card_morph_map_cache=card_morph_map_cache,
+                card_id=card_id,
+            )
+        else:
+            card_unknown_morphs = _get_unknown_lemmas(
+                card_morph_map_cache=card_morph_map_cache,
+                card_id=card_id,
+            )
+
+        if len(card_unknown_morphs) == 1:
+            unknown_morph = card_unknown_morphs.pop()
             card = mw.col.get_card(card_id)
 
-            for morph in card_morphs:
-                assert morph.highest_inflection_learning_interval is not None
+            if unknown_morph not in earliest_due_card_for_unknown_morph:
+                earliest_due_card_for_unknown_morph[unknown_morph] = card
+            elif earliest_due_card_for_unknown_morph[unknown_morph].due > card.due:
+                earliest_due_card_for_unknown_morph[unknown_morph] = card
 
-                if morph.highest_inflection_learning_interval == 0:
-                    card_unknown_morphs.add(morph)
-
-                    # we don't want to do anything to cards that have
-                    # multiple unknown morphs
-                    if len(card_unknown_morphs) > 1:
-                        break
-
-            if len(card_unknown_morphs) == 1:
-                unknown_morph = card_unknown_morphs.pop()
-
-                if unknown_morph not in earliest_due_card_for_unknown_morph:
-                    earliest_due_card_for_unknown_morph[unknown_morph] = card
-                elif earliest_due_card_for_unknown_morph[unknown_morph].due > card.due:
-                    earliest_due_card_for_unknown_morph[unknown_morph] = card
-
-                if unknown_morph not in cards_with_morph:
-                    cards_with_morph[unknown_morph] = {card_id}
-                else:
-                    cards_with_morph[unknown_morph].add(card_id)
-
-        except KeyError:
-            # card does not have morphs or is buggy in some way
-            continue
+            if unknown_morph not in cards_with_morph:
+                cards_with_morph[unknown_morph] = {card_id}
+            else:
+                cards_with_morph[unknown_morph].add(card_id)
 
     mw.taskman.run_on_main(
         partial(
@@ -595,16 +583,16 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
         )
     )
 
-    for counter, unknown_morph in enumerate(earliest_due_card_for_unknown_morph):
+    for counter, _unknown_morph in enumerate(earliest_due_card_for_unknown_morph):
         if counter > am_config.recalc_number_of_morphs_to_offset:
             break
 
-        earliest_due_card = earliest_due_card_for_unknown_morph[unknown_morph]
-        all_new_cards_with_morph = cards_with_morph[unknown_morph]
+        earliest_due_card = earliest_due_card_for_unknown_morph[_unknown_morph]
+        all_new_cards_with_morph = cards_with_morph[_unknown_morph]
         all_new_cards_with_morph.remove(earliest_due_card.id)
 
         for card_id in all_new_cards_with_morph:
-            card = mw.col.get_card(card_id)
+            _card = mw.col.get_card(card_id)
             score_and_offset: int | None = None
 
             # we don't want to offset the card due if it has already been offset previously
@@ -614,22 +602,64 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
                     modified_cards[card_id].due + am_config.recalc_due_offset,
                     _DEFAULT_SCORE,
                 )
-                if card.due == score_and_offset:
+                if _card.due == score_and_offset:
                     del modified_cards[card_id]
                     continue
 
             if score_and_offset is None:
                 score_and_offset = min(
-                    card.due + am_config.recalc_due_offset,
+                    _card.due + am_config.recalc_due_offset,
                     _DEFAULT_SCORE,
                 )
 
-            card.due = score_and_offset
-            modified_offset_cards[card_id] = card
+            _card.due = score_and_offset
+            modified_offset_cards[card_id] = _card
 
     # combine the "lists" of cards we want to modify
     modified_cards.update(modified_offset_cards)
     return modified_cards
+
+
+def _get_unknown_inflections(
+    card_morph_map_cache: dict[int, list[Morpheme]],
+    card_id: int,
+) -> set[str]:
+    assert mw is not None
+    card_unknown_morphs: set[str] = set()
+    try:
+        card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
+        for morph in card_morphs:
+            assert morph.highest_inflection_learning_interval is not None
+            if morph.highest_inflection_learning_interval == 0:
+                card_unknown_morphs.add(morph.inflection)
+                # we don't want to do anything to cards that have multiple unknown morphs
+                if len(card_unknown_morphs) > 1:
+                    break
+    except KeyError:
+        pass  # card does not have morphs or is buggy in some way
+
+    return card_unknown_morphs
+
+
+def _get_unknown_lemmas(
+    card_morph_map_cache: dict[int, list[Morpheme]],
+    card_id: int,
+) -> set[str]:
+    assert mw is not None
+    card_unknown_morphs: set[str] = set()
+    try:
+        card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
+        for morph in card_morphs:
+            assert morph.highest_lemma_learning_interval is not None
+            if morph.highest_lemma_learning_interval == 0:
+                card_unknown_morphs.add(morph.lemma)
+                # we don't want to do anything to cards that have multiple unknown morphs
+                if len(card_unknown_morphs) > 1:
+                    break
+    except KeyError:
+        pass  # card does not have morphs or is buggy in some way
+
+    return card_unknown_morphs
 
 
 def _update_tags_and_queue(
