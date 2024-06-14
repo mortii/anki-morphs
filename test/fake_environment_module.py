@@ -27,11 +27,12 @@ from ankimorphs import (
     ankimorphs_config,
     ankimorphs_db,
     name_file_utils,
+    progress_utils,
     reviewing_utils,
 )
 from ankimorphs.generators import generators_window
 from ankimorphs.morphemizers import spacy_wrapper
-from ankimorphs.recalc import anki_data_utils, recalc_main
+from ankimorphs.recalc import anki_data_utils, caching, recalc_main
 
 
 class FakeEnvironmentParams:
@@ -111,6 +112,8 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     mock_mw.reviewer._showQuestion = lambda: None
 
     patch_recalc_mw = mock.patch.object(recalc_main, "mw", mock_mw)
+    patch_caching_mw = mock.patch.object(caching, "mw", mock_mw)
+    patch_progress_mw = mock.patch.object(progress_utils, "mw", mock_mw)
     patch_am_db_mw = mock.patch.object(ankimorphs_db, "mw", mock_mw)
     patch_config_mw = mock.patch.object(ankimorphs_config, "mw", mock_mw)
     patch_name_file_utils_mw = mock.patch.object(name_file_utils, "mw", mock_mw)
@@ -119,6 +122,8 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     patch_gd_mw = mock.patch.object(generators_window, "mw", mock_mw)
 
     patch_recalc_mw.start()
+    patch_caching_mw.start()
+    patch_progress_mw.start()
     patch_am_db_mw.start()
     patch_config_mw.start()
     patch_name_file_utils_mw.start()
@@ -129,6 +134,7 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     # 'mw' has to be patched before we can before we can create a db instance
     patch_reviewing_am_db = mock.patch.object(reviewing_utils, "AnkiMorphsDB", FakeDB)
     patch_recalc_am_db = mock.patch.object(recalc_main, "AnkiMorphsDB", FakeDB)
+    patch_caching_am_db = mock.patch.object(caching, "AnkiMorphsDB", FakeDB)
     mock_db = FakeDB()
 
     # tooltip tries to do gui stuff which breaks test
@@ -141,6 +147,7 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
 
     patch_reviewing_am_db.start()
     patch_recalc_am_db.start()
+    patch_caching_am_db.start()
     patch_tooltip.start()
 
     patch_testing_variable.start()
@@ -163,6 +170,8 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
         mock_db.con.close()
 
         patch_recalc_mw.stop()
+        patch_caching_mw.stop()
+        patch_progress_mw.stop()
         patch_am_db_mw.stop()
         patch_config_mw.stop()
         patch_name_file_utils_mw.stop()
@@ -172,6 +181,7 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
 
         patch_reviewing_am_db.stop()
         patch_recalc_am_db.stop()
+        patch_caching_am_db.stop()
         patch_tooltip.stop()
 
         patch_testing_variable.stop()
