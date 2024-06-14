@@ -361,6 +361,27 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
             earliest_due_card_for_unknown_morph.items(), key=lambda item: item[1].due
         )
     )
+    _apply_offsets(
+        am_config=am_config,
+        modified_cards=modified_cards,
+        modified_offset_cards=modified_offset_cards,
+        earliest_due_card_for_unknown_morph=earliest_due_card_for_unknown_morph,
+        cards_with_morph=cards_with_morph,
+    )
+
+    # combine the "lists" of cards we want to modify
+    modified_cards.update(modified_offset_cards)
+    return modified_cards
+
+
+def _apply_offsets(
+    am_config: AnkiMorphsConfig,
+    modified_cards: dict[int, Card],
+    modified_offset_cards: dict[int, Card],
+    earliest_due_card_for_unknown_morph: dict[str, Card],
+    cards_with_morph: dict[str, set[int]],
+) -> None:
+    assert mw is not None
 
     for counter, _unknown_morph in enumerate(earliest_due_card_for_unknown_morph):
         if counter > am_config.recalc_number_of_morphs_to_offset:
@@ -393,10 +414,6 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
 
             _card.due = score_and_offset
             modified_offset_cards[card_id] = _card
-
-    # combine the "lists" of cards we want to modify
-    modified_cards.update(modified_offset_cards)
-    return modified_cards
 
 
 def _on_success(_start_time: float) -> None:
