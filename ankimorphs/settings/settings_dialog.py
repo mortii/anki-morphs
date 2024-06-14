@@ -35,7 +35,6 @@ from .settings_algorithm_tab import AlgorithmTab
 from .settings_card_handling_tab import CardHandlingTab
 from .settings_general_tab import GeneralTab
 from .settings_preprocess_tab import PreprocessTab
-from .settings_recalc_tab import RecalcTab
 from .settings_shortcuts_tab import ShortcutTab
 from .settings_tags_tab import TagsTab
 
@@ -106,13 +105,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             default_config=self._default_config,
         )
 
-        self._recalc_tab = RecalcTab(
-            parent=self,
-            ui=self.ui,
-            config=self._config,
-            default_config=self._default_config,
-        )
-
         self._skip_tab = CardHandlingTab(
             parent=self,
             ui=self.ui,
@@ -142,7 +134,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self._preprocess_tab.populate()
         self._skip_tab.populate()
         self._algorithm_tab.populate()
-        self._recalc_tab.populate()
         self._shortcut_tab.populate()
 
         self._setup_buttons()
@@ -372,7 +363,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             self._preprocess_tab.restore_defaults(skip_confirmation=True)
             self._skip_tab.restore_defaults(skip_confirmation=True)
             self._algorithm_tab.restore_defaults(skip_confirmation=True)
-            self._recalc_tab.restore_defaults(skip_confirmation=True)
             self._shortcut_tab.restore_defaults(skip_confirmation=True)
 
     def _setup_buttons(self) -> None:
@@ -391,7 +381,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.deleteRowPushButton.setAutoDefault(False)
         self.ui.restoreGeneralPushButton.setAutoDefault(False)
         self.ui.restoreTagsPushButton.setAutoDefault(False)
-        self.ui.restoreRecalcPushButton.setAutoDefault(False)
         self.ui.restoreShortcutsPushButton.setAutoDefault(False)
         self.ui.restorePreprocessPushButton.setAutoDefault(False)
         self.ui.restoreSkipPushButton.setAutoDefault(False)
@@ -407,9 +396,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             self._general_tab.restore_defaults
         )
         self.ui.restoreTagsPushButton.clicked.connect(self._tags_tab.restore_defaults)
-        self.ui.restoreRecalcPushButton.clicked.connect(
-            self._recalc_tab.restore_defaults
-        )
         self.ui.restoreShortcutsPushButton.clicked.connect(
             self._shortcut_tab.restore_defaults
         )

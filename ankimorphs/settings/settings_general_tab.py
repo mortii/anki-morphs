@@ -39,6 +39,11 @@ class GeneralTab(AbstractSettingsTab):
         self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
             self._config.recalc_unknowns_field_shows_lemmas
         )
+        self.ui.recalcBeforeSyncCheckBox.setChecked(self._config.recalc_on_sync)
+        self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
+            self._config.recalc_read_known_morphs_folder
+        )
+        self.ui.recalcIntervalSpinBox.setValue(self._config.recalc_interval_for_known)
 
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
@@ -68,4 +73,11 @@ class GeneralTab(AbstractSettingsTab):
         )
         self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
             self._default_config.recalc_unknowns_field_shows_lemmas
+        )
+        self.ui.recalcBeforeSyncCheckBox.setChecked(self._default_config.recalc_on_sync)
+        self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
+            self._default_config.recalc_read_known_morphs_folder
+        )
+        self.ui.recalcIntervalSpinBox.setValue(
+            self._default_config.recalc_interval_for_known
         )
