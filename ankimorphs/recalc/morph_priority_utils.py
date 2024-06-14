@@ -28,7 +28,7 @@ def _get_morph_priority(
     else:
         morph_priorities = _get_morph_frequency_file_priority(
             frequency_file_name=am_config_filter.morph_priority_selection,
-            only_use_lemma=am_config.algorithm_lemma_priority,
+            only_use_lemma=am_config.evaluate_morph_lemma,
         )
 
     return morph_priorities

@@ -412,7 +412,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         intermediate_morph_list = []
 
-        if am_config.algorithm_lemma_priority:
+        if am_config.evaluate_morph_lemma:
             for row in morphs_query:
                 intermediate_morph_list.append(row[0] + row[0])  # lemma + lemma
         else:

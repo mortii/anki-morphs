@@ -316,8 +316,7 @@ def _cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-
 
     mw.taskman.run_on_main(partial(mw.progress.update, label="Saving to ankimorphs.db"))
 
-    # todo: make this config options more generic
-    if am_config.algorithm_lemma_priority:
+    if am_config.evaluate_morph_lemma:
         am_db.update_learning_intervals_and_insert_many_into_morph_table(
             morph_table_data + morphs_from_files
         )

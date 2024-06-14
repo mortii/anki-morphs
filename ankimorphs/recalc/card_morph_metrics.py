@@ -44,7 +44,7 @@ class CardMorphMetrics:
         # setting default avoid an extra if statement
         default_morph_priority = len(morph_priorities) + 1
 
-        if am_config.algorithm_lemma_priority:
+        if am_config.evaluate_morph_lemma:
             self._process_using_lemma(
                 am_config, default_morph_priority, morph_priorities, card_morphs
             )

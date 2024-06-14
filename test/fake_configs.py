@@ -86,8 +86,8 @@ config_lemma_priority = copy.deepcopy(default_config_dict)
 config_lemma_priority["filters"][0]["note_type"] = "Basic"
 config_lemma_priority["filters"][0]["field"] = "Front"
 config_lemma_priority["filters"][0]["morphemizer_description"] = "spaCy: en_core_web_sm"
-config_lemma_priority["algorithm_inflection_priority"] = False
-config_lemma_priority["algorithm_lemma_priority"] = True
+config_lemma_priority["evaluate_morph_inflection"] = False
+config_lemma_priority["evaluate_morph_lemma"] = True
 
 
 ################################################################
@@ -96,8 +96,8 @@ config_lemma_priority["algorithm_lemma_priority"] = True
 # The inverse of "config_lemma_priority"
 ################################################################
 config_inflection_priority = copy.deepcopy(config_lemma_priority)
-config_inflection_priority["algorithm_inflection_priority"] = True
-config_inflection_priority["algorithm_lemma_priority"] = False
+config_inflection_priority["evaluate_morph_inflection"] = True
+config_inflection_priority["evaluate_morph_lemma"] = False
 
 
 ################################################################

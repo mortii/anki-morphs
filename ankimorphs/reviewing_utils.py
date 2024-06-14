@@ -400,14 +400,14 @@ class SkippedCards:
         elif am_config.skip_unknown_morph_seen_today_cards:
             morphs_already_seen_morphs_today: set[str] = (
                 am_db.get_all_morphs_seen_today(
-                    only_lemma=am_config.algorithm_lemma_priority
+                    only_lemma=am_config.evaluate_morph_lemma
                 )
             )
             card_unknown_morphs_raw: set[tuple[str, str]] | None = (
                 am_db.get_card_morphs(
                     card_id,
                     search_unknowns=True,
-                    only_lemma=am_config.algorithm_lemma_priority,
+                    only_lemma=am_config.evaluate_morph_lemma,
                 )
             )
             # print(

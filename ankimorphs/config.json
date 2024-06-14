@@ -1,9 +1,7 @@
 {
   "algorithm_all_morphs_target_distance": 1,
   "algorithm_average_priority_all_morphs": 0,
-  "algorithm_inflection_priority": true,
   "algorithm_learning_morphs_target_distance": 5,
-  "algorithm_lemma_priority": false,
   "algorithm_lower_target_all_morphs": 4,
   "algorithm_lower_target_all_morphs_coefficient_a": 0,
   "algorithm_lower_target_all_morphs_coefficient_b": 1,
@@ -22,6 +20,8 @@
   "algorithm_upper_target_learning_morphs_coefficient_a": 1,
   "algorithm_upper_target_learning_morphs_coefficient_b": 0,
   "algorithm_upper_target_learning_morphs_coefficient_c": 0,
+  "evaluate_morph_inflection": true,
+  "evaluate_morph_lemma": false,
   "filters": [
     {
       "extra_highlighted": false,

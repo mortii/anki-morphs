@@ -70,11 +70,12 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
                 _filter, "extra_score_terms"
             )
 
-        except (KeyError, AssertionError):
+        # except (KeyError, AssertionError):
+        except AssertionError:
             self.has_error = True
-            if not ankimorphs_globals.ankimorphs_broken:
+            if not ankimorphs_globals.ankimorphs_config_broken:
                 show_critical_config_error()
-                ankimorphs_globals.ankimorphs_broken = True
+                ankimorphs_globals.ankimorphs_config_broken = True
 
 
 class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many-statements
@@ -186,11 +187,11 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many
             self.tag_learn_card_now: str = _get_string_config(
                 "tag_learn_card_now", is_default
             )
-            self.algorithm_lemma_priority: bool = _get_bool_config(
-                "algorithm_lemma_priority", is_default
+            self.evaluate_morph_lemma: bool = _get_bool_config(
+                "evaluate_morph_lemma", is_default
             )
-            self.algorithm_inflection_priority: bool = _get_bool_config(
-                "algorithm_inflection_priority", is_default
+            self.evaluate_morph_inflection: bool = _get_bool_config(
+                "evaluate_morph_inflection", is_default
             )
             self.algorithm_total_priority_unknown_morphs: int = _get_int_config(
                 "algorithm_total_priority_unknown_morphs", is_default
@@ -270,10 +271,15 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many
 
             self.filters: list[AnkiMorphsConfigFilter] = _get_filters_config(is_default)
 
-        except (KeyError, AssertionError):
-            if not ankimorphs_globals.ankimorphs_broken:
+        # except (KeyError, AssertionError):
+        except AssertionError:
+            if not ankimorphs_globals.ankimorphs_config_broken:
                 show_critical_config_error()
-                ankimorphs_globals.ankimorphs_broken = True
+                ankimorphs_globals.ankimorphs_config_broken = True
+        finally:
+            # todo: add this to filter too
+            if ankimorphs_globals.ankimorphs_new_config_found:
+                show_warning_new_config_items()
 
 
 def _get_config(
@@ -281,7 +287,11 @@ def _get_config(
 ) -> str | int | bool | list[FilterTypeAlias] | None:
     config = get_configs()
     assert config is not None
-    item = config[key]
+    try:
+        item = config[key]
+    except KeyError:
+        ankimorphs_globals.ankimorphs_new_config_found = True
+        item = get_default_config(key)
     assert isinstance(item, (str, bool, int, list))
     return item
 
@@ -464,3 +474,29 @@ def show_critical_config_error() -> None:
     if critical_box.clickedButton() == ok_button:
         reset_all_configs()
         tooltip("Please restart Anki", period=5000, parent=mw)
+
+
+def show_warning_new_config_items() -> None:
+    # todo: update this
+    critical_box = QMessageBox(mw)
+    critical_box.setWindowTitle("AnkiMorphs Error")
+    critical_box.setIcon(QMessageBox.Icon.Critical)
+    # ok_button: QPushButton = QPushButton("Restore All Defaults")
+    # critical_box.addButton(ok_button, QMessageBox.ButtonRole.YesRole)
+    body: str = (
+        "**NEW default AnkiMorphs configs FOUND!**"
+        "<br/><br/>"
+        "Backwards compatibility has been broken, "
+        "read the <a href='https://github.com/mortii/anki-morphs/releases'>changelog</a> for more info."
+        "<br/><br/>"
+        "Please do the following:\n"
+        "1. Click the 'Restore All Defaults' button below\n"
+        "2. Redo your AnkiMorphs settings\n\n"
+    )
+    critical_box.setTextFormat(Qt.TextFormat.MarkdownText)
+    critical_box.setText(body)
+    critical_box.exec()
+
+    # if critical_box.clickedButton() == ok_button:
+    #     reset_all_configs()
+    #     tooltip("Please restart Anki", period=5000, parent=mw)

@@ -23,11 +23,9 @@ class GeneralTab(AbstractSettingsTab):
         self._default_config = default_config
 
     def populate(self) -> None:
-        self.ui.priorityLemmaRadioButton.setChecked(
-            self._config.algorithm_lemma_priority
-        )
+        self.ui.priorityLemmaRadioButton.setChecked(self._config.evaluate_morph_lemma)
         self.ui.priorityInflectionRadioButton.setChecked(
-            self._config.algorithm_inflection_priority
+            self._config.evaluate_morph_inflection
         )
         self.ui.toolbarStatsUseSeenRadioButton.setChecked(
             self._config.recalc_toolbar_stats_use_seen
@@ -54,10 +52,10 @@ class GeneralTab(AbstractSettingsTab):
                 return
 
         self.ui.priorityLemmaRadioButton.setChecked(
-            self._default_config.algorithm_lemma_priority
+            self._default_config.evaluate_morph_lemma
         )
         self.ui.priorityInflectionRadioButton.setChecked(
-            self._default_config.algorithm_inflection_priority
+            self._default_config.evaluate_morph_lemma
         )
         self.ui.toolbarStatsUseSeenRadioButton.setChecked(
             self._default_config.recalc_toolbar_stats_use_seen
