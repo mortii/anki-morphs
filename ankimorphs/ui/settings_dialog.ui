@@ -24,6 +24,160 @@
        <property name="currentIndex">
         <number>0</number>
        </property>
+       <widget class="QWidget" name="tab">
+        <attribute name="title">
+         <string>General</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_35">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_27">
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_35">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Evaluate morphs based on their:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_20">
+             <item>
+              <widget class="QRadioButton" name="priorityLemmaRadioButton">
+               <property name="text">
+                <string>Lemma</string>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">buttonGroup</string>
+               </attribute>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="priorityInflectionRadioButton">
+               <property name="text">
+                <string>Inflection</string>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">buttonGroup</string>
+               </attribute>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_20">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_14">
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QRadioButton" name="toolbarStatsUseSeenRadioButton">
+             <property name="text">
+              <string>U and A shows seen morphs (reviewed at least once)</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">recalcToolbarKnownRadioButtonGroup</string>
+             </attribute>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="toolbarStatsUseKnownRadioButton">
+             <property name="text">
+              <string>U and A shows known morphs (specified above)</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">recalcToolbarKnownRadioButtonGroup</string>
+             </attribute>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_22">
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QRadioButton" name="unknownsFieldShowsInflectionsRadioButton">
+             <property name="text">
+              <string>am-unknowns field shows morph inflections</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">recalcUnknownFieldRadioButtonGroup</string>
+             </attribute>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="unknownsFieldShowsLemmasRadioButton">
+             <property name="text">
+              <string>am-unknowns field shows morph lemmas</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">recalcUnknownFieldRadioButtonGroup</string>
+             </attribute>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_7">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>170</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_25">
+           <item>
+            <widget class="QPushButton" name="restoreGeneralPushButton">
+             <property name="text">
+              <string>Restore Default General Settings</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_21">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
        <widget class="QWidget" name="note_filters_tab">
         <attribute name="title">
          <string>Note Filters</string>
@@ -431,56 +585,6 @@
          <string>Algorithm</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_31">
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_27">
-           <property name="bottomMargin">
-            <number>10</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="label_35">
-             <property name="font">
-              <font>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Morph Priority:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_20">
-             <item>
-              <widget class="QRadioButton" name="priorityLemmaRadioButton">
-               <property name="text">
-                <string>Lemma</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QRadioButton" name="priorityInflectionRadioButton">
-               <property name="text">
-                <string>Inflection</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_20">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_34">
            <property name="bottomMargin">
@@ -994,60 +1098,6 @@
             </layout>
            </item>
            <item>
-            <layout class="QVBoxLayout" name="verticalLayout_14">
-             <property name="topMargin">
-              <number>10</number>
-             </property>
-             <item>
-              <widget class="QRadioButton" name="toolbarStatsUseSeenRadioButton">
-               <property name="text">
-                <string>U and A shows seen morphs (reviewed at least once)</string>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">recalcToolbarKnownRadioButtonGroup</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QRadioButton" name="toolbarStatsUseKnownRadioButton">
-               <property name="text">
-                <string>U and A shows known morphs (specified above)</string>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">recalcToolbarKnownRadioButtonGroup</string>
-               </attribute>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout_22">
-             <property name="topMargin">
-              <number>10</number>
-             </property>
-             <item>
-              <widget class="QRadioButton" name="unknownsFieldShowsInflectionsRadioButton">
-               <property name="text">
-                <string>am-unknowns field shows morph inflections</string>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">recalcUnknownFieldRadioButtonGroup</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QRadioButton" name="unknownsFieldShowsLemmasRadioButton">
-               <property name="text">
-                <string>am-unknowns field shows morph lemmas</string>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">recalcUnknownFieldRadioButtonGroup</string>
-               </attribute>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
             <spacer name="verticalSpacer_3">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -1358,5 +1408,6 @@
  <buttongroups>
   <buttongroup name="recalcToolbarKnownRadioButtonGroup"/>
   <buttongroup name="recalcUnknownFieldRadioButtonGroup"/>
+  <buttongroup name="buttonGroup"/>
  </buttongroups>
 </ui>

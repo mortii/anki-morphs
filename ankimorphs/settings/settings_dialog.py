@@ -32,6 +32,7 @@ from ..morphemizers.morphemizer import get_all_morphemizers
 from ..tag_selection_dialog import TagSelectionDialog
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_algorithm_tab import AlgorithmTab
+from .settings_general_tab import GeneralTab
 from .settings_preprocess_tab import PreprocessTab
 from .settings_recalc_tab import RecalcTab
 from .settings_shortcuts_tab import ShortcutTab
@@ -84,6 +85,13 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self._config = AnkiMorphsConfig()
         self._default_config = AnkiMorphsConfig(is_default=True)
 
+        self._general_tab = GeneralTab(
+            parent=self,
+            ui=self.ui,
+            config=self._config,
+            default_config=self._default_config,
+        )
+
         self._shortcut_tab = ShortcutTab(
             parent=self,
             ui=self.ui,
@@ -129,6 +137,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self._setup_note_filters_table(self._config.filters)
         self._setup_extra_fields_tree_widget(self._config.filters)
 
+        self._general_tab.populate()
         self._tags_tab.populate()
         self._preprocess_tab.populate()
         self._skip_tab.populate()
@@ -358,6 +367,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             default_filters = self._default_config.filters
             self._setup_note_filters_table(default_filters)
             self._setup_extra_fields_tree_widget(default_filters)
+            self._general_tab.restore_defaults(skip_confirmation=True)
             self._tags_tab.restore_defaults(skip_confirmation=True)
             self._preprocess_tab.restore_defaults(skip_confirmation=True)
             self._skip_tab.restore_defaults(skip_confirmation=True)
@@ -379,6 +389,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.cancelPushButton.setAutoDefault(False)
         self.ui.addNewRowPushButton.setAutoDefault(False)
         self.ui.deleteRowPushButton.setAutoDefault(False)
+        self.ui.restoreGeneralPushButton.setAutoDefault(False)
         self.ui.restoreTagsPushButton.setAutoDefault(False)
         self.ui.restoreRecalcPushButton.setAutoDefault(False)
         self.ui.restoreShortcutsPushButton.setAutoDefault(False)
@@ -392,6 +403,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.addNewRowPushButton.clicked.connect(self._add_new_row)
         self.ui.deleteRowPushButton.clicked.connect(self._delete_row)
 
+        self.ui.restoreGeneralPushButton.clicked.connect(
+            self._general_tab.restore_defaults
+        )
         self.ui.restoreTagsPushButton.clicked.connect(self._tags_tab.restore_defaults)
         self.ui.restoreRecalcPushButton.clicked.connect(
             self._recalc_tab.restore_defaults

@@ -39,18 +39,7 @@ class RecalcTab(AbstractSettingsTab):
         self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
             self._config.recalc_read_known_morphs_folder
         )
-        self.ui.toolbarStatsUseSeenRadioButton.setChecked(
-            self._config.recalc_toolbar_stats_use_seen
-        )
-        self.ui.toolbarStatsUseKnownRadioButton.setChecked(
-            self._config.recalc_toolbar_stats_use_known
-        )
-        self.ui.unknownsFieldShowsInflectionsRadioButton.setChecked(
-            self._config.recalc_unknowns_field_shows_inflections
-        )
-        self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
-            self._config.recalc_unknowns_field_shows_lemmas
-        )
+
         self.ui.shiftNewCardsCheckBox.setChecked(self._config.recalc_offset_new_cards)
 
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
@@ -82,18 +71,7 @@ class RecalcTab(AbstractSettingsTab):
         self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
             self._default_config.recalc_read_known_morphs_folder
         )
-        self.ui.toolbarStatsUseSeenRadioButton.setChecked(
-            self._default_config.recalc_toolbar_stats_use_seen
-        )
-        self.ui.toolbarStatsUseKnownRadioButton.setChecked(
-            self._default_config.recalc_toolbar_stats_use_known
-        )
-        self.ui.unknownsFieldShowsInflectionsRadioButton.setChecked(
-            self._default_config.recalc_unknowns_field_shows_inflections
-        )
-        self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
-            self._default_config.recalc_unknowns_field_shows_lemmas
-        )
+
         self.ui.shiftNewCardsCheckBox.setChecked(
             self._default_config.recalc_offset_new_cards
         )

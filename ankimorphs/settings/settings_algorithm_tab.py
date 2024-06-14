@@ -37,12 +37,6 @@ class AlgorithmTab(AbstractSettingsTab):
             )
         )
 
-        self.ui.priorityLemmaRadioButton.setChecked(
-            self._config.algorithm_lemma_priority
-        )
-        self.ui.priorityInflectionRadioButton.setChecked(
-            self._config.algorithm_inflection_priority
-        )
         self.ui.totalPriorityUknownMorphsSpinBox.setValue(
             self._config.algorithm_total_priority_unknown_morphs
         )
@@ -117,13 +111,6 @@ class AlgorithmTab(AbstractSettingsTab):
 
             if not confirmed:
                 return
-
-        self.ui.priorityLemmaRadioButton.setChecked(
-            self._default_config.algorithm_lemma_priority
-        )
-        self.ui.priorityInflectionRadioButton.setChecked(
-            self._default_config.algorithm_inflection_priority
-        )
 
         self.ui.totalPriorityUknownMorphsSpinBox.setValue(
             self._default_config.algorithm_total_priority_unknown_morphs
