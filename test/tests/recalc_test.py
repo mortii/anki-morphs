@@ -8,6 +8,7 @@ from test.fake_configs import (
     config_default_morphemizer,
     config_default_note_type,
     config_lemma_priority,
+    config_offset_inflection_enabled,
     config_wrong_field_name,
     config_wrong_morph_priority,
     config_wrong_morphemizer_description,
@@ -68,6 +69,22 @@ case_inflections_are_known_params = FakeEnvironmentParams(
     am_db="empty_skeleton.db",
 )
 
+################################################################
+#               CASE: OFFSET NEW CARDS INFLECTIONS
+################################################################
+# Config contains ["recalc_offset_new_cards"] = True, checks
+# if new cards that are not the first in the queue with that
+# particular unknown morph is offset, i.e. moved back in
+# the queue.
+################################################################
+case_offset_new_cards_inflection_params = FakeEnvironmentParams(
+    collection="offset_new_cards_inflection_collection",
+    config=config_offset_inflection_enabled,
+    am_db="empty_skeleton.db",
+)
+
+# todo: check offset for lemmas
+
 
 # "Using the indirect=True parameter when parametrizing a test allows to parametrize a
 # test with a fixture receiving the values before passing them to a test"
@@ -80,7 +97,7 @@ case_inflections_are_known_params = FakeEnvironmentParams(
         case_same_lemma_and_inflection_scores_params,
         case_inflections_are_known_params,
         # ("big-japanese-collection", config_big_japanese_collection),
-        # ("offset_new_cards_test_collection", config_offset_enabled),
+        case_offset_new_cards_inflection_params,
         # ("known-morphs-test-collection", config_known_morphs_enabled),
         # ("ignore_names_txt_collection", config_ignore_names_txt_enabled),
     ],
