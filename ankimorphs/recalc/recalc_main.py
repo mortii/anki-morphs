@@ -323,16 +323,17 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
         )
 
         if am_config.evaluate_morph_inflection:
-            card_unknown_morphs = _get_unknown_inflections(
+            card_unknown_morphs = CardMorphsMetrics.get_unknown_inflections(
                 card_morph_map_cache=card_morph_map_cache,
                 card_id=card_id,
             )
         else:
-            card_unknown_morphs = _get_unknown_lemmas(
+            card_unknown_morphs = CardMorphsMetrics.get_unknown_lemmas(
                 card_morph_map_cache=card_morph_map_cache,
                 card_id=card_id,
             )
 
+        # we don't want to do anything to cards that have multiple unknown morphs
         if len(card_unknown_morphs) == 1:
             unknown_morph = card_unknown_morphs.pop()
             card = mw.col.get_card(card_id)
@@ -396,48 +397,6 @@ def _add_offsets_to_new_cards(  # pylint:disable=too-many-locals, too-many-branc
     # combine the "lists" of cards we want to modify
     modified_cards.update(modified_offset_cards)
     return modified_cards
-
-
-def _get_unknown_inflections(
-    card_morph_map_cache: dict[int, list[Morpheme]],
-    card_id: int,
-) -> set[str]:
-    assert mw is not None
-    card_unknown_morphs: set[str] = set()
-    try:
-        card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
-        for morph in card_morphs:
-            assert morph.highest_inflection_learning_interval is not None
-            if morph.highest_inflection_learning_interval == 0:
-                card_unknown_morphs.add(morph.inflection)
-                # we don't want to do anything to cards that have multiple unknown morphs
-                if len(card_unknown_morphs) > 1:
-                    break
-    except KeyError:
-        pass  # card does not have morphs or is buggy in some way
-
-    return card_unknown_morphs
-
-
-def _get_unknown_lemmas(
-    card_morph_map_cache: dict[int, list[Morpheme]],
-    card_id: int,
-) -> set[str]:
-    assert mw is not None
-    card_unknown_morphs: set[str] = set()
-    try:
-        card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
-        for morph in card_morphs:
-            assert morph.highest_lemma_learning_interval is not None
-            if morph.highest_lemma_learning_interval == 0:
-                card_unknown_morphs.add(morph.lemma)
-                # we don't want to do anything to cards that have multiple unknown morphs
-                if len(card_unknown_morphs) > 1:
-                    break
-    except KeyError:
-        pass  # card does not have morphs or is buggy in some way
-
-    return card_unknown_morphs
 
 
 def _on_success(_start_time: float) -> None:
