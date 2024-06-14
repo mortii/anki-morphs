@@ -2,7 +2,7 @@ from ..ankimorphs_config import AnkiMorphsConfig
 from ..morpheme import Morpheme
 
 
-class CardMorphMetrics:
+class CardMorphsMetrics:
     __slots__ = (
         "all_morphs",
         "unknown_morphs",

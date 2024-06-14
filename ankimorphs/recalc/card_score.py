@@ -1,5 +1,5 @@
 from ..ankimorphs_config import AnkiMorphsConfig
-from .card_morph_metrics import CardMorphMetrics
+from .card_morphs_metrics import CardMorphsMetrics
 
 # Anki stores the 'due' value of cards as a 32-bit integer
 # on the backend, with '2147483647' being the max value before
@@ -93,7 +93,7 @@ class CardScore:
     )
 
     def __init__(
-        self, am_config: AnkiMorphsConfig, card_morph_metrics: CardMorphMetrics
+        self, am_config: AnkiMorphsConfig, card_morph_metrics: CardMorphsMetrics
     ) -> None:
         self.score = _DEFAULT_SCORE
         self.terms = "N/A"

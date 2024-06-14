@@ -5,7 +5,7 @@ from functools import partial
 from pathlib import Path
 
 from anki.cards import Card
-from anki.consts import CARD_TYPE_NEW, CardQueue
+from anki.consts import CARD_TYPE_NEW
 from anki.models import FieldDict, ModelManager, NotetypeDict
 from anki.notes import Note
 from aqt import mw
@@ -26,9 +26,9 @@ from ..exceptions import (
 )
 from ..morpheme import Morpheme
 from ..morphemizers import morphemizer as morphemizer_module
-from . import caching, extra_field_utils
+from . import caching, extra_field_utils, tags_and_queue_utils
 from .anki_data_utils import AnkiMorphsCardData
-from .card_morph_metrics import CardMorphMetrics
+from .card_morphs_metrics import CardMorphsMetrics
 from .card_score import _DEFAULT_SCORE, CardScore
 from .morph_priority_utils import _get_morph_priority
 
@@ -191,9 +191,6 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
             am_db, am_config, config_filter
         )
 
-        # print("morph priorities")
-        # pprint.pp(morph_priorities)
-
         cards_data_dict: dict[int, AnkiMorphsCardData] = am_db.get_am_cards_data_dict(
             note_type_id=model_manager.id_for_name(config_filter.note_type)
         )
@@ -221,7 +218,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
 
             if card.type == CARD_TYPE_NEW:
 
-                cards_morph_metrics = CardMorphMetrics(
+                cards_morph_metrics = CardMorphsMetrics(
                     am_config,
                     card_id,
                     card_morph_map_cache,
@@ -232,7 +229,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
 
                 card.due = score_values.score
 
-                _update_tags_and_queue(
+                tags_and_queue_utils.update_tags_and_queue(
                     am_config,
                     note,
                     card,
@@ -441,61 +438,6 @@ def _get_unknown_lemmas(
         pass  # card does not have morphs or is buggy in some way
 
     return card_unknown_morphs
-
-
-def _update_tags_and_queue(
-    am_config: AnkiMorphsConfig,
-    note: Note,
-    card: Card,
-    unknowns: int,
-    has_learning_morphs: bool,
-) -> None:
-    # There are 3 different tags that we want recalc to update:
-    # - am-ready
-    # - am-not-ready
-    # - am-known-automatically
-    #
-    # These tags should be mutually exclusive, and there are many
-    # complicated scenarios where a normal tag progression might
-    # not occur, so we have to make sure that we remove all the
-    # tags that shouldn't be there for each case, even if it seems
-    # redundant.
-    #
-    # Note: only new cards are handled in this function!
-
-    suspended = CardQueue(-1)
-    mutually_exclusive_tags: list[str] = [
-        am_config.tag_ready,
-        am_config.tag_not_ready,
-        am_config.tag_known_automatically,
-    ]
-
-    if am_config.tag_known_manually in note.tags:
-        remove_exclusive_tags(note, mutually_exclusive_tags)
-    elif unknowns == 0:
-        if am_config.recalc_suspend_known_new_cards and card.queue != suspended:
-            card.queue = suspended
-        if am_config.tag_known_automatically not in note.tags:
-            remove_exclusive_tags(note, mutually_exclusive_tags)
-            # if a card has any learning morphs, then we don't want to
-            # give it a 'known' tag because that would automatically
-            # give the morphs a 'known'-status instead of 'learning'
-            if not has_learning_morphs:
-                note.tags.append(am_config.tag_known_automatically)
-    elif unknowns == 1:
-        if am_config.tag_ready not in note.tags:
-            remove_exclusive_tags(note, mutually_exclusive_tags)
-            note.tags.append(am_config.tag_ready)
-    else:
-        if am_config.tag_not_ready not in note.tags:
-            remove_exclusive_tags(note, mutually_exclusive_tags)
-            note.tags.append(am_config.tag_not_ready)
-
-
-def remove_exclusive_tags(note: Note, mutually_exclusive_tags: list[str]) -> None:
-    for tag in mutually_exclusive_tags:
-        if tag in note.tags:
-            note.tags.remove(tag)
 
 
 def _on_success(_start_time: float) -> None:
