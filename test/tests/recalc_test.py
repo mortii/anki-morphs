@@ -9,6 +9,7 @@ from test.fake_configs import (
     config_default_note_type,
     config_lemma_priority,
     config_offset_inflection_enabled,
+    config_offset_lemma_enabled,
     config_wrong_field_name,
     config_wrong_morph_priority,
     config_wrong_morphemizer_description,
@@ -83,7 +84,18 @@ case_offset_new_cards_inflection_params = FakeEnvironmentParams(
     am_db="empty_skeleton.db",
 )
 
-# todo: check offset for lemmas
+################################################################
+#               CASE: OFFSET NEW CARDS LEMMAS
+################################################################
+# Same as `CASE: OFFSET NEW CARDS INFLECTIONS` but evaluates
+# morphs by lemmas instead, and has the `lemma_priority_collection`
+# as the basis.
+################################################################
+case_offset_new_cards_lemma_params = FakeEnvironmentParams(
+    collection="offset_new_cards_lemma_collection",
+    config=config_offset_lemma_enabled,
+    am_db="empty_skeleton.db",
+)
 
 
 # "Using the indirect=True parameter when parametrizing a test allows to parametrize a
@@ -98,6 +110,7 @@ case_offset_new_cards_inflection_params = FakeEnvironmentParams(
         case_inflections_are_known_params,
         # ("big-japanese-collection", config_big_japanese_collection),
         case_offset_new_cards_inflection_params,
+        case_offset_new_cards_lemma_params,
         # ("known-morphs-test-collection", config_known_morphs_enabled),
         # ("ignore_names_txt_collection", config_ignore_names_txt_enabled),
     ],

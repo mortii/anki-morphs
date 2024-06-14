@@ -56,7 +56,20 @@ config_big_japanese_collection["filters"][0][
 # Evaluates morphs by inflection.
 ################################################################
 config_offset_inflection_enabled = copy.deepcopy(default_config_dict)
+config_offset_inflection_enabled["filters"][0][
+    "morphemizer_description"
+] = "spaCy: en_core_web_sm"
 config_offset_inflection_enabled["recalc_offset_new_cards"] = True
+
+################################################################
+#             config_offset_lemma_enabled
+################################################################
+# Matches `offset_new_cards_lemma_collection.anki2`.
+# Evaluates morphs by lemma.
+################################################################
+config_offset_lemma_enabled = copy.deepcopy(config_offset_inflection_enabled)
+config_offset_lemma_enabled["evaluate_morph_inflection"] = False
+config_offset_lemma_enabled["evaluate_morph_lemma"] = True
 
 
 ################################################################
@@ -80,7 +93,6 @@ config_known_morphs_enabled["filters"][0][
 #             config_lemma_priority
 ################################################################
 # Matches the "lemma_priority_collection.anki2" collection.
-#
 ################################################################
 config_lemma_priority = copy.deepcopy(default_config_dict)
 config_lemma_priority["filters"][0]["morphemizer_description"] = "spaCy: en_core_web_sm"
