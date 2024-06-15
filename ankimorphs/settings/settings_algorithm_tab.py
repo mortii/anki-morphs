@@ -101,6 +101,10 @@ class AlgorithmTab(AbstractSettingsTab):
             self._config.algorithm_lower_target_learning_morphs_coefficient_c
         )
 
+    def setup_buttons(self) -> None:
+        self.ui.restoreAlgorithmPushButton.setAutoDefault(False)
+        self.ui.restoreAlgorithmPushButton.clicked.connect(self.restore_defaults)
+
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"

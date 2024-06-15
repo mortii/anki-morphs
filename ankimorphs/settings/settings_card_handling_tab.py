@@ -42,6 +42,10 @@ class CardHandlingTab(AbstractSettingsTab):
             self._config.recalc_move_known_new_cards_to_the_end
         )
 
+    def setup_buttons(self) -> None:
+        self.ui.restoreCardHandlingPushButton.setAutoDefault(False)
+        self.ui.restoreCardHandlingPushButton.clicked.connect(self.restore_defaults)
+
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"

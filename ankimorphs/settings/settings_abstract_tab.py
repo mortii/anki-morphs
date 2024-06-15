@@ -9,6 +9,10 @@ class AbstractSettingsTab(ABC):
         pass
 
     @abstractmethod
+    def setup_buttons(self) -> None:
+        pass
+
+    @abstractmethod
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         pass
 

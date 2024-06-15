@@ -22,6 +22,42 @@ class ShortcutTab(AbstractSettingsTab):
         self._config = config
         self._default_config = default_config
 
+    def populate(self) -> None:
+        self.ui.shortcutRecalcKeySequenceEdit.setKeySequence(
+            self._config.shortcut_recalc
+        )
+        self.ui.shortcutSettingsKeySequenceEdit.setKeySequence(
+            self._config.shortcut_settings
+        )
+        self.ui.shortcutBrowseReadyKeySequenceEdit.setKeySequence(
+            self._config.shortcut_browse_ready_same_unknown.toString()
+        )
+        self.ui.shortcutBrowseAllKeySequenceEdit.setKeySequence(
+            self._config.shortcut_browse_all_same_unknown.toString()
+        )
+        self.ui.shortcutBrowseReadyLemmaKeySequenceEdit.setKeySequence(
+            self._config.shortcut_browse_ready_same_unknown_lemma.toString()
+        )
+        self.ui.shortcutKnownAndSkipKeySequenceEdit.setKeySequence(
+            self._config.shortcut_set_known_and_skip.toString()
+        )
+        self.ui.shortcutLearnNowKeySequenceEdit.setKeySequence(
+            self._config.shortcut_learn_now.toString()
+        )
+        self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
+            self._config.shortcut_view_morphemes.toString()
+        )
+        self.ui.shortcutGeneratorsKeySequenceEdit.setKeySequence(
+            self._config.shortcut_generators.toString()
+        )
+        self.ui.shortcutKnownMorphsExporterKeySequenceEdit.setKeySequence(
+            self._config.shortcut_known_morphs_exporter.toString()
+        )
+
+    def setup_buttons(self) -> None:
+        self.ui.restoreShortcutsPushButton.setAutoDefault(False)
+        self.ui.restoreShortcutsPushButton.clicked.connect(self.restore_defaults)
+
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"
@@ -62,38 +98,6 @@ class ShortcutTab(AbstractSettingsTab):
         )
         self.ui.shortcutKnownMorphsExporterKeySequenceEdit.setKeySequence(
             self._default_config.shortcut_known_morphs_exporter.toString()
-        )
-
-    def populate(self) -> None:
-        self.ui.shortcutRecalcKeySequenceEdit.setKeySequence(
-            self._config.shortcut_recalc
-        )
-        self.ui.shortcutSettingsKeySequenceEdit.setKeySequence(
-            self._config.shortcut_settings
-        )
-        self.ui.shortcutBrowseReadyKeySequenceEdit.setKeySequence(
-            self._config.shortcut_browse_ready_same_unknown.toString()
-        )
-        self.ui.shortcutBrowseAllKeySequenceEdit.setKeySequence(
-            self._config.shortcut_browse_all_same_unknown.toString()
-        )
-        self.ui.shortcutBrowseReadyLemmaKeySequenceEdit.setKeySequence(
-            self._config.shortcut_browse_ready_same_unknown_lemma.toString()
-        )
-        self.ui.shortcutKnownAndSkipKeySequenceEdit.setKeySequence(
-            self._config.shortcut_set_known_and_skip.toString()
-        )
-        self.ui.shortcutLearnNowKeySequenceEdit.setKeySequence(
-            self._config.shortcut_learn_now.toString()
-        )
-        self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
-            self._config.shortcut_view_morphemes.toString()
-        )
-        self.ui.shortcutGeneratorsKeySequenceEdit.setKeySequence(
-            self._config.shortcut_generators.toString()
-        )
-        self.ui.shortcutKnownMorphsExporterKeySequenceEdit.setKeySequence(
-            self._config.shortcut_known_morphs_exporter.toString()
         )
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:

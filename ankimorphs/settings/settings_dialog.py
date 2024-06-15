@@ -380,11 +380,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.cancelPushButton.setAutoDefault(False)
         self.ui.addNewRowPushButton.setAutoDefault(False)
         self.ui.deleteRowPushButton.setAutoDefault(False)
-        self.ui.restoreGeneralPushButton.setAutoDefault(False)
-        self.ui.restoreTagsPushButton.setAutoDefault(False)
-        self.ui.restoreShortcutsPushButton.setAutoDefault(False)
-        self.ui.restorePreprocessPushButton.setAutoDefault(False)
-        self.ui.restoreSkipPushButton.setAutoDefault(False)
         self.ui.restoreAllDefaultsPushButton.setAutoDefault(False)
 
         self.ui.savePushButton.clicked.connect(self._save_to_config)
@@ -393,23 +388,15 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.addNewRowPushButton.clicked.connect(self._add_new_row)
         self.ui.deleteRowPushButton.clicked.connect(self._delete_row)
 
-        self.ui.restoreGeneralPushButton.clicked.connect(
-            self._general_tab.restore_defaults
-        )
-        self.ui.restoreTagsPushButton.clicked.connect(self._tags_tab.restore_defaults)
-        self.ui.restoreShortcutsPushButton.clicked.connect(
-            self._shortcut_tab.restore_defaults
-        )
-        self.ui.restorePreprocessPushButton.clicked.connect(
-            self._preprocess_tab.restore_defaults
-        )
-        self.ui.restoreSkipPushButton.clicked.connect(
-            self._card_handling_tab.restore_defaults
-        )
-        self.ui.restoreAlgorithmPushButton.clicked.connect(
-            self._algorithm_tab.restore_defaults
-        )
         self.ui.restoreAllDefaultsPushButton.clicked.connect(self._restore_all_defaults)
+
+        ###############################################################
+        self._general_tab.setup_buttons()
+        self._algorithm_tab.setup_buttons()
+        self._tags_tab.setup_buttons()
+        self._preprocess_tab.setup_buttons()
+        self._shortcut_tab.setup_buttons()
+        self._card_handling_tab.setup_buttons()
 
     def _delete_row(self) -> None:
         title = "Confirmation"

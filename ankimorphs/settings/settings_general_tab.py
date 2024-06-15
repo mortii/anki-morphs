@@ -45,6 +45,10 @@ class GeneralTab(AbstractSettingsTab):
         )
         self.ui.recalcIntervalSpinBox.setValue(self._config.recalc_interval_for_known)
 
+    def setup_buttons(self) -> None:
+        self.ui.restoreGeneralPushButton.setAutoDefault(False)
+        self.ui.restoreGeneralPushButton.clicked.connect(self.restore_defaults)
+
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"

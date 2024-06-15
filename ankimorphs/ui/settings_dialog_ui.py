@@ -337,9 +337,9 @@ class Ui_SettingsDialog(object):
         self.verticalLayout_36.addItem(spacerItem12)
         self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_11.setObjectName("horizontalLayout_11")
-        self.restoreSkipPushButton = QtWidgets.QPushButton(parent=self.card_handling_tab)
-        self.restoreSkipPushButton.setObjectName("restoreSkipPushButton")
-        self.horizontalLayout_11.addWidget(self.restoreSkipPushButton)
+        self.restoreCardHandlingPushButton = QtWidgets.QPushButton(parent=self.card_handling_tab)
+        self.restoreCardHandlingPushButton.setObjectName("restoreCardHandlingPushButton")
+        self.horizontalLayout_11.addWidget(self.restoreCardHandlingPushButton)
         spacerItem13 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_11.addItem(spacerItem13)
         self.verticalLayout_36.addLayout(self.horizontalLayout_11)
@@ -669,7 +669,7 @@ class Ui_SettingsDialog(object):
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         self.retranslateUi(SettingsDialog)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(5)
         QtCore.QMetaObject.connectSlotsByName(SettingsDialog)
 
     def retranslateUi(self, SettingsDialog):
@@ -734,7 +734,7 @@ class Ui_SettingsDialog(object):
         self.label_20.setText(_translate("SettingsDialog", "due, for the first"))
         self.label_21.setText(_translate("SettingsDialog", "morphs"))
         self.recalcMoveKnownNewCardsToTheEndCheckBox.setText(_translate("SettingsDialog", "Move new cards without unknown morphs to the end of the due queue"))
-        self.restoreSkipPushButton.setText(_translate("SettingsDialog", "Restore Default Skip Settings"))
+        self.restoreCardHandlingPushButton.setText(_translate("SettingsDialog", "Restore Default Card Handling Settings"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.card_handling_tab), _translate("SettingsDialog", "Card Handling"))
         self.label_7.setText(_translate("SettingsDialog", "Weights:"))
         self.label_27.setText(_translate("SettingsDialog", "Total priority unknown morphs"))

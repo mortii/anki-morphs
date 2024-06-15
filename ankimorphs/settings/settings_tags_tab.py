@@ -31,6 +31,10 @@ class TagsTab(AbstractSettingsTab):
         self.ui.tagKnownManuallyLineEdit.setText(self._config.tag_known_manually)
         self.ui.tagLearnCardNowLineEdit.setText(self._config.tag_learn_card_now)
 
+    def setup_buttons(self) -> None:
+        self.ui.restoreTagsPushButton.setAutoDefault(False)
+        self.ui.restoreTagsPushButton.clicked.connect(self.restore_defaults)
+
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"

@@ -42,6 +42,10 @@ class PreprocessTab(AbstractSettingsTab):
             self._config.preprocess_ignore_suspended_cards_content
         )
 
+    def setup_buttons(self) -> None:
+        self.ui.restorePreprocessPushButton.setAutoDefault(False)
+        self.ui.restorePreprocessPushButton.clicked.connect(self.restore_defaults)
+
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"

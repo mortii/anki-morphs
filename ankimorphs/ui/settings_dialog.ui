@@ -22,7 +22,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>2</number>
+        <number>5</number>
        </property>
        <widget class="QWidget" name="tab">
         <attribute name="title">
@@ -742,9 +742,9 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_11">
            <item>
-            <widget class="QPushButton" name="restoreSkipPushButton">
+            <widget class="QPushButton" name="restoreCardHandlingPushButton">
              <property name="text">
-              <string>Restore Default Skip Settings</string>
+              <string>Restore Default Card Handling Settings</string>
              </property>
             </widget>
            </item>
@@ -1416,7 +1416,6 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="recalcUnknownFieldRadioButtonGroup"/>
   <buttongroup name="recalcToolbarKnownRadioButtonGroup"/>
   <buttongroup name="buttonGroup"/>
  </buttongroups>
