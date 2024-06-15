@@ -42,6 +42,9 @@ class ExtraFieldsTab(AbstractSettingsTab):
         self._set_tree_item_state_programmatically = False
         self.ui.extraFieldsTreeWidget.itemChanged.connect(self._tree_item_changed)
 
+    def update(self, selected_note_type: str):
+        print(f"update!! Selected: {selected_note_type}")
+
     def populate(self) -> None:
         self.ui.unknownsFieldShowsInflectionsRadioButton.setChecked(
             self._config.recalc_unknowns_field_shows_inflections

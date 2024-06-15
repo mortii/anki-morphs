@@ -17,6 +17,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
+from .settings_extra_fields_tab import ExtraFieldsTab
 from .. import ankimorphs_globals, message_box_utils, table_utils
 from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from ..morphemizers.morphemizer import get_all_morphemizers
@@ -43,6 +44,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         self._default_config = default_config
 
         self.ui.note_filters_table.cellClicked.connect(self._tags_cell_clicked)
+
         # disables manual editing of note filter table
         self.ui.note_filters_table.setEditTriggers(
             QAbstractItemView.EditTrigger.NoEditTriggers
@@ -73,6 +75,35 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
             name=ankimorphs_globals.TAG_SELECTOR_DIALOG_NAME,
             creator=self.tag_selector.show,
         )
+
+        self._observer: ExtraFieldsTab | None = None
+
+        # self._extra_fields_tab: ExtraFieldsTab | None = None
+
+    def register_observer(self, observer: ExtraFieldsTab):
+        self._observer = observer
+
+    def notify_observers(self, note_type_cbox: QComboBox):
+        selected_note_type: str = note_type_cbox.itemText(note_type_cbox.currentIndex())
+        self._observer.update(selected_note_type)
+
+    def _setup_note_filters_table(
+        self, config_filters: list[AnkiMorphsConfigFilter]
+    ) -> None:
+        self.ui.note_filters_table.setColumnWidth(
+            self._note_filter_note_type_column, 150
+        )
+        self.ui.note_filters_table.setColumnWidth(
+            self._note_filter_morphemizer_column, 150
+        )
+        self.ui.note_filters_table.setColumnWidth(
+            self._note_filter_morph_priority_column, 150
+        )
+        self.ui.note_filters_table.setRowCount(len(config_filters))
+        self.ui.note_filters_table.setAlternatingRowColors(True)
+
+        for row, am_filter in enumerate(config_filters):
+            self._set_note_filters_table_row(row, am_filter)
 
     def populate(self) -> None:
         self._setup_note_filters_table(self._config.filters)
@@ -113,24 +144,6 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
             # since filters are created based on note filter table,
             # so any obsolete extra fields configs are not used anyway
 
-    def _setup_note_filters_table(
-        self, config_filters: list[AnkiMorphsConfigFilter]
-    ) -> None:
-        self.ui.note_filters_table.setColumnWidth(
-            self._note_filter_note_type_column, 150
-        )
-        self.ui.note_filters_table.setColumnWidth(
-            self._note_filter_morphemizer_column, 150
-        )
-        self.ui.note_filters_table.setColumnWidth(
-            self._note_filter_morph_priority_column, 150
-        )
-        self.ui.note_filters_table.setRowCount(len(config_filters))
-        self.ui.note_filters_table.setAlternatingRowColors(True)
-
-        for row, am_filter in enumerate(config_filters):
-            self._set_note_filters_table_row(row, am_filter)
-
     def _set_note_filters_table_row(
         self, row: int, config_filter: AnkiMorphsConfigFilter
     ) -> None:
@@ -144,6 +157,9 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         # Fields are dependent on note-type
         note_type_cbox.currentIndexChanged.connect(
             partial(self._update_fields_cbox, field_cbox, note_type_cbox)
+        )
+        note_type_cbox.currentIndexChanged.connect(
+            partial(self.notify_observers, note_type_cbox)
         )
 
         morphemizer_cbox = self._setup_morphemizer_cbox(config_filter)

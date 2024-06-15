@@ -113,6 +113,8 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             default_config=self._default_config,
         )
 
+        self._note_filters_tab.register_observer(self._extra_fields_tab)
+
         self._general_tab.populate()
         self._note_filters_tab.populate()
         self._extra_fields_tab.populate()
@@ -123,7 +125,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self._shortcut_tab.populate()
 
         self._setup_buttons()
-        self.ui.tabWidget.currentChanged.connect(self._on_tab_changed)
 
         self.ui.ankimorphs_version_label.setText(
             f"AnkiMorphs version: {ankimorphs_globals.__version__}"
@@ -291,15 +292,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
                         selected_fields.add(child.text(0))
                 break
         return selected_fields
-
-    def _on_tab_changed(self, index: int) -> None:
-        # The extra fields settings are dependent on the note filters, so
-        # every time the extra fields tab is opened we just re-populate it
-        # in case the note filters have changed.
-        if index == 1:
-            # self._setup_extra_fields_tree_widget(self._config.filters)
-            # todo: setup
-            pass
 
     def closeWithCallback(  # pylint:disable=invalid-name
         self, callback: Callable[[], None]
