@@ -313,7 +313,7 @@ def get_all_default_configs() -> dict[str, Any] | None:
     return mw.addonManager.addonConfigDefaults(addon)
 
 
-def update_configs(new_configs: dict[str, object]) -> None:
+def update_configs(new_configs: dict[str, str | int | bool | object]) -> None:
     assert mw is not None
     config = mw.addonManager.getConfig(__name__)
     assert config is not None

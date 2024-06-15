@@ -9,6 +9,7 @@ from .settings_abstract_tab import AbstractSettingsTab
 
 
 class TagsTab(AbstractSettingsTab):
+
     def __init__(
         self,
         parent: QDialog,
@@ -50,3 +51,12 @@ class TagsTab(AbstractSettingsTab):
             self._default_config.tag_known_manually
         )
         self.ui.tagLearnCardNowLineEdit.setText(self._default_config.tag_learn_card_now)
+
+    def settings_to_dict(self) -> dict[str, str | int | bool | object]:
+        return {
+            "tag_ready": self.ui.tagReadyLineEdit.text(),
+            "tag_not_ready": self.ui.tagNotReadyLineEdit.text(),
+            "tag_known_automatically": self.ui.tagKnownAutomaticallyLineEdit.text(),
+            "tag_known_manually": self.ui.tagKnownManuallyLineEdit.text(),
+            "tag_learn_card_now": self.ui.tagLearnCardNowLineEdit.text(),
+        }

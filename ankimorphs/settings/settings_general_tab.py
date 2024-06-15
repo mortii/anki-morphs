@@ -81,3 +81,14 @@ class GeneralTab(AbstractSettingsTab):
         self.ui.recalcIntervalSpinBox.setValue(
             self._default_config.recalc_interval_for_known
         )
+
+    def settings_to_dict(self) -> dict[str, str | int | bool | object]:
+        return {
+            "evaluate_morph_lemma": self.ui.priorityLemmaRadioButton.isChecked(),
+            "evaluate_morph_inflection": self.ui.priorityInflectionRadioButton.isChecked(),
+            "recalc_toolbar_stats_use_seen": self.ui.toolbarStatsUseSeenRadioButton.isChecked(),
+            "recalc_toolbar_stats_use_known": self.ui.toolbarStatsUseKnownRadioButton.isChecked(),
+            "recalc_on_sync": self.ui.recalcBeforeSyncCheckBox.isChecked(),
+            "recalc_interval_for_known": self.ui.recalcIntervalSpinBox.value(),
+            "recalc_read_known_morphs_folder": self.ui.recalcReadKnownMorphsFolderCheckBox.isChecked(),
+        }

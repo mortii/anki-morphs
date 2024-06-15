@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import json
+import pprint
 from collections.abc import Sequence
 from functools import partial
 from pathlib import Path
@@ -105,7 +106,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             default_config=self._default_config,
         )
 
-        self._skip_tab = CardHandlingTab(
+        self._card_handling_tab = CardHandlingTab(
             parent=self,
             ui=self.ui,
             config=self._config,
@@ -132,7 +133,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self._general_tab.populate()
         self._tags_tab.populate()
         self._preprocess_tab.populate()
-        self._skip_tab.populate()
+        self._card_handling_tab.populate()
         self._algorithm_tab.populate()
         self._shortcut_tab.populate()
 
@@ -361,7 +362,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             self._general_tab.restore_defaults(skip_confirmation=True)
             self._tags_tab.restore_defaults(skip_confirmation=True)
             self._preprocess_tab.restore_defaults(skip_confirmation=True)
-            self._skip_tab.restore_defaults(skip_confirmation=True)
+            self._card_handling_tab.restore_defaults(skip_confirmation=True)
             self._algorithm_tab.restore_defaults(skip_confirmation=True)
             self._shortcut_tab.restore_defaults(skip_confirmation=True)
 
@@ -402,7 +403,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.restorePreprocessPushButton.clicked.connect(
             self._preprocess_tab.restore_defaults
         )
-        self.ui.restoreSkipPushButton.clicked.connect(self._skip_tab.restore_defaults)
+        self.ui.restoreSkipPushButton.clicked.connect(
+            self._card_handling_tab.restore_defaults
+        )
         self.ui.restoreAlgorithmPushButton.clicked.connect(
             self._algorithm_tab.restore_defaults
         )
@@ -431,67 +434,22 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self._setup_extra_fields_tree_widget(total_filters)
 
     def _save_to_config(self) -> None:  # pylint:disable=too-many-locals
-        new_config = {
-            "tag_ready": self.ui.tagReadyLineEdit.text(),
-            "tag_not_ready": self.ui.tagNotReadyLineEdit.text(),
-            "tag_known_automatically": self.ui.tagKnownAutomaticallyLineEdit.text(),
-            "tag_known_manually": self.ui.tagKnownManuallyLineEdit.text(),
-            "tag_learn_card_now": self.ui.tagLearnCardNowLineEdit.text(),
-            "shortcut_recalc": self.ui.shortcutRecalcKeySequenceEdit.keySequence().toString(),
-            "shortcut_settings": self.ui.shortcutSettingsKeySequenceEdit.keySequence().toString(),
-            "shortcut_browse_ready_same_unknown": self.ui.shortcutBrowseReadyKeySequenceEdit.keySequence().toString(),
-            "shortcut_browse_all_same_unknown": self.ui.shortcutBrowseAllKeySequenceEdit.keySequence().toString(),
-            "shortcut_browse_ready_same_unknown_lemma": self.ui.shortcutBrowseReadyLemmaKeySequenceEdit.keySequence().toString(),
-            "shortcut_set_known_and_skip": self.ui.shortcutKnownAndSkipKeySequenceEdit.keySequence().toString(),
-            "shortcut_learn_now": self.ui.shortcutLearnNowKeySequenceEdit.keySequence().toString(),
-            "shortcut_view_morphemes": self.ui.shortcutViewMorphsKeySequenceEdit.keySequence().toString(),
-            "shortcut_generators": self.ui.shortcutGeneratorsKeySequenceEdit.keySequence().toString(),
-            "shortcut_known_morphs_exporter": self.ui.shortcutKnownMorphsExporterKeySequenceEdit.keySequence().toString(),
-            "recalc_interval_for_known": self.ui.recalcIntervalSpinBox.value(),
-            "recalc_on_sync": self.ui.recalcBeforeSyncCheckBox.isChecked(),
-            "recalc_suspend_known_new_cards": self.ui.recalcSuspendKnownCheckBox.isChecked(),
-            "recalc_move_known_new_cards_to_the_end": self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.isChecked(),
-            "recalc_read_known_morphs_folder": self.ui.recalcReadKnownMorphsFolderCheckBox.isChecked(),
-            "recalc_toolbar_stats_use_seen": self.ui.toolbarStatsUseSeenRadioButton.isChecked(),
-            "recalc_toolbar_stats_use_known": self.ui.toolbarStatsUseKnownRadioButton.isChecked(),
+        misc_configs: dict[str, str | int | bool | object] = {
             "recalc_unknowns_field_shows_inflections": self.ui.unknownsFieldShowsInflectionsRadioButton.isChecked(),
             "recalc_unknowns_field_shows_lemmas": self.ui.unknownsFieldShowsLemmasRadioButton.isChecked(),
-            "recalc_offset_new_cards": self.ui.shiftNewCardsCheckBox.isChecked(),
-            "recalc_due_offset": self.ui.dueOffsetSpinBox.value(),
-            "recalc_number_of_morphs_to_offset": self.ui.offsetFirstMorphsSpinBox.value(),
-            "preprocess_ignore_bracket_contents": self.ui.preprocessIgnoreSquareCheckBox.isChecked(),
-            "preprocess_ignore_round_bracket_contents": self.ui.preprocessIgnoreRoundCheckBox.isChecked(),
-            "preprocess_ignore_slim_round_bracket_contents": self.ui.preprocessIgnoreSlimCheckBox.isChecked(),
-            "preprocess_ignore_names_morphemizer": self.ui.preprocessIgnoreNamesMizerCheckBox.isChecked(),
-            "preprocess_ignore_names_textfile": self.ui.preprocessIgnoreNamesFileCheckBox.isChecked(),
-            "preprocess_ignore_suspended_cards_content": self.ui.preprocessIgnoreSuspendedCheckBox.isChecked(),
-            "skip_only_known_morphs_cards": self.ui.skipKnownCheckBox.isChecked(),
-            "skip_unknown_morph_seen_today_cards": self.ui.skipAlreadySeenCheckBox.isChecked(),
-            "skip_show_num_of_skipped_cards": self.ui.skipNotificationsCheckBox.isChecked(),
-            "evaluate_morph_lemma": self.ui.priorityLemmaRadioButton.isChecked(),
-            "evaluate_morph_inflection": self.ui.priorityInflectionRadioButton.isChecked(),
-            "algorithm_total_priority_unknown_morphs": self.ui.totalPriorityUknownMorphsSpinBox.value(),
-            "algorithm_total_priority_all_morphs": self.ui.totalPriorityAllMorphsSpinBox.value(),
-            "algorithm_average_priority_all_morphs": self.ui.averagePriorityAllMorphsSpinBox.value(),
-            "algorithm_all_morphs_target_distance": self.ui.allMorphsTargetDistanceSpinBox.value(),
-            "algorithm_learning_morphs_target_distance": self.ui.learningMorphsTargetDistanceSpinBox.value(),
-            "algorithm_upper_target_all_morphs": self.ui.upperTargetAllMorphsSpinBox.value(),
-            "algorithm_upper_target_all_morphs_coefficient_a": self.ui.upperTargetAllMorphsCoefficientA.value(),
-            "algorithm_upper_target_all_morphs_coefficient_b": self.ui.upperTargetAllMorphsCoefficientB.value(),
-            "algorithm_upper_target_all_morphs_coefficient_c": self.ui.upperTargetAllMorphsCoefficientC.value(),
-            "algorithm_lower_target_all_morphs": self.ui.lowerTargetAllMorphsSpinBox.value(),
-            "algorithm_lower_target_all_morphs_coefficient_a": self.ui.lowerTargetAllMorphsCoefficientA.value(),
-            "algorithm_lower_target_all_morphs_coefficient_b": self.ui.lowerTargetAllMorphsCoefficientB.value(),
-            "algorithm_lower_target_all_morphs_coefficient_c": self.ui.lowerTargetAllMorphsCoefficientC.value(),
-            "algorithm_upper_target_learning_morphs": self.ui.upperTargetLearningMorphsSpinBox.value(),
-            "algorithm_lower_target_learning_morphs": self.ui.lowerTargetLearningMorphsSpinBox.value(),
-            "algorithm_upper_target_learning_morphs_coefficient_a": self.ui.upperTargetLearningMorphsCoefficientA.value(),
-            "algorithm_upper_target_learning_morphs_coefficient_b": self.ui.upperTargetLearningMorphsCoefficientB.value(),
-            "algorithm_upper_target_learning_morphs_coefficient_c": self.ui.upperTargetLearningMorphsCoefficientC.value(),
-            "algorithm_lower_target_learning_morphs_coefficient_a": self.ui.lowerTargetLearningMorphsCoefficientA.value(),
-            "algorithm_lower_target_learning_morphs_coefficient_b": self.ui.lowerTargetLearningMorphsCoefficientB.value(),
-            "algorithm_lower_target_learning_morphs_coefficient_c": self.ui.lowerTargetLearningMorphsCoefficientC.value(),
         }
+
+        new_config: dict[str, str | int | bool | object] = (
+            misc_configs
+            | self._tags_tab.settings_to_dict()
+            | self._algorithm_tab.settings_to_dict()
+            | self._shortcut_tab.settings_to_dict()
+            | self._card_handling_tab.settings_to_dict()
+            | self._preprocess_tab.settings_to_dict()
+            | self._general_tab.settings_to_dict()
+        )
+        print("new_config:")
+        pprint.pp(new_config)
 
         filters: list[FilterTypeAlias] = []
         for row in range(self.ui.note_filters_table.rowCount()):

@@ -71,3 +71,13 @@ class PreprocessTab(AbstractSettingsTab):
         self.ui.preprocessIgnoreSuspendedCheckBox.setChecked(
             self._default_config.preprocess_ignore_suspended_cards_content
         )
+
+    def settings_to_dict(self) -> dict[str, str | int | bool | object]:
+        return {
+            "preprocess_ignore_bracket_contents": self.ui.preprocessIgnoreSquareCheckBox.isChecked(),
+            "preprocess_ignore_round_bracket_contents": self.ui.preprocessIgnoreRoundCheckBox.isChecked(),
+            "preprocess_ignore_slim_round_bracket_contents": self.ui.preprocessIgnoreSlimCheckBox.isChecked(),
+            "preprocess_ignore_names_morphemizer": self.ui.preprocessIgnoreNamesMizerCheckBox.isChecked(),
+            "preprocess_ignore_names_textfile": self.ui.preprocessIgnoreNamesFileCheckBox.isChecked(),
+            "preprocess_ignore_suspended_cards_content": self.ui.preprocessIgnoreSuspendedCheckBox.isChecked(),
+        }

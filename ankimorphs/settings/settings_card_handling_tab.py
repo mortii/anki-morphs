@@ -9,6 +9,7 @@ from .settings_abstract_tab import AbstractSettingsTab
 
 
 class CardHandlingTab(AbstractSettingsTab):
+
     def __init__(
         self,
         parent: QDialog,
@@ -74,3 +75,15 @@ class CardHandlingTab(AbstractSettingsTab):
         self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.setChecked(
             self._default_config.recalc_move_known_new_cards_to_the_end
         )
+
+    def settings_to_dict(self) -> dict[str, str | int | bool | object]:
+        return {
+            "skip_only_known_morphs_cards": self.ui.skipKnownCheckBox.isChecked(),
+            "skip_unknown_morph_seen_today_cards": self.ui.skipAlreadySeenCheckBox.isChecked(),
+            "skip_show_num_of_skipped_cards": self.ui.skipNotificationsCheckBox.isChecked(),
+            "recalc_suspend_known_new_cards": self.ui.recalcSuspendKnownCheckBox.isChecked(),
+            "recalc_offset_new_cards": self.ui.shiftNewCardsCheckBox.isChecked(),
+            "recalc_due_offset": self.ui.dueOffsetSpinBox.value(),
+            "recalc_number_of_morphs_to_offset": self.ui.offsetFirstMorphsSpinBox.value(),
+            "recalc_move_known_new_cards_to_the_end": self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.isChecked(),
+        }

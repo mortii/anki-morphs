@@ -95,3 +95,17 @@ class ShortcutTab(AbstractSettingsTab):
         self.ui.shortcutKnownMorphsExporterKeySequenceEdit.setKeySequence(
             self._config.shortcut_known_morphs_exporter.toString()
         )
+
+    def settings_to_dict(self) -> dict[str, str | int | bool | object]:
+        return {
+            "shortcut_recalc": self.ui.shortcutRecalcKeySequenceEdit.keySequence().toString(),
+            "shortcut_settings": self.ui.shortcutSettingsKeySequenceEdit.keySequence().toString(),
+            "shortcut_browse_ready_same_unknown": self.ui.shortcutBrowseReadyKeySequenceEdit.keySequence().toString(),
+            "shortcut_browse_all_same_unknown": self.ui.shortcutBrowseAllKeySequenceEdit.keySequence().toString(),
+            "shortcut_browse_ready_same_unknown_lemma": self.ui.shortcutBrowseReadyLemmaKeySequenceEdit.keySequence().toString(),
+            "shortcut_set_known_and_skip": self.ui.shortcutKnownAndSkipKeySequenceEdit.keySequence().toString(),
+            "shortcut_learn_now": self.ui.shortcutLearnNowKeySequenceEdit.keySequence().toString(),
+            "shortcut_view_morphemes": self.ui.shortcutViewMorphsKeySequenceEdit.keySequence().toString(),
+            "shortcut_generators": self.ui.shortcutGeneratorsKeySequenceEdit.keySequence().toString(),
+            "shortcut_known_morphs_exporter": self.ui.shortcutKnownMorphsExporterKeySequenceEdit.keySequence().toString(),
+        }

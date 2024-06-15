@@ -182,3 +182,28 @@ class AlgorithmTab(AbstractSettingsTab):
         self.ui.lowerTargetLearningMorphsCoefficientC.setValue(
             self._default_config.algorithm_lower_target_learning_morphs_coefficient_c
         )
+
+    def settings_to_dict(self) -> dict[str, str | int | bool | object]:
+        return {
+            "algorithm_total_priority_unknown_morphs": self.ui.totalPriorityUknownMorphsSpinBox.value(),
+            "algorithm_total_priority_all_morphs": self.ui.totalPriorityAllMorphsSpinBox.value(),
+            "algorithm_average_priority_all_morphs": self.ui.averagePriorityAllMorphsSpinBox.value(),
+            "algorithm_all_morphs_target_distance": self.ui.allMorphsTargetDistanceSpinBox.value(),
+            "algorithm_learning_morphs_target_distance": self.ui.learningMorphsTargetDistanceSpinBox.value(),
+            "algorithm_upper_target_all_morphs": self.ui.upperTargetAllMorphsSpinBox.value(),
+            "algorithm_upper_target_all_morphs_coefficient_a": self.ui.upperTargetAllMorphsCoefficientA.value(),
+            "algorithm_upper_target_all_morphs_coefficient_b": self.ui.upperTargetAllMorphsCoefficientB.value(),
+            "algorithm_upper_target_all_morphs_coefficient_c": self.ui.upperTargetAllMorphsCoefficientC.value(),
+            "algorithm_lower_target_all_morphs": self.ui.lowerTargetAllMorphsSpinBox.value(),
+            "algorithm_lower_target_all_morphs_coefficient_a": self.ui.lowerTargetAllMorphsCoefficientA.value(),
+            "algorithm_lower_target_all_morphs_coefficient_b": self.ui.lowerTargetAllMorphsCoefficientB.value(),
+            "algorithm_lower_target_all_morphs_coefficient_c": self.ui.lowerTargetAllMorphsCoefficientC.value(),
+            "algorithm_upper_target_learning_morphs": self.ui.upperTargetLearningMorphsSpinBox.value(),
+            "algorithm_lower_target_learning_morphs": self.ui.lowerTargetLearningMorphsSpinBox.value(),
+            "algorithm_upper_target_learning_morphs_coefficient_a": self.ui.upperTargetLearningMorphsCoefficientA.value(),
+            "algorithm_upper_target_learning_morphs_coefficient_b": self.ui.upperTargetLearningMorphsCoefficientB.value(),
+            "algorithm_upper_target_learning_morphs_coefficient_c": self.ui.upperTargetLearningMorphsCoefficientC.value(),
+            "algorithm_lower_target_learning_morphs_coefficient_a": self.ui.lowerTargetLearningMorphsCoefficientA.value(),
+            "algorithm_lower_target_learning_morphs_coefficient_b": self.ui.lowerTargetLearningMorphsCoefficientB.value(),
+            "algorithm_lower_target_learning_morphs_coefficient_c": self.ui.lowerTargetLearningMorphsCoefficientC.value(),
+        }
