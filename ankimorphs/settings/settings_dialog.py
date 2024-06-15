@@ -156,9 +156,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         pprint.pp(new_config)
 
         filters: list[FilterTypeAlias] = self._note_filters_tab.get_filters()
-        # print("pre filters:")
-        # pprint.pp(filters)
-
         for _filter in filters:
             note_type_name = _filter["note_type"]
             assert isinstance(note_type_name, str)

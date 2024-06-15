@@ -13,6 +13,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
     QCheckBox,
     QComboBox,
     QDialog,
+    QItemSelectionModel,
     QTableWidgetItem,
 )
 from aqt.utils import tooltip
@@ -122,8 +123,34 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
     def setup_buttons(self) -> None:
         self.ui.addNewRowPushButton.setAutoDefault(False)
         self.ui.deleteRowPushButton.setAutoDefault(False)
+
         self.ui.addNewRowPushButton.clicked.connect(self._add_new_row)
         self.ui.deleteRowPushButton.clicked.connect(self._delete_row)
+
+        # disable while no rows are selected
+        self._on_no_row_selected()
+
+        selection_model = self.ui.note_filters_table.selectionModel()
+        assert selection_model is not None
+
+        selection_model.selectionChanged.connect(
+            lambda: self._on_selection_changed(selection_model)
+        )
+
+    def _on_selection_changed(self, selection_model: QItemSelectionModel) -> None:
+        selected_rows = selection_model.selectedRows()
+        selected_indexes = selection_model.selectedIndexes()
+
+        if len(selected_indexes) == 1 or len(selected_rows) == 1:
+            self._on_row_selected()
+        else:
+            self._on_no_row_selected()
+
+    def _on_no_row_selected(self) -> None:
+        self.ui.deleteRowPushButton.setDisabled(True)
+
+    def _on_row_selected(self) -> None:
+        self.ui.deleteRowPushButton.setEnabled(True)
 
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         self._setup_note_filters_table(self._default_config.filters)
@@ -170,23 +197,6 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
 
             note_type_name: str = note_type_cbox.itemText(note_type_cbox.currentIndex())
 
-            # selected_extra_fields: set[str] = self._get_selected_extra_fields(
-            #     note_type_name
-            # )
-            # extra_score = ankimorphs_globals.EXTRA_FIELD_SCORE in selected_extra_fields
-            # extra_score_terms = (
-            #         ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS in selected_extra_fields
-            # )
-            # extra_highlighted = (
-            #         ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED in selected_extra_fields
-            # )
-            # extra_unknowns = (
-            #         ankimorphs_globals.EXTRA_FIELD_UNKNOWNS in selected_extra_fields
-            # )
-            # extra_unknowns_count = (
-            #         ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT in selected_extra_fields
-            # )
-
             _filter: FilterTypeAlias = {
                 "note_type": note_type_name,
                 "tags": json.loads(tags_widget.text()),
@@ -199,11 +209,6 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
                 ),
                 "read": read_widget.isChecked(),
                 "modify": modify_widget.isChecked(),
-                # "extra_score": extra_score,
-                # "extra_score_terms": extra_score_terms,
-                # "extra_highlighted": extra_highlighted,
-                # "extra_unknowns": extra_unknowns,
-                # "extra_unknowns_count": extra_unknowns_count,
             }
             filters.append(_filter)
         return filters
