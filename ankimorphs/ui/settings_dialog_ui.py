@@ -169,6 +169,7 @@ class Ui_SettingsDialog(object):
         self.label.setObjectName("label")
         self.verticalLayout_6.addWidget(self.label)
         self.verticalLayout_5 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_5.setContentsMargins(7, -1, -1, 10)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
         self.label_42 = QtWidgets.QLabel(parent=self.extra_fields_tab)
         self.label_42.setObjectName("label_42")
@@ -669,7 +670,7 @@ class Ui_SettingsDialog(object):
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         self.retranslateUi(SettingsDialog)
-        self.tabWidget.setCurrentIndex(5)
+        self.tabWidget.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(SettingsDialog)
 
     def retranslateUi(self, SettingsDialog):
@@ -706,8 +707,8 @@ class Ui_SettingsDialog(object):
         self.deleteRowPushButton.setText(_translate("SettingsDialog", "Delete Selected Row"))
         self.addNewRowPushButton.setText(_translate("SettingsDialog", "Add New Row"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.note_filters_tab), _translate("SettingsDialog", "Note Filters"))
-        self.label.setText(_translate("SettingsDialog", "<html><head/><body><p>AnkiMorphs can automatically add special fields to your cards and populate them.</p><p>Read the <a href=\"https://mortii.github.io/anki-morphs/user_guide/setup/settings/extra-fields.html\"><span style=\" text-decoration: underline; color:#8783ff;\">guide</span></a> for more info.</p></body></html>"))
-        self.label_42.setText(_translate("SettingsDialog", "am-study-morphs shows:"))
+        self.label.setText(_translate("SettingsDialog", "<html><head/><body><p>AnkiMorphs can automatically add special fields to your cards and populate them. Read the <a href=\"https://mortii.github.io/anki-morphs/user_guide/setup/settings/extra-fields.html\"><span style=\" text-decoration: underline; color:#8783ff;\">guide</span></a> for more info.</p></body></html>"))
+        self.label_42.setText(_translate("SettingsDialog", "The \"am-study-morphs\" field displays:"))
         self.unknownsFieldShowsLemmasRadioButton.setText(_translate("SettingsDialog", "Lemma"))
         self.unknownsFieldShowsInflectionsRadioButton.setText(_translate("SettingsDialog", "Inflection"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.extra_fields_tab), _translate("SettingsDialog", "Extra Fields"))
