@@ -16,7 +16,7 @@ class GeneralTab(AbstractSettingsTab):
         ui: Ui_SettingsDialog,
         config: AnkiMorphsConfig,
         default_config: AnkiMorphsConfig,
-    ):
+    ) -> None:
         self._parent = parent
         self.ui = ui
         self._config = config
@@ -32,12 +32,6 @@ class GeneralTab(AbstractSettingsTab):
         )
         self.ui.toolbarStatsUseKnownRadioButton.setChecked(
             self._config.recalc_toolbar_stats_use_known
-        )
-        self.ui.unknownsFieldShowsInflectionsRadioButton.setChecked(
-            self._config.recalc_unknowns_field_shows_inflections
-        )
-        self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
-            self._config.recalc_unknowns_field_shows_lemmas
         )
         self.ui.recalcBeforeSyncCheckBox.setChecked(self._config.recalc_on_sync)
         self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
@@ -71,12 +65,6 @@ class GeneralTab(AbstractSettingsTab):
         )
         self.ui.toolbarStatsUseKnownRadioButton.setChecked(
             self._default_config.recalc_toolbar_stats_use_known
-        )
-        self.ui.unknownsFieldShowsInflectionsRadioButton.setChecked(
-            self._default_config.recalc_unknowns_field_shows_inflections
-        )
-        self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
-            self._default_config.recalc_unknowns_field_shows_lemmas
         )
         self.ui.recalcBeforeSyncCheckBox.setChecked(self._default_config.recalc_on_sync)
         self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(

@@ -4,6 +4,7 @@ If a constants or a variable is only used in one file, then it should be declare
 that file and not here.
 """
 
+# Semantic Versioning https://semver.org/
 __version__ = "3.0.0-testing-4"
 
 DEV_MODE: bool = True

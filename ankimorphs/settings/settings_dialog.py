@@ -3,16 +3,11 @@ from __future__ import annotations
 import functools
 import json
 import pprint
-from collections.abc import Sequence
-from functools import partial
-from pathlib import Path
 from typing import Callable
 
 import aqt
-from anki.models import NotetypeDict, NotetypeNameId
 from aqt import mw
 from aqt.qt import (  # pylint:disable=no-name-in-module
-    QAbstractItemView,
     QCheckBox,
     QComboBox,
     QDialog,
@@ -24,17 +19,13 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
 from .. import ankimorphs_config, ankimorphs_globals, message_box_utils, table_utils
-from ..ankimorphs_config import (
-    AnkiMorphsConfig,
-    AnkiMorphsConfigFilter,
-    FilterTypeAlias,
-)
-from ..morphemizers.morphemizer import get_all_morphemizers
-from ..tag_selection_dialog import TagSelectionDialog
+from ..ankimorphs_config import AnkiMorphsConfig, FilterTypeAlias
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_algorithm_tab import AlgorithmTab
 from .settings_card_handling_tab import CardHandlingTab
+from .settings_extra_fields_tab import ExtraFieldsTab
 from .settings_general_tab import GeneralTab
+from .settings_note_filters_tab import NoteFiltersTab
 from .settings_preprocess_tab import PreprocessTab
 from .settings_shortcuts_tab import ShortcutTab
 from .settings_tags_tab import TagsTab
@@ -51,20 +42,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
     def __init__(self) -> None:
         super().__init__(parent=None)  # no parent makes the dialog modeless
         assert mw is not None
-        self._note_type_models: Sequence[NotetypeNameId] = (
-            mw.col.models.all_names_and_ids()
-        )
+
         self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
-        self.ui.note_filters_table.cellClicked.connect(self._tags_cell_clicked)
-        self.ui.treeWidget.setHeaderHidden(  # hides the '1' number in the top left corner
-            True
-        )
-
-        # disables manual editing of note filter table
-        self.ui.note_filters_table.setEditTriggers(
-            QAbstractItemView.EditTrigger.NoEditTriggers
-        )
 
         self._note_filter_note_type_column: int = 0
         self._note_filter_tags_column: int = 1
@@ -74,14 +54,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self._note_filter_read_column: int = 5
         self._note_filter_modify_column: int = 6
 
-        self._morphemizers = get_all_morphemizers()
-        self._extra_fields_names = [
-            ankimorphs_globals.EXTRA_FIELD_UNKNOWNS,
-            ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT,
-            ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED,
-            ankimorphs_globals.EXTRA_FIELD_SCORE,
-            ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS,
-        ]
         self._config = AnkiMorphsConfig()
         self._default_config = AnkiMorphsConfig(is_default=True)
 
@@ -127,10 +99,23 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             default_config=self._default_config,
         )
 
-        self._setup_note_filters_table(self._config.filters)
-        self._setup_extra_fields_tree_widget(self._config.filters)
+        self._extra_fields_tab = ExtraFieldsTab(
+            parent=self,
+            ui=self.ui,
+            config=self._config,
+            default_config=self._default_config,
+        )
+
+        self._note_filters_tab = NoteFiltersTab(
+            parent=self,
+            ui=self.ui,
+            config=self._config,
+            default_config=self._default_config,
+        )
 
         self._general_tab.populate()
+        self._note_filters_tab.populate()
+        self._extra_fields_tab.populate()
         self._tags_tab.populate()
         self._preprocess_tab.populate()
         self._card_handling_tab.populate()
@@ -138,217 +123,13 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self._shortcut_tab.populate()
 
         self._setup_buttons()
-        self.ui.treeWidget.itemChanged.connect(self._tree_item_changed)
         self.ui.tabWidget.currentChanged.connect(self._on_tab_changed)
-        self._set_tree_item_state_programmatically = False
 
-        # the tag selector dialog is spawned from the settings dialog,
-        # so it makes the most sense to store it here instead of __init__.py
-        self.tag_selector = TagSelectionDialog()
-        self.tag_selector.ui.applyButton.clicked.connect(self._update_note_filter_tags)
-        # close the tag selector dialog when the settings dialog closes
-        self.finished.connect(self.tag_selector.close)
-
-        # Have the Anki dialog manager handle the tag selector dialog
-        aqt.dialogs.register_dialog(
-            name=ankimorphs_globals.TAG_SELECTOR_DIALOG_NAME,
-            creator=self.tag_selector.show,
-        )
-
-        # Semantic Versioning https://semver.org/
         self.ui.ankimorphs_version_label.setText(
             f"AnkiMorphs version: {ankimorphs_globals.__version__}"
         )
 
         self.show()
-
-    def _setup_note_filters_table(
-        self, config_filters: list[AnkiMorphsConfigFilter]
-    ) -> None:
-        self.ui.note_filters_table.setColumnWidth(
-            self._note_filter_note_type_column, 150
-        )
-        self.ui.note_filters_table.setColumnWidth(
-            self._note_filter_morphemizer_column, 150
-        )
-        self.ui.note_filters_table.setColumnWidth(
-            self._note_filter_morph_priority_column, 150
-        )
-        self.ui.note_filters_table.setRowCount(len(config_filters))
-        self.ui.note_filters_table.setAlternatingRowColors(True)
-
-        for row, am_filter in enumerate(config_filters):
-            self._set_note_filters_table_row(row, am_filter)
-
-    def _set_note_filters_table_row(  # pylint:disable=too-many-locals
-        self, row: int, config_filter: AnkiMorphsConfigFilter
-    ) -> None:
-        assert mw
-        self.ui.note_filters_table.setRowHeight(row, 35)
-
-        note_type_cbox = QComboBox(self.ui.note_filters_table)
-        note_types_string: list[str] = [ankimorphs_globals.NONE_OPTION] + [
-            model.name for model in self._note_type_models
-        ]
-        note_type_cbox.addItems(note_types_string)
-        note_type_name_index = table_utils.get_combobox_index(
-            note_types_string, config_filter.note_type
-        )
-        note_type_cbox.setCurrentIndex(note_type_name_index)
-        selected_note_type: str = note_type_cbox.itemText(note_type_cbox.currentIndex())
-
-        note_type_dict: NotetypeDict | None = mw.col.models.by_name(
-            name=selected_note_type
-        )
-        note_type_fields: list[str] = [ankimorphs_globals.NONE_OPTION]
-
-        if note_type_dict is not None:
-            note_type_fields += mw.col.models.field_map(note_type_dict)
-
-        field_cbox = QComboBox(self.ui.note_filters_table)
-        field_cbox.addItems(note_type_fields)
-        field_cbox_index = table_utils.get_combobox_index(
-            note_type_fields, config_filter.field
-        )
-        if field_cbox_index is not None:
-            field_cbox.setCurrentIndex(field_cbox_index)
-
-        # Fields are dependent on note-type
-        note_type_cbox.currentIndexChanged.connect(
-            partial(self._update_fields_cbox, field_cbox, note_type_cbox)
-        )
-
-        morphemizer_cbox = QComboBox(self.ui.note_filters_table)
-        morphemizers: list[str] = [ankimorphs_globals.NONE_OPTION] + [
-            mizer.get_description() for mizer in self._morphemizers
-        ]
-        morphemizer_cbox.addItems(morphemizers)
-        morphemizer_cbox_index = table_utils.get_combobox_index(
-            morphemizers, config_filter.morphemizer_description
-        )
-        if morphemizer_cbox_index is not None:
-            morphemizer_cbox.setCurrentIndex(morphemizer_cbox_index)
-
-        morph_priority_cbox = QComboBox(self.ui.note_filters_table)
-        frequency_files: list[str] = [
-            ankimorphs_globals.NONE_OPTION,
-            ankimorphs_globals.COLLECTION_FREQUENCY_OPTION,
-        ]
-        frequency_files += self._get_frequency_files()
-        morph_priority_cbox.addItems(frequency_files)
-        morph_priority_cbox_index = table_utils.get_combobox_index(
-            frequency_files, config_filter.morph_priority_selection
-        )
-        if morph_priority_cbox_index is not None:
-            morph_priority_cbox.setCurrentIndex(morph_priority_cbox_index)
-
-        read_checkbox = QCheckBox()
-        read_checkbox.setChecked(config_filter.read)
-        read_checkbox.setStyleSheet("margin-left:auto; margin-right:auto;")
-
-        modify_checkbox = QCheckBox()
-        modify_checkbox.setChecked(config_filter.modify)
-        modify_checkbox.setStyleSheet("margin-left:auto; margin-right:auto;")
-
-        self.ui.note_filters_table.setCellWidget(
-            row, self._note_filter_note_type_column, note_type_cbox
-        )
-        self.ui.note_filters_table.setItem(
-            row,
-            self._note_filter_tags_column,
-            QTableWidgetItem(json.dumps(config_filter.tags)),
-        )
-        self.ui.note_filters_table.setCellWidget(
-            row, self._note_filter_field_column, field_cbox
-        )
-        self.ui.note_filters_table.setCellWidget(
-            row, self._note_filter_morphemizer_column, morphemizer_cbox
-        )
-        self.ui.note_filters_table.setCellWidget(
-            row, self._note_filter_morph_priority_column, morph_priority_cbox
-        )
-        self.ui.note_filters_table.setCellWidget(
-            row, self._note_filter_read_column, read_checkbox
-        )
-        self.ui.note_filters_table.setCellWidget(
-            row, self._note_filter_modify_column, modify_checkbox
-        )
-
-    def _setup_extra_fields_tree_widget(  # pylint:disable=too-many-locals, too-many-branches, too-many-statements
-        self, config_filters: list[AnkiMorphsConfigFilter]
-    ) -> None:
-        self.ui.treeWidget.clear()  # content might be outdated so we clear it
-        active_note_types: set[str] = set()
-
-        for row in range(self.ui.note_filters_table.rowCount()):
-            note_filter_note_type_widget: QComboBox = table_utils.get_combobox_widget(
-                self.ui.note_filters_table.cellWidget(
-                    row, self._note_filter_note_type_column
-                )
-            )
-            note_type = note_filter_note_type_widget.itemText(
-                note_filter_note_type_widget.currentIndex()
-            )
-            if (
-                note_type in active_note_types
-                or note_type == ankimorphs_globals.NONE_OPTION
-            ):
-                continue
-
-            active_note_types.add(note_type)
-
-            extra_score: bool = False
-            extra_score_terms: bool = False
-            extra_highlighted: bool = False
-            extra_unknowns: bool = False
-            extra_unknowns_count: bool = False
-
-            for _filter in config_filters:
-                if note_type == _filter.note_type:
-                    extra_score = _filter.extra_score
-                    extra_score_terms = _filter.extra_score_terms
-                    extra_highlighted = _filter.extra_highlighted
-                    extra_unknowns = _filter.extra_unknowns
-                    extra_unknowns_count = _filter.extra_unknowns_count
-                    break
-
-            top_node = QTreeWidgetItem()
-            top_node.setText(0, note_type)
-            top_node.setCheckState(0, Qt.CheckState.Unchecked)
-            children_checked: int = 0
-
-            for extra_field in self._extra_fields_names:
-                child_item = QTreeWidgetItem(top_node)
-                child_item.setText(0, extra_field)
-                check_state: Qt.CheckState = Qt.CheckState.Unchecked
-
-                if extra_field == ankimorphs_globals.EXTRA_FIELD_SCORE:
-                    if extra_score is True:
-                        check_state = Qt.CheckState.Checked
-                        children_checked += 1
-                elif extra_field == ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS:
-                    if extra_score_terms is True:
-                        check_state = Qt.CheckState.Checked
-                        children_checked += 1
-                elif extra_field == ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED:
-                    if extra_highlighted is True:
-                        check_state = Qt.CheckState.Checked
-                        children_checked += 1
-                elif extra_field == ankimorphs_globals.EXTRA_FIELD_UNKNOWNS:
-                    if extra_unknowns is True:
-                        check_state = Qt.CheckState.Checked
-                        children_checked += 1
-                elif extra_field == ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT:
-                    if extra_unknowns_count is True:
-                        check_state = Qt.CheckState.Checked
-                        children_checked += 1
-
-                child_item.setCheckState(0, check_state)
-
-            if children_checked == len(self._extra_fields_names):
-                top_node.setCheckState(0, Qt.CheckState.Checked)
-
-            self.ui.treeWidget.addTopLevelItem(top_node)
 
     def _restore_all_defaults(self) -> None:
         title = "Confirmation"
@@ -356,9 +137,11 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         confirmed = message_box_utils.warning_dialog(title, text, parent=self)
 
         if confirmed:
-            default_filters = self._default_config.filters
-            self._setup_note_filters_table(default_filters)
-            self._setup_extra_fields_tree_widget(default_filters)
+            # default_filters = self._default_config.filters
+            # self._setup_note_filters_table(default_filters)
+            # self._setup_extra_fields_tree_widget(default_filters)
+            self._note_filters_tab.restore_defaults(skip_confirmation=True)
+            self._extra_fields_tab.restore_defaults(skip_confirmation=True)
             self._general_tab.restore_defaults(skip_confirmation=True)
             self._tags_tab.restore_defaults(skip_confirmation=True)
             self._preprocess_tab.restore_defaults(skip_confirmation=True)
@@ -378,62 +161,31 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
         self.ui.savePushButton.setAutoDefault(False)
         self.ui.cancelPushButton.setAutoDefault(False)
-        self.ui.addNewRowPushButton.setAutoDefault(False)
-        self.ui.deleteRowPushButton.setAutoDefault(False)
         self.ui.restoreAllDefaultsPushButton.setAutoDefault(False)
 
         self.ui.savePushButton.clicked.connect(self._save_to_config)
         self.ui.cancelPushButton.clicked.connect(self.close)
-
-        self.ui.addNewRowPushButton.clicked.connect(self._add_new_row)
-        self.ui.deleteRowPushButton.clicked.connect(self._delete_row)
-
         self.ui.restoreAllDefaultsPushButton.clicked.connect(self._restore_all_defaults)
 
         ###############################################################
         self._general_tab.setup_buttons()
+        self._note_filters_tab.setup_buttons()
+        self._extra_fields_tab.setup_buttons()
         self._algorithm_tab.setup_buttons()
         self._tags_tab.setup_buttons()
         self._preprocess_tab.setup_buttons()
         self._shortcut_tab.setup_buttons()
         self._card_handling_tab.setup_buttons()
 
-    def _delete_row(self) -> None:
-        title = "Confirmation"
-        text = "Are you sure you want to delete the selected row?"
-        confirmed = message_box_utils.warning_dialog(title, text, parent=self)
-
-        if confirmed:
-            selected_row = self.ui.note_filters_table.currentRow()
-            self.ui.note_filters_table.removeRow(selected_row)
-            # we don't have to update the extra fields tree here
-            # since filters are created based on note filter table,
-            # so any obsolete extra fields configs are not used anyway
-
-    def _add_new_row(self) -> None:
-        self.ui.note_filters_table.setRowCount(
-            self.ui.note_filters_table.rowCount() + 1
-        )
-        config_filter = self._default_config.filters[0]
-        row = self.ui.note_filters_table.rowCount() - 1
-        self._set_note_filters_table_row(row, config_filter)
-        total_filters = self._config.filters + [config_filter]
-        self._setup_extra_fields_tree_widget(total_filters)
-
     def _save_to_config(self) -> None:  # pylint:disable=too-many-locals
-        misc_configs: dict[str, str | int | bool | object] = {
-            "recalc_unknowns_field_shows_inflections": self.ui.unknownsFieldShowsInflectionsRadioButton.isChecked(),
-            "recalc_unknowns_field_shows_lemmas": self.ui.unknownsFieldShowsLemmasRadioButton.isChecked(),
-        }
-
         new_config: dict[str, str | int | bool | object] = (
-            misc_configs
-            | self._tags_tab.settings_to_dict()
+            self._tags_tab.settings_to_dict()
             | self._algorithm_tab.settings_to_dict()
             | self._shortcut_tab.settings_to_dict()
             | self._card_handling_tab.settings_to_dict()
             | self._preprocess_tab.settings_to_dict()
             | self._general_tab.settings_to_dict()
+            | self._extra_fields_tab.settings_to_dict()
         )
         print("new_config:")
         pprint.pp(new_config)
@@ -526,9 +278,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
     @functools.lru_cache(maxsize=131072)
     def _get_selected_extra_fields(self, note_type_name: str) -> set[str]:
         selected_fields: set[str] = set()
-        for top_node_index in range(self.ui.treeWidget.topLevelItemCount()):
-            top_node: QTreeWidgetItem | None = self.ui.treeWidget.topLevelItem(
-                top_node_index
+        for top_node_index in range(self.ui.extraFieldsTreeWidget.topLevelItemCount()):
+            top_node: QTreeWidgetItem | None = (
+                self.ui.extraFieldsTreeWidget.topLevelItem(top_node_index)
             )
             assert top_node is not None
             if top_node.text(0) == note_type_name:
@@ -545,99 +297,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         # every time the extra fields tab is opened we just re-populate it
         # in case the note filters have changed.
         if index == 1:
-            self._setup_extra_fields_tree_widget(self._config.filters)
-
-    def _tree_item_changed(self, item: QTreeWidgetItem, column: int) -> None:
-        if self._set_tree_item_state_programmatically is True:
-            return
-
-        self._set_tree_item_state_programmatically = True
-
-        item_parent = item.parent()
-        if item_parent is None:  # top level node
-            # set all the children to the same check state as the parent
-            if item.checkState(column) == Qt.CheckState.Checked:
-                for child_index in range(item.childCount()):
-                    child = item.child(child_index)
-                    assert child is not None
-                    child.setCheckState(0, Qt.CheckState.Checked)
-            else:
-                for child_index in range(item.childCount()):
-                    child = item.child(child_index)
-                    assert child is not None
-                    child.setCheckState(0, Qt.CheckState.Unchecked)
-        else:
-            if item.checkState(column) == Qt.CheckState.Unchecked:
-                # if a child is unchecked then we want the parent to be unchecked too
-                item_parent.setCheckState(column, Qt.CheckState.Unchecked)
-            else:
-                # if all children are checked, then we want the parent to be checked too
-                all_children_checked = True
-                for child_index in range(item_parent.childCount()):
-                    child = item_parent.child(child_index)
-                    assert child is not None
-                    if child.checkState(column) == Qt.CheckState.Unchecked:
-                        all_children_checked = False
-                        break
-                if all_children_checked:
-                    item_parent.setCheckState(0, Qt.CheckState.Checked)
-
-        self._set_tree_item_state_programmatically = False
-
-    def _tags_cell_clicked(self, row: int, column: int) -> None:
-        if column != 1:
-            # tags cells are in column 1
-            return
-
-        tags_widget: QTableWidgetItem = table_utils.get_table_item(
-            self.ui.note_filters_table.item(row, 1)
-        )
-        self.tag_selector.set_selected_tags_and_row(
-            selected_tags=tags_widget.text(), row=row
-        )
-        aqt.dialogs.open(
-            name=ankimorphs_globals.TAG_SELECTOR_DIALOG_NAME,
-        )
-
-    def _update_note_filter_tags(self) -> None:
-        self.ui.note_filters_table.setItem(
-            self.tag_selector.current_note_filter_row,
-            1,
-            QTableWidgetItem(self.tag_selector.selected_tags),
-        )
-        self.tag_selector.ui.tableWidget.clearContents()
-        tooltip("Remember to save!", parent=self)
-
-    @staticmethod
-    def _update_fields_cbox(field_cbox: QComboBox, note_type_cbox: QComboBox) -> None:
-        """
-        When the note type selection changes we repopulate the fields list,
-        and we set the selected field to (none)
-        """
-        assert mw
-
-        field_cbox.clear()
-        note_type_fields: list[str] = [ankimorphs_globals.NONE_OPTION]
-
-        selected_note_type: str = note_type_cbox.itemText(note_type_cbox.currentIndex())
-        note_type_dict: NotetypeDict | None = mw.col.models.by_name(
-            name=selected_note_type
-        )
-
-        if note_type_dict is not None:
-            note_type_fields += mw.col.models.field_map(note_type_dict)
-
-        field_cbox.addItems(note_type_fields)
-        field_cbox.setCurrentIndex(0)
-
-    @staticmethod
-    def _get_frequency_files() -> list[str]:
-        assert mw is not None
-        path_generator = Path(
-            mw.pm.profileFolder(), ankimorphs_globals.FREQUENCY_FILES_DIR_NAME
-        ).glob("*.csv")
-        frequency_files = [file.name for file in path_generator if file.is_file()]
-        return frequency_files
+            # self._setup_extra_fields_tree_widget(self._config.filters)
+            # todo: setup
+            pass
 
     def closeWithCallback(  # pylint:disable=invalid-name
         self, callback: Callable[[], None]

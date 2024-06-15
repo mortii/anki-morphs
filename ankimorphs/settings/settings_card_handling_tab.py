@@ -16,7 +16,7 @@ class CardHandlingTab(AbstractSettingsTab):
         ui: Ui_SettingsDialog,
         config: AnkiMorphsConfig,
         default_config: AnkiMorphsConfig,
-    ):
+    ) -> None:
         self._parent = parent
         self.ui = ui
         self._config = config
