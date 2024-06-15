@@ -111,9 +111,8 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             ui=self.ui,
             config=self._config,
             default_config=self._default_config,
+            observer=self._extra_fields_tab,
         )
-
-        self._note_filters_tab.register_observer(self._extra_fields_tab)
 
         self._general_tab.populate()
         self._note_filters_tab.populate()

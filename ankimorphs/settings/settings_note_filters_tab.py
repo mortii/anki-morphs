@@ -17,24 +17,25 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from .settings_extra_fields_tab import ExtraFieldsTab
 from .. import ankimorphs_globals, message_box_utils, table_utils
 from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from ..morphemizers.morphemizer import get_all_morphemizers
 from ..tag_selection_dialog import TagSelectionDialog
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_abstract_tab import AbstractSettingsTab
+from .settings_extra_fields_tab import ExtraFieldsTab
 
 
 class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
     AbstractSettingsTab
 ):
-    def __init__(
+    def __init__(  # pylint:disable=too-many-arguments
         self,
         parent: QDialog,
         ui: Ui_SettingsDialog,
         config: AnkiMorphsConfig,
         default_config: AnkiMorphsConfig,
+        observer: ExtraFieldsTab,
     ) -> None:
         assert mw is not None
 
@@ -76,16 +77,22 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
             creator=self.tag_selector.show,
         )
 
-        self._observer: ExtraFieldsTab | None = None
+        self._observer: ExtraFieldsTab = observer
 
-        # self._extra_fields_tab: ExtraFieldsTab | None = None
+    def notify_observers(self) -> None:
+        selected_note_types: list[str] = []
+        for row in range(self.ui.note_filters_table.rowCount()):
+            note_filter_note_type_widget: QComboBox = table_utils.get_combobox_widget(
+                self.ui.note_filters_table.cellWidget(
+                    row, self._note_filter_note_type_column
+                )
+            )
+            note_type: str = note_filter_note_type_widget.itemText(
+                note_filter_note_type_widget.currentIndex()
+            )
+            selected_note_types.append(note_type)
 
-    def register_observer(self, observer: ExtraFieldsTab):
-        self._observer = observer
-
-    def notify_observers(self, note_type_cbox: QComboBox):
-        selected_note_type: str = note_type_cbox.itemText(note_type_cbox.currentIndex())
-        self._observer.update(selected_note_type)
+        self._observer.update(selected_note_types)
 
     def _setup_note_filters_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
@@ -128,9 +135,6 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         config_filter = self._default_config.filters[0]
         row = self.ui.note_filters_table.rowCount() - 1
         self._set_note_filters_table_row(row, config_filter)
-        # total_filters = self._config.filters + [config_filter]
-        # self._setup_extra_fields_tree_widget(total_filters)
-        # todo signal to extra fields
 
     def _delete_row(self) -> None:
         title = "Confirmation"
@@ -140,9 +144,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         if confirmed:
             selected_row = self.ui.note_filters_table.currentRow()
             self.ui.note_filters_table.removeRow(selected_row)
-            # we don't have to update the extra fields tree here
-            # since filters are created based on note filter table,
-            # so any obsolete extra fields configs are not used anyway
+            self.notify_observers()
 
     def _set_note_filters_table_row(
         self, row: int, config_filter: AnkiMorphsConfigFilter
@@ -158,9 +160,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         note_type_cbox.currentIndexChanged.connect(
             partial(self._update_fields_cbox, field_cbox, note_type_cbox)
         )
-        note_type_cbox.currentIndexChanged.connect(
-            partial(self.notify_observers, note_type_cbox)
-        )
+        note_type_cbox.currentIndexChanged.connect(self.notify_observers)
 
         morphemizer_cbox = self._setup_morphemizer_cbox(config_filter)
         morph_priority_cbox = self._setup_morph_priority_cbox(config_filter)
