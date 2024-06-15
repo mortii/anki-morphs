@@ -18,7 +18,11 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
 from .. import ankimorphs_globals, message_box_utils, table_utils
-from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
+from ..ankimorphs_config import (
+    AnkiMorphsConfig,
+    AnkiMorphsConfigFilter,
+    FilterTypeAlias,
+)
 from ..morphemizers.morphemizer import get_all_morphemizers
 from ..tag_selection_dialog import TagSelectionDialog
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
@@ -126,6 +130,83 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {}
+
+    def get_filters(self) -> list[FilterTypeAlias]:
+        filters: list[FilterTypeAlias] = []
+        for row in range(self.ui.note_filters_table.rowCount()):
+            note_type_cbox: QComboBox = table_utils.get_combobox_widget(
+                self.ui.note_filters_table.cellWidget(
+                    row, self._note_filter_note_type_column
+                )
+            )
+            tags_widget: QTableWidgetItem = table_utils.get_table_item(
+                self.ui.note_filters_table.item(row, self._note_filter_tags_column)
+            )
+            field_cbox: QComboBox = table_utils.get_combobox_widget(
+                self.ui.note_filters_table.cellWidget(
+                    row, self._note_filter_field_column
+                )
+            )
+            morphemizer_widget: QComboBox = table_utils.get_combobox_widget(
+                self.ui.note_filters_table.cellWidget(
+                    row, self._note_filter_morphemizer_column
+                )
+            )
+            morph_priority_widget: QComboBox = table_utils.get_combobox_widget(
+                self.ui.note_filters_table.cellWidget(
+                    row, self._note_filter_morph_priority_column
+                )
+            )
+            read_widget: QCheckBox = table_utils.get_checkbox_widget(
+                self.ui.note_filters_table.cellWidget(
+                    row, self._note_filter_read_column
+                )
+            )
+            modify_widget: QCheckBox = table_utils.get_checkbox_widget(
+                self.ui.note_filters_table.cellWidget(
+                    row, self._note_filter_modify_column
+                )
+            )
+
+            note_type_name: str = note_type_cbox.itemText(note_type_cbox.currentIndex())
+
+            # selected_extra_fields: set[str] = self._get_selected_extra_fields(
+            #     note_type_name
+            # )
+            # extra_score = ankimorphs_globals.EXTRA_FIELD_SCORE in selected_extra_fields
+            # extra_score_terms = (
+            #         ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS in selected_extra_fields
+            # )
+            # extra_highlighted = (
+            #         ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED in selected_extra_fields
+            # )
+            # extra_unknowns = (
+            #         ankimorphs_globals.EXTRA_FIELD_UNKNOWNS in selected_extra_fields
+            # )
+            # extra_unknowns_count = (
+            #         ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT in selected_extra_fields
+            # )
+
+            _filter: FilterTypeAlias = {
+                "note_type": note_type_name,
+                "tags": json.loads(tags_widget.text()),
+                "field": field_cbox.itemText(field_cbox.currentIndex()),
+                "morphemizer_description": morphemizer_widget.itemText(
+                    morphemizer_widget.currentIndex()
+                ),
+                "morph_priority": morph_priority_widget.itemText(
+                    morph_priority_widget.currentIndex()
+                ),
+                "read": read_widget.isChecked(),
+                "modify": modify_widget.isChecked(),
+                # "extra_score": extra_score,
+                # "extra_score_terms": extra_score_terms,
+                # "extra_highlighted": extra_highlighted,
+                # "extra_unknowns": extra_unknowns,
+                # "extra_unknowns_count": extra_unknowns_count,
+            }
+            filters.append(_filter)
+        return filters
 
     def _add_new_row(self) -> None:
         print("add new row")

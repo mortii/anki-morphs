@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import functools
+
 from aqt.qt import QDialog, Qt, QTreeWidgetItem  # pylint:disable=no-name-in-module
 
 from .. import ankimorphs_globals, message_box_utils
@@ -195,4 +197,41 @@ class ExtraFieldsTab(AbstractSettingsTab):
         return {
             "recalc_unknowns_field_shows_inflections": self.ui.unknownsFieldShowsInflectionsRadioButton.isChecked(),
             "recalc_unknowns_field_shows_lemmas": self.ui.unknownsFieldShowsLemmasRadioButton.isChecked(),
+        }
+
+    # the cache needs to have a max size to maintain garbage collection
+    @functools.lru_cache(maxsize=131072)
+    def get_selected_extra_fields(self, note_type_name: str) -> dict[str, bool]:
+        selected_fields: set[str] = set()
+        for top_node_index in range(self.ui.extraFieldsTreeWidget.topLevelItemCount()):
+            top_node: QTreeWidgetItem | None = (
+                self.ui.extraFieldsTreeWidget.topLevelItem(top_node_index)
+            )
+            assert top_node is not None
+            if top_node.text(0) == note_type_name:
+                for child_index in range(top_node.childCount()):
+                    child = top_node.child(child_index)
+                    assert child is not None
+                    if child.checkState(0) == Qt.CheckState.Checked:
+                        selected_fields.add(child.text(0))
+                break
+
+        extra_score = ankimorphs_globals.EXTRA_FIELD_SCORE in selected_fields
+        extra_score_terms = (
+            ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS in selected_fields
+        )
+        extra_highlighted = (
+            ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED in selected_fields
+        )
+        extra_unknowns = ankimorphs_globals.EXTRA_FIELD_UNKNOWNS in selected_fields
+        extra_unknowns_count = (
+            ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT in selected_fields
+        )
+
+        return {
+            "extra_score": extra_score,
+            "extra_score_terms": extra_score_terms,
+            "extra_highlighted": extra_highlighted,
+            "extra_unknowns": extra_unknowns,
+            "extra_unknowns_count": extra_unknowns_count,
         }
