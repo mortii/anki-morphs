@@ -1471,16 +1471,47 @@
         </spacer>
        </item>
        <item>
+        <widget class="QPushButton" name="applyPushButton">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="cancelPushButton">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string> Cancel</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="savePushButton">
+        <widget class="QPushButton" name="okPushButton">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
-          <string> Save</string>
+          <string>OK</string>
          </property>
         </widget>
        </item>
@@ -1493,7 +1524,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup"/>
   <buttongroup name="recalcToolbarKnownRadioButtonGroup"/>
+  <buttongroup name="buttonGroup"/>
  </buttongroups>
 </ui>

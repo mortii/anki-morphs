@@ -133,21 +133,17 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         style: QStyle | None = self.style()
         assert style is not None
 
-        save_icon = style.standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton)
-        self.ui.savePushButton.setIcon(save_icon)
-
-        cancel_icon = style.standardIcon(QStyle.StandardPixmap.SP_DialogCancelButton)
-        self.ui.cancelPushButton.setIcon(cancel_icon)
-
-        self.ui.savePushButton.setAutoDefault(False)
+        self.ui.okPushButton.setAutoDefault(False)
+        self.ui.applyPushButton.setAutoDefault(False)
         self.ui.cancelPushButton.setAutoDefault(False)
         self.ui.restoreAllDefaultsPushButton.setAutoDefault(False)
 
-        self.ui.savePushButton.clicked.connect(self._save_to_config)
+        self.ui.okPushButton.clicked.connect(self._save_and_close)
+        self.ui.applyPushButton.clicked.connect(self._save_to_config)
         self.ui.cancelPushButton.clicked.connect(self.close)
         self.ui.restoreAllDefaultsPushButton.clicked.connect(self._restore_all_defaults)
 
-    def _save_to_config(self) -> None:
+    def _save_to_config(self, tooltip_mw: bool = False) -> None:
         new_config: dict[str, str | int | bool | object] = {}
         for _tab in self._all_tabs:
             new_config.update(_tab.settings_to_dict())
@@ -174,7 +170,14 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
         self._refresh_on_save()
 
-        tooltip("Please recalc to avoid unexpected behaviour", parent=self)
+        if tooltip_mw:
+            tooltip("Please recalc to avoid unexpected behaviour", parent=mw)
+        else:
+            tooltip("Please recalc to avoid unexpected behaviour", parent=self)
+
+    def _save_and_close(self) -> None:
+        self._save_to_config(tooltip_mw=True)
+        self.close()
 
     def _refresh_on_save(self) -> None:
         self._config = AnkiMorphsConfig()
