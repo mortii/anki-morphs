@@ -171,12 +171,16 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
         new_config["filters"] = filters
         ankimorphs_config.update_configs(new_config)
-        self._config = AnkiMorphsConfig()
 
-        # delete cache between saving because it might have been updated
-        self._extra_fields_tab.get_selected_extra_fields.cache_clear()
+        self._refresh_on_save()
 
         tooltip("Please recalc to avoid unexpected behaviour", parent=self)
+
+    def _refresh_on_save(self) -> None:
+        self._config = AnkiMorphsConfig()
+
+        # delete caches that uses config data
+        self._extra_fields_tab.get_selected_extra_fields_from_config.cache_clear()
 
     def closeWithCallback(  # pylint:disable=invalid-name
         self, callback: Callable[[], None]

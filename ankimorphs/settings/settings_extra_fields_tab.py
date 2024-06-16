@@ -35,11 +35,9 @@ class ExtraFieldsTab(AbstractSettingsTab):
             ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS,
         ]
 
-        self._set_tree_item_state_programmatically = False
         self.ui.extraFieldsTreeWidget.itemChanged.connect(self._tree_item_changed)
 
     def update(self, selected_note_types: list[str]) -> None:
-        print(f"update!! Selected: {selected_note_types}")
         self._populate_tree(selected_note_types)
 
     def populate(self) -> None:
@@ -53,6 +51,7 @@ class ExtraFieldsTab(AbstractSettingsTab):
 
     def _populate_tree(self, selected_note_types: list[str] | None = None) -> None:
         self.ui.extraFieldsTreeWidget.clear()  # content might be outdated so we clear it
+        self.ui.extraFieldsTreeWidget.blockSignals(True)
 
         if selected_note_types is None:
             selected_note_types = [
@@ -60,17 +59,45 @@ class ExtraFieldsTab(AbstractSettingsTab):
             ]
 
         for note_type in selected_note_types:
-            print(f"note_type in neo populate loop: {note_type}")
             if note_type == ankimorphs_globals.NONE_OPTION:
                 continue
 
             top_node = self._create_top_node(note_type)
             self.ui.extraFieldsTreeWidget.addTopLevelItem(top_node)
 
-    def _create_top_node(  # pylint:disable=too-many-branches
-        self, note_type: str
-    ) -> QTreeWidgetItem:
+        self.ui.extraFieldsTreeWidget.blockSignals(False)
 
+    def _create_top_node(self, note_type: str) -> QTreeWidgetItem:
+        selected_extra_fields_in_config: dict[str, bool] = (
+            self.get_selected_extra_fields_from_config(note_type)
+        )
+
+        top_node = QTreeWidgetItem()
+        top_node.setText(0, note_type)
+        top_node.setCheckState(0, Qt.CheckState.Unchecked)
+        has_children_checked: bool = False
+
+        for extra_field in self._extra_fields_names:
+            child_item = QTreeWidgetItem(top_node)
+            child_item.setText(0, extra_field)
+            check_state = Qt.CheckState.Unchecked
+
+            if selected_extra_fields_in_config[extra_field] is True:
+                check_state = Qt.CheckState.Checked
+                has_children_checked = True
+
+            child_item.setCheckState(0, check_state)
+
+        if has_children_checked:
+            top_node.setCheckState(0, Qt.CheckState.Checked)
+        else:
+            self._uncheck_and_disable_all_children(top_node)
+
+        return top_node
+
+    # the cache needs to have a max size to maintain garbage collection
+    @functools.lru_cache(maxsize=131072)
+    def get_selected_extra_fields_from_config(self, note_type: str) -> dict[str, bool]:
         extra_score: bool = False
         extra_score_terms: bool = False
         extra_highlighted: bool = False
@@ -86,80 +113,40 @@ class ExtraFieldsTab(AbstractSettingsTab):
                 extra_unknowns_count = _filter.extra_unknowns_count
                 break
 
-        top_node = QTreeWidgetItem()
-        top_node.setText(0, note_type)
-        top_node.setCheckState(0, Qt.CheckState.Unchecked)
-        children_checked: int = 0
-
-        for extra_field in self._extra_fields_names:
-            child_item = QTreeWidgetItem(top_node)
-            child_item.setText(0, extra_field)
-            check_state: Qt.CheckState = Qt.CheckState.Unchecked
-
-            if extra_field == ankimorphs_globals.EXTRA_FIELD_SCORE:
-                if extra_score is True:
-                    check_state = Qt.CheckState.Checked
-                    children_checked += 1
-            elif extra_field == ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS:
-                if extra_score_terms is True:
-                    check_state = Qt.CheckState.Checked
-                    children_checked += 1
-            elif extra_field == ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED:
-                if extra_highlighted is True:
-                    check_state = Qt.CheckState.Checked
-                    children_checked += 1
-            elif extra_field == ankimorphs_globals.EXTRA_FIELD_UNKNOWNS:
-                if extra_unknowns is True:
-                    check_state = Qt.CheckState.Checked
-                    children_checked += 1
-            elif extra_field == ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT:
-                if extra_unknowns_count is True:
-                    check_state = Qt.CheckState.Checked
-                    children_checked += 1
-
-            child_item.setCheckState(0, check_state)
-
-        if children_checked == len(self._extra_fields_names):
-            top_node.setCheckState(0, Qt.CheckState.Checked)
-
-        return top_node
+        selected_extra_fields: dict[str, bool] = {
+            ankimorphs_globals.EXTRA_FIELD_SCORE: extra_score,
+            ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS: extra_score_terms,
+            ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED: extra_highlighted,
+            ankimorphs_globals.EXTRA_FIELD_UNKNOWNS: extra_unknowns,
+            ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT: extra_unknowns_count,
+        }
+        return selected_extra_fields
 
     def _tree_item_changed(self, item: QTreeWidgetItem, column: int) -> None:
-        if self._set_tree_item_state_programmatically is True:
-            return
-
-        self._set_tree_item_state_programmatically = True
+        self.ui.extraFieldsTreeWidget.blockSignals(True)
 
         item_parent = item.parent()
-        if item_parent is None:  # top level node
-            # set all the children to the same check state as the parent
-            if item.checkState(column) == Qt.CheckState.Checked:
-                for child_index in range(item.childCount()):
-                    child = item.child(child_index)
-                    assert child is not None
-                    child.setCheckState(0, Qt.CheckState.Checked)
-            else:
-                for child_index in range(item.childCount()):
-                    child = item.child(child_index)
+        if item_parent is None:
+            top_node = item
+            # if parent is checked, enable all children
+            if top_node.checkState(column) == Qt.CheckState.Checked:
+                for child_index in range(top_node.childCount()):
+                    child = top_node.child(child_index)
                     assert child is not None
                     child.setCheckState(0, Qt.CheckState.Unchecked)
-        else:
-            if item.checkState(column) == Qt.CheckState.Unchecked:
-                # if a child is unchecked then we want the parent to be unchecked too
-                item_parent.setCheckState(column, Qt.CheckState.Unchecked)
+                    child.setDisabled(False)
             else:
-                # if all children are checked, then we want the parent to be checked too
-                all_children_checked = True
-                for child_index in range(item_parent.childCount()):
-                    child = item_parent.child(child_index)
-                    assert child is not None
-                    if child.checkState(column) == Qt.CheckState.Unchecked:
-                        all_children_checked = False
-                        break
-                if all_children_checked:
-                    item_parent.setCheckState(0, Qt.CheckState.Checked)
+                self._uncheck_and_disable_all_children(top_node)
 
-        self._set_tree_item_state_programmatically = False
+        self.ui.extraFieldsTreeWidget.blockSignals(False)
+
+    @staticmethod
+    def _uncheck_and_disable_all_children(top_node: QTreeWidgetItem) -> None:
+        for child_index in range(top_node.childCount()):
+            child = top_node.child(child_index)
+            assert child is not None
+            child.setCheckState(0, Qt.CheckState.Unchecked)
+            child.setDisabled(True)
 
     def setup_buttons(self) -> None:
         self.ui.restoreExtraFieldsPushButton.setAutoDefault(False)
@@ -191,8 +178,6 @@ class ExtraFieldsTab(AbstractSettingsTab):
             "recalc_unknowns_field_shows_lemmas": self.ui.unknownsFieldShowsLemmasRadioButton.isChecked(),
         }
 
-    # the cache needs to have a max size to maintain garbage collection
-    @functools.lru_cache(maxsize=131072)
     def get_selected_extra_fields(self, note_type_name: str) -> dict[str, bool]:
         selected_fields: set[str] = set()
         for top_node_index in range(self.ui.extraFieldsTreeWidget.topLevelItemCount()):
