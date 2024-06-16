@@ -37,8 +37,13 @@ class ExtraFieldsTab(AbstractSettingsTab):
 
         self.ui.extraFieldsTreeWidget.itemChanged.connect(self._tree_item_changed)
 
+        self._selected_note_types: list[str] = [
+            _filter.note_type for _filter in self._config.filters
+        ]
+
     def update(self, selected_note_types: list[str]) -> None:
-        self._populate_tree(selected_note_types)
+        self._selected_note_types = selected_note_types
+        self._populate_tree()
 
     def populate(self) -> None:
         self.ui.unknownsFieldShowsInflectionsRadioButton.setChecked(
@@ -49,27 +54,27 @@ class ExtraFieldsTab(AbstractSettingsTab):
         )
         self._populate_tree()
 
-    def _populate_tree(self, selected_note_types: list[str] | None = None) -> None:
+    def _populate_tree(
+        self,
+        restore_defaults: bool = False,
+    ) -> None:
         self.ui.extraFieldsTreeWidget.clear()  # content might be outdated so we clear it
         self.ui.extraFieldsTreeWidget.blockSignals(True)
 
-        if selected_note_types is None:
-            selected_note_types = [
-                _filter.note_type for _filter in self._config.filters
-            ]
-
-        for note_type in selected_note_types:
+        for note_type in self._selected_note_types:
             if note_type == ankimorphs_globals.NONE_OPTION:
                 continue
 
-            top_node = self._create_top_node(note_type)
+            top_node = self._create_top_node(note_type, restore_defaults)
             self.ui.extraFieldsTreeWidget.addTopLevelItem(top_node)
 
         self.ui.extraFieldsTreeWidget.blockSignals(False)
 
-    def _create_top_node(self, note_type: str) -> QTreeWidgetItem:
+    def _create_top_node(
+        self, note_type: str, restore_defaults: bool = False
+    ) -> QTreeWidgetItem:
         selected_extra_fields_in_config: dict[str, bool] = (
-            self.get_selected_extra_fields_from_config(note_type)
+            self.get_selected_extra_fields_from_config(note_type, restore_defaults)
         )
 
         top_node = QTreeWidgetItem()
@@ -97,21 +102,28 @@ class ExtraFieldsTab(AbstractSettingsTab):
 
     # the cache needs to have a max size to maintain garbage collection
     @functools.lru_cache(maxsize=131072)
-    def get_selected_extra_fields_from_config(self, note_type: str) -> dict[str, bool]:
+    def get_selected_extra_fields_from_config(
+        self, note_type: str, restore_defaults: bool = False
+    ) -> dict[str, bool]:
+        """
+        Sets all extra fields to 'false' is `restore_defaults` == True
+        """
+
         extra_score: bool = False
         extra_score_terms: bool = False
         extra_highlighted: bool = False
         extra_unknowns: bool = False
         extra_unknowns_count: bool = False
 
-        for _filter in self._config.filters:
-            if note_type == _filter.note_type:
-                extra_score = _filter.extra_score
-                extra_score_terms = _filter.extra_score_terms
-                extra_highlighted = _filter.extra_highlighted
-                extra_unknowns = _filter.extra_unknowns
-                extra_unknowns_count = _filter.extra_unknowns_count
-                break
+        if restore_defaults is False:
+            for _filter in self._config.filters:
+                if note_type == _filter.note_type:
+                    extra_score = _filter.extra_score
+                    extra_score_terms = _filter.extra_score_terms
+                    extra_highlighted = _filter.extra_highlighted
+                    extra_unknowns = _filter.extra_unknowns
+                    extra_unknowns_count = _filter.extra_unknowns_count
+                    break
 
         selected_extra_fields: dict[str, bool] = {
             ankimorphs_globals.EXTRA_FIELD_SCORE: extra_score,
@@ -169,8 +181,8 @@ class ExtraFieldsTab(AbstractSettingsTab):
         self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
             self._default_config.recalc_unknowns_field_shows_lemmas
         )
-        # self._setup_extra_fields_tree_widget(self._default_config.filters)
-        # todo: enable this again
+
+        self._populate_tree(restore_defaults=True)
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {

@@ -123,9 +123,11 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
     def setup_buttons(self) -> None:
         self.ui.addNewRowPushButton.setAutoDefault(False)
         self.ui.deleteRowPushButton.setAutoDefault(False)
+        self.ui.restoreNoteFiltersPushButton.setAutoDefault(False)
 
         self.ui.addNewRowPushButton.clicked.connect(self._add_new_row)
         self.ui.deleteRowPushButton.clicked.connect(self._delete_row)
+        self.ui.restoreNoteFiltersPushButton.clicked.connect(self.restore_defaults)
 
         # disable while no rows are selected
         self._on_no_row_selected()
@@ -153,7 +155,18 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         self.ui.deleteRowPushButton.setEnabled(True)
 
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
+        if not skip_confirmation:
+            title = "Confirmation"
+            text = "Are you sure you want to restore default note filter settings?\n\nNote: This will also unselect the respective extra fields!"
+            confirmed = message_box_utils.warning_dialog(
+                title, text, parent=self._parent
+            )
+
+            if not confirmed:
+                return
+
         self._setup_note_filters_table(self._default_config.filters)
+        self.notify_observers()
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {}
@@ -224,7 +237,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
 
     def _delete_row(self) -> None:
         title = "Confirmation"
-        text = "Are you sure you want to delete the selected row?"
+        text = "Are you sure you want to delete the selected row?\n\nNote: This will also unselect the respective extra fields!"
         confirmed = message_box_utils.warning_dialog(title, text, parent=self._parent)
 
         if confirmed:
