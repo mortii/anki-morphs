@@ -5,7 +5,7 @@ import functools
 from aqt.qt import QDialog, Qt, QTreeWidgetItem  # pylint:disable=no-name-in-module
 
 from .. import ankimorphs_globals, message_box_utils
-from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
+from ..ankimorphs_config import AnkiMorphsConfig
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_abstract_tab import AbstractSettingsTab
 
@@ -35,13 +35,12 @@ class ExtraFieldsTab(AbstractSettingsTab):
             ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS,
         ]
 
-        self._note_filter_note_type_column: int = 0
         self._set_tree_item_state_programmatically = False
         self.ui.extraFieldsTreeWidget.itemChanged.connect(self._tree_item_changed)
 
     def update(self, selected_note_types: list[str]) -> None:
         print(f"update!! Selected: {selected_note_types}")
-        self._update_extra_fields_tree_widget(selected_note_types)
+        self._populate_tree(selected_note_types)
 
     def populate(self) -> None:
         self.ui.unknownsFieldShowsInflectionsRadioButton.setChecked(
@@ -50,33 +49,26 @@ class ExtraFieldsTab(AbstractSettingsTab):
         self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
             self._config.recalc_unknowns_field_shows_lemmas
         )
-        self._populate_extra_fields_tree_widget(self._config.filters)
+        self._populate_tree()
 
-    def _update_extra_fields_tree_widget(
-        self,
-        selected_note_types: list[str],
-    ) -> None:
+    def _populate_tree(self, selected_note_types: list[str] | None = None) -> None:
         self.ui.extraFieldsTreeWidget.clear()  # content might be outdated so we clear it
 
-        config_filters = self._config.filters  # todo are these always up tp date?
+        if selected_note_types is None:
+            selected_note_types = [
+                _filter.note_type for _filter in self._config.filters
+            ]
 
         for note_type in selected_note_types:
+            print(f"note_type in neo populate loop: {note_type}")
             if note_type == ankimorphs_globals.NONE_OPTION:
                 continue
 
-            top_node = self._create_top_node(config_filters, note_type)
-            self.ui.extraFieldsTreeWidget.addTopLevelItem(top_node)
-
-    def _populate_extra_fields_tree_widget(
-        self, config_filters: list[AnkiMorphsConfigFilter]
-    ) -> None:
-        for _filter in config_filters:
-            # todo, are the stored config filter note types never "(none)"?
-            top_node = self._create_top_node(config_filters, _filter.note_type)
+            top_node = self._create_top_node(note_type)
             self.ui.extraFieldsTreeWidget.addTopLevelItem(top_node)
 
     def _create_top_node(  # pylint:disable=too-many-branches
-        self, config_filters: list[AnkiMorphsConfigFilter], note_type: str
+        self, note_type: str
     ) -> QTreeWidgetItem:
 
         extra_score: bool = False
@@ -85,7 +77,7 @@ class ExtraFieldsTab(AbstractSettingsTab):
         extra_unknowns: bool = False
         extra_unknowns_count: bool = False
 
-        for _filter in config_filters:
+        for _filter in self._config.filters:
             if note_type == _filter.note_type:
                 extra_score = _filter.extra_score
                 extra_score_terms = _filter.extra_score_terms
