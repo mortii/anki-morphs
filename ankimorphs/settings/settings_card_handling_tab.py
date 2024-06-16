@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from aqt.qt import QDialog  # pylint:disable=no-name-in-module
+from aqt.qt import QDialog, Qt  # pylint:disable=no-name-in-module
 
 from .. import message_box_utils
 from ..ankimorphs_config import AnkiMorphsConfig
@@ -42,9 +42,25 @@ class CardHandlingTab(AbstractSettingsTab):
             self._config.recalc_move_known_new_cards_to_the_end
         )
 
+        self._toggle_disable_shift_cards_settings(
+            check_state=self.ui.shiftNewCardsCheckBox.checkState()
+        )
+
     def setup_buttons(self) -> None:
         self.ui.restoreCardHandlingPushButton.setAutoDefault(False)
         self.ui.restoreCardHandlingPushButton.clicked.connect(self.restore_defaults)
+
+        self.ui.shiftNewCardsCheckBox.checkStateChanged.connect(
+            self._toggle_disable_shift_cards_settings
+        )
+
+    def _toggle_disable_shift_cards_settings(self, check_state: Qt.CheckState) -> None:
+        if check_state == Qt.CheckState.Unchecked:
+            self.ui.dueOffsetSpinBox.setDisabled(True)
+            self.ui.offsetFirstMorphsSpinBox.setDisabled(True)
+        else:
+            self.ui.dueOffsetSpinBox.setEnabled(True)
+            self.ui.offsetFirstMorphsSpinBox.setEnabled(True)
 
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
