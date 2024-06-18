@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from aqt.qt import QDialog, Qt  # pylint:disable=no-name-in-module
+from aqt.qt import QCheckBox, QDialog, QSpinBox, Qt  # pylint:disable=no-name-in-module
 
 from .. import message_box_utils
-from ..ankimorphs_config import AnkiMorphsConfig
+from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_abstract_tab import AbstractSettingsTab
 
@@ -17,29 +17,33 @@ class CardHandlingTab(AbstractSettingsTab):
         default_config: AnkiMorphsConfig,
     ) -> None:
         super().__init__(parent, ui, config, default_config)
+
+        self._raw_config_key_to_check_box: dict[str, QCheckBox] = {
+            RawConfigKeys.SKIP_ONLY_KNOWN_MORPHS_CARDS: self.ui.skipKnownCheckBox,
+            RawConfigKeys.SKIP_UNKNOWN_MORPH_SEEN_TODAY_CARDS: self.ui.skipAlreadySeenCheckBox,
+            RawConfigKeys.SKIP_SHOW_NUM_OF_SKIPPED_CARDS: self.ui.skipNotificationsCheckBox,
+            RawConfigKeys.RECALC_SUSPEND_KNOWN_NEW_CARDS: self.ui.recalcSuspendKnownCheckBox,
+            RawConfigKeys.RECALC_OFFSET_NEW_CARDS: self.ui.shiftNewCardsCheckBox,
+            RawConfigKeys.RECALC_MOVE_KNOWN_NEW_CARDS_TO_THE_END: self.ui.recalcMoveKnownNewCardsToTheEndCheckBox,
+        }
+
+        self._raw_config_key_to_spin_box: dict[str, QSpinBox] = {
+            RawConfigKeys.RECALC_DUE_OFFSET: self.ui.dueOffsetSpinBox,
+            RawConfigKeys.RECALC_NUMBER_OF_MORPHS_TO_OFFSET: self.ui.offsetFirstMorphsSpinBox,
+        }
+
         self.populate()
         self.setup_buttons()
-        self._previous_state = self.settings_to_dict()
+        self.update_previous_state()
 
     def populate(self) -> None:
-        self.ui.skipKnownCheckBox.setChecked(self._config.skip_only_known_morphs_cards)
-        self.ui.skipAlreadySeenCheckBox.setChecked(
-            self._config.skip_unknown_morph_seen_today_cards
-        )
-        self.ui.skipNotificationsCheckBox.setChecked(
-            self._config.skip_show_num_of_skipped_cards
-        )
-        self.ui.recalcSuspendKnownCheckBox.setChecked(
-            self._config.recalc_suspend_known_new_cards
-        )
-        self.ui.shiftNewCardsCheckBox.setChecked(self._config.recalc_offset_new_cards)
-        self.ui.dueOffsetSpinBox.setValue(self._config.recalc_due_offset)
-        self.ui.offsetFirstMorphsSpinBox.setValue(
-            self._config.recalc_number_of_morphs_to_offset
-        )
-        self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.setChecked(
-            self._config.recalc_move_known_new_cards_to_the_end
-        )
+        for config_attribute, checkbox in self._raw_config_key_to_check_box.items():
+            is_checked = getattr(self._config, config_attribute)
+            checkbox.setChecked(is_checked)
+
+        for config_attribute, spin_box in self._raw_config_key_to_spin_box.items():
+            value = getattr(self._config, config_attribute)
+            spin_box.setValue(value)
 
         self._toggle_disable_shift_cards_settings(
             check_state=self.ui.shiftNewCardsCheckBox.checkState()
@@ -72,40 +76,37 @@ class CardHandlingTab(AbstractSettingsTab):
             if not confirmed:
                 return
 
-        self.ui.skipKnownCheckBox.setChecked(
-            self._default_config.skip_only_known_morphs_cards
-        )
-        self.ui.skipAlreadySeenCheckBox.setChecked(
-            self._default_config.skip_unknown_morph_seen_today_cards
-        )
-        self.ui.skipNotificationsCheckBox.setChecked(
-            self._default_config.skip_show_num_of_skipped_cards
-        )
-        self.ui.recalcSuspendKnownCheckBox.setChecked(
-            self._default_config.recalc_suspend_known_new_cards
-        )
-        self.ui.shiftNewCardsCheckBox.setChecked(
-            self._default_config.recalc_offset_new_cards
-        )
-        self.ui.dueOffsetSpinBox.setValue(self._default_config.recalc_due_offset)
-        self.ui.offsetFirstMorphsSpinBox.setValue(
-            self._default_config.recalc_number_of_morphs_to_offset
-        )
-        self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.setChecked(
-            self._default_config.recalc_move_known_new_cards_to_the_end
-        )
+        for config_attribute, spin_box in self._raw_config_key_to_spin_box.items():
+            value = getattr(self._default_config, config_attribute)
+            spin_box.setValue(value)
+
+        for config_attribute, checkbox in self._raw_config_key_to_check_box.items():
+            is_checked = getattr(self._default_config, config_attribute)
+            checkbox.setChecked(is_checked)
 
     def restore_to_config_state(self) -> None:
-        pass
+        assert self._previous_state is not None
+
+        for config_key, spin_box in self._raw_config_key_to_spin_box.items():
+            previous_value = self._previous_state[config_key]
+            assert isinstance(previous_value, int)
+            spin_box.setValue(previous_value)
+
+        for config_key, checkbox in self._raw_config_key_to_check_box.items():
+            previous_check_state = self._previous_state[config_key]
+            assert isinstance(previous_check_state, bool)
+            checkbox.setChecked(previous_check_state)
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
-        return {
-            "skip_only_known_morphs_cards": self.ui.skipKnownCheckBox.isChecked(),
-            "skip_unknown_morph_seen_today_cards": self.ui.skipAlreadySeenCheckBox.isChecked(),
-            "skip_show_num_of_skipped_cards": self.ui.skipNotificationsCheckBox.isChecked(),
-            "recalc_suspend_known_new_cards": self.ui.recalcSuspendKnownCheckBox.isChecked(),
-            "recalc_offset_new_cards": self.ui.shiftNewCardsCheckBox.isChecked(),
-            "recalc_due_offset": self.ui.dueOffsetSpinBox.value(),
-            "recalc_number_of_morphs_to_offset": self.ui.offsetFirstMorphsSpinBox.value(),
-            "recalc_move_known_new_cards_to_the_end": self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.isChecked(),
+        spin_box_settings = {
+            config_key: spin_box.value()
+            for config_key, spin_box in self._raw_config_key_to_spin_box.items()
         }
+        check_box_settings = {
+            config_key: checkbox.isChecked()
+            for config_key, checkbox in self._raw_config_key_to_check_box.items()
+        }
+        settings_dict: dict[str, str | int | bool | object] = {}
+        settings_dict.update(spin_box_settings)
+        settings_dict.update(check_box_settings)
+        return settings_dict

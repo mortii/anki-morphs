@@ -30,7 +30,7 @@ class PreprocessTab(AbstractSettingsTab):
 
         self.populate()
         self.setup_buttons()
-        self._previous_state = self.settings_to_dict()
+        self.update_previous_state()
 
     def populate(self) -> None:
         for config_attribute, checkbox in self._raw_config_key_to_checkbox.items():

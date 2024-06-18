@@ -44,7 +44,7 @@ class AlgorithmTab(AbstractSettingsTab):
 
         self.populate()
         self.setup_buttons()
-        self._previous_state = self.settings_to_dict()
+        self.update_previous_state()
 
     def populate(self) -> None:
         for config_attribute, spin_box in self._raw_config_key_to_spin_box.items():
@@ -59,6 +59,11 @@ class AlgorithmTab(AbstractSettingsTab):
             self.ui.upperTargetLearningMorphsSpinBox.value()
         )
 
+    def setup_buttons(self) -> None:
+        self.ui.restoreAlgorithmPushButton.setAutoDefault(False)
+        self.ui.restoreAlgorithmPushButton.clicked.connect(self.restore_defaults)
+
+        # making sure the lower values are always smaller the upper ones
         self.ui.upperTargetAllMorphsSpinBox.valueChanged.connect(
             lambda: self.ui.lowerTargetAllMorphsSpinBox.setMaximum(
                 self.ui.upperTargetAllMorphsSpinBox.value()
@@ -70,10 +75,6 @@ class AlgorithmTab(AbstractSettingsTab):
                 self.ui.upperTargetLearningMorphsSpinBox.value()
             )
         )
-
-    def setup_buttons(self) -> None:
-        self.ui.restoreAlgorithmPushButton.setAutoDefault(False)
-        self.ui.restoreAlgorithmPushButton.clicked.connect(self.restore_defaults)
 
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:

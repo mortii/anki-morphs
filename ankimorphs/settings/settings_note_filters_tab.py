@@ -84,7 +84,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
 
         self.populate()
         self.setup_buttons()
-        self._previous_state = self.settings_to_dict()
+        self.update_previous_state()
 
     def notify_observers(self) -> None:
         selected_note_types: list[str] = []

@@ -40,7 +40,7 @@ class ExtraFieldsTab(AbstractSettingsTab):
 
         self.populate()
         self.setup_buttons()
-        self._previous_state = self.settings_to_dict()
+        self.update_previous_state()
 
     def update(self, selected_note_types: list[str]) -> None:
         self._selected_note_types = selected_note_types

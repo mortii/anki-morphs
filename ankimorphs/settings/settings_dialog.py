@@ -148,28 +148,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.cancelPushButton.clicked.connect(self.close)
         self.ui.restoreAllDefaultsPushButton.clicked.connect(self._restore_all_defaults)
 
-    def closeEvent(self, event: Any) -> None:  # pylint:disable=invalid-name
-        # overriding the QDialog close event function
-
-        has_unsaved_changes = False
-
-        for _tab in self._all_tabs:
-            if _tab.contains_unsaved_changes():
-                has_unsaved_changes = True
-                break
-
-        if has_unsaved_changes:
-            title = "Unsaved changes"
-            text = "You have unsaved changes.\n\nDo you want to discard them?"
-            confirmed = message_box_utils.warning_dialog(title, text, parent=self)
-
-            if confirmed:
-                for _tab in self._all_tabs:
-                    _tab.restore_to_config_state()
-                event.accept()
-            else:
-                event.ignore()
-
     def _save_to_config(self, tooltip_mw: bool = False) -> None:
         new_config: dict[str, str | int | bool | object] = {}
         for _tab in self._all_tabs:
@@ -211,6 +189,31 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
         # delete caches that uses config data
         self._extra_fields_tab.get_selected_extra_fields_from_config.cache_clear()
+
+        for _tab in self._all_tabs:
+            _tab.update_previous_state()
+
+    def closeEvent(self, event: Any) -> None:  # pylint:disable=invalid-name
+        # overriding the QDialog close event function
+
+        has_unsaved_changes = False
+
+        for _tab in self._all_tabs:
+            if _tab.contains_unsaved_changes():
+                has_unsaved_changes = True
+                break
+
+        if has_unsaved_changes:
+            title = "Unsaved changes"
+            text = "You have unsaved changes.\n\nDo you want to discard them?"
+            confirmed = message_box_utils.warning_dialog(title, text, parent=self)
+
+            if confirmed:
+                for _tab in self._all_tabs:
+                    _tab.restore_to_config_state()
+                event.accept()
+            else:
+                event.ignore()
 
     def closeWithCallback(  # pylint:disable=invalid-name
         self, callback: Callable[[], None]
