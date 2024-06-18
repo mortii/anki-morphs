@@ -19,10 +19,7 @@ class ExtraFieldsTab(AbstractSettingsTab):
         config: AnkiMorphsConfig,
         default_config: AnkiMorphsConfig,
     ) -> None:
-        self._parent = parent
-        self.ui = ui
-        self._config = config
-        self._default_config = default_config
+        super().__init__(parent, ui, config, default_config)
 
         # hides the '1' number in the top left corner
         self.ui.extraFieldsTreeWidget.setHeaderHidden(True)
@@ -40,6 +37,10 @@ class ExtraFieldsTab(AbstractSettingsTab):
         self._selected_note_types: list[str] = [
             _filter.note_type for _filter in self._config.filters
         ]
+
+        self.populate()
+        self.setup_buttons()
+        self._initial_state = self.settings_to_dict()
 
     def update(self, selected_note_types: list[str]) -> None:
         self._selected_note_types = selected_note_types
@@ -183,6 +184,9 @@ class ExtraFieldsTab(AbstractSettingsTab):
         )
 
         self._populate_tree(restore_defaults=True)
+
+    def restore_to_config_state(self) -> None:
+        pass
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {

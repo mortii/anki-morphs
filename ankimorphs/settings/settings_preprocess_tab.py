@@ -17,10 +17,10 @@ class PreprocessTab(AbstractSettingsTab):
         config: AnkiMorphsConfig,
         default_config: AnkiMorphsConfig,
     ) -> None:
-        self._parent = parent
-        self.ui = ui
-        self._config = config
-        self._default_config = default_config
+        super().__init__(parent, ui, config, default_config)
+        self.populate()
+        self.setup_buttons()
+        self._initial_state = self.settings_to_dict()
 
     def populate(self) -> None:
         self.ui.preprocessIgnoreSquareCheckBox.setChecked(
@@ -75,6 +75,9 @@ class PreprocessTab(AbstractSettingsTab):
         self.ui.preprocessIgnoreSuspendedCheckBox.setChecked(
             self._default_config.preprocess_ignore_suspended_cards_content
         )
+
+    def restore_to_config_state(self) -> None:
+        pass
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {

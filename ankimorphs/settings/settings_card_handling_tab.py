@@ -9,7 +9,6 @@ from .settings_abstract_tab import AbstractSettingsTab
 
 
 class CardHandlingTab(AbstractSettingsTab):
-
     def __init__(
         self,
         parent: QDialog,
@@ -17,10 +16,10 @@ class CardHandlingTab(AbstractSettingsTab):
         config: AnkiMorphsConfig,
         default_config: AnkiMorphsConfig,
     ) -> None:
-        self._parent = parent
-        self.ui = ui
-        self._config = config
-        self._default_config = default_config
+        super().__init__(parent, ui, config, default_config)
+        self.populate()
+        self.setup_buttons()
+        self._initial_state = self.settings_to_dict()
 
     def populate(self) -> None:
         self.ui.skipKnownCheckBox.setChecked(self._config.skip_only_known_morphs_cards)
@@ -95,6 +94,9 @@ class CardHandlingTab(AbstractSettingsTab):
         self.ui.recalcMoveKnownNewCardsToTheEndCheckBox.setChecked(
             self._default_config.recalc_move_known_new_cards_to_the_end
         )
+
+    def restore_to_config_state(self) -> None:
+        pass
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {

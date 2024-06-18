@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pprint
-
 from aqt.qt import QDialog  # pylint:disable=no-name-in-module
 
 from .. import message_box_utils
@@ -12,7 +10,6 @@ from .settings_abstract_tab import AbstractSettingsTab
 
 class TagsTab(AbstractSettingsTab):
 
-    # todo: implement abstractly
     def __init__(
         self,
         parent: QDialog,
@@ -20,14 +17,9 @@ class TagsTab(AbstractSettingsTab):
         config: AnkiMorphsConfig,
         default_config: AnkiMorphsConfig,
     ) -> None:
-        self._parent = parent
-        self.ui = ui
-        self._config = config
-        self._default_config = default_config
-
+        super().__init__(parent, ui, config, default_config)
         self.populate()
         self.setup_buttons()
-
         self._initial_state = self.settings_to_dict()
 
     def populate(self) -> None:
@@ -65,6 +57,8 @@ class TagsTab(AbstractSettingsTab):
         self.ui.tagLearnCardNowLineEdit.setText(self._default_config.tag_learn_card_now)
 
     def restore_to_config_state(self) -> None:
+        assert self._initial_state is not None
+
         initial_ready_tag = self._initial_state[RawConfigKeys.TAG_READY]
         assert isinstance(initial_ready_tag, str)
 
@@ -89,21 +83,6 @@ class TagsTab(AbstractSettingsTab):
         self.ui.tagKnownAutomaticallyLineEdit.setText(initial_known_automatically_tag)
         self.ui.tagKnownManuallyLineEdit.setText(initial_known_manually_tag)
         self.ui.tagLearnCardNowLineEdit.setText(initial_learn_now_tag)
-
-    def contains_unsaved_changes(self) -> bool:
-        current_state = self.settings_to_dict()
-        print("current_state")
-        pprint.pp(current_state)
-
-        print("_initial_state")
-        pprint.pp(self._initial_state)
-
-        if current_state != self._initial_state:
-            print("NOT the same")
-            return True
-
-        print("the same")
-        return False
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {

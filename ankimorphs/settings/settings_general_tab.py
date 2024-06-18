@@ -9,7 +9,6 @@ from .settings_abstract_tab import AbstractSettingsTab
 
 
 class GeneralTab(AbstractSettingsTab):
-
     def __init__(
         self,
         parent: QDialog,
@@ -17,10 +16,10 @@ class GeneralTab(AbstractSettingsTab):
         config: AnkiMorphsConfig,
         default_config: AnkiMorphsConfig,
     ) -> None:
-        self._parent = parent
-        self.ui = ui
-        self._config = config
-        self._default_config = default_config
+        super().__init__(parent, ui, config, default_config)
+        self.populate()
+        self.setup_buttons()
+        self._initial_state = self.settings_to_dict()
 
     def populate(self) -> None:
         self.ui.priorityLemmaRadioButton.setChecked(self._config.evaluate_morph_lemma)
@@ -73,6 +72,9 @@ class GeneralTab(AbstractSettingsTab):
         self.ui.recalcIntervalSpinBox.setValue(
             self._default_config.recalc_interval_for_known
         )
+
+    def restore_to_config_state(self) -> None:
+        pass
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {

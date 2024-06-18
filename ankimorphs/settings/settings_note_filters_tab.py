@@ -34,6 +34,7 @@ from .settings_extra_fields_tab import ExtraFieldsTab
 class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
     AbstractSettingsTab
 ):
+
     def __init__(  # pylint:disable=too-many-arguments
         self,
         parent: QDialog,
@@ -44,10 +45,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
     ) -> None:
         assert mw is not None
 
-        self._parent = parent
-        self.ui = ui
-        self._config = config
-        self._default_config = default_config
+        super().__init__(parent, ui, config, default_config)
 
         self.ui.note_filters_table.cellClicked.connect(self._tags_cell_clicked)
 
@@ -83,6 +81,10 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         )
 
         self._observer: ExtraFieldsTab = observer
+
+        self.populate()
+        self.setup_buttons()
+        self._initial_state = self.settings_to_dict()
 
     def notify_observers(self) -> None:
         selected_note_types: list[str] = []
@@ -167,6 +169,9 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
 
         self._setup_note_filters_table(self._default_config.filters)
         self.notify_observers()
+
+    def restore_to_config_state(self) -> None:
+        pass
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {}
