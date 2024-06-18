@@ -21,12 +21,12 @@ class AbstractSettingsTab(ABC):
         self.ui = ui
         self._config = config
         self._default_config = default_config
-        self._initial_state: dict[str, str | int | bool | object] | None = None
+        self._previous_state: dict[str, str | int | bool | object] | None = None
 
         # subclasses should now run:
         # 1. self.populate()
         # 2. self.setup_buttons()
-        # 3. self._initial_state = self.settings_to_dict()
+        # 3. self._previous_state = self.settings_to_dict()
 
     @abstractmethod
     def populate(self) -> None:
@@ -49,16 +49,16 @@ class AbstractSettingsTab(ABC):
         pass
 
     def contains_unsaved_changes(self) -> bool:
-        assert self._initial_state is not None
+        assert self._previous_state is not None
 
         current_state = self.settings_to_dict()
         print("current_state")
         pprint.pp(current_state)
 
         print("_initial_state")
-        pprint.pp(self._initial_state)
+        pprint.pp(self._previous_state)
 
-        if current_state != self._initial_state:
+        if current_state != self._previous_state:
             print("NOT the same")
             return True
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from aqt.qt import QDialog  # pylint:disable=no-name-in-module
+from aqt.qt import QDialog, QLineEdit  # pylint:disable=no-name-in-module
 
 from .. import message_box_utils
 from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
@@ -18,18 +18,38 @@ class TagsTab(AbstractSettingsTab):
         default_config: AnkiMorphsConfig,
     ) -> None:
         super().__init__(parent, ui, config, default_config)
+
+        self._raw_config_key_to_line_edit: dict[str, QLineEdit] = {
+            RawConfigKeys.TAG_READY: self.ui.tagReadyLineEdit,
+            RawConfigKeys.TAG_NOT_READY: self.ui.tagNotReadyLineEdit,
+            RawConfigKeys.TAG_KNOWN_AUTOMATICALLY: self.ui.tagKnownAutomaticallyLineEdit,
+            RawConfigKeys.TAG_KNOWN_MANUALLY: self.ui.tagKnownManuallyLineEdit,
+            RawConfigKeys.TAG_LEARN_CARD_NOW: self.ui.tagLearnCardNowLineEdit,
+        }
+
+        self._default_config_to_line_edit: dict[str, QLineEdit] = {
+            self._default_config.tag_ready: self.ui.tagReadyLineEdit,
+            self._default_config.tag_not_ready: self.ui.tagNotReadyLineEdit,
+            self._default_config.tag_known_automatically: self.ui.tagKnownAutomaticallyLineEdit,
+            self._default_config.tag_known_manually: self.ui.tagKnownManuallyLineEdit,
+            self._default_config.tag_learn_card_now: self.ui.tagLearnCardNowLineEdit,
+        }
+
+        self._config_to_line_edit: dict[str, QLineEdit] = {
+            self._config.tag_ready: self.ui.tagReadyLineEdit,
+            self._config.tag_not_ready: self.ui.tagNotReadyLineEdit,
+            self._config.tag_known_automatically: self.ui.tagKnownAutomaticallyLineEdit,
+            self._config.tag_known_manually: self.ui.tagKnownManuallyLineEdit,
+            self._config.tag_learn_card_now: self.ui.tagLearnCardNowLineEdit,
+        }
+
         self.populate()
         self.setup_buttons()
-        self._initial_state = self.settings_to_dict()
+        self._previous_state = self.settings_to_dict()
 
     def populate(self) -> None:
-        self.ui.tagReadyLineEdit.setText(self._config.tag_ready)
-        self.ui.tagNotReadyLineEdit.setText(self._config.tag_not_ready)
-        self.ui.tagKnownAutomaticallyLineEdit.setText(
-            self._config.tag_known_automatically
-        )
-        self.ui.tagKnownManuallyLineEdit.setText(self._config.tag_known_manually)
-        self.ui.tagLearnCardNowLineEdit.setText(self._config.tag_learn_card_now)
+        for tag, line_edit in self._config_to_line_edit.items():
+            line_edit.setText(tag)
 
     def setup_buttons(self) -> None:
         self.ui.restoreTagsPushButton.setAutoDefault(False)
@@ -46,49 +66,19 @@ class TagsTab(AbstractSettingsTab):
             if not confirmed:
                 return
 
-        self.ui.tagReadyLineEdit.setText(self._default_config.tag_ready)
-        self.ui.tagNotReadyLineEdit.setText(self._default_config.tag_not_ready)
-        self.ui.tagKnownAutomaticallyLineEdit.setText(
-            self._default_config.tag_known_automatically
-        )
-        self.ui.tagKnownManuallyLineEdit.setText(
-            self._default_config.tag_known_manually
-        )
-        self.ui.tagLearnCardNowLineEdit.setText(self._default_config.tag_learn_card_now)
+        for tag, line_edit in self._default_config_to_line_edit.items():
+            line_edit.setText(tag)
 
     def restore_to_config_state(self) -> None:
-        assert self._initial_state is not None
+        assert self._previous_state is not None
 
-        initial_ready_tag = self._initial_state[RawConfigKeys.TAG_READY]
-        assert isinstance(initial_ready_tag, str)
-
-        initial_not_ready_tag = self._initial_state[RawConfigKeys.TAG_NOT_READY]
-        assert isinstance(initial_not_ready_tag, str)
-
-        initial_known_automatically_tag = self._initial_state[
-            RawConfigKeys.TAG_KNOWN_AUTOMATICALLY
-        ]
-        assert isinstance(initial_known_automatically_tag, str)
-
-        initial_known_manually_tag = self._initial_state[
-            RawConfigKeys.TAG_KNOWN_MANUALLY
-        ]
-        assert isinstance(initial_known_manually_tag, str)
-
-        initial_learn_now_tag = self._initial_state[RawConfigKeys.TAG_LEARN_CARD_NOW]
-        assert isinstance(initial_learn_now_tag, str)
-
-        self.ui.tagReadyLineEdit.setText(initial_ready_tag)
-        self.ui.tagNotReadyLineEdit.setText(initial_not_ready_tag)
-        self.ui.tagKnownAutomaticallyLineEdit.setText(initial_known_automatically_tag)
-        self.ui.tagKnownManuallyLineEdit.setText(initial_known_manually_tag)
-        self.ui.tagLearnCardNowLineEdit.setText(initial_learn_now_tag)
+        for tag, line_edit in self._raw_config_key_to_line_edit.items():
+            initial_tag = self._previous_state[tag]
+            assert isinstance(initial_tag, str)
+            line_edit.setText(initial_tag)
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {
-            "tag_ready": self.ui.tagReadyLineEdit.text(),
-            "tag_not_ready": self.ui.tagNotReadyLineEdit.text(),
-            "tag_known_automatically": self.ui.tagKnownAutomaticallyLineEdit.text(),
-            "tag_known_manually": self.ui.tagKnownManuallyLineEdit.text(),
-            "tag_learn_card_now": self.ui.tagLearnCardNowLineEdit.text(),
+            config_key: line_edit.text()
+            for config_key, line_edit in self._raw_config_key_to_line_edit.items()
         }

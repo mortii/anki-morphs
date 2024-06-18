@@ -19,7 +19,7 @@ class GeneralTab(AbstractSettingsTab):
         super().__init__(parent, ui, config, default_config)
         self.populate()
         self.setup_buttons()
-        self._initial_state = self.settings_to_dict()
+        self._previous_state = self.settings_to_dict()
 
     def populate(self) -> None:
         self.ui.priorityLemmaRadioButton.setChecked(self._config.evaluate_morph_lemma)
