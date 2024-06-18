@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 
 class AbstractSettingsTab(ABC):
+
     @abstractmethod
     def populate(self) -> None:
         pass
@@ -15,6 +16,14 @@ class AbstractSettingsTab(ABC):
     @abstractmethod
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         pass
+
+    # @abstractmethod
+    # def restore_to_config_state(self) -> None:
+    #     pass
+    #
+    # @abstractmethod
+    # def contains_unsaved_changes(self) -> bool:
+    #     pass
 
     @abstractmethod
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:

@@ -43,31 +43,54 @@ from . import ankimorphs_globals
 FilterTypeAlias = dict[str, Union[str, bool, int, dict[str, str], None]]
 
 
+class RawConfigFilterKeys:
+    NOTE_TYPE = "note_type"
+    TAGS = "tags"
+    FIELD = "field"
+    MORPHEMIZER_DESCRIPTION = "morphemizer_description"
+    MORPH_PRIORITY = "morph_priority"  # todo rename this to "morph_priority_selection"?
+    READ = "read"
+    MODIFY = "modify"
+    EXTRA_UNKNOWNS = "extra_unknowns"
+    EXTRA_UNKNOWNS_COUNT = "extra_unknowns_count"
+    EXTRA_HIGHLIGHTED = "extra_highlighted"
+    EXTRA_SCORE = "extra_score"
+    EXTRA_SCORE_TERMS = "extra_score_terms"
+
+
 class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
     def __init__(self, _filter: FilterTypeAlias):
         try:
             self.has_error: bool = False
-            self.note_type: str = _get_filter_str(_filter, "note_type")
-            self.tags: dict[str, str] = _get_filter_str_from_json(_filter, "tags")
-            self.field: str = _get_filter_str(_filter, "field")
+            self.note_type: str = _get_filter_str(
+                _filter, RawConfigFilterKeys.NOTE_TYPE
+            )
+            self.tags: dict[str, str] = _get_filter_str_from_json(
+                _filter, RawConfigFilterKeys.TAGS
+            )
+            self.field: str = _get_filter_str(_filter, RawConfigFilterKeys.FIELD)
             self.morphemizer_description: str = _get_filter_str(
-                _filter, "morphemizer_description"
+                _filter, RawConfigFilterKeys.MORPHEMIZER_DESCRIPTION
             )
             self.morph_priority_selection: str = _get_filter_str(
-                _filter, "morph_priority"
-            )  # todo rename this
-            self.read: bool = _get_filter_bool(_filter, "read")
-            self.modify: bool = _get_filter_bool(_filter, "modify")
-            self.extra_unknowns: bool = _get_filter_bool(_filter, "extra_unknowns")
+                _filter, RawConfigFilterKeys.MORPH_PRIORITY
+            )
+            self.read: bool = _get_filter_bool(_filter, RawConfigFilterKeys.READ)
+            self.modify: bool = _get_filter_bool(_filter, RawConfigFilterKeys.MODIFY)
+            self.extra_unknowns: bool = _get_filter_bool(
+                _filter, RawConfigFilterKeys.EXTRA_UNKNOWNS
+            )
             self.extra_unknowns_count: bool = _get_filter_bool(
-                _filter, "extra_unknowns_count"
+                _filter, RawConfigFilterKeys.EXTRA_UNKNOWNS_COUNT
             )
             self.extra_highlighted: bool = _get_filter_bool(
-                _filter, "extra_highlighted"
+                _filter, RawConfigFilterKeys.EXTRA_HIGHLIGHTED
             )
-            self.extra_score: bool = _get_filter_bool(_filter, "extra_score")
+            self.extra_score: bool = _get_filter_bool(
+                _filter, RawConfigFilterKeys.EXTRA_SCORE
+            )
             self.extra_score_terms: bool = _get_filter_bool(
-                _filter, "extra_score_terms"
+                _filter, RawConfigFilterKeys.EXTRA_SCORE_TERMS
             )
 
         # except (KeyError, AssertionError):
@@ -78,194 +101,313 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
                 ankimorphs_globals.ankimorphs_config_broken = True
 
 
+class RawConfigKeys:
+    FILTERS = "filters"
+    SHORTCUT_RECALC = "shortcut_recalc"
+    SHORTCUT_SETTINGS = "shortcut_settings"
+    SHORTCUT_BROWSE_READY_SAME_UNKNOWN = "shortcut_browse_ready_same_unknown"
+    SHORTCUT_BROWSE_ALL_SAME_UNKNOWN = "shortcut_browse_all_same_unknown"
+    SHORTCUT_BROWSE_READY_SAME_UNKNOWN_LEMMA = (
+        "shortcut_browse_ready_same_unknown_lemma"
+    )
+    SHORTCUT_SET_KNOWN_AND_SKIP = "shortcut_set_known_and_skip"
+    SHORTCUT_LEARN_NOW = "shortcut_learn_now"
+    SHORTCUT_VIEW_MORPHEMES = "shortcut_view_morphemes"
+    SHORTCUT_GENERATORS = "shortcut_generators"
+    SHORTCUT_KNOWN_MORPHS_EXPORTER = "shortcut_known_morphs_exporter"
+    SKIP_ONLY_KNOWN_MORPHS_CARDS = "skip_only_known_morphs_cards"
+    SKIP_UNKNOWN_MORPH_SEEN_TODAY_CARDS = "skip_unknown_morph_seen_today_cards"
+    SKIP_SHOW_NUM_OF_SKIPPED_CARDS = "skip_show_num_of_skipped_cards"
+    PREPROCESS_IGNORE_BRACKET_CONTENTS = "preprocess_ignore_bracket_contents"
+    PREPROCESS_IGNORE_ROUND_BRACKET_CONTENTS = (
+        "preprocess_ignore_round_bracket_contents"
+    )
+    PREPROCESS_IGNORE_SLIM_ROUND_BRACKET_CONTENTS = (
+        "preprocess_ignore_slim_round_bracket_contents"
+    )
+    PREPROCESS_IGNORE_NAMES_MORPHEMIZER = "preprocess_ignore_names_morphemizer"
+    PREPROCESS_IGNORE_NAMES_TEXTFILE = "preprocess_ignore_names_textfile"
+    PREPROCESS_IGNORE_SUSPENDED_CARDS_CONTENT = (
+        "preprocess_ignore_suspended_cards_content"
+    )
+    RECALC_INTERVAL_FOR_KNOWN = "recalc_interval_for_known"
+    RECALC_ON_SYNC = "recalc_on_sync"
+    RECALC_SUSPEND_KNOWN_NEW_CARDS = "recalc_suspend_known_new_cards"
+    RECALC_READ_KNOWN_MORPHS_FOLDER = "recalc_read_known_morphs_folder"
+    RECALC_TOOLBAR_STATS_USE_SEEN = "recalc_toolbar_stats_use_seen"
+    RECALC_TOOLBAR_STATS_USE_KNOWN = "recalc_toolbar_stats_use_known"
+    RECALC_UNKNOWNS_FIELD_SHOWS_INFLECTIONS = "recalc_unknowns_field_shows_inflections"
+    RECALC_UNKNOWNS_FIELD_SHOWS_LEMMAS = "recalc_unknowns_field_shows_lemmas"
+    RECALC_OFFSET_NEW_CARDS = "recalc_offset_new_cards"
+    RECALC_DUE_OFFSET = "recalc_due_offset"
+    RECALC_NUMBER_OF_MORPHS_TO_OFFSET = "recalc_number_of_morphs_to_offset"
+    RECALC_MOVE_KNOWN_NEW_CARDS_TO_THE_END = "recalc_move_known_new_cards_to_the_end"
+    TAG_READY = "tag_ready"
+    TAG_NOT_READY = "tag_not_ready"
+    TAG_KNOWN_AUTOMATICALLY = "tag_known_automatically"
+    TAG_KNOWN_MANUALLY = "tag_known_manually"
+    TAG_LEARN_CARD_NOW = "tag_learn_card_now"
+    EVALUATE_MORPH_LEMMA = "evaluate_morph_lemma"
+    EVALUATE_MORPH_INFLECTION = "evaluate_morph_inflection"
+    ALGORITHM_TOTAL_PRIORITY_UNKNOWN_MORPHS = "algorithm_total_priority_unknown_morphs"
+    ALGORITHM_TOTAL_PRIORITY_ALL_MORPHS = "algorithm_total_priority_all_morphs"
+    ALGORITHM_AVERAGE_PRIORITY_ALL_MORPHS = "algorithm_average_priority_all_morphs"
+    ALGORITHM_ALL_MORPHS_TARGET_DISTANCE = "algorithm_all_morphs_target_distance"
+    ALGORITHM_LEARNING_MORPHS_TARGET_DISTANCE = (
+        "algorithm_learning_morphs_target_distance"
+    )
+    ALGORITHM_UPPER_TARGET_ALL_MORPHS = "algorithm_upper_target_all_morphs"
+    ALGORITHM_UPPER_TARGET_ALL_MORPHS_COEFFICIENT_A = (
+        "algorithm_upper_target_all_morphs_coefficient_a"
+    )
+    ALGORITHM_UPPER_TARGET_ALL_MORPHS_COEFFICIENT_B = (
+        "algorithm_upper_target_all_morphs_coefficient_b"
+    )
+    ALGORITHM_UPPER_TARGET_ALL_MORPHS_COEFFICIENT_C = (
+        "algorithm_upper_target_all_morphs_coefficient_c"
+    )
+    ALGORITHM_LOWER_TARGET_ALL_MORPHS = "algorithm_lower_target_all_morphs"
+    ALGORITHM_LOWER_TARGET_ALL_MORPHS_COEFFICIENT_A = (
+        "algorithm_lower_target_all_morphs_coefficient_a"
+    )
+    ALGORITHM_LOWER_TARGET_ALL_MORPHS_COEFFICIENT_B = (
+        "algorithm_lower_target_all_morphs_coefficient_b"
+    )
+    ALGORITHM_LOWER_TARGET_ALL_MORPHS_COEFFICIENT_C = (
+        "algorithm_lower_target_all_morphs_coefficient_c"
+    )
+    ALGORITHM_UPPER_TARGET_LEARNING_MORPHS = "algorithm_upper_target_learning_morphs"
+    ALGORITHM_LOWER_TARGET_LEARNING_MORPHS = "algorithm_lower_target_learning_morphs"
+    ALGORITHM_UPPER_TARGET_LEARNING_MORPHS_COEFFICIENT_A = (
+        "algorithm_upper_target_learning_morphs_coefficient_a"
+    )
+    ALGORITHM_UPPER_TARGET_LEARNING_MORPHS_COEFFICIENT_B = (
+        "algorithm_upper_target_learning_morphs_coefficient_b"
+    )
+    ALGORITHM_UPPER_TARGET_LEARNING_MORPHS_COEFFICIENT_C = (
+        "algorithm_upper_target_learning_morphs_coefficient_c"
+    )
+    ALGORITHM_LOWER_TARGET_LEARNING_MORPHS_COEFFICIENT_A = (
+        "algorithm_lower_target_learning_morphs_coefficient_a"
+    )
+    ALGORITHM_LOWER_TARGET_LEARNING_MORPHS_COEFFICIENT_B = (
+        "algorithm_lower_target_learning_morphs_coefficient_b"
+    )
+    ALGORITHM_LOWER_TARGET_LEARNING_MORPHS_COEFFICIENT_C = (
+        "algorithm_lower_target_learning_morphs_coefficient_c"
+    )
+
+
 class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many-statements
     def __init__(self, is_default: bool = False) -> None:
         try:
             self.shortcut_recalc: QKeySequence = _get_key_sequence_config(
-                "shortcut_recalc", is_default
+                RawConfigKeys.SHORTCUT_RECALC, is_default
             )
             self.shortcut_settings: QKeySequence = _get_key_sequence_config(
-                "shortcut_settings", is_default
+                RawConfigKeys.SHORTCUT_SETTINGS, is_default
             )
             self.shortcut_browse_ready_same_unknown: QKeySequence = (
                 _get_key_sequence_config(
-                    "shortcut_browse_ready_same_unknown", is_default
+                    RawConfigKeys.SHORTCUT_BROWSE_READY_SAME_UNKNOWN, is_default
                 )
             )
             self.shortcut_browse_all_same_unknown: QKeySequence = (
-                _get_key_sequence_config("shortcut_browse_all_same_unknown", is_default)
+                _get_key_sequence_config(
+                    RawConfigKeys.SHORTCUT_BROWSE_ALL_SAME_UNKNOWN, is_default
+                )
             )
             self.shortcut_browse_ready_same_unknown_lemma: QKeySequence = (
                 _get_key_sequence_config(
-                    "shortcut_browse_ready_same_unknown_lemma", is_default
+                    RawConfigKeys.SHORTCUT_BROWSE_READY_SAME_UNKNOWN_LEMMA, is_default
                 )
             )
             self.shortcut_set_known_and_skip: QKeySequence = _get_key_sequence_config(
-                "shortcut_set_known_and_skip", is_default
+                RawConfigKeys.SHORTCUT_SET_KNOWN_AND_SKIP, is_default
             )
             self.shortcut_learn_now: QKeySequence = _get_key_sequence_config(
-                "shortcut_learn_now", is_default
+                RawConfigKeys.SHORTCUT_LEARN_NOW, is_default
             )
             self.shortcut_view_morphemes: QKeySequence = _get_key_sequence_config(
-                "shortcut_view_morphemes", is_default
+                RawConfigKeys.SHORTCUT_VIEW_MORPHEMES, is_default
             )
             self.shortcut_generators: QKeySequence = _get_key_sequence_config(
-                "shortcut_generators", is_default
+                RawConfigKeys.SHORTCUT_GENERATORS, is_default
             )
             self.shortcut_known_morphs_exporter: QKeySequence = (
-                _get_key_sequence_config("shortcut_known_morphs_exporter", is_default)
+                _get_key_sequence_config(
+                    RawConfigKeys.SHORTCUT_KNOWN_MORPHS_EXPORTER, is_default
+                )
             )
             self.skip_only_known_morphs_cards: bool = _get_bool_config(
-                "skip_only_known_morphs_cards", is_default
+                RawConfigKeys.SKIP_ONLY_KNOWN_MORPHS_CARDS, is_default
             )
             self.skip_unknown_morph_seen_today_cards: bool = _get_bool_config(
-                "skip_unknown_morph_seen_today_cards", is_default
+                RawConfigKeys.SKIP_UNKNOWN_MORPH_SEEN_TODAY_CARDS, is_default
             )
             self.skip_show_num_of_skipped_cards: bool = _get_bool_config(
-                "skip_show_num_of_skipped_cards", is_default
+                RawConfigKeys.SKIP_SHOW_NUM_OF_SKIPPED_CARDS, is_default
             )
             self.preprocess_ignore_bracket_contents: bool = _get_bool_config(
-                "preprocess_ignore_bracket_contents", is_default
+                RawConfigKeys.PREPROCESS_IGNORE_BRACKET_CONTENTS, is_default
             )
             self.preprocess_ignore_round_bracket_contents: bool = _get_bool_config(
-                "preprocess_ignore_round_bracket_contents", is_default
+                RawConfigKeys.PREPROCESS_IGNORE_ROUND_BRACKET_CONTENTS, is_default
             )
             self.preprocess_ignore_slim_round_bracket_contents: bool = _get_bool_config(
-                "preprocess_ignore_slim_round_bracket_contents", is_default
+                RawConfigKeys.PREPROCESS_IGNORE_SLIM_ROUND_BRACKET_CONTENTS, is_default
             )
             self.preprocess_ignore_names_morphemizer: bool = _get_bool_config(
-                "preprocess_ignore_names_morphemizer", is_default
+                RawConfigKeys.PREPROCESS_IGNORE_NAMES_MORPHEMIZER, is_default
             )
             self.preprocess_ignore_names_textfile: bool = _get_bool_config(
-                "preprocess_ignore_names_textfile", is_default
+                RawConfigKeys.PREPROCESS_IGNORE_NAMES_TEXTFILE, is_default
             )
             self.preprocess_ignore_suspended_cards_content: bool = _get_bool_config(
-                "preprocess_ignore_suspended_cards_content", is_default
+                RawConfigKeys.PREPROCESS_IGNORE_SUSPENDED_CARDS_CONTENT, is_default
             )
             self.recalc_interval_for_known: int = _get_int_config(
-                "recalc_interval_for_known", is_default
+                RawConfigKeys.RECALC_INTERVAL_FOR_KNOWN, is_default
             )
-            self.recalc_on_sync: bool = _get_bool_config("recalc_on_sync", is_default)
+            self.recalc_on_sync: bool = _get_bool_config(
+                RawConfigKeys.RECALC_ON_SYNC, is_default
+            )
             self.recalc_suspend_known_new_cards: bool = _get_bool_config(
-                "recalc_suspend_known_new_cards", is_default
+                RawConfigKeys.RECALC_SUSPEND_KNOWN_NEW_CARDS, is_default
             )
             self.recalc_read_known_morphs_folder: bool = _get_bool_config(
-                "recalc_read_known_morphs_folder", is_default
+                RawConfigKeys.RECALC_READ_KNOWN_MORPHS_FOLDER, is_default
             )
             self.recalc_toolbar_stats_use_seen: bool = _get_bool_config(
-                "recalc_toolbar_stats_use_seen", is_default
+                RawConfigKeys.RECALC_TOOLBAR_STATS_USE_SEEN, is_default
             )
             self.recalc_toolbar_stats_use_known: bool = _get_bool_config(
-                "recalc_toolbar_stats_use_known", is_default
+                RawConfigKeys.RECALC_TOOLBAR_STATS_USE_KNOWN, is_default
             )
             self.recalc_unknowns_field_shows_inflections: bool = _get_bool_config(
-                "recalc_unknowns_field_shows_inflections", is_default
+                RawConfigKeys.RECALC_UNKNOWNS_FIELD_SHOWS_INFLECTIONS, is_default
             )
             self.recalc_unknowns_field_shows_lemmas: bool = _get_bool_config(
-                "recalc_unknowns_field_shows_lemmas", is_default
+                RawConfigKeys.RECALC_UNKNOWNS_FIELD_SHOWS_LEMMAS, is_default
             )
             self.recalc_offset_new_cards: bool = _get_bool_config(
-                "recalc_offset_new_cards", is_default
+                RawConfigKeys.RECALC_OFFSET_NEW_CARDS, is_default
             )
             self.recalc_due_offset: int = _get_int_config(
-                "recalc_due_offset", is_default
+                RawConfigKeys.RECALC_DUE_OFFSET, is_default
             )
             self.recalc_number_of_morphs_to_offset: int = _get_int_config(
-                "recalc_number_of_morphs_to_offset", is_default
+                RawConfigKeys.RECALC_NUMBER_OF_MORPHS_TO_OFFSET, is_default
             )
             self.recalc_move_known_new_cards_to_the_end: bool = _get_bool_config(
-                "recalc_move_known_new_cards_to_the_end", is_default
+                RawConfigKeys.RECALC_MOVE_KNOWN_NEW_CARDS_TO_THE_END, is_default
             )
-            self.tag_ready: str = _get_string_config("tag_ready", is_default)
-            self.tag_not_ready: str = _get_string_config("tag_not_ready", is_default)
+            self.tag_ready: str = _get_string_config(
+                RawConfigKeys.TAG_READY, is_default
+            )
+            self.tag_not_ready: str = _get_string_config(
+                RawConfigKeys.TAG_NOT_READY, is_default
+            )
             self.tag_known_automatically: str = _get_string_config(
-                "tag_known_automatically", is_default
+                RawConfigKeys.TAG_KNOWN_AUTOMATICALLY, is_default
             )
             self.tag_known_manually: str = _get_string_config(
-                "tag_known_manually", is_default
+                RawConfigKeys.TAG_KNOWN_MANUALLY, is_default
             )
             self.tag_learn_card_now: str = _get_string_config(
-                "tag_learn_card_now", is_default
+                RawConfigKeys.TAG_LEARN_CARD_NOW, is_default
             )
             self.evaluate_morph_lemma: bool = _get_bool_config(
-                "evaluate_morph_lemma", is_default
+                RawConfigKeys.EVALUATE_MORPH_LEMMA, is_default
             )
             self.evaluate_morph_inflection: bool = _get_bool_config(
-                "evaluate_morph_inflection", is_default
+                RawConfigKeys.EVALUATE_MORPH_INFLECTION, is_default
             )
             self.algorithm_total_priority_unknown_morphs: int = _get_int_config(
-                "algorithm_total_priority_unknown_morphs", is_default
+                RawConfigKeys.ALGORITHM_TOTAL_PRIORITY_UNKNOWN_MORPHS, is_default
             )
             self.algorithm_total_priority_all_morphs: int = _get_int_config(
-                "algorithm_total_priority_all_morphs", is_default
+                RawConfigKeys.ALGORITHM_TOTAL_PRIORITY_ALL_MORPHS, is_default
             )
             self.algorithm_average_priority_all_morphs: int = _get_int_config(
-                "algorithm_average_priority_all_morphs", is_default
+                RawConfigKeys.ALGORITHM_AVERAGE_PRIORITY_ALL_MORPHS, is_default
             )
             self.algorithm_all_morphs_target_distance: int = _get_int_config(
-                "algorithm_all_morphs_target_distance", is_default
+                RawConfigKeys.ALGORITHM_ALL_MORPHS_TARGET_DISTANCE, is_default
             )
             self.algorithm_learning_morphs_target_distance: int = _get_int_config(
-                "algorithm_learning_morphs_target_distance", is_default
+                RawConfigKeys.ALGORITHM_LEARNING_MORPHS_TARGET_DISTANCE, is_default
             )
             self.algorithm_upper_target_all_morphs: int = _get_int_config(
-                "algorithm_upper_target_all_morphs", is_default
+                RawConfigKeys.ALGORITHM_UPPER_TARGET_ALL_MORPHS, is_default
             )
             self.algorithm_upper_target_all_morphs_coefficient_a: int = _get_int_config(
-                "algorithm_upper_target_all_morphs_coefficient_a", is_default
+                RawConfigKeys.ALGORITHM_UPPER_TARGET_ALL_MORPHS_COEFFICIENT_A,
+                is_default,
             )
             self.algorithm_upper_target_all_morphs_coefficient_b: int = _get_int_config(
-                "algorithm_upper_target_all_morphs_coefficient_b", is_default
+                RawConfigKeys.ALGORITHM_UPPER_TARGET_ALL_MORPHS_COEFFICIENT_B,
+                is_default,
             )
             self.algorithm_upper_target_all_morphs_coefficient_c: int = _get_int_config(
-                "algorithm_upper_target_all_morphs_coefficient_c", is_default
+                RawConfigKeys.ALGORITHM_UPPER_TARGET_ALL_MORPHS_COEFFICIENT_C,
+                is_default,
             )
             self.algorithm_lower_target_all_morphs: int = _get_int_config(
-                "algorithm_lower_target_all_morphs", is_default
+                RawConfigKeys.ALGORITHM_LOWER_TARGET_ALL_MORPHS, is_default
             )
             self.algorithm_lower_target_all_morphs_coefficient_a: int = _get_int_config(
-                "algorithm_lower_target_all_morphs_coefficient_a", is_default
+                RawConfigKeys.ALGORITHM_LOWER_TARGET_ALL_MORPHS_COEFFICIENT_A,
+                is_default,
             )
             self.algorithm_lower_target_all_morphs_coefficient_b: int = _get_int_config(
-                "algorithm_lower_target_all_morphs_coefficient_b", is_default
+                RawConfigKeys.ALGORITHM_LOWER_TARGET_ALL_MORPHS_COEFFICIENT_B,
+                is_default,
             )
             self.algorithm_lower_target_all_morphs_coefficient_c: int = _get_int_config(
-                "algorithm_lower_target_all_morphs_coefficient_c", is_default
+                RawConfigKeys.ALGORITHM_LOWER_TARGET_ALL_MORPHS_COEFFICIENT_C,
+                is_default,
             )
             self.algorithm_upper_target_learning_morphs: int = _get_int_config(
-                "algorithm_upper_target_learning_morphs", is_default
+                RawConfigKeys.ALGORITHM_UPPER_TARGET_LEARNING_MORPHS, is_default
             )
             self.algorithm_lower_target_learning_morphs: int = _get_int_config(
-                "algorithm_lower_target_learning_morphs", is_default
+                RawConfigKeys.ALGORITHM_LOWER_TARGET_LEARNING_MORPHS, is_default
             )
             self.algorithm_upper_target_learning_morphs_coefficient_a: int = (
                 _get_int_config(
-                    "algorithm_upper_target_learning_morphs_coefficient_a", is_default
+                    RawConfigKeys.ALGORITHM_UPPER_TARGET_LEARNING_MORPHS_COEFFICIENT_A,
+                    is_default,
                 )
             )
             self.algorithm_upper_target_learning_morphs_coefficient_b: int = (
                 _get_int_config(
-                    "algorithm_upper_target_learning_morphs_coefficient_b", is_default
+                    RawConfigKeys.ALGORITHM_UPPER_TARGET_LEARNING_MORPHS_COEFFICIENT_B,
+                    is_default,
                 )
             )
             self.algorithm_upper_target_learning_morphs_coefficient_c: int = (
                 _get_int_config(
-                    "algorithm_upper_target_learning_morphs_coefficient_c", is_default
+                    RawConfigKeys.ALGORITHM_UPPER_TARGET_LEARNING_MORPHS_COEFFICIENT_C,
+                    is_default,
                 )
             )
             self.algorithm_lower_target_learning_morphs_coefficient_a: int = (
                 _get_int_config(
-                    "algorithm_lower_target_learning_morphs_coefficient_a", is_default
+                    RawConfigKeys.ALGORITHM_LOWER_TARGET_LEARNING_MORPHS_COEFFICIENT_A,
+                    is_default,
                 )
             )
             self.algorithm_lower_target_learning_morphs_coefficient_b: int = (
                 _get_int_config(
-                    "algorithm_lower_target_learning_morphs_coefficient_b", is_default
+                    RawConfigKeys.ALGORITHM_LOWER_TARGET_LEARNING_MORPHS_COEFFICIENT_B,
+                    is_default,
                 )
             )
             self.algorithm_lower_target_learning_morphs_coefficient_c: int = (
                 _get_int_config(
-                    "algorithm_lower_target_learning_morphs_coefficient_c", is_default
+                    RawConfigKeys.ALGORITHM_LOWER_TARGET_LEARNING_MORPHS_COEFFICIENT_C,
+                    is_default,
                 )
             )
 

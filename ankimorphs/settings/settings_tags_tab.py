@@ -1,15 +1,18 @@
 from __future__ import annotations
 
+import pprint
+
 from aqt.qt import QDialog  # pylint:disable=no-name-in-module
 
 from .. import message_box_utils
-from ..ankimorphs_config import AnkiMorphsConfig
+from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_abstract_tab import AbstractSettingsTab
 
 
 class TagsTab(AbstractSettingsTab):
 
+    # todo: implement abstractly
     def __init__(
         self,
         parent: QDialog,
@@ -21,6 +24,11 @@ class TagsTab(AbstractSettingsTab):
         self.ui = ui
         self._config = config
         self._default_config = default_config
+
+        self.populate()
+        self.setup_buttons()
+
+        self._initial_state = self.settings_to_dict()
 
     def populate(self) -> None:
         self.ui.tagReadyLineEdit.setText(self._config.tag_ready)
@@ -55,6 +63,47 @@ class TagsTab(AbstractSettingsTab):
             self._default_config.tag_known_manually
         )
         self.ui.tagLearnCardNowLineEdit.setText(self._default_config.tag_learn_card_now)
+
+    def restore_to_config_state(self) -> None:
+        initial_ready_tag = self._initial_state[RawConfigKeys.TAG_READY]
+        assert isinstance(initial_ready_tag, str)
+
+        initial_not_ready_tag = self._initial_state[RawConfigKeys.TAG_NOT_READY]
+        assert isinstance(initial_not_ready_tag, str)
+
+        initial_known_automatically_tag = self._initial_state[
+            RawConfigKeys.TAG_KNOWN_AUTOMATICALLY
+        ]
+        assert isinstance(initial_known_automatically_tag, str)
+
+        initial_known_manually_tag = self._initial_state[
+            RawConfigKeys.TAG_KNOWN_MANUALLY
+        ]
+        assert isinstance(initial_known_manually_tag, str)
+
+        initial_learn_now_tag = self._initial_state[RawConfigKeys.TAG_LEARN_CARD_NOW]
+        assert isinstance(initial_learn_now_tag, str)
+
+        self.ui.tagReadyLineEdit.setText(initial_ready_tag)
+        self.ui.tagNotReadyLineEdit.setText(initial_not_ready_tag)
+        self.ui.tagKnownAutomaticallyLineEdit.setText(initial_known_automatically_tag)
+        self.ui.tagKnownManuallyLineEdit.setText(initial_known_manually_tag)
+        self.ui.tagLearnCardNowLineEdit.setText(initial_learn_now_tag)
+
+    def contains_unsaved_changes(self) -> bool:
+        current_state = self.settings_to_dict()
+        print("current_state")
+        pprint.pp(current_state)
+
+        print("_initial_state")
+        pprint.pp(self._initial_state)
+
+        if current_state != self._initial_state:
+            print("NOT the same")
+            return True
+
+        print("the same")
+        return False
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {

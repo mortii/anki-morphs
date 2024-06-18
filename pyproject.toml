@@ -79,7 +79,7 @@ exclude = [
   "ankimorphs/morphemizers/spacy_wrapper.py",
   "ankimorphs/morphemizers/mecab_wrapper.py"
 ]
-ignore_names = ["print_*", "_refresh_needed", "_v3", "reopen", "closeWithCallback"]
+ignore_names = ["print_*", "_refresh_needed", "_v3", "reopen", "closeWithCallback", "closeEvent"]
 min_confidence = 60
 sort_by_size = true
 verbose = false

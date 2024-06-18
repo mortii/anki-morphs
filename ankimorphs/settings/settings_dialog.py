@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pprint
-from typing import Callable
+from typing import Any, Callable
 
 import aqt
 from aqt import mw
@@ -9,7 +9,12 @@ from aqt.qt import QDialog, QStyle  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
 from .. import ankimorphs_config, ankimorphs_globals, message_box_utils
-from ..ankimorphs_config import AnkiMorphsConfig, FilterTypeAlias
+from ..ankimorphs_config import (
+    AnkiMorphsConfig,
+    FilterTypeAlias,
+    RawConfigFilterKeys,
+    RawConfigKeys,
+)
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_abstract_tab import AbstractSettingsTab
 from .settings_algorithm_tab import AlgorithmTab
@@ -108,9 +113,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             self._tags_tab,
         ]
 
-        for _tab in self._all_tabs:
-            _tab.populate()
-            _tab.setup_buttons()
+        # for _tab in self._all_tabs:
+        #     _tab.populate()
+        #     _tab.setup_buttons()
 
         self._setup_buttons()
 
@@ -143,6 +148,25 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.cancelPushButton.clicked.connect(self.close)
         self.ui.restoreAllDefaultsPushButton.clicked.connect(self._restore_all_defaults)
 
+    def closeEvent(self, event: Any) -> None:  # pylint:disable=invalid-name
+        # overriding the QDialog close event function
+
+        if self._tags_tab.contains_unsaved_changes() is False:
+            print("hit success")
+            event.accept()
+            return
+
+        title = "Unsaved changes"
+        text = "You have unsaved changes.\n\nDo you want to discard them?"
+        confirmed = message_box_utils.warning_dialog(title, text, parent=self)
+
+        if confirmed:
+            self._tags_tab.restore_to_config_state()
+            event.accept()
+        else:
+            print("ignored")
+            event.ignore()
+
     def _save_to_config(self, tooltip_mw: bool = False) -> None:
         new_config: dict[str, str | int | bool | object] = {}
         for _tab in self._all_tabs:
@@ -153,7 +177,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
         filters: list[FilterTypeAlias] = self._note_filters_tab.get_filters()
         for _filter in filters:
-            note_type_name = _filter["note_type"]
+            note_type_name = _filter[RawConfigFilterKeys.NOTE_TYPE]
             assert isinstance(note_type_name, str)
             extra_fields_dict: dict[str, bool] = (
                 self._extra_fields_tab.get_selected_extra_fields(
@@ -165,7 +189,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         print("post filters:")
         pprint.pp(filters)
 
-        new_config["filters"] = filters
+        new_config[RawConfigKeys.FILTERS] = filters
         ankimorphs_config.update_configs(new_config)
 
         self._refresh_on_save()
