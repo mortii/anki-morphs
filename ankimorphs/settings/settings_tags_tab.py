@@ -27,28 +27,13 @@ class TagsTab(AbstractSettingsTab):
             RawConfigKeys.TAG_LEARN_CARD_NOW: self.ui.tagLearnCardNowLineEdit,
         }
 
-        self._default_config_to_line_edit: dict[str, QLineEdit] = {
-            self._default_config.tag_ready: self.ui.tagReadyLineEdit,
-            self._default_config.tag_not_ready: self.ui.tagNotReadyLineEdit,
-            self._default_config.tag_known_automatically: self.ui.tagKnownAutomaticallyLineEdit,
-            self._default_config.tag_known_manually: self.ui.tagKnownManuallyLineEdit,
-            self._default_config.tag_learn_card_now: self.ui.tagLearnCardNowLineEdit,
-        }
-
-        self._config_to_line_edit: dict[str, QLineEdit] = {
-            self._config.tag_ready: self.ui.tagReadyLineEdit,
-            self._config.tag_not_ready: self.ui.tagNotReadyLineEdit,
-            self._config.tag_known_automatically: self.ui.tagKnownAutomaticallyLineEdit,
-            self._config.tag_known_manually: self.ui.tagKnownManuallyLineEdit,
-            self._config.tag_learn_card_now: self.ui.tagLearnCardNowLineEdit,
-        }
-
         self.populate()
         self.setup_buttons()
         self._previous_state = self.settings_to_dict()
 
     def populate(self) -> None:
-        for tag, line_edit in self._config_to_line_edit.items():
+        for config_attribute, line_edit in self._raw_config_key_to_line_edit.items():
+            tag = getattr(self._config, config_attribute)
             line_edit.setText(tag)
 
     def setup_buttons(self) -> None:
@@ -66,16 +51,17 @@ class TagsTab(AbstractSettingsTab):
             if not confirmed:
                 return
 
-        for tag, line_edit in self._default_config_to_line_edit.items():
+        for config_attribute, line_edit in self._raw_config_key_to_line_edit.items():
+            tag = getattr(self._default_config, config_attribute)
             line_edit.setText(tag)
 
     def restore_to_config_state(self) -> None:
         assert self._previous_state is not None
 
-        for tag, line_edit in self._raw_config_key_to_line_edit.items():
-            initial_tag = self._previous_state[tag]
-            assert isinstance(initial_tag, str)
-            line_edit.setText(initial_tag)
+        for config_key, line_edit in self._raw_config_key_to_line_edit.items():
+            previous_tag = self._previous_state[config_key]
+            assert isinstance(previous_tag, str)
+            line_edit.setText(previous_tag)
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {

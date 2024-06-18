@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from aqt.qt import QDialog  # pylint:disable=no-name-in-module
+from aqt.qt import QCheckBox, QDialog  # pylint:disable=no-name-in-module
 
 from .. import message_box_utils
-from ..ankimorphs_config import AnkiMorphsConfig
+from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_abstract_tab import AbstractSettingsTab
 
@@ -18,29 +18,24 @@ class PreprocessTab(AbstractSettingsTab):
         default_config: AnkiMorphsConfig,
     ) -> None:
         super().__init__(parent, ui, config, default_config)
+
+        self._raw_config_key_to_checkbox: dict[str, QCheckBox] = {
+            RawConfigKeys.PREPROCESS_IGNORE_BRACKET_CONTENTS: self.ui.preprocessIgnoreSquareCheckBox,
+            RawConfigKeys.PREPROCESS_IGNORE_ROUND_BRACKET_CONTENTS: self.ui.preprocessIgnoreRoundCheckBox,
+            RawConfigKeys.PREPROCESS_IGNORE_SLIM_ROUND_BRACKET_CONTENTS: self.ui.preprocessIgnoreSlimCheckBox,
+            RawConfigKeys.PREPROCESS_IGNORE_NAMES_MORPHEMIZER: self.ui.preprocessIgnoreNamesMizerCheckBox,
+            RawConfigKeys.PREPROCESS_IGNORE_NAMES_TEXTFILE: self.ui.preprocessIgnoreNamesFileCheckBox,
+            RawConfigKeys.PREPROCESS_IGNORE_SUSPENDED_CARDS_CONTENT: self.ui.preprocessIgnoreSuspendedCheckBox,
+        }
+
         self.populate()
         self.setup_buttons()
         self._previous_state = self.settings_to_dict()
 
     def populate(self) -> None:
-        self.ui.preprocessIgnoreSquareCheckBox.setChecked(
-            self._config.preprocess_ignore_bracket_contents
-        )
-        self.ui.preprocessIgnoreRoundCheckBox.setChecked(
-            self._config.preprocess_ignore_round_bracket_contents
-        )
-        self.ui.preprocessIgnoreSlimCheckBox.setChecked(
-            self._config.preprocess_ignore_slim_round_bracket_contents
-        )
-        self.ui.preprocessIgnoreNamesMizerCheckBox.setChecked(
-            self._config.preprocess_ignore_names_morphemizer
-        )
-        self.ui.preprocessIgnoreNamesFileCheckBox.setChecked(
-            self._config.preprocess_ignore_names_textfile
-        )
-        self.ui.preprocessIgnoreSuspendedCheckBox.setChecked(
-            self._config.preprocess_ignore_suspended_cards_content
-        )
+        for config_attribute, checkbox in self._raw_config_key_to_checkbox.items():
+            is_checked = getattr(self._config, config_attribute)
+            checkbox.setChecked(is_checked)
 
     def setup_buttons(self) -> None:
         self.ui.restorePreprocessPushButton.setAutoDefault(False)
@@ -57,34 +52,20 @@ class PreprocessTab(AbstractSettingsTab):
             if not confirmed:
                 return
 
-        self.ui.preprocessIgnoreSquareCheckBox.setChecked(
-            self._default_config.preprocess_ignore_bracket_contents
-        )
-        self.ui.preprocessIgnoreRoundCheckBox.setChecked(
-            self._default_config.preprocess_ignore_round_bracket_contents
-        )
-        self.ui.preprocessIgnoreSlimCheckBox.setChecked(
-            self._default_config.preprocess_ignore_slim_round_bracket_contents
-        )
-        self.ui.preprocessIgnoreNamesMizerCheckBox.setChecked(
-            self._default_config.preprocess_ignore_names_morphemizer
-        )
-        self.ui.preprocessIgnoreNamesFileCheckBox.setChecked(
-            self._default_config.preprocess_ignore_names_textfile
-        )
-        self.ui.preprocessIgnoreSuspendedCheckBox.setChecked(
-            self._default_config.preprocess_ignore_suspended_cards_content
-        )
+        for config_attribute, checkbox in self._raw_config_key_to_checkbox.items():
+            is_checked = getattr(self._default_config, config_attribute)
+            checkbox.setChecked(is_checked)
 
     def restore_to_config_state(self) -> None:
-        pass
+        assert self._previous_state is not None
+
+        for config_key, line_edit in self._raw_config_key_to_checkbox.items():
+            previous_check_state = self._previous_state[config_key]
+            assert isinstance(previous_check_state, bool)
+            line_edit.setChecked(previous_check_state)
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {
-            "preprocess_ignore_bracket_contents": self.ui.preprocessIgnoreSquareCheckBox.isChecked(),
-            "preprocess_ignore_round_bracket_contents": self.ui.preprocessIgnoreRoundCheckBox.isChecked(),
-            "preprocess_ignore_slim_round_bracket_contents": self.ui.preprocessIgnoreSlimCheckBox.isChecked(),
-            "preprocess_ignore_names_morphemizer": self.ui.preprocessIgnoreNamesMizerCheckBox.isChecked(),
-            "preprocess_ignore_names_textfile": self.ui.preprocessIgnoreNamesFileCheckBox.isChecked(),
-            "preprocess_ignore_suspended_cards_content": self.ui.preprocessIgnoreSuspendedCheckBox.isChecked(),
+            config_key: checkbox.isChecked()
+            for config_key, checkbox in self._raw_config_key_to_checkbox.items()
         }
