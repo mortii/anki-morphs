@@ -59,10 +59,10 @@ class PreprocessTab(AbstractSettingsTab):
     def restore_to_config_state(self) -> None:
         assert self._previous_state is not None
 
-        for config_key, line_edit in self._raw_config_key_to_checkbox.items():
+        for config_key, checkbox in self._raw_config_key_to_checkbox.items():
             previous_check_state = self._previous_state[config_key]
             assert isinstance(previous_check_state, bool)
-            line_edit.setChecked(previous_check_state)
+            checkbox.setChecked(previous_check_state)
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {

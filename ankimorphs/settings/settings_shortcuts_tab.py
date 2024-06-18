@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from aqt.qt import QDialog  # pylint:disable=no-name-in-module
+from aqt.qt import QDialog, QKeySequenceEdit  # pylint:disable=no-name-in-module
 
 from .. import message_box_utils
-from ..ankimorphs_config import AnkiMorphsConfig
+from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_abstract_tab import AbstractSettingsTab
 
@@ -17,41 +17,28 @@ class ShortcutTab(AbstractSettingsTab):
         default_config: AnkiMorphsConfig,
     ) -> None:
         super().__init__(parent, ui, config, default_config)
+
+        self._raw_config_key_to_key_sequence: dict[str, QKeySequenceEdit] = {
+            RawConfigKeys.SHORTCUT_RECALC: self.ui.shortcutRecalcKeySequenceEdit,
+            RawConfigKeys.SHORTCUT_SETTINGS: self.ui.shortcutSettingsKeySequenceEdit,
+            RawConfigKeys.SHORTCUT_BROWSE_READY_SAME_UNKNOWN: self.ui.shortcutBrowseReadyKeySequenceEdit,
+            RawConfigKeys.SHORTCUT_BROWSE_ALL_SAME_UNKNOWN: self.ui.shortcutBrowseAllKeySequenceEdit,
+            RawConfigKeys.SHORTCUT_BROWSE_READY_SAME_UNKNOWN_LEMMA: self.ui.shortcutBrowseReadyLemmaKeySequenceEdit,
+            RawConfigKeys.SHORTCUT_SET_KNOWN_AND_SKIP: self.ui.shortcutKnownAndSkipKeySequenceEdit,
+            RawConfigKeys.SHORTCUT_LEARN_NOW: self.ui.shortcutLearnNowKeySequenceEdit,
+            RawConfigKeys.SHORTCUT_VIEW_MORPHEMES: self.ui.shortcutViewMorphsKeySequenceEdit,
+            RawConfigKeys.SHORTCUT_GENERATORS: self.ui.shortcutGeneratorsKeySequenceEdit,
+            RawConfigKeys.SHORTCUT_KNOWN_MORPHS_EXPORTER: self.ui.shortcutKnownMorphsExporterKeySequenceEdit,
+        }
+
         self.populate()
         self.setup_buttons()
         self._previous_state = self.settings_to_dict()
 
     def populate(self) -> None:
-        self.ui.shortcutRecalcKeySequenceEdit.setKeySequence(
-            self._config.shortcut_recalc
-        )
-        self.ui.shortcutSettingsKeySequenceEdit.setKeySequence(
-            self._config.shortcut_settings
-        )
-        self.ui.shortcutBrowseReadyKeySequenceEdit.setKeySequence(
-            self._config.shortcut_browse_ready_same_unknown.toString()
-        )
-        self.ui.shortcutBrowseAllKeySequenceEdit.setKeySequence(
-            self._config.shortcut_browse_all_same_unknown.toString()
-        )
-        self.ui.shortcutBrowseReadyLemmaKeySequenceEdit.setKeySequence(
-            self._config.shortcut_browse_ready_same_unknown_lemma.toString()
-        )
-        self.ui.shortcutKnownAndSkipKeySequenceEdit.setKeySequence(
-            self._config.shortcut_set_known_and_skip.toString()
-        )
-        self.ui.shortcutLearnNowKeySequenceEdit.setKeySequence(
-            self._config.shortcut_learn_now.toString()
-        )
-        self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
-            self._config.shortcut_view_morphemes.toString()
-        )
-        self.ui.shortcutGeneratorsKeySequenceEdit.setKeySequence(
-            self._config.shortcut_generators.toString()
-        )
-        self.ui.shortcutKnownMorphsExporterKeySequenceEdit.setKeySequence(
-            self._config.shortcut_known_morphs_exporter.toString()
-        )
+        for config_attribute, checkbox in self._raw_config_key_to_key_sequence.items():
+            key_sequence = getattr(self._config, config_attribute)
+            checkbox.setKeySequence(key_sequence)
 
     def setup_buttons(self) -> None:
         self.ui.restoreShortcutsPushButton.setAutoDefault(False)
@@ -68,50 +55,23 @@ class ShortcutTab(AbstractSettingsTab):
             if not confirmed:
                 return
 
-        self.ui.shortcutRecalcKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_recalc
-        )
-        self.ui.shortcutSettingsKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_settings
-        )
-        self.ui.shortcutBrowseReadyKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_browse_ready_same_unknown
-        )
-        self.ui.shortcutBrowseAllKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_browse_all_same_unknown
-        )
-        self.ui.shortcutBrowseReadyLemmaKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_browse_ready_same_unknown_lemma.toString()
-        )
-        self.ui.shortcutKnownAndSkipKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_set_known_and_skip
-        )
-        self.ui.shortcutLearnNowKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_learn_now
-        )
-        self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_view_morphemes
-        )
-        self.ui.shortcutViewMorphsKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_view_morphemes.toString()
-        )
-        self.ui.shortcutKnownMorphsExporterKeySequenceEdit.setKeySequence(
-            self._default_config.shortcut_known_morphs_exporter.toString()
-        )
+        for config_attribute, checkbox in self._raw_config_key_to_key_sequence.items():
+            key_sequence = getattr(self._default_config, config_attribute)
+            checkbox.setKeySequence(key_sequence)
 
     def restore_to_config_state(self) -> None:
-        pass
+        assert self._previous_state is not None
+
+        for (
+            config_key,
+            key_sequence_edit,
+        ) in self._raw_config_key_to_key_sequence.items():
+            previous_key_sequence = self._previous_state[config_key]
+            assert isinstance(previous_key_sequence, str)
+            key_sequence_edit.setKeySequence(previous_key_sequence)
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {
-            "shortcut_recalc": self.ui.shortcutRecalcKeySequenceEdit.keySequence().toString(),
-            "shortcut_settings": self.ui.shortcutSettingsKeySequenceEdit.keySequence().toString(),
-            "shortcut_browse_ready_same_unknown": self.ui.shortcutBrowseReadyKeySequenceEdit.keySequence().toString(),
-            "shortcut_browse_all_same_unknown": self.ui.shortcutBrowseAllKeySequenceEdit.keySequence().toString(),
-            "shortcut_browse_ready_same_unknown_lemma": self.ui.shortcutBrowseReadyLemmaKeySequenceEdit.keySequence().toString(),
-            "shortcut_set_known_and_skip": self.ui.shortcutKnownAndSkipKeySequenceEdit.keySequence().toString(),
-            "shortcut_learn_now": self.ui.shortcutLearnNowKeySequenceEdit.keySequence().toString(),
-            "shortcut_view_morphemes": self.ui.shortcutViewMorphsKeySequenceEdit.keySequence().toString(),
-            "shortcut_generators": self.ui.shortcutGeneratorsKeySequenceEdit.keySequence().toString(),
-            "shortcut_known_morphs_exporter": self.ui.shortcutKnownMorphsExporterKeySequenceEdit.keySequence().toString(),
+            config_key: key_sequence.keySequence().toString()
+            for config_key, key_sequence in self._raw_config_key_to_key_sequence.items()
         }
