@@ -20,12 +20,11 @@ class MorphToolbarStats:
             return
 
         # this is only reached after the profile is loaded
-
         am_db.create_morph_table()
         am_config = AnkiMorphsConfig()
         learning_interval: int = 1  # seen morphs
 
-        if am_config.recalc_toolbar_stats_use_known is True:
+        if am_config.recalc_toolbar_stats_use_known:
             learning_interval = am_config.recalc_interval_for_known
 
         try:

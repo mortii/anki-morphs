@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from aqt.qt import QDialog  # pylint:disable=no-name-in-module
+from aqt.qt import (  # pylint:disable=no-name-in-module
+    QCheckBox,
+    QDialog,
+    QRadioButton,
+    QSpinBox,
+)
 
-from .. import message_box_utils
-from ..ankimorphs_config import AnkiMorphsConfig
+from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_abstract_tab import AbstractSettingsTab
 
@@ -17,72 +21,30 @@ class GeneralTab(AbstractSettingsTab):
         default_config: AnkiMorphsConfig,
     ) -> None:
         super().__init__(parent, ui, config, default_config)
+
+        self._raw_config_key_to_radio_button: dict[str, QRadioButton] = {
+            RawConfigKeys.EVALUATE_MORPH_LEMMA: self.ui.priorityLemmaRadioButton,
+            RawConfigKeys.EVALUATE_MORPH_INFLECTION: self.ui.priorityInflectionRadioButton,
+            RawConfigKeys.RECALC_TOOLBAR_STATS_USE_SEEN: self.ui.toolbarStatsUseSeenRadioButton,
+            RawConfigKeys.RECALC_TOOLBAR_STATS_USE_KNOWN: self.ui.toolbarStatsUseKnownRadioButton,
+        }
+
+        self._raw_config_key_to_check_box: dict[str, QCheckBox] = {
+            RawConfigKeys.RECALC_ON_SYNC: self.ui.recalcBeforeSyncCheckBox,
+            RawConfigKeys.RECALC_READ_KNOWN_MORPHS_FOLDER: self.ui.recalcReadKnownMorphsFolderCheckBox,
+        }
+
+        self._raw_config_key_to_spin_box: dict[str, QSpinBox] = {
+            RawConfigKeys.RECALC_INTERVAL_FOR_KNOWN: self.ui.recalcIntervalSpinBox,
+        }
+
         self.populate()
         self.setup_buttons()
         self.update_previous_state()
-
-    def populate(self) -> None:
-        self.ui.priorityLemmaRadioButton.setChecked(self._config.evaluate_morph_lemma)
-        self.ui.priorityInflectionRadioButton.setChecked(
-            self._config.evaluate_morph_inflection
-        )
-        self.ui.toolbarStatsUseSeenRadioButton.setChecked(
-            self._config.recalc_toolbar_stats_use_seen
-        )
-        self.ui.toolbarStatsUseKnownRadioButton.setChecked(
-            self._config.recalc_toolbar_stats_use_known
-        )
-        self.ui.recalcBeforeSyncCheckBox.setChecked(self._config.recalc_on_sync)
-        self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
-            self._config.recalc_read_known_morphs_folder
-        )
-        self.ui.recalcIntervalSpinBox.setValue(self._config.recalc_interval_for_known)
 
     def setup_buttons(self) -> None:
         self.ui.restoreGeneralPushButton.setAutoDefault(False)
         self.ui.restoreGeneralPushButton.clicked.connect(self.restore_defaults)
 
-    def restore_defaults(self, skip_confirmation: bool = False) -> None:
-        if not skip_confirmation:
-            title = "Confirmation"
-            text = "Are you sure you want to restore default general settings?"
-            confirmed = message_box_utils.warning_dialog(
-                title, text, parent=self._parent
-            )
-
-            if not confirmed:
-                return
-
-        self.ui.priorityLemmaRadioButton.setChecked(
-            self._default_config.evaluate_morph_lemma
-        )
-        self.ui.priorityInflectionRadioButton.setChecked(
-            self._default_config.evaluate_morph_lemma
-        )
-        self.ui.toolbarStatsUseSeenRadioButton.setChecked(
-            self._default_config.recalc_toolbar_stats_use_seen
-        )
-        self.ui.toolbarStatsUseKnownRadioButton.setChecked(
-            self._default_config.recalc_toolbar_stats_use_known
-        )
-        self.ui.recalcBeforeSyncCheckBox.setChecked(self._default_config.recalc_on_sync)
-        self.ui.recalcReadKnownMorphsFolderCheckBox.setChecked(
-            self._default_config.recalc_read_known_morphs_folder
-        )
-        self.ui.recalcIntervalSpinBox.setValue(
-            self._default_config.recalc_interval_for_known
-        )
-
-    def restore_to_config_state(self) -> None:
-        pass
-
-    def settings_to_dict(self) -> dict[str, str | int | bool | object]:
-        return {
-            "evaluate_morph_lemma": self.ui.priorityLemmaRadioButton.isChecked(),
-            "evaluate_morph_inflection": self.ui.priorityInflectionRadioButton.isChecked(),
-            "recalc_toolbar_stats_use_seen": self.ui.toolbarStatsUseSeenRadioButton.isChecked(),
-            "recalc_toolbar_stats_use_known": self.ui.toolbarStatsUseKnownRadioButton.isChecked(),
-            "recalc_on_sync": self.ui.recalcBeforeSyncCheckBox.isChecked(),
-            "recalc_interval_for_known": self.ui.recalcIntervalSpinBox.value(),
-            "recalc_read_known_morphs_folder": self.ui.recalcReadKnownMorphsFolderCheckBox.isChecked(),
-        }
+    def get_confirmation_text(self) -> str:
+        return "Are you sure you want to restore default general settings?"

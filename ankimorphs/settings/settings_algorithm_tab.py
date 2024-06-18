@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from aqt.qt import QDialog, QSpinBox  # pylint:disable=no-name-in-module
 
-from .. import message_box_utils
 from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_abstract_tab import AbstractSettingsTab
@@ -47,9 +46,7 @@ class AlgorithmTab(AbstractSettingsTab):
         self.update_previous_state()
 
     def populate(self) -> None:
-        for config_attribute, spin_box in self._raw_config_key_to_spin_box.items():
-            value = getattr(self._config, config_attribute)
-            spin_box.setValue(value)
+        super().populate()
 
         # making sure the lower values are always smaller the upper ones
         self.ui.lowerTargetAllMorphsSpinBox.setMaximum(
@@ -76,31 +73,5 @@ class AlgorithmTab(AbstractSettingsTab):
             )
         )
 
-    def restore_defaults(self, skip_confirmation: bool = False) -> None:
-        if not skip_confirmation:
-            title = "Confirmation"
-            text = "Are you sure you want to restore default algorithm settings?"
-            confirmed = message_box_utils.warning_dialog(
-                title, text, parent=self._parent
-            )
-
-            if not confirmed:
-                return
-
-        for config_attribute, spin_box in self._raw_config_key_to_spin_box.items():
-            value = getattr(self._default_config, config_attribute)
-            spin_box.setValue(value)
-
-    def restore_to_config_state(self) -> None:
-        assert self._previous_state is not None
-
-        for config_key, spin_box in self._raw_config_key_to_spin_box.items():
-            previous_value = self._previous_state[config_key]
-            assert isinstance(previous_value, int)
-            spin_box.setValue(previous_value)
-
-    def settings_to_dict(self) -> dict[str, str | int | bool | object]:
-        return {
-            config_key: spin_box.value()
-            for config_key, spin_box in self._raw_config_key_to_spin_box.items()
-        }
+    def get_confirmation_text(self) -> str:
+        return "Are you sure you want to restore default algorithm settings?"

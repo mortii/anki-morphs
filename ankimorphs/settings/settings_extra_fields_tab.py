@@ -2,10 +2,15 @@ from __future__ import annotations
 
 import functools
 
-from aqt.qt import QDialog, Qt, QTreeWidgetItem  # pylint:disable=no-name-in-module
+from aqt.qt import (  # pylint:disable=no-name-in-module
+    QDialog,
+    QRadioButton,
+    Qt,
+    QTreeWidgetItem,
+)
 
 from .. import ankimorphs_globals, message_box_utils
-from ..ankimorphs_config import AnkiMorphsConfig
+from ..ankimorphs_config import AnkiMorphsConfig, RawConfigFilterKeys, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_abstract_tab import AbstractSettingsTab
 
@@ -21,8 +26,10 @@ class ExtraFieldsTab(AbstractSettingsTab):
     ) -> None:
         super().__init__(parent, ui, config, default_config)
 
-        # hides the '1' number in the top left corner
-        self.ui.extraFieldsTreeWidget.setHeaderHidden(True)
+        self._raw_config_key_to_radio_button: dict[str, QRadioButton] = {
+            RawConfigKeys.RECALC_UNKNOWNS_FIELD_SHOWS_INFLECTIONS: self.ui.unknownsFieldShowsInflectionsRadioButton,
+            RawConfigKeys.RECALC_UNKNOWNS_FIELD_SHOWS_LEMMAS: self.ui.unknownsFieldShowsLemmasRadioButton,
+        }
 
         self._extra_fields_names = [
             ankimorphs_globals.EXTRA_FIELD_UNKNOWNS,
@@ -31,6 +38,9 @@ class ExtraFieldsTab(AbstractSettingsTab):
             ankimorphs_globals.EXTRA_FIELD_SCORE,
             ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS,
         ]
+
+        # hides the '1' number in the top left corner
+        self.ui.extraFieldsTreeWidget.setHeaderHidden(True)
 
         self.ui.extraFieldsTreeWidget.itemChanged.connect(self._tree_item_changed)
 
@@ -47,18 +57,10 @@ class ExtraFieldsTab(AbstractSettingsTab):
         self._populate_tree()
 
     def populate(self) -> None:
-        self.ui.unknownsFieldShowsInflectionsRadioButton.setChecked(
-            self._config.recalc_unknowns_field_shows_inflections
-        )
-        self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
-            self._config.recalc_unknowns_field_shows_lemmas
-        )
+        super().populate()
         self._populate_tree()
 
-    def _populate_tree(
-        self,
-        restore_defaults: bool = False,
-    ) -> None:
+    def _populate_tree(self, restore_defaults: bool = False) -> None:
         self.ui.extraFieldsTreeWidget.clear()  # content might be outdated so we clear it
         self.ui.extraFieldsTreeWidget.blockSignals(True)
 
@@ -168,7 +170,7 @@ class ExtraFieldsTab(AbstractSettingsTab):
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"
-            text = "Are you sure you want to restore default extra fields settings?"
+            text = self.get_confirmation_text()
             confirmed = message_box_utils.warning_dialog(
                 title, text, parent=self._parent
             )
@@ -186,13 +188,8 @@ class ExtraFieldsTab(AbstractSettingsTab):
         self._populate_tree(restore_defaults=True)
 
     def restore_to_config_state(self) -> None:
+        # todo...
         pass
-
-    def settings_to_dict(self) -> dict[str, str | int | bool | object]:
-        return {
-            "recalc_unknowns_field_shows_inflections": self.ui.unknownsFieldShowsInflectionsRadioButton.isChecked(),
-            "recalc_unknowns_field_shows_lemmas": self.ui.unknownsFieldShowsLemmasRadioButton.isChecked(),
-        }
 
     def get_selected_extra_fields(self, note_type_name: str) -> dict[str, bool]:
         selected_fields: set[str] = set()
@@ -222,9 +219,12 @@ class ExtraFieldsTab(AbstractSettingsTab):
         )
 
         return {
-            "extra_score": extra_score,
-            "extra_score_terms": extra_score_terms,
-            "extra_highlighted": extra_highlighted,
-            "extra_unknowns": extra_unknowns,
-            "extra_unknowns_count": extra_unknowns_count,
+            RawConfigFilterKeys.EXTRA_SCORE: extra_score,
+            RawConfigFilterKeys.EXTRA_SCORE_TERMS: extra_score_terms,
+            RawConfigFilterKeys.EXTRA_HIGHLIGHTED: extra_highlighted,
+            RawConfigFilterKeys.EXTRA_UNKNOWNS: extra_unknowns,
+            RawConfigFilterKeys.EXTRA_UNKNOWNS_COUNT: extra_unknowns_count,
         }
+
+    def get_confirmation_text(self) -> str:
+        return "Are you sure you want to restore default extra fields settings?"

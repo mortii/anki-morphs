@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from aqt.qt import QDialog, QKeySequenceEdit  # pylint:disable=no-name-in-module
 
-from .. import message_box_utils
 from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_abstract_tab import AbstractSettingsTab
@@ -35,43 +34,9 @@ class ShortcutTab(AbstractSettingsTab):
         self.setup_buttons()
         self.update_previous_state()
 
-    def populate(self) -> None:
-        for config_attribute, checkbox in self._raw_config_key_to_key_sequence.items():
-            key_sequence = getattr(self._config, config_attribute)
-            checkbox.setKeySequence(key_sequence)
-
     def setup_buttons(self) -> None:
         self.ui.restoreShortcutsPushButton.setAutoDefault(False)
         self.ui.restoreShortcutsPushButton.clicked.connect(self.restore_defaults)
 
-    def restore_defaults(self, skip_confirmation: bool = False) -> None:
-        if not skip_confirmation:
-            title = "Confirmation"
-            text = "Are you sure you want to restore default shortcuts settings?"
-            confirmed = message_box_utils.warning_dialog(
-                title, text, parent=self._parent
-            )
-
-            if not confirmed:
-                return
-
-        for config_attribute, checkbox in self._raw_config_key_to_key_sequence.items():
-            key_sequence = getattr(self._default_config, config_attribute)
-            checkbox.setKeySequence(key_sequence)
-
-    def restore_to_config_state(self) -> None:
-        assert self._previous_state is not None
-
-        for (
-            config_key,
-            key_sequence_edit,
-        ) in self._raw_config_key_to_key_sequence.items():
-            previous_key_sequence = self._previous_state[config_key]
-            assert isinstance(previous_key_sequence, str)
-            key_sequence_edit.setKeySequence(previous_key_sequence)
-
-    def settings_to_dict(self) -> dict[str, str | int | bool | object]:
-        return {
-            config_key: key_sequence.keySequence().toString()
-            for config_key, key_sequence in self._raw_config_key_to_key_sequence.items()
-        }
+    def get_confirmation_text(self) -> str:
+        return "Are you sure you want to restore default shortcuts settings?"

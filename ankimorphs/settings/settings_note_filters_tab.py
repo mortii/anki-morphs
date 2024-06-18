@@ -159,7 +159,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
     def restore_defaults(self, skip_confirmation: bool = False) -> None:
         if not skip_confirmation:
             title = "Confirmation"
-            text = "Are you sure you want to restore default note filter settings?\n\nNote: This will also unselect the respective extra fields!"
+            text = self.get_confirmation_text()
             confirmed = message_box_utils.warning_dialog(
                 title, text, parent=self._parent
             )
@@ -171,10 +171,8 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         self.notify_observers()
 
     def restore_to_config_state(self) -> None:
+        # todo...
         pass
-
-    def settings_to_dict(self) -> dict[str, str | int | bool | object]:
-        return {}
 
     def get_filters(self) -> list[FilterTypeAlias]:
         filters: list[FilterTypeAlias] = []
@@ -421,3 +419,6 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         )
         self.tag_selector.ui.tableWidget.clearContents()
         tooltip("Remember to save!", parent=self._parent)
+
+    def get_confirmation_text(self) -> str:
+        return "Are you sure you want to restore default note filter settings?\n\nNote: This will also unselect the respective extra fields!"
