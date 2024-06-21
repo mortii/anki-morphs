@@ -4,10 +4,10 @@ from aqt.qt import QCheckBox, QDialog  # pylint:disable=no-name-in-module
 
 from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
-from .settings_abstract_tab import AbstractSettingsTab
+from .settings_tab import SettingsTab
 
 
-class PreprocessTab(AbstractSettingsTab):
+class PreprocessTab(SettingsTab):
 
     def __init__(
         self,

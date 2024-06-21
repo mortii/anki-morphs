@@ -4,10 +4,10 @@ from aqt.qt import QCheckBox, QDialog, QSpinBox, Qt  # pylint:disable=no-name-in
 
 from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
-from .settings_abstract_tab import AbstractSettingsTab
+from .settings_tab import SettingsTab
 
 
-class CardHandlingTab(AbstractSettingsTab):
+class CardHandlingTab(SettingsTab):
     def __init__(
         self,
         parent: QDialog,
@@ -35,8 +35,8 @@ class CardHandlingTab(AbstractSettingsTab):
         self.setup_buttons()
         self.update_previous_state()
 
-    def populate(self) -> None:
-        super().populate()
+    def populate(self, use_default_config: bool = False) -> None:
+        super().populate(use_default_config)
         self._toggle_disable_shift_cards_settings(
             check_state=self.ui.shiftNewCardsCheckBox.checkState()
         )

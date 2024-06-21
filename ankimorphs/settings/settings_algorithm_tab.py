@@ -4,10 +4,10 @@ from aqt.qt import QDialog, QSpinBox  # pylint:disable=no-name-in-module
 
 from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
-from .settings_abstract_tab import AbstractSettingsTab
+from .settings_tab import SettingsTab
 
 
-class AlgorithmTab(AbstractSettingsTab):
+class AlgorithmTab(SettingsTab):
     def __init__(
         self,
         parent: QDialog,
@@ -45,8 +45,8 @@ class AlgorithmTab(AbstractSettingsTab):
         self.setup_buttons()
         self.update_previous_state()
 
-    def populate(self) -> None:
-        super().populate()
+    def populate(self, use_default_config: bool = False) -> None:
+        super().populate(use_default_config)
 
         # making sure the lower values are always smaller the upper ones
         self.ui.lowerTargetAllMorphsSpinBox.setMaximum(

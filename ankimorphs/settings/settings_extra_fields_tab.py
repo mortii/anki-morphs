@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import functools
-
 from aqt.qt import (  # pylint:disable=no-name-in-module
     QDialog,
     QRadioButton,
@@ -10,12 +8,20 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 
 from .. import ankimorphs_globals, message_box_utils
-from ..ankimorphs_config import AnkiMorphsConfig, RawConfigFilterKeys, RawConfigKeys
+from ..ankimorphs_config import (
+    AnkiMorphsConfig,
+    FilterTypeAlias,
+    RawConfigFilterKeys,
+    RawConfigKeys,
+)
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
-from .settings_abstract_tab import AbstractSettingsTab
+from .data_extractor import DataExtractor
+from .data_provider import DataProvider
+from .data_subscriber import DataSubscriber
+from .settings_tab import SettingsTab
 
 
-class ExtraFieldsTab(AbstractSettingsTab):
+class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
 
     def __init__(
         self,
@@ -24,7 +30,8 @@ class ExtraFieldsTab(AbstractSettingsTab):
         config: AnkiMorphsConfig,
         default_config: AnkiMorphsConfig,
     ) -> None:
-        super().__init__(parent, ui, config, default_config)
+        SettingsTab.__init__(self, parent, ui, config, default_config)
+        DataExtractor.__init__(self)
 
         self._raw_config_key_to_radio_button: dict[str, QRadioButton] = {
             RawConfigKeys.RECALC_UNKNOWNS_FIELD_SHOWS_INFLECTIONS: self.ui.unknownsFieldShowsInflectionsRadioButton,
@@ -50,14 +57,17 @@ class ExtraFieldsTab(AbstractSettingsTab):
 
         self.populate()
         self.setup_buttons()
+
+    def add_data_provider(self, data_provider: DataProvider) -> None:
+        self.data_provider = data_provider
         self.update_previous_state()
 
     def update(self, selected_note_types: list[str]) -> None:
         self._selected_note_types = selected_note_types
         self._populate_tree()
 
-    def populate(self) -> None:
-        super().populate()
+    def populate(self, use_default_config: bool = False) -> None:
+        super().populate(use_default_config)
         self._populate_tree()
 
     def _populate_tree(self, restore_defaults: bool = False) -> None:
@@ -103,8 +113,6 @@ class ExtraFieldsTab(AbstractSettingsTab):
 
         return top_node
 
-    # the cache needs to have a max size to maintain garbage collection
-    @functools.lru_cache(maxsize=131072)
     def get_selected_extra_fields_from_config(
         self, note_type: str, restore_defaults: bool = False
     ) -> dict[str, bool]:
@@ -135,6 +143,7 @@ class ExtraFieldsTab(AbstractSettingsTab):
             ankimorphs_globals.EXTRA_FIELD_UNKNOWNS: extra_unknowns,
             ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT: extra_unknowns_count,
         }
+        print(f"selected_extra_fields: {selected_extra_fields}")
         return selected_extra_fields
 
     def _tree_item_changed(self, item: QTreeWidgetItem, column: int) -> None:
@@ -178,18 +187,14 @@ class ExtraFieldsTab(AbstractSettingsTab):
             if not confirmed:
                 return
 
-        self.ui.unknownsFieldShowsInflectionsRadioButton.setChecked(
-            self._default_config.recalc_unknowns_field_shows_inflections
-        )
-        self.ui.unknownsFieldShowsLemmasRadioButton.setChecked(
-            self._default_config.recalc_unknowns_field_shows_lemmas
-        )
+        for (
+            config_attribute,
+            radio_button,
+        ) in self._raw_config_key_to_radio_button.items():
+            is_checked = getattr(self._default_config, config_attribute)
+            radio_button.setChecked(is_checked)
 
         self._populate_tree(restore_defaults=True)
-
-    def restore_to_config_state(self) -> None:
-        # todo...
-        pass
 
     def get_selected_extra_fields(self, note_type_name: str) -> dict[str, bool]:
         selected_fields: set[str] = set()
@@ -228,3 +233,32 @@ class ExtraFieldsTab(AbstractSettingsTab):
 
     def get_confirmation_text(self) -> str:
         return "Are you sure you want to restore default extra fields settings?"
+
+    def settings_to_dict(self) -> dict[str, str | int | bool | object]:
+        assert self.data_provider is not None
+
+        filters: list[FilterTypeAlias] = self.data_provider.get_data()
+
+        for _filter in filters:
+            note_type_name = _filter[RawConfigFilterKeys.NOTE_TYPE]
+            assert isinstance(note_type_name, str)
+            extra_fields_dict: dict[str, bool] = self.get_selected_extra_fields(
+                note_type_name=note_type_name
+            )
+            _filter.update(extra_fields_dict)
+
+        settings_dict: dict[str, str | int | bool | object] = {
+            RawConfigKeys.FILTERS: filters
+        }
+
+        radio_button_settings = {
+            config_key: radio_button.isChecked()
+            for config_key, radio_button in self._raw_config_key_to_radio_button.items()
+        }
+
+        settings_dict.update(radio_button_settings)
+
+        # print("post filters:")
+        # pprint.pp(settings_dict)
+
+        return settings_dict

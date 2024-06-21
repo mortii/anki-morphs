@@ -4,10 +4,10 @@ from aqt.qt import QDialog, QLineEdit  # pylint:disable=no-name-in-module
 
 from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
-from .settings_abstract_tab import AbstractSettingsTab
+from .settings_tab import SettingsTab
 
 
-class TagsTab(AbstractSettingsTab):
+class TagsTab(SettingsTab):
 
     def __init__(
         self,

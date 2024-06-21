@@ -9,10 +9,10 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 
 from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
-from .settings_abstract_tab import AbstractSettingsTab
+from .settings_tab import SettingsTab
 
 
-class GeneralTab(AbstractSettingsTab):
+class GeneralTab(SettingsTab):
     def __init__(
         self,
         parent: QDialog,

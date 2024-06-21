@@ -58,49 +58,6 @@ class RawConfigFilterKeys:
     EXTRA_SCORE_TERMS = "extra_score_terms"
 
 
-class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
-    def __init__(self, _filter: FilterTypeAlias):
-        try:
-            self.has_error: bool = False
-            self.note_type: str = _get_filter_str(
-                _filter, RawConfigFilterKeys.NOTE_TYPE
-            )
-            self.tags: dict[str, str] = _get_filter_str_from_json(
-                _filter, RawConfigFilterKeys.TAGS
-            )
-            self.field: str = _get_filter_str(_filter, RawConfigFilterKeys.FIELD)
-            self.morphemizer_description: str = _get_filter_str(
-                _filter, RawConfigFilterKeys.MORPHEMIZER_DESCRIPTION
-            )
-            self.morph_priority_selection: str = _get_filter_str(
-                _filter, RawConfigFilterKeys.MORPH_PRIORITY
-            )
-            self.read: bool = _get_filter_bool(_filter, RawConfigFilterKeys.READ)
-            self.modify: bool = _get_filter_bool(_filter, RawConfigFilterKeys.MODIFY)
-            self.extra_unknowns: bool = _get_filter_bool(
-                _filter, RawConfigFilterKeys.EXTRA_UNKNOWNS
-            )
-            self.extra_unknowns_count: bool = _get_filter_bool(
-                _filter, RawConfigFilterKeys.EXTRA_UNKNOWNS_COUNT
-            )
-            self.extra_highlighted: bool = _get_filter_bool(
-                _filter, RawConfigFilterKeys.EXTRA_HIGHLIGHTED
-            )
-            self.extra_score: bool = _get_filter_bool(
-                _filter, RawConfigFilterKeys.EXTRA_SCORE
-            )
-            self.extra_score_terms: bool = _get_filter_bool(
-                _filter, RawConfigFilterKeys.EXTRA_SCORE_TERMS
-            )
-
-        # except (KeyError, AssertionError):
-        except AssertionError:
-            self.has_error = True
-            if not ankimorphs_globals.ankimorphs_config_broken:
-                show_critical_config_error()
-                ankimorphs_globals.ankimorphs_config_broken = True
-
-
 class RawConfigKeys:
     FILTERS = "filters"
     SHORTCUT_RECALC = "shortcut_recalc"
@@ -196,6 +153,49 @@ class RawConfigKeys:
     ALGORITHM_LOWER_TARGET_LEARNING_MORPHS_COEFFICIENT_C = (
         "algorithm_lower_target_learning_morphs_coefficient_c"
     )
+
+
+class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
+    def __init__(self, _filter: FilterTypeAlias):
+        try:
+            self.has_error: bool = False
+            self.note_type: str = _get_filter_str(
+                _filter, RawConfigFilterKeys.NOTE_TYPE
+            )
+            self.tags: dict[str, str] = _get_filter_str_from_json(
+                _filter, RawConfigFilterKeys.TAGS
+            )
+            self.field: str = _get_filter_str(_filter, RawConfigFilterKeys.FIELD)
+            self.morphemizer_description: str = _get_filter_str(
+                _filter, RawConfigFilterKeys.MORPHEMIZER_DESCRIPTION
+            )
+            self.morph_priority_selection: str = _get_filter_str(
+                _filter, RawConfigFilterKeys.MORPH_PRIORITY
+            )
+            self.read: bool = _get_filter_bool(_filter, RawConfigFilterKeys.READ)
+            self.modify: bool = _get_filter_bool(_filter, RawConfigFilterKeys.MODIFY)
+            self.extra_unknowns: bool = _get_filter_bool(
+                _filter, RawConfigFilterKeys.EXTRA_UNKNOWNS
+            )
+            self.extra_unknowns_count: bool = _get_filter_bool(
+                _filter, RawConfigFilterKeys.EXTRA_UNKNOWNS_COUNT
+            )
+            self.extra_highlighted: bool = _get_filter_bool(
+                _filter, RawConfigFilterKeys.EXTRA_HIGHLIGHTED
+            )
+            self.extra_score: bool = _get_filter_bool(
+                _filter, RawConfigFilterKeys.EXTRA_SCORE
+            )
+            self.extra_score_terms: bool = _get_filter_bool(
+                _filter, RawConfigFilterKeys.EXTRA_SCORE_TERMS
+            )
+
+        # except (KeyError, AssertionError):
+        except AssertionError:
+            self.has_error = True
+            if not ankimorphs_globals.ankimorphs_config_broken:
+                show_critical_config_error()
+                ankimorphs_globals.ankimorphs_config_broken = True
 
 
 class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many-statements
@@ -422,6 +422,14 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many
             # todo: add this to filter too
             if ankimorphs_globals.ankimorphs_new_config_found:
                 show_warning_new_config_items()
+
+    def update(self) -> None:
+        # The same AnkiMorphsSettings object is shared many
+        # places (SettingsTabs, etc.), and to avoid de-synchronization
+        # it is better to update the object rather than creating
+        # new objects/updating the references.
+        new_config = AnkiMorphsConfig()
+        self.__dict__.update(new_config.__dict__)
 
 
 def _get_config(

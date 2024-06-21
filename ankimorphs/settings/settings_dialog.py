@@ -5,18 +5,12 @@ from typing import Any, Callable
 
 import aqt
 from aqt import mw
-from aqt.qt import QDialog, QStyle  # pylint:disable=no-name-in-module
+from aqt.qt import QDialog  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
 from .. import ankimorphs_config, ankimorphs_globals, message_box_utils
-from ..ankimorphs_config import (
-    AnkiMorphsConfig,
-    FilterTypeAlias,
-    RawConfigFilterKeys,
-    RawConfigKeys,
-)
+from ..ankimorphs_config import AnkiMorphsConfig
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
-from .settings_abstract_tab import AbstractSettingsTab
 from .settings_algorithm_tab import AlgorithmTab
 from .settings_card_handling_tab import CardHandlingTab
 from .settings_extra_fields_tab import ExtraFieldsTab
@@ -24,6 +18,7 @@ from .settings_general_tab import GeneralTab
 from .settings_note_filters_tab import NoteFiltersTab
 from .settings_preprocess_tab import PreprocessTab
 from .settings_shortcuts_tab import ShortcutTab
+from .settings_tab import SettingsTab
 from .settings_tags_tab import TagsTab
 
 
@@ -52,19 +47,18 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             default_config=self._default_config,
         )
 
-        self._extra_fields_tab = ExtraFieldsTab(
+        self._note_filters_tab = NoteFiltersTab(
             parent=self,
             ui=self.ui,
             config=self._config,
             default_config=self._default_config,
         )
 
-        self._note_filters_tab = NoteFiltersTab(
+        self._extra_fields_tab = ExtraFieldsTab(
             parent=self,
             ui=self.ui,
             config=self._config,
             default_config=self._default_config,
-            observer=self._extra_fields_tab,
         )
 
         self._shortcut_tab = ShortcutTab(
@@ -102,7 +96,10 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             default_config=self._default_config,
         )
 
-        self._all_tabs: list[AbstractSettingsTab] = [
+        self._note_filters_tab.add_subscriber(self._extra_fields_tab)
+        self._extra_fields_tab.add_data_provider(self._note_filters_tab)
+
+        self._all_tabs: list[SettingsTab] = [
             self._general_tab,
             self._extra_fields_tab,
             self._note_filters_tab,
@@ -112,10 +109,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             self._preprocess_tab,
             self._tags_tab,
         ]
-
-        # for _tab in self._all_tabs:
-        #     _tab.populate()
-        #     _tab.setup_buttons()
 
         self._setup_buttons()
 
@@ -135,9 +128,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
                 _tab.restore_defaults(skip_confirmation=True)
 
     def _setup_buttons(self) -> None:
-        style: QStyle | None = self.style()
-        assert style is not None
-
         self.ui.okPushButton.setAutoDefault(False)
         self.ui.applyPushButton.setAutoDefault(False)
         self.ui.cancelPushButton.setAutoDefault(False)
@@ -145,7 +135,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
         self.ui.okPushButton.clicked.connect(self._save_and_close)
         self.ui.applyPushButton.clicked.connect(self._save_to_config)
-        self.ui.cancelPushButton.clicked.connect(self.close)
+        self.ui.cancelPushButton.clicked.connect(self._discard_and_close)
         self.ui.restoreAllDefaultsPushButton.clicked.connect(self._restore_all_defaults)
 
     def _save_to_config(self, tooltip_mw: bool = False) -> None:
@@ -156,24 +146,11 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         print("new_config:")
         pprint.pp(new_config)
 
-        filters: list[FilterTypeAlias] = self._note_filters_tab.get_filters()
-        for _filter in filters:
-            note_type_name = _filter[RawConfigFilterKeys.NOTE_TYPE]
-            assert isinstance(note_type_name, str)
-            extra_fields_dict: dict[str, bool] = (
-                self._extra_fields_tab.get_selected_extra_fields(
-                    note_type_name=note_type_name
-                )
-            )
-            _filter.update(extra_fields_dict)
-
-        print("post filters:")
-        pprint.pp(filters)
-
-        new_config[RawConfigKeys.FILTERS] = filters
         ankimorphs_config.update_configs(new_config)
+        self._config.update()
 
-        self._refresh_on_save()
+        for _tab in self._all_tabs:
+            _tab.update_previous_state()
 
         if tooltip_mw:
             tooltip("Please recalc to avoid unexpected behaviour", parent=mw)
@@ -184,14 +161,10 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self._save_to_config(tooltip_mw=True)
         self.close()
 
-    def _refresh_on_save(self) -> None:
-        self._config = AnkiMorphsConfig()
-
-        # delete caches that uses config data
-        self._extra_fields_tab.get_selected_extra_fields_from_config.cache_clear()
-
+    def _discard_and_close(self) -> None:
         for _tab in self._all_tabs:
-            _tab.update_previous_state()
+            _tab.restore_to_config_state()
+        self.close()
 
     def closeEvent(self, event: Any) -> None:  # pylint:disable=invalid-name
         # overriding the QDialog close event function
@@ -214,6 +187,8 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
                 event.accept()
             else:
                 event.ignore()
+        else:
+            event.accept()
 
     def closeWithCallback(  # pylint:disable=invalid-name
         self, callback: Callable[[], None]

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import pprint
 from collections.abc import Sequence
 from functools import partial
 from pathlib import Path
+from typing import Any
 
 import aqt
 from anki.models import NotetypeDict, NotetypeNameId
@@ -23,16 +25,18 @@ from ..ankimorphs_config import (
     AnkiMorphsConfig,
     AnkiMorphsConfigFilter,
     FilterTypeAlias,
+    RawConfigFilterKeys,
+    RawConfigKeys,
 )
 from ..morphemizers.morphemizer import get_all_morphemizers
 from ..tag_selection_dialog import TagSelectionDialog
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
-from .settings_abstract_tab import AbstractSettingsTab
-from .settings_extra_fields_tab import ExtraFieldsTab
+from .data_provider import DataProvider
+from .settings_tab import SettingsTab
 
 
 class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
-    AbstractSettingsTab
+    SettingsTab, DataProvider
 ):
 
     def __init__(  # pylint:disable=too-many-arguments
@@ -41,11 +45,11 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         ui: Ui_SettingsDialog,
         config: AnkiMorphsConfig,
         default_config: AnkiMorphsConfig,
-        observer: ExtraFieldsTab,
     ) -> None:
         assert mw is not None
 
-        super().__init__(parent, ui, config, default_config)
+        SettingsTab.__init__(self, parent, ui, config, default_config)
+        DataProvider.__init__(self)
 
         self.ui.note_filters_table.cellClicked.connect(self._tags_cell_clicked)
 
@@ -80,13 +84,20 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
             creator=self.tag_selector.show,
         )
 
-        self._observer: ExtraFieldsTab = observer
+        self._previous_config_filters: dict[str, str | int | bool | object] | None = (
+            None
+        )
 
         self.populate()
         self.setup_buttons()
         self.update_previous_state()
 
-    def notify_observers(self) -> None:
+    def notify_subscribers(self) -> None:
+        assert self._subscriber is not None
+        selected_note_types = self._get_selected_note_filters()
+        self._subscriber.update(selected_note_types)
+
+    def _get_selected_note_filters(self) -> list[str]:
         selected_note_types: list[str] = []
         for row in range(self.ui.note_filters_table.rowCount()):
             note_filter_note_type_widget: QComboBox = table_utils.get_combobox_widget(
@@ -98,8 +109,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
                 note_filter_note_type_widget.currentIndex()
             )
             selected_note_types.append(note_type)
-
-        self._observer.update(selected_note_types)
+        return selected_note_types
 
     def _setup_note_filters_table(
         self, config_filters: list[AnkiMorphsConfigFilter]
@@ -119,8 +129,15 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         for row, am_filter in enumerate(config_filters):
             self._set_note_filters_table_row(row, am_filter)
 
-    def populate(self) -> None:
-        self._setup_note_filters_table(self._config.filters)
+    def populate(self, use_default_config: bool = False) -> None:
+        filters: list[AnkiMorphsConfigFilter]
+
+        if use_default_config:
+            filters = self._default_config.filters
+        else:
+            filters = self._config.filters
+
+        self._setup_note_filters_table(filters)
 
     def setup_buttons(self) -> None:
         self.ui.addNewRowPushButton.setAutoDefault(False)
@@ -168,11 +185,11 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
                 return
 
         self._setup_note_filters_table(self._default_config.filters)
-        self.notify_observers()
+        self.notify_subscribers()
 
     def restore_to_config_state(self) -> None:
-        # todo...
-        pass
+        self.populate()
+        self.notify_subscribers()
 
     def get_filters(self) -> list[FilterTypeAlias]:
         filters: list[FilterTypeAlias] = []
@@ -214,20 +231,28 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
             note_type_name: str = note_type_cbox.itemText(note_type_cbox.currentIndex())
 
             _filter: FilterTypeAlias = {
-                "note_type": note_type_name,
-                "tags": json.loads(tags_widget.text()),
-                "field": field_cbox.itemText(field_cbox.currentIndex()),
-                "morphemizer_description": morphemizer_widget.itemText(
+                RawConfigFilterKeys.NOTE_TYPE: note_type_name,
+                RawConfigFilterKeys.TAGS: json.loads(tags_widget.text()),
+                RawConfigFilterKeys.FIELD: field_cbox.itemText(
+                    field_cbox.currentIndex()
+                ),
+                RawConfigFilterKeys.MORPHEMIZER_DESCRIPTION: morphemizer_widget.itemText(
                     morphemizer_widget.currentIndex()
                 ),
-                "morph_priority": morph_priority_widget.itemText(
+                RawConfigFilterKeys.MORPH_PRIORITY: morph_priority_widget.itemText(
                     morph_priority_widget.currentIndex()
                 ),
-                "read": read_widget.isChecked(),
-                "modify": modify_widget.isChecked(),
+                RawConfigFilterKeys.READ: read_widget.isChecked(),
+                RawConfigFilterKeys.MODIFY: modify_widget.isChecked(),
             }
             filters.append(_filter)
         return filters
+
+    def _get_settings_dict_with_filters(self) -> dict[str, str | int | bool | object]:
+        settings_dict_with_filters: dict[str, str | int | bool | object] = {
+            RawConfigKeys.FILTERS: self.get_filters()
+        }
+        return settings_dict_with_filters
 
     def _add_new_row(self) -> None:
         print("add new row")
@@ -246,7 +271,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         if confirmed:
             selected_row = self.ui.note_filters_table.currentRow()
             self.ui.note_filters_table.removeRow(selected_row)
-            self.notify_observers()
+            self.notify_subscribers()
 
     def _set_note_filters_table_row(
         self, row: int, config_filter: AnkiMorphsConfigFilter
@@ -262,7 +287,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         note_type_cbox.currentIndexChanged.connect(
             partial(self._update_fields_cbox, field_cbox, note_type_cbox)
         )
-        note_type_cbox.currentIndexChanged.connect(self.notify_observers)
+        note_type_cbox.currentIndexChanged.connect(self.notify_subscribers)
 
         morphemizer_cbox = self._setup_morphemizer_cbox(config_filter)
         morph_priority_cbox = self._setup_morph_priority_cbox(config_filter)
@@ -422,3 +447,29 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
 
     def get_confirmation_text(self) -> str:
         return "Are you sure you want to restore default note filter settings?\n\nNote: This will also unselect the respective extra fields!"
+
+    def settings_to_dict(self) -> dict[str, str | int | bool | object]:
+        return {}
+
+    def get_data(self) -> Any:
+        return self.get_filters()
+
+    def update_previous_state(self) -> None:
+        self._previous_config_filters = self._get_settings_dict_with_filters()
+
+    def contains_unsaved_changes(self) -> bool:
+        assert self._previous_config_filters is not None
+
+        current_state = self._get_settings_dict_with_filters()
+        print("current_state")
+        pprint.pp(current_state)
+
+        print("_initial_state")
+        pprint.pp(self._previous_config_filters)
+
+        if current_state != self._previous_config_filters:
+            print("NOT the same")
+            return True
+
+        print("the same")
+        return False
