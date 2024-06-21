@@ -36,7 +36,49 @@ class ShortcutTab(SettingsTab):
 
     def setup_buttons(self) -> None:
         self.ui.restoreShortcutsPushButton.setAutoDefault(False)
+        self.ui.shortcutRecalcDisablePushButton.setAutoDefault(False)
+        self.ui.shortcutSettingsDisablePushButton.setAutoDefault(False)
+        self.ui.shortcutKnownAndSkipDisablePushButton.setAutoDefault(False)
+        self.ui.shortcutLearnNowDisablePushButton.setAutoDefault(False)
+        self.ui.shortcutViewMorphsDisablePushButton.setAutoDefault(False)
+        self.ui.shortcutGeneratorsDisablePushButton.setAutoDefault(False)
+        self.ui.shortcutKnownMorphsExporterDisablePushButton.setAutoDefault(False)
+        self.ui.shortcutBrowseReadyDisablePushButton.setAutoDefault(False)
+        self.ui.shortcutBrowseAllDisablePushButton.setAutoDefault(False)
+        self.ui.shortcutBrowseReadyLemmaDisablePushButton.setAutoDefault(False)
+
         self.ui.restoreShortcutsPushButton.clicked.connect(self.restore_defaults)
+
+        self.ui.shortcutRecalcDisablePushButton.clicked.connect(
+            self.ui.shortcutRecalcKeySequenceEdit.clear
+        )
+        self.ui.shortcutSettingsDisablePushButton.clicked.connect(
+            self.ui.shortcutSettingsKeySequenceEdit.clear
+        )
+        self.ui.shortcutKnownAndSkipDisablePushButton.clicked.connect(
+            self.ui.shortcutKnownAndSkipKeySequenceEdit.clear
+        )
+        self.ui.shortcutLearnNowDisablePushButton.clicked.connect(
+            self.ui.shortcutLearnNowKeySequenceEdit.clear
+        )
+        self.ui.shortcutViewMorphsDisablePushButton.clicked.connect(
+            self.ui.shortcutViewMorphsKeySequenceEdit.clear
+        )
+        self.ui.shortcutGeneratorsDisablePushButton.clicked.connect(
+            self.ui.shortcutGeneratorsKeySequenceEdit.clear
+        )
+        self.ui.shortcutKnownMorphsExporterDisablePushButton.clicked.connect(
+            self.ui.shortcutKnownMorphsExporterKeySequenceEdit.clear
+        )
+        self.ui.shortcutBrowseReadyDisablePushButton.clicked.connect(
+            self.ui.shortcutBrowseReadyKeySequenceEdit.clear
+        )
+        self.ui.shortcutBrowseAllDisablePushButton.clicked.connect(
+            self.ui.shortcutBrowseAllKeySequenceEdit.clear
+        )
+        self.ui.shortcutBrowseReadyLemmaDisablePushButton.clicked.connect(
+            self.ui.shortcutBrowseReadyLemmaKeySequenceEdit.clear
+        )
 
     def get_confirmation_text(self) -> str:
         return "Are you sure you want to restore default shortcuts settings?"

@@ -228,6 +228,8 @@ def run_view_morphs() -> None:  # pylint:disable=too-many-locals
     assert mw is not None
     assert browser is not None
 
+    print("view morphemes")
+
     am_db = AnkiMorphsDB()
 
     for cid in browser.selectedCards():
