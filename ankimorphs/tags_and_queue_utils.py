@@ -5,6 +5,7 @@ from anki.consts import CardQueue
 from anki.notes import Note, NoteId
 from aqt import mw
 from aqt.operations import QueryOp
+from aqt.qt import QWidget  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
 from ankimorphs import progress_utils
@@ -73,15 +74,14 @@ def remove_exclusive_tags(note: Note, mutually_exclusive_tags: list[str]) -> Non
             note.tags.remove(tag)
 
 
-def reset_am_tags() -> None:
-    # todo: add tooltip parent
+def reset_am_tags(parent: QWidget) -> None:
     assert mw is not None
 
     # lambda is used to ignore the irrelevant arguments given by QueryOp
     operation = QueryOp(
-        parent=mw,
+        parent=parent,
         op=lambda _: _reset_am_tags_background_op(),
-        success=lambda _: tooltip(msg="Successfully removed tags"),
+        success=lambda _: tooltip(msg="Successfully removed tags", parent=parent),
     )
     operation.with_progress().run_in_background()
 

@@ -408,7 +408,7 @@ def reset_am_tags() -> None:
     )
     want_reset = message_box_utils.show_warning_box(title, body, parent=mw)
     if want_reset:
-        tags_and_queue_utils.reset_am_tags()
+        tags_and_queue_utils.reset_am_tags(parent=mw)
 
 
 def create_am_tool_menu() -> QMenu:

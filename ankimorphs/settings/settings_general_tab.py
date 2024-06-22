@@ -7,6 +7,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
     QSpinBox,
 )
 
+from .. import message_box_utils, tags_and_queue_utils
 from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_tab import SettingsTab
@@ -36,6 +37,8 @@ class GeneralTab(SettingsTab):
             RawConfigKeys.RECALC_INTERVAL_FOR_KNOWN: self.ui.recalcIntervalSpinBox,
         }
 
+        self.previous_priority_selection: QRadioButton | None = None
+
         self.populate()
         self.setup_buttons()
         self.update_previous_state()
@@ -43,6 +46,42 @@ class GeneralTab(SettingsTab):
     def setup_buttons(self) -> None:
         self.ui.restoreGeneralPushButton.setAutoDefault(False)
         self.ui.restoreGeneralPushButton.clicked.connect(self.restore_defaults)
+
+        self.ui.priorityLemmaRadioButton.toggled.connect(
+            self.on_priority_radio_button_toggled
+        )
+        self.ui.priorityInflectionRadioButton.toggled.connect(
+            self.on_priority_radio_button_toggled
+        )
+
+    def on_priority_radio_button_toggled(self) -> None:
+        if (
+            self.ui.priorityInflectionRadioButton.isChecked()
+            and self.previous_priority_selection == self.ui.priorityLemmaRadioButton
+        ):
+            self._reset_am_tags()
+
+        if self.ui.priorityLemmaRadioButton.isChecked():
+            self.previous_priority_selection = self.ui.priorityLemmaRadioButton
+        elif self.ui.priorityInflectionRadioButton.isChecked():
+            self.previous_priority_selection = self.ui.priorityInflectionRadioButton
+
+    def _reset_am_tags(self) -> None:
+        title = "Reset Tags?"
+        body = (
+            "Changing the morph evaluation from 'lemma' to 'inflection' will likely make some previous"
+            " AnkiMorphs tags misleading, and removing them is recommended.\n\n"
+            "Do you want the following tags to be removed from your cards right now?\n\n"
+            "- am-known-automatically\n\n"
+            "- am-ready\n\n"
+            "- am-not-ready\n\n"
+            "- am-fresh-morphs\n\n"
+        )
+        want_reset = message_box_utils.show_warning_box(
+            title, body, parent=self._parent
+        )
+        if want_reset:
+            tags_and_queue_utils.reset_am_tags(parent=self._parent)
 
     def get_confirmation_text(self) -> str:
         return "Are you sure you want to restore default general settings?"
