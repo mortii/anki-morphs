@@ -1,5 +1,4 @@
 from aqt.qt import QMessageBox, Qt, QWidget  # pylint:disable=no-name-in-module
-from aqt.utils import tooltip
 
 
 def show_warning_box(title: str, body: str, parent: QWidget) -> bool:
@@ -44,12 +43,8 @@ def confirm_new_extra_fields_selection(parent: QWidget) -> bool:
 
 
 # todo: rename
-def warning_dialog(
-    title: str, text: str, parent: QWidget, display_tooltip: bool = True
-) -> bool:
+def warning_dialog(title: str, text: str, parent: QWidget) -> bool:
     answer = show_warning_box(title, text, parent=parent)
     if answer is True:
-        if display_tooltip:
-            tooltip("Remember to save!", parent=parent)
         return True
     return False

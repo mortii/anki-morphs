@@ -140,12 +140,14 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.cancelPushButton.setAutoDefault(False)
         self.ui.restoreAllDefaultsPushButton.setAutoDefault(False)
 
-        self.ui.okPushButton.clicked.connect(self._save_and_close)
-        self.ui.applyPushButton.clicked.connect(self._save_to_config)
+        self.ui.okPushButton.clicked.connect(
+            lambda: self._save(close_window=True, tooltip_mw=True)
+        )
+        self.ui.applyPushButton.clicked.connect(self._save)
         self.ui.cancelPushButton.clicked.connect(self._discard_and_close)
         self.ui.restoreAllDefaultsPushButton.clicked.connect(self._restore_all_defaults)
 
-    def _save_to_config(
+    def _update_config(
         self, show_tooltip: bool = True, tooltip_mw: bool = False
     ) -> None:
         assert mw is not None
@@ -173,10 +175,11 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
                 "Please recalc to avoid unexpected behaviour", parent=tooltip_parent
             )
 
-    def _save_and_close(self) -> None:
+    def _save(self, close_window: bool = False, tooltip_mw: bool = False) -> None:
         show_tooltip = bool(self._tabs_have_unsaved_changes())
-        self._save_to_config(show_tooltip=show_tooltip, tooltip_mw=True)
-        self.close()
+        self._update_config(show_tooltip=show_tooltip, tooltip_mw=tooltip_mw)
+        if close_window:
+            self.close()
 
     def _tabs_have_unsaved_changes(self) -> bool:
         for _tab in self._all_tabs:
