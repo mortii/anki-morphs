@@ -91,9 +91,13 @@ def main() -> None:
 
 
 def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
-    # Adds the 'U: A:' and 'Recalc' to the toolbar
+    # Adds the 'L: I:' and 'Recalc' to the toolbar
 
     morph_toolbar_stats = MorphToolbarStats()
+
+    known_morphs_tooltip_message = (
+        "L = Known Morph Lemmas<br>I = Known Morph Inflections"
+    )
 
     links.append(
         toolbar.create_link(
@@ -106,20 +110,20 @@ def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
     )
     links.append(
         toolbar.create_link(
-            cmd="unique_morphs",
-            label=morph_toolbar_stats.unique_morphs,
-            func=lambda: tooltip("U = Known Unique Morphs<br>A = All Known Morphs"),
-            tip="U = Known Unique Morphs",
-            id="unique_morphs",
+            cmd="known_lemmas",
+            label=morph_toolbar_stats.lemmas,
+            func=lambda: tooltip(known_morphs_tooltip_message),
+            tip="L = Known Morph Lemmas",
+            id="known_lemmas",
         )
     )
     links.append(
         toolbar.create_link(
-            cmd="all_morphs",
-            label=morph_toolbar_stats.all_morphs,
-            func=lambda: tooltip("U = Known Unique Morphs<br>A = All Known Morphs"),
-            tip="A = All Known Morphs",
-            id="all_morphs",
+            cmd="known_inflections",
+            label=morph_toolbar_stats.inflections,
+            func=lambda: tooltip(known_morphs_tooltip_message),
+            tip="I = Known Morph Inflections",
+            id="known_inflections",
         )
     )
 

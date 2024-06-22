@@ -5,7 +5,7 @@ from typing import Any, Callable
 
 import aqt
 from aqt import mw
-from aqt.qt import QDialog  # pylint:disable=no-name-in-module
+from aqt.qt import QDialog, QWidget  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
 from .. import ankimorphs_config, ankimorphs_globals, message_box_utils
@@ -138,7 +138,11 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.cancelPushButton.clicked.connect(self._discard_and_close)
         self.ui.restoreAllDefaultsPushButton.clicked.connect(self._restore_all_defaults)
 
-    def _save_to_config(self, tooltip_mw: bool = False) -> None:
+    def _save_to_config(
+        self, show_tooltip: bool = True, tooltip_mw: bool = False
+    ) -> None:
+        assert mw is not None
+
         new_config: dict[str, str | int | bool | object] = {}
         for _tab in self._all_tabs:
             new_config.update(_tab.settings_to_dict())
@@ -152,14 +156,26 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         for _tab in self._all_tabs:
             _tab.update_previous_state()
 
-        if tooltip_mw:
-            tooltip("Please recalc to avoid unexpected behaviour", parent=mw)
-        else:
-            tooltip("Please recalc to avoid unexpected behaviour", parent=self)
+        if show_tooltip:
+            tooltip_parent: QWidget
+            if tooltip_mw:
+                tooltip_parent = mw
+            else:
+                tooltip_parent = self
+            tooltip(
+                "Please recalc to avoid unexpected behaviour", parent=tooltip_parent
+            )
 
     def _save_and_close(self) -> None:
-        self._save_to_config(tooltip_mw=True)
+        show_tooltip = bool(self._tabs_have_unsaved_changes())
+        self._save_to_config(show_tooltip=show_tooltip, tooltip_mw=True)
         self.close()
+
+    def _tabs_have_unsaved_changes(self) -> bool:
+        for _tab in self._all_tabs:
+            if _tab.contains_unsaved_changes():
+                return True
+        return False
 
     def _discard_and_close(self) -> None:
         for _tab in self._all_tabs:
@@ -169,14 +185,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
     def closeEvent(self, event: Any) -> None:  # pylint:disable=invalid-name
         # overriding the QDialog close event function
 
-        has_unsaved_changes = False
-
-        for _tab in self._all_tabs:
-            if _tab.contains_unsaved_changes():
-                has_unsaved_changes = True
-                break
-
-        if has_unsaved_changes:
+        if self._tabs_have_unsaved_changes():
             title = "Unsaved changes"
             text = "You have unsaved changes.\n\nDo you want to discard them?"
             confirmed = message_box_utils.warning_dialog(title, text, parent=self)

@@ -6,8 +6,8 @@ from .ankimorphs_db import AnkiMorphsDB
 
 class MorphToolbarStats:
     def __init__(self) -> None:
-        self.unique_morphs = "U: ?"
-        self.all_morphs = "A: ?"
+        self.lemmas = "L: ?"
+        self.inflections = "I: ?"
         self.update_stats()
 
     def update_stats(self) -> None:
@@ -28,7 +28,7 @@ class MorphToolbarStats:
             learning_interval = am_config.recalc_interval_for_known
 
         try:
-            all_unique_morphs = am_db.con.execute(
+            known_lemmas = am_db.con.execute(
                 """
                 SELECT COUNT(DISTINCT lemma)
                 FROM Morphs
@@ -37,7 +37,7 @@ class MorphToolbarStats:
                 (learning_interval,),
             ).fetchone()[0]
 
-            all_morphs = am_db.con.execute(
+            known_inflections = am_db.con.execute(
                 """
                 SELECT COUNT(*)
                 FROM Morphs
@@ -50,5 +50,5 @@ class MorphToolbarStats:
             # database schema has changed
             return
 
-        self.unique_morphs = f"U: {all_unique_morphs}"
-        self.all_morphs = f"A: {all_morphs}"
+        self.lemmas = f"L: {known_lemmas}"
+        self.inflections = f"I: {known_inflections}"
