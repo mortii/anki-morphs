@@ -22,7 +22,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>7</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="tab">
         <attribute name="title">
@@ -453,6 +453,13 @@
                 </widget>
                </item>
                <item>
+                <widget class="QLabel" name="label_46">
+                 <property name="text">
+                  <string>Fresh morphs</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="QLabel" name="label_6">
                  <property name="text">
                   <string>Learn card now</string>
@@ -482,6 +489,9 @@
                </item>
                <item>
                 <widget class="QLineEdit" name="tagNotReadyLineEdit"/>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="tagfreshLineEdit"/>
                </item>
                <item>
                 <widget class="QLineEdit" name="tagLearnCardNowLineEdit"/>

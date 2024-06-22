@@ -33,7 +33,7 @@ from ankimorphs.exceptions import (
 )
 from ankimorphs.recalc import recalc_main
 
-# these gave to be placed here to avoid cyclical imports
+# these have to be placed here to avoid cyclical imports
 from anki.cards import Card  # isort:skip  pylint:disable=wrong-import-order
 from anki.models import (  # isort:skip pylint:disable=wrong-import-order
     ModelManager,
@@ -62,6 +62,8 @@ case_same_lemma_and_inflection_scores_params = FakeEnvironmentParams(
 ################################################################
 # Same as case 1, but at least one card of each lemma has been
 # studied, so here we check that all inflections are set to "known".
+# Since one card has recently been studied, it will also
+# serve as a test for the 'am-fresh-morphs' tag.
 # Database choice is arbitrary.
 ################################################################
 case_inflections_are_known_params = FakeEnvironmentParams(

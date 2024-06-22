@@ -99,6 +99,7 @@ class RawConfigKeys:
     RECALC_DUE_OFFSET = "recalc_due_offset"
     RECALC_NUMBER_OF_MORPHS_TO_OFFSET = "recalc_number_of_morphs_to_offset"
     RECALC_MOVE_KNOWN_NEW_CARDS_TO_THE_END = "recalc_move_known_new_cards_to_the_end"
+    TAG_FRESH = "tag_fresh"
     TAG_READY = "tag_ready"
     TAG_NOT_READY = "tag_not_ready"
     TAG_KNOWN_AUTOMATICALLY = "tag_known_automatically"
@@ -304,6 +305,9 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many
             )
             self.recalc_move_known_new_cards_to_the_end: bool = _get_bool_config(
                 RawConfigKeys.RECALC_MOVE_KNOWN_NEW_CARDS_TO_THE_END, is_default
+            )
+            self.tag_fresh: str = _get_string_config(
+                RawConfigKeys.TAG_FRESH, is_default
             )
             self.tag_ready: str = _get_string_config(
                 RawConfigKeys.TAG_READY, is_default

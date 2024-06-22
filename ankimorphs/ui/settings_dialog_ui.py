@@ -201,6 +201,9 @@ class Ui_SettingsDialog(object):
         self.label_3 = QtWidgets.QLabel(parent=self.tags_tab)
         self.label_3.setObjectName("label_3")
         self.verticalLayout_8.addWidget(self.label_3)
+        self.label_46 = QtWidgets.QLabel(parent=self.tags_tab)
+        self.label_46.setObjectName("label_46")
+        self.verticalLayout_8.addWidget(self.label_46)
         self.label_6 = QtWidgets.QLabel(parent=self.tags_tab)
         self.label_6.setObjectName("label_6")
         self.verticalLayout_8.addWidget(self.label_6)
@@ -219,6 +222,9 @@ class Ui_SettingsDialog(object):
         self.tagNotReadyLineEdit = QtWidgets.QLineEdit(parent=self.tags_tab)
         self.tagNotReadyLineEdit.setObjectName("tagNotReadyLineEdit")
         self.verticalLayout_7.addWidget(self.tagNotReadyLineEdit)
+        self.tagfreshLineEdit = QtWidgets.QLineEdit(parent=self.tags_tab)
+        self.tagfreshLineEdit.setObjectName("tagfreshLineEdit")
+        self.verticalLayout_7.addWidget(self.tagfreshLineEdit)
         self.tagLearnCardNowLineEdit = QtWidgets.QLineEdit(parent=self.tags_tab)
         self.tagLearnCardNowLineEdit.setObjectName("tagLearnCardNowLineEdit")
         self.verticalLayout_7.addWidget(self.tagLearnCardNowLineEdit)
@@ -779,7 +785,7 @@ class Ui_SettingsDialog(object):
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         self.retranslateUi(SettingsDialog)
-        self.tabWidget.setCurrentIndex(7)
+        self.tabWidget.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(SettingsDialog)
 
     def retranslateUi(self, SettingsDialog):
@@ -822,6 +828,7 @@ class Ui_SettingsDialog(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.extra_fields_tab), _translate("SettingsDialog", "Extra Fields"))
         self.label_2.setText(_translate("SettingsDialog", "One unknown morph"))
         self.label_3.setText(_translate("SettingsDialog", "Multiple unknown morphs"))
+        self.label_46.setText(_translate("SettingsDialog", "Fresh morphs"))
         self.label_6.setText(_translate("SettingsDialog", "Learn card now"))
         self.label_5.setText(_translate("SettingsDialog", "Set known and skip"))
         self.label_4.setText(_translate("SettingsDialog", "All morphs known"))

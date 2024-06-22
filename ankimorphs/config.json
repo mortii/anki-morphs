@@ -75,6 +75,7 @@
   "skip_only_known_morphs_cards": true,
   "skip_show_num_of_skipped_cards": true,
   "skip_unknown_morph_seen_today_cards": true,
+  "tag_fresh": "am-fresh-morphs",
   "tag_known_automatically": "am-known-automatically",
   "tag_known_manually": "am-known-manually",
   "tag_learn_card_now": "am-learn-card-now",

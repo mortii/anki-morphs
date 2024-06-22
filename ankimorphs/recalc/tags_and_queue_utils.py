@@ -32,6 +32,13 @@ def update_tags_and_queue(
         am_config.tag_known_automatically,
     ]
 
+    if has_learning_morphs:
+        if am_config.tag_fresh not in note.tags:
+            note.tags.append(am_config.tag_fresh)
+    else:
+        if am_config.tag_fresh in note.tags:
+            note.tags.remove(am_config.tag_fresh)
+
     if am_config.tag_known_manually in note.tags:
         remove_exclusive_tags(note, mutually_exclusive_tags)
     elif unknowns == 0:
