@@ -25,8 +25,6 @@ class GeneralTab(SettingsTab):
         self._raw_config_key_to_radio_button: dict[str, QRadioButton] = {
             RawConfigKeys.EVALUATE_MORPH_LEMMA: self.ui.priorityLemmaRadioButton,
             RawConfigKeys.EVALUATE_MORPH_INFLECTION: self.ui.priorityInflectionRadioButton,
-            RawConfigKeys.RECALC_TOOLBAR_STATS_USE_SEEN: self.ui.toolbarStatsUseSeenRadioButton,
-            RawConfigKeys.RECALC_TOOLBAR_STATS_USE_KNOWN: self.ui.toolbarStatsUseKnownRadioButton,
         }
 
         self._raw_config_key_to_check_box: dict[str, QCheckBox] = {

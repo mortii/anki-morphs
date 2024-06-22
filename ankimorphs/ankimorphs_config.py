@@ -153,6 +153,9 @@ class RawConfigKeys:
     ALGORITHM_LOWER_TARGET_LEARNING_MORPHS_COEFFICIENT_C = (
         "algorithm_lower_target_learning_morphs_coefficient_c"
     )
+    HIDE_RECALC_TOOLBAR = "hide_recalc_toolbar"
+    HIDE_LEMMA_TOOLBAR = "hide_lemma_toolbar"
+    HIDE_INFLECTION_TOOLBAR = "hide_inflection_toolbar"
 
 
 class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
@@ -409,6 +412,15 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many
                     RawConfigKeys.ALGORITHM_LOWER_TARGET_LEARNING_MORPHS_COEFFICIENT_C,
                     is_default,
                 )
+            )
+            self.hide_recalc_toolbar: bool = _get_bool_config(
+                RawConfigKeys.HIDE_RECALC_TOOLBAR, is_default
+            )
+            self.hide_lemma_toolbar: bool = _get_bool_config(
+                RawConfigKeys.HIDE_LEMMA_TOOLBAR, is_default
+            )
+            self.hide_inflection_toolbar: bool = _get_bool_config(
+                RawConfigKeys.HIDE_INFLECTION_TOOLBAR, is_default
             )
 
             self.filters: list[AnkiMorphsConfigFilter] = _get_filters_config(is_default)

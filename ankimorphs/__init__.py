@@ -94,38 +94,44 @@ def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
     # Adds the 'L: I:' and 'Recalc' to the toolbar
 
     morph_toolbar_stats = MorphToolbarStats()
+    am_config = AnkiMorphsConfig()
 
     known_morphs_tooltip_message = (
         "L = Known Morph Lemmas<br>I = Known Morph Inflections"
     )
 
-    links.append(
-        toolbar.create_link(
-            cmd="recalc_toolbar",
-            label="Recalc",
-            func=recalc_main.recalc,
-            tip="AnkiMorphs Recalc",
-            id="recalc_toolbar",
+    if am_config.hide_recalc_toolbar is False:
+        links.append(
+            toolbar.create_link(
+                cmd="recalc_toolbar",
+                label="Recalc",
+                func=recalc_main.recalc,
+                tip="AnkiMorphs Recalc",
+                id="recalc_toolbar",
+            )
         )
-    )
-    links.append(
-        toolbar.create_link(
-            cmd="known_lemmas",
-            label=morph_toolbar_stats.lemmas,
-            func=lambda: tooltip(known_morphs_tooltip_message),
-            tip="L = Known Morph Lemmas",
-            id="known_lemmas",
+
+    if am_config.hide_lemma_toolbar is False:
+        links.append(
+            toolbar.create_link(
+                cmd="known_lemmas",
+                label=morph_toolbar_stats.lemmas,
+                func=lambda: tooltip(known_morphs_tooltip_message),
+                tip="L = Known Morph Lemmas",
+                id="known_lemmas",
+            )
         )
-    )
-    links.append(
-        toolbar.create_link(
-            cmd="known_inflections",
-            label=morph_toolbar_stats.inflections,
-            func=lambda: tooltip(known_morphs_tooltip_message),
-            tip="I = Known Morph Inflections",
-            id="known_inflections",
+
+    if am_config.hide_inflection_toolbar is False:
+        links.append(
+            toolbar.create_link(
+                cmd="known_inflections",
+                label=morph_toolbar_stats.inflections,
+                func=lambda: tooltip(known_morphs_tooltip_message),
+                tip="I = Known Morph Inflections",
+                id="known_inflections",
+            )
         )
-    )
 
 
 def load_am_profile_configs() -> None:

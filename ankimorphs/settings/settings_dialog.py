@@ -20,6 +20,7 @@ from .settings_preprocess_tab import PreprocessTab
 from .settings_shortcuts_tab import ShortcutTab
 from .settings_tab import SettingsTab
 from .settings_tags_tab import TagsTab
+from .settings_toolbar_tab import ToolbarTab
 
 
 class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
@@ -61,14 +62,13 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             default_config=self._default_config,
         )
 
-        self._shortcut_tab = ShortcutTab(
+        self._tags_tab = TagsTab(
             parent=self,
             ui=self.ui,
             config=self._config,
             default_config=self._default_config,
         )
-
-        self._algorithm_tab = AlgorithmTab(
+        self._preprocess_tab = PreprocessTab(
             parent=self,
             ui=self.ui,
             config=self._config,
@@ -82,14 +82,20 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             default_config=self._default_config,
         )
 
-        self._preprocess_tab = PreprocessTab(
+        self._algorithm_tab = AlgorithmTab(
+            parent=self,
+            ui=self.ui,
+            config=self._config,
+            default_config=self._default_config,
+        )
+        self._toolbar_tab = ToolbarTab(
             parent=self,
             ui=self.ui,
             config=self._config,
             default_config=self._default_config,
         )
 
-        self._tags_tab = TagsTab(
+        self._shortcut_tab = ShortcutTab(
             parent=self,
             ui=self.ui,
             config=self._config,
@@ -101,13 +107,14 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
         self._all_tabs: list[SettingsTab] = [
             self._general_tab,
-            self._extra_fields_tab,
             self._note_filters_tab,
-            self._shortcut_tab,
-            self._algorithm_tab,
-            self._card_handling_tab,
-            self._preprocess_tab,
+            self._extra_fields_tab,
             self._tags_tab,
+            self._preprocess_tab,
+            self._card_handling_tab,
+            self._algorithm_tab,
+            self._toolbar_tab,
+            self._shortcut_tab,
         ]
 
         self._setup_buttons()
