@@ -47,21 +47,18 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             config=self._config,
             default_config=self._default_config,
         )
-
         self._note_filters_tab = NoteFiltersTab(
             parent=self,
             ui=self.ui,
             config=self._config,
             default_config=self._default_config,
         )
-
         self._extra_fields_tab = ExtraFieldsTab(
             parent=self,
             ui=self.ui,
             config=self._config,
             default_config=self._default_config,
         )
-
         self._tags_tab = TagsTab(
             parent=self,
             ui=self.ui,
@@ -74,14 +71,12 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             config=self._config,
             default_config=self._default_config,
         )
-
         self._card_handling_tab = CardHandlingTab(
             parent=self,
             ui=self.ui,
             config=self._config,
             default_config=self._default_config,
         )
-
         self._algorithm_tab = AlgorithmTab(
             parent=self,
             ui=self.ui,
@@ -94,7 +89,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             config=self._config,
             default_config=self._default_config,
         )
-
         self._shortcut_tab = ShortcutTab(
             parent=self,
             ui=self.ui,

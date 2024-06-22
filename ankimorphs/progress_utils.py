@@ -6,11 +6,11 @@ from ankimorphs.exceptions import CancelledOperationException
 
 
 def background_update_progress_potentially_cancel(
-    label: str, counter: int, max_value: int
+    label: str, counter: int, max_value: int, increment: int = 1000
 ) -> None:
     assert mw is not None
 
-    if counter % 1000 == 0:
+    if counter % increment == 0:
         if mw.progress.want_cancel():  # user clicked 'x'
             raise CancelledOperationException
 

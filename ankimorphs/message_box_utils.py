@@ -1,7 +1,9 @@
 from aqt.qt import QMessageBox, Qt, QWidget  # pylint:disable=no-name-in-module
 
 
-def show_warning_box(title: str, body: str, parent: QWidget) -> bool:
+def show_warning_box(
+    title: str, body: str, parent: QWidget, use_markdown: bool = True
+) -> bool:
     """
     Returns 'True' if user clicked 'Ok' button
     Returns 'False' otherwise.
@@ -13,7 +15,11 @@ def show_warning_box(title: str, body: str, parent: QWidget) -> bool:
         QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
     )
     warning_box.setText(body)
-    warning_box.setTextFormat(Qt.TextFormat.MarkdownText)
+    if use_markdown:
+        warning_box.setTextFormat(Qt.TextFormat.MarkdownText)
+    else:
+        warning_box.setTextFormat(Qt.TextFormat.RichText)
+
     answer: int = warning_box.exec()
     if answer == QMessageBox.StandardButton.Yes:
         return True

@@ -1,8 +1,14 @@
+from collections.abc import Sequence
+
 from anki.cards import Card
 from anki.consts import CardQueue
-from anki.notes import Note
+from anki.notes import Note, NoteId
+from aqt import mw
+from aqt.operations import QueryOp
+from aqt.utils import tooltip
 
-from ..ankimorphs_config import AnkiMorphsConfig
+from ankimorphs import progress_utils
+from ankimorphs.ankimorphs_config import AnkiMorphsConfig
 
 
 def update_tags_and_queue(
@@ -65,3 +71,46 @@ def remove_exclusive_tags(note: Note, mutually_exclusive_tags: list[str]) -> Non
     for tag in mutually_exclusive_tags:
         if tag in note.tags:
             note.tags.remove(tag)
+
+
+def reset_am_tags() -> None:
+    # todo: add tooltip parent
+    assert mw is not None
+
+    # lambda is used to ignore the irrelevant arguments given by QueryOp
+    operation = QueryOp(
+        parent=mw,
+        op=lambda _: _reset_am_tags_background_op(),
+        success=lambda _: tooltip(msg="Successfully removed tags"),
+    )
+    operation.with_progress().run_in_background()
+
+
+def _reset_am_tags_background_op() -> None:
+    assert mw is not None
+
+    am_config = AnkiMorphsConfig()
+    modified_notes: dict[NoteId, Note] = {}
+
+    tags_to_remove = [
+        am_config.tag_known_automatically,
+        am_config.tag_ready,
+        am_config.tag_not_ready,
+        am_config.tag_fresh,
+    ]
+    for tag in tags_to_remove:
+        note_ids: Sequence[NoteId] = mw.col.find_notes(f"tag:{tag}")
+        note_amount = len(note_ids)
+
+        for counter, note_id in enumerate(note_ids):
+            progress_utils.background_update_progress_potentially_cancel(
+                label=f"Removing {tag} tag from notes<br>note: {counter} of {note_amount}",
+                counter=counter,
+                max_value=note_amount,
+                increment=100,
+            )
+            note: Note = modified_notes.get(note_id, mw.col.get_note(note_id))
+            note.tags.remove(tag)
+            modified_notes[note_id] = note
+
+    mw.col.update_notes(list(modified_notes.values()))

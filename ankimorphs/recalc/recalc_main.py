@@ -11,7 +11,13 @@ from aqt import mw
 from aqt.operations import QueryOp
 from aqt.utils import tooltip
 
-from .. import ankimorphs_config, ankimorphs_globals, message_box_utils, progress_utils
+from .. import (
+    ankimorphs_config,
+    ankimorphs_globals,
+    message_box_utils,
+    progress_utils,
+    tags_and_queue_utils,
+)
 from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from ..ankimorphs_db import AnkiMorphsDB
 from ..exceptions import (
@@ -25,7 +31,7 @@ from ..exceptions import (
 )
 from ..morpheme import Morpheme
 from ..morphemizers import morphemizer as morphemizer_module
-from . import caching, extra_field_utils, tags_and_queue_utils
+from . import caching, extra_field_utils
 from .anki_data_utils import AnkiMorphsCardData
 from .card_morphs_metrics import CardMorphsMetrics
 from .card_score import _DEFAULT_SCORE, CardScore

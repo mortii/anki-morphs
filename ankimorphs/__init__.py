@@ -39,8 +39,10 @@ from . import (
     ankimorphs_config,
     ankimorphs_globals,
     browser_utils,
+    message_box_utils,
     name_file_utils,
     reviewing_utils,
+    tags_and_queue_utils,
     toolbar_stats,
 )
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
@@ -221,6 +223,7 @@ def init_tool_menu_and_actions() -> None:
     recalc_action = create_recalc_action(am_config)
     generators_action = create_generators_dialog_action(am_config)
     known_morphs_exporter_action = create_known_morphs_exporter_action(am_config)
+    reset_tags_action = create_tag_reset_action()
     guide_action = create_guide_action()
     changelog_action = create_changelog_action()
 
@@ -229,6 +232,7 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu.addAction(recalc_action)
     am_tool_menu.addAction(generators_action)
     am_tool_menu.addAction(known_morphs_exporter_action)
+    am_tool_menu.addAction(reset_tags_action)
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
 
@@ -388,9 +392,23 @@ def rebuild_seen_morphs(changes: OpChangesAfterUndo) -> None:
 
 def clean_profile_session() -> None:
     global _updated_seen_morphs_for_profile
-
     _updated_seen_morphs_for_profile = False
     AnkiMorphsDB.drop_seen_morphs_table()
+
+
+def reset_am_tags() -> None:
+    assert mw is not None
+    title = "Reset Tags?"
+    body = (
+        'Clicking "Yes" will remove the following tags from all cards:\n\n'
+        "- am-known-automatically\n\n"
+        "- am-ready\n\n"
+        "- am-not-ready\n\n"
+        "- am-fresh-morphs\n\n"
+    )
+    want_reset = message_box_utils.show_warning_box(title, body, parent=mw)
+    if want_reset:
+        tags_and_queue_utils.reset_am_tags()
 
 
 def create_am_tool_menu() -> QMenu:
@@ -415,6 +433,12 @@ def create_settings_action(am_config: AnkiMorphsConfig) -> QAction:
     action.triggered.connect(
         partial(aqt.dialogs.open, name=ankimorphs_globals.SETTINGS_DIALOG_NAME)
     )
+    return action
+
+
+def create_tag_reset_action() -> QAction:
+    action = QAction("&Reset Tags", mw)
+    action.triggered.connect(reset_am_tags)
     return action
 
 
