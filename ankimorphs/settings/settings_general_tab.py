@@ -7,7 +7,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
     QSpinBox,
 )
 
-from .. import message_box_utils, tags_and_queue_utils
+from .. import tags_and_queue_utils
 from ..ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_tab import SettingsTab
@@ -59,29 +59,14 @@ class GeneralTab(SettingsTab):
             self.ui.priorityInflectionRadioButton.isChecked()
             and self.previous_priority_selection == self.ui.priorityLemmaRadioButton
         ):
-            self._reset_am_tags()
+            reason_to_reset = "morph evaluation from 'lemma' to 'inflection'"
+            if self._want_to_reset_am_tags(reason_to_reset):
+                tags_and_queue_utils.reset_am_tags(parent=self._parent)
 
         if self.ui.priorityLemmaRadioButton.isChecked():
             self.previous_priority_selection = self.ui.priorityLemmaRadioButton
         elif self.ui.priorityInflectionRadioButton.isChecked():
             self.previous_priority_selection = self.ui.priorityInflectionRadioButton
-
-    def _reset_am_tags(self) -> None:
-        title = "Reset Tags?"
-        body = (
-            "Changing the morph evaluation from 'lemma' to 'inflection' will likely make some previous"
-            " AnkiMorphs tags misleading, and removing them is recommended.\n\n"
-            "Do you want the following tags to be removed from your cards right now?\n\n"
-            "- am-known-automatically\n\n"
-            "- am-ready\n\n"
-            "- am-not-ready\n\n"
-            "- am-fresh-morphs\n\n"
-        )
-        want_reset = message_box_utils.show_warning_box(
-            title, body, parent=self._parent
-        )
-        if want_reset:
-            tags_and_queue_utils.reset_am_tags(parent=self._parent)
 
     def get_confirmation_text(self) -> str:
         return "Are you sure you want to restore default general settings?"

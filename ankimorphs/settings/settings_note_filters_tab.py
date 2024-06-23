@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import pprint
 from collections.abc import Sequence
-from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +19,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from .. import ankimorphs_globals, message_box_utils, table_utils
+from .. import ankimorphs_globals, message_box_utils, table_utils, tags_and_queue_utils
 from ..ankimorphs_config import (
     AnkiMorphsConfig,
     AnkiMorphsConfigFilter,
@@ -265,7 +264,10 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
 
     def _delete_row(self) -> None:
         title = "Confirmation"
-        text = "Are you sure you want to delete the selected row?\n\nNote: This will also unselect the respective extra fields!"
+        text = (
+            "Are you sure you want to delete the selected row?\n\n"
+            "Note: This will also unselect the respective extra fields!"
+        )
         confirmed = message_box_utils.warning_dialog(title, text, parent=self._parent)
 
         if confirmed:
@@ -282,14 +284,30 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         note_type_cbox = self._setup_note_type_cbox(config_filter)
         selected_note_type: str = note_type_cbox.itemText(note_type_cbox.currentIndex())
         field_cbox = self._setup_fields_cbox(config_filter, selected_note_type)
+        field_cbox.currentIndexChanged.connect(
+            lambda index: self._potentially_reset_tags(
+                new_index=index,
+                combo_box=field_cbox,
+                reason_for_reset="field",
+            )
+        )
 
         # Fields are dependent on note-type
         note_type_cbox.currentIndexChanged.connect(
-            partial(self._update_fields_cbox, field_cbox, note_type_cbox)
+            lambda index: self._update_fields_cbox(field_cbox, note_type_cbox)
         )
         note_type_cbox.currentIndexChanged.connect(self.notify_subscribers)
 
         morphemizer_cbox = self._setup_morphemizer_cbox(config_filter)
+        morphemizer_cbox.setProperty("previousIndex", morphemizer_cbox.currentIndex())
+        morphemizer_cbox.currentIndexChanged.connect(
+            lambda index: self._potentially_reset_tags(
+                new_index=index,
+                combo_box=morphemizer_cbox,
+                reason_for_reset="morphemizer",
+            )
+        )
+
         morph_priority_cbox = self._setup_morph_priority_cbox(config_filter)
 
         read_checkbox = QCheckBox()
@@ -323,6 +341,20 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         self.ui.note_filters_table.setCellWidget(
             row, self._note_filter_modify_column, modify_checkbox
         )
+
+    def _potentially_reset_tags(
+        self, new_index: int, combo_box: QComboBox, reason_for_reset: str
+    ) -> None:
+        if new_index == 0:
+            # we can ignore the "(none)" selection
+            return
+
+        previous_index = combo_box.property("previousIndex")
+        if previous_index != 0:
+            if self._want_to_reset_am_tags(reason_for_reset):
+                tags_and_queue_utils.reset_am_tags(parent=self._parent)
+
+        combo_box.setProperty("previousIndex", new_index)
 
     def _setup_note_type_cbox(self, config_filter: AnkiMorphsConfigFilter) -> QComboBox:
         note_type_cbox = QComboBox(self.ui.note_filters_table)
@@ -422,8 +454,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         field_cbox.setCurrentIndex(0)
 
     def _tags_cell_clicked(self, row: int, column: int) -> None:
-        if column != 1:
-            # tags cells are in column 1
+        if column != self._note_filter_tags_column:
             return
 
         tags_widget: QTableWidgetItem = table_utils.get_table_item(
@@ -446,7 +477,10 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         tooltip("Remember to save!", parent=self._parent)
 
     def get_confirmation_text(self) -> str:
-        return "Are you sure you want to restore default note filter settings?\n\nNote: This will also unselect the respective extra fields!"
+        return (
+            "Are you sure you want to restore default note filter settings?\n\n"
+            "Note: This will also unselect the respective extra fields!"
+        )
 
     def settings_to_dict(self) -> dict[str, str | int | bool | object]:
         return {}

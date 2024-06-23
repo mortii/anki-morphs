@@ -398,13 +398,16 @@ def clean_profile_session() -> None:
 
 def reset_am_tags() -> None:
     assert mw is not None
+
+    am_config = AnkiMorphsConfig()
+
     title = "Reset Tags?"
     body = (
         'Clicking "Yes" will remove the following tags from all cards:\n\n'
-        "- am-known-automatically\n\n"
-        "- am-ready\n\n"
-        "- am-not-ready\n\n"
-        "- am-fresh-morphs\n\n"
+        f"- {am_config.tag_known_automatically}\n\n"
+        f"- {am_config.tag_ready}\n\n"
+        f"- {am_config.tag_not_ready}\n\n"
+        f"- {am_config.tag_fresh}\n\n"
     )
     want_reset = message_box_utils.show_warning_box(title, body, parent=mw)
     if want_reset:

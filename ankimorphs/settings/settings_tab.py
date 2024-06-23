@@ -52,6 +52,25 @@ class SettingsTab(ABC):  # pylint:disable=too-many-instance-attributes
     def get_confirmation_text(self) -> str:
         raise NotImplementedError
 
+    def _want_to_reset_am_tags(self, reason_for_reset: str) -> bool:
+        title = "Reset Tags?"
+        body = (
+            f"Switching the {reason_for_reset} may cause some existing"
+            " AnkiMorphs tags to become misleading, and removing them is therefore recommended.\n\n"
+            "Would you like AnkiMorphs to remove the following tags from your cards now?\n\n"
+            + f"- {self._config.tag_known_automatically}\n\n"
+            f"- {self._config.tag_ready}\n\n"
+            f"- {self._config.tag_not_ready}\n\n"
+            f"- {self._config.tag_fresh}\n\n\n\n"
+            "&nbsp;\n\n"
+            "(Note: You can run this removal process at any time by navigating to: "
+            "Tools -> AnkiMorphs -> Reset Tags)"
+        )
+        want_reset: bool = message_box_utils.show_warning_box(
+            title, body, parent=self._parent
+        )
+        return want_reset
+
     def populate(self, use_default_config: bool = False) -> None:
         source_object: AnkiMorphsConfig = self._config
 
