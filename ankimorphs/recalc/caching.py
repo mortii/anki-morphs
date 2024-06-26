@@ -129,7 +129,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
             card_data: AnkiCardData = cards_data_dict[card_id]
 
             if card_data.automatically_known_tag or card_data.manually_known_tag:
-                highest_interval = am_config.recalc_interval_for_known
+                highest_interval = am_config.interval_for_known_morphs
             elif card_data.type == 1:  # 1: learning
                 # cards in the 'learning' state have an interval of zero, but we don't
                 # want to treat them as 'unknown', so we change the value manually.
@@ -169,7 +169,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
                 )
 
     morphs_from_files: list[dict[str, Any]] = []
-    if am_config.recalc_read_known_morphs_folder is True:
+    if am_config.read_known_morphs_folder is True:
         progress_utils.background_update_progress(label="Importing known morphs")
         morphs_from_files = _get_morphs_from_files(am_config)
 
@@ -218,7 +218,7 @@ def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:
                     {
                         "lemma": lemma,
                         "inflection": inflection,
-                        "highest_learning_interval": am_config.recalc_interval_for_known,
+                        "highest_learning_interval": am_config.interval_for_known_morphs,
                     }
                 )
 

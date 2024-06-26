@@ -24,8 +24,8 @@ class MorphToolbarStats:
         am_config = AnkiMorphsConfig()
         learning_interval: int = 1  # seen morphs
 
-        if am_config.recalc_toolbar_stats_use_known:
-            learning_interval = am_config.recalc_interval_for_known
+        if am_config.toolbar_stats_use_known:
+            learning_interval = am_config.interval_for_known_morphs
 
         try:
             known_lemmas = am_db.con.execute(

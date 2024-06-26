@@ -186,7 +186,7 @@ def _extract_span_elements_and_filter_string(
             morph_status = "unknown"
         elif (
             morph.highest_inflection_learning_interval
-            < am_config.recalc_interval_for_known
+            < am_config.interval_for_known_morphs
         ):
             morph_status = "learning"
         else:

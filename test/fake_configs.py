@@ -23,8 +23,7 @@ default_config_dict["filters"][0]["extra_unknowns"] = True
 default_config_dict["filters"][0]["extra_unknowns_count"] = True
 default_config_dict["filters"][0]["extra_score_terms"] = True
 default_config_dict["filters"][0]["field_index"] = 0
-default_config_dict["filters"][0]["morph_priority"] = "Collection frequency"
-default_config_dict["filters"][0]["morph_priority_index"] = 0
+default_config_dict["filters"][0]["morph_priority_selection"] = "Collection frequency"
 
 
 # print("default config dict:")
@@ -81,7 +80,7 @@ config_offset_lemma_enabled["evaluate_morph_lemma"] = True
 ################################################################
 config_known_morphs_enabled = copy.deepcopy(default_config_dict)
 config_known_morphs_enabled["recalc_read_known_morphs_folder"] = True
-config_known_morphs_enabled["recalc_move_known_new_cards_to_the_end"] = False
+config_known_morphs_enabled["read_known_morphs_folder"] = False
 config_known_morphs_enabled["filters"][0]["note_type"] = "known-morphs-note-type"
 config_known_morphs_enabled["filters"][0]["field"] = "Front"
 config_known_morphs_enabled["filters"][0][
@@ -154,7 +153,9 @@ config_wrong_field_name["filters"][0]["field"] = "random_wrong_value"
 #
 ################################################################
 config_wrong_morph_priority = copy.deepcopy(config_ignore_names_txt_enabled)
-config_wrong_morph_priority["filters"][0]["morph_priority"] = "random_wrong_value"
+config_wrong_morph_priority["filters"][0][
+    "morph_priority_selection"
+] = "random_wrong_value"
 
 ################################################################
 #             config_wrong_morphemizer_description
@@ -198,7 +199,7 @@ config_default_field["filters"][0]["field"] = ankimorphs_globals.NONE_OPTION
 ################################################################
 config_default_morph_priority = copy.deepcopy(config_ignore_names_txt_enabled)
 config_default_morph_priority["filters"][0][
-    "morph_priority"
+    "morph_priority_selection"
 ] = ankimorphs_globals.NONE_OPTION
 
 

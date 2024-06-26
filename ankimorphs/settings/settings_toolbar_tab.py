@@ -19,8 +19,8 @@ class ToolbarTab(SettingsTab):
         super().__init__(parent, ui, config, default_config)
 
         self._raw_config_key_to_radio_button: dict[str, QRadioButton] = {
-            RawConfigKeys.RECALC_TOOLBAR_STATS_USE_SEEN: self.ui.toolbarStatsUseSeenRadioButton,
-            RawConfigKeys.RECALC_TOOLBAR_STATS_USE_KNOWN: self.ui.toolbarStatsUseKnownRadioButton,
+            RawConfigKeys.TOOLBAR_STATS_USE_SEEN: self.ui.toolbarStatsUseSeenRadioButton,
+            RawConfigKeys.TOOLBAR_STATS_USE_KNOWN: self.ui.toolbarStatsUseKnownRadioButton,
         }
 
         self._raw_config_key_to_check_box: dict[str, QCheckBox] = {

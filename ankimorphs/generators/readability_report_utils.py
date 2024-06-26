@@ -63,7 +63,7 @@ def get_morph_stats_from_file(
         if highest_learning_interval == 0:
             file_morphs_stats.total_unknowns += occurrence
             file_morphs_stats.unique_unknowns.add(morph)
-        elif highest_learning_interval < am_config.recalc_interval_for_known:
+        elif highest_learning_interval < am_config.interval_for_known_morphs:
             file_morphs_stats.total_learning += occurrence
             file_morphs_stats.unique_learning.add(morph)
         else:

@@ -30,11 +30,11 @@ class GeneralTab(SettingsTab):
 
         self._raw_config_key_to_check_box: dict[str, QCheckBox] = {
             RawConfigKeys.RECALC_ON_SYNC: self.ui.recalcBeforeSyncCheckBox,
-            RawConfigKeys.RECALC_READ_KNOWN_MORPHS_FOLDER: self.ui.recalcReadKnownMorphsFolderCheckBox,
+            RawConfigKeys.READ_KNOWN_MORPHS_FOLDER: self.ui.recalcReadKnownMorphsFolderCheckBox,
         }
 
         self._raw_config_key_to_spin_box: dict[str, QSpinBox] = {
-            RawConfigKeys.RECALC_INTERVAL_FOR_KNOWN: self.ui.recalcIntervalSpinBox,
+            RawConfigKeys.INTERVAL_FOR_KNOWN_MORPHS: self.ui.recalcIntervalSpinBox,
         }
 
         self.previous_priority_selection: QRadioButton | None = None

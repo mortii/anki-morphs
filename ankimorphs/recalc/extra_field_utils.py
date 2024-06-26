@@ -110,7 +110,7 @@ def update_unknowns_field(
 ) -> None:
     focus_morph_string: str
 
-    if am_config.recalc_unknowns_field_shows_inflections:
+    if am_config.unknowns_field_shows_inflections:
         focus_morph_string = "".join(f"{unknown.inflection}, " for unknown in unknowns)
     else:
         focus_morph_string = "".join(f"{unknown.lemma}, " for unknown in unknowns)

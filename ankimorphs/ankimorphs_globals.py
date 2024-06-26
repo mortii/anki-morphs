@@ -36,5 +36,6 @@ LEMMA_PRIORITY_HEADER = "Lemma-Priority"
 INFLECTION_PRIORITY_HEADER = "Inflection-Priority"
 OCCURRENCES_HEADER = "Occurrences"
 
-ankimorphs_config_broken: bool = False
-ankimorphs_new_config_found: bool = False
+config_broken: bool = False
+new_config_found: bool = False
+shown_config_warning: bool = False

@@ -640,7 +640,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             for row in card_morphs_raw:
                 key = row[0] + row[1]
                 interval = row[2]
-                if interval >= am_config.recalc_interval_for_known:
+                if interval >= am_config.interval_for_known_morphs:
                     learning_status = "known"
                 elif interval > 0:
                     learning_status = "learning"
