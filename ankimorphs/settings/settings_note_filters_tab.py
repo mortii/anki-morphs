@@ -87,6 +87,10 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
             None
         )
 
+        self._shown_reset_tags_note_type_warning: bool = False
+        self._shown_reset_tags_field_warning: bool = False
+        self._shown_reset_tags_morphemizer_warning: bool = False
+
         self.populate()
         self.setup_buttons()
         self.update_previous_state()
@@ -238,7 +242,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
                 RawConfigFilterKeys.MORPHEMIZER_DESCRIPTION: morphemizer_widget.itemText(
                     morphemizer_widget.currentIndex()
                 ),
-                RawConfigFilterKeys.MORPH_PRIORITY: morph_priority_widget.itemText(
+                RawConfigFilterKeys.MORPH_PRIORITY_SELECTION: morph_priority_widget.itemText(
                     morph_priority_widget.currentIndex()
                 ),
                 RawConfigFilterKeys.READ: read_widget.isChecked(),
@@ -282,10 +286,13 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         self.ui.note_filters_table.setRowHeight(row, 35)
 
         note_type_cbox = self._setup_note_type_cbox(config_filter)
+        note_type_cbox.setProperty("previousIndex", note_type_cbox.currentIndex())
         selected_note_type: str = note_type_cbox.itemText(note_type_cbox.currentIndex())
+
         field_cbox = self._setup_fields_cbox(config_filter, selected_note_type)
+        field_cbox.setProperty("previousIndex", field_cbox.currentIndex())
         field_cbox.currentIndexChanged.connect(
-            lambda index: self._potentially_reset_tags(
+            lambda index: self._potentially_reset_tags_field(
                 new_index=index,
                 combo_box=field_cbox,
                 reason_for_reset="field",
@@ -296,12 +303,19 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         note_type_cbox.currentIndexChanged.connect(
             lambda index: self._update_fields_cbox(field_cbox, note_type_cbox)
         )
+        note_type_cbox.currentIndexChanged.connect(
+            lambda index: self._potentially_reset_tags_note_type(
+                new_index=index,
+                combo_box=note_type_cbox,
+                reason_for_reset="note type",
+            )
+        )
         note_type_cbox.currentIndexChanged.connect(self.notify_subscribers)
 
         morphemizer_cbox = self._setup_morphemizer_cbox(config_filter)
         morphemizer_cbox.setProperty("previousIndex", morphemizer_cbox.currentIndex())
         morphemizer_cbox.currentIndexChanged.connect(
-            lambda index: self._potentially_reset_tags(
+            lambda index: self._potentially_reset_tags_morphemizer(
                 new_index=index,
                 combo_box=morphemizer_cbox,
                 reason_for_reset="morphemizer",
@@ -342,19 +356,66 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
             row, self._note_filter_modify_column, modify_checkbox
         )
 
-    def _potentially_reset_tags(
+    def _potentially_reset_tags_note_type(
         self, new_index: int, combo_box: QComboBox, reason_for_reset: str
     ) -> None:
+        if self._shown_reset_tags_note_type_warning is False:
+            did_show_warning: bool = self._potentially_reset_tags(
+                new_index=new_index,
+                combo_box=combo_box,
+                reason_for_reset=reason_for_reset,
+            )
+            if did_show_warning:
+                self._shown_reset_tags_note_type_warning = True
+
+    def _potentially_reset_tags_field(
+        self, new_index: int, combo_box: QComboBox, reason_for_reset: str
+    ) -> None:
+        if self._shown_reset_tags_field_warning is False:
+            did_show_warning: bool = self._potentially_reset_tags(
+                new_index=new_index,
+                combo_box=combo_box,
+                reason_for_reset=reason_for_reset,
+            )
+            if did_show_warning:
+                self._shown_reset_tags_field_warning = True
+
+    def _potentially_reset_tags_morphemizer(
+        self, new_index: int, combo_box: QComboBox, reason_for_reset: str
+    ) -> None:
+        if self._shown_reset_tags_morphemizer_warning is False:
+            did_show_warning: bool = self._potentially_reset_tags(
+                new_index=new_index,
+                combo_box=combo_box,
+                reason_for_reset=reason_for_reset,
+            )
+            if did_show_warning:
+                self._shown_reset_tags_morphemizer_warning = True
+
+    def _potentially_reset_tags(
+        self, new_index: int, combo_box: QComboBox, reason_for_reset: str
+    ) -> bool:
+        """
+        To prevent annoying the user, we only want to show the warning dialog once
+        per combobox, per setting.
+
+        Returns True if warning dialog was shown, otherwise returns False.
+        """
+
         if new_index == 0:
             # we can ignore the "(none)" selection
-            return
+            return False
 
         previous_index = combo_box.property("previousIndex")
+        print(f"previous_index: {previous_index}")
+        print(f"new_index: {new_index}")
         if previous_index != 0:
             if self._want_to_reset_am_tags(reason_for_reset):
                 tags_and_queue_utils.reset_am_tags(parent=self._parent)
+            return True
 
         combo_box.setProperty("previousIndex", new_index)
+        return False
 
     def _setup_note_type_cbox(self, config_filter: AnkiMorphsConfigFilter) -> QComboBox:
         note_type_cbox = QComboBox(self.ui.note_filters_table)
@@ -439,6 +500,8 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         """
         assert mw
 
+        field_cbox.blockSignals(True)  # prevent currentIndexChanged signals
+
         field_cbox.clear()
         note_type_fields: list[str] = [ankimorphs_globals.NONE_OPTION]
 
@@ -452,6 +515,8 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
 
         field_cbox.addItems(note_type_fields)
         field_cbox.setCurrentIndex(0)
+
+        field_cbox.blockSignals(False)  # prevent currentIndexChanged signals
 
     def _tags_cell_clicked(self, row: int, column: int) -> None:
         if column != self._note_filter_tags_column:
