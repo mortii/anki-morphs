@@ -19,6 +19,7 @@ TAG_SELECTOR_DIALOG_NAME: str = "am_tag_selector_dialog"
 GENERATOR_DIALOG_NAME: str = "am_generator_dialog"
 KNOWN_MORPHS_EXPORTER_DIALOG_NAME: str = "am_known_morphs_exporter_dialog"
 
+EXTRA_ALL_MORPHS: str = "am-all-morphs"
 EXTRA_FIELD_UNKNOWNS: str = "am-unknowns"
 EXTRA_FIELD_UNKNOWNS_COUNT: str = "am-unknowns-count"
 EXTRA_FIELD_HIGHLIGHTED: str = "am-highlighted"

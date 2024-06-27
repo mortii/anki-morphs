@@ -24,6 +24,7 @@
   "evaluate_morph_lemma": false,
   "filters": [
     {
+      "extra_all_morphs": false,
       "extra_highlighted": false,
       "extra_score": false,
       "extra_score_terms": false,

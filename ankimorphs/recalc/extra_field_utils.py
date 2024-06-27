@@ -25,28 +25,23 @@ def new_extra_fields_are_selected() -> bool:
 
         existing_field_names = model_manager.field_names(note_type_dict)
 
-        if config_filter.extra_unknowns:
-            if ankimorphs_globals.EXTRA_FIELD_UNKNOWNS not in existing_field_names:
-                return True
+        # fmt: off
+        extra_fields = [
+            (config_filter.extra_all_morphs, ankimorphs_globals.EXTRA_ALL_MORPHS),
+            (config_filter.extra_unknowns, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS),
+            (config_filter.extra_unknowns_count, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT),
+            (config_filter.extra_highlighted, ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED),
+            (config_filter.extra_score, ankimorphs_globals.EXTRA_FIELD_SCORE),
+            (config_filter.extra_score_terms, ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS),
+        ]
+        # fmt: on
 
-        if config_filter.extra_unknowns_count:
-            if (
-                ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT
-                not in existing_field_names
-            ):
-                return True
-
-        if config_filter.extra_highlighted:
-            if ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED not in existing_field_names:
-                return True
-
-        if config_filter.extra_score:
-            if ankimorphs_globals.EXTRA_FIELD_SCORE not in existing_field_names:
-                return True
-
-        if config_filter.extra_score_terms:
-            if ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS not in existing_field_names:
-                return True
+        if any(
+            field
+            for enabled, field in extra_fields
+            if enabled and field not in existing_field_names
+        ):
+            return True
 
     return False
 
@@ -59,47 +54,49 @@ def add_extra_fields_to_note_type(
     assert note_type_dict is not None
 
     existing_field_names = model_manager.field_names(note_type_dict)
-    new_field: FieldDict
 
-    if config_filter.extra_unknowns:
-        if ankimorphs_globals.EXTRA_FIELD_UNKNOWNS not in existing_field_names:
-            new_field = model_manager.new_field(ankimorphs_globals.EXTRA_FIELD_UNKNOWNS)
+    # fmt: off
+    extra_fields = [
+        (config_filter.extra_all_morphs, ankimorphs_globals.EXTRA_ALL_MORPHS),
+        (config_filter.extra_unknowns, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS),
+        (config_filter.extra_unknowns_count, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT),
+        (config_filter.extra_highlighted, ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED),
+        (config_filter.extra_score, ankimorphs_globals.EXTRA_FIELD_SCORE),
+        (config_filter.extra_score_terms, ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS),
+    ]
+    # fmt: on
+
+    for enabled, field in extra_fields:
+        if enabled and field not in existing_field_names:
+            new_field = model_manager.new_field(field)
             model_manager.add_field(note_type_dict, new_field)
             model_manager.update_dict(note_type_dict)
 
-    if config_filter.extra_unknowns_count:
-        if ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT not in existing_field_names:
-            new_field = model_manager.new_field(
-                ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT
-            )
-            model_manager.add_field(note_type_dict, new_field)
-            model_manager.update_dict(note_type_dict)
-
-    if config_filter.extra_highlighted:
-        if ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED not in existing_field_names:
-            new_field = model_manager.new_field(
-                ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED
-            )
-            model_manager.add_field(note_type_dict, new_field)
-            model_manager.update_dict(note_type_dict)
-
-    if config_filter.extra_score:
-        if ankimorphs_globals.EXTRA_FIELD_SCORE not in existing_field_names:
-            new_field = model_manager.new_field(ankimorphs_globals.EXTRA_FIELD_SCORE)
-            model_manager.add_field(note_type_dict, new_field)
-            model_manager.update_dict(note_type_dict)
-
-    if config_filter.extra_score_terms:
-        if ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS not in existing_field_names:
-            new_field = model_manager.new_field(
-                ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS
-            )
-            model_manager.add_field(note_type_dict, new_field)
-            model_manager.update_dict(note_type_dict)
-
+    # Refresh the note_type_dict to ensure it's updated
     note_type_dict = model_manager.by_name(config_filter.note_type)
     assert note_type_dict is not None
+
     return note_type_dict
+
+
+def update_all_morphs_field(
+    am_config: AnkiMorphsConfig,
+    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    note: Note,
+    all_morphs: list[Morpheme],
+) -> None:
+    # TODO, LEMMA OR INFLECTION
+    print("RUNNING ALL MORPHS!!")
+    all_morphs_string: str
+
+    if am_config.unknowns_field_shows_inflections:
+        all_morphs_string = "".join(f"{_morph.inflection}, " for _morph in all_morphs)
+    else:
+        all_morphs_string = "".join(f"{_morph.lemma}, " for _morph in all_morphs)
+
+    all_morphs_string = all_morphs_string[:-2]  # removes last comma and whitespace
+    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_ALL_MORPHS][0]
+    note.fields[index] = all_morphs_string
 
 
 def update_unknowns_field(

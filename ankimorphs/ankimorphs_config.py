@@ -51,6 +51,7 @@ class RawConfigFilterKeys:
     MORPH_PRIORITY_SELECTION = "morph_priority_selection"
     READ = "read"
     MODIFY = "modify"
+    EXTRA_ALL_MORPHS = "extra_all_morphs"
     EXTRA_UNKNOWNS = "extra_unknowns"
     EXTRA_UNKNOWNS_COUNT = "extra_unknowns_count"
     EXTRA_HIGHLIGHTED = "extra_highlighted"
@@ -186,6 +187,9 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
             )
             self.modify: bool = self._get_filter_item(
                 key=RawConfigFilterKeys.MODIFY, expected_type=bool
+            )
+            self.extra_all_morphs: bool = self._get_filter_item(
+                key=RawConfigFilterKeys.EXTRA_ALL_MORPHS, expected_type=bool
             )
             self.extra_unknowns: bool = self._get_filter_item(
                 key=RawConfigFilterKeys.EXTRA_UNKNOWNS, expected_type=bool

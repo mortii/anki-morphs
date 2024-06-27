@@ -230,6 +230,13 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                     cards_morph_metrics.has_learning_morphs,
                 )
 
+                if config_filter.extra_all_morphs:
+                    extra_field_utils.update_all_morphs_field(
+                        am_config,
+                        note_type_field_name_dict,
+                        note,
+                        cards_morph_metrics.all_morphs,
+                    )
                 if config_filter.extra_unknowns:
                     extra_field_utils.update_unknowns_field(
                         am_config,
