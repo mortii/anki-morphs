@@ -28,6 +28,7 @@ def new_extra_fields_are_selected() -> bool:
         # fmt: off
         extra_fields = [
             (config_filter.extra_all_morphs, ankimorphs_globals.EXTRA_ALL_MORPHS),
+            (config_filter.extra_all_morphs_count, ankimorphs_globals.EXTRA_ALL_MORPHS_COUNT),
             (config_filter.extra_unknowns, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS),
             (config_filter.extra_unknowns_count, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT),
             (config_filter.extra_highlighted, ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED),
@@ -58,6 +59,7 @@ def add_extra_fields_to_note_type(
     # fmt: off
     extra_fields = [
         (config_filter.extra_all_morphs, ankimorphs_globals.EXTRA_ALL_MORPHS),
+        (config_filter.extra_all_morphs_count, ankimorphs_globals.EXTRA_ALL_MORPHS_COUNT),
         (config_filter.extra_unknowns, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS),
         (config_filter.extra_unknowns_count, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT),
         (config_filter.extra_highlighted, ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED),
@@ -86,7 +88,6 @@ def update_all_morphs_field(
     all_morphs: list[Morpheme],
 ) -> None:
     # TODO, LEMMA OR INFLECTION
-    print("RUNNING ALL MORPHS!!")
     all_morphs_string: str
 
     if am_config.unknowns_field_shows_inflections:
@@ -97,6 +98,15 @@ def update_all_morphs_field(
     all_morphs_string = all_morphs_string[:-2]  # removes last comma and whitespace
     index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_ALL_MORPHS][0]
     note.fields[index] = all_morphs_string
+
+
+def update_all_morphs_count_field(
+    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    note: Note,
+    morphs: list[Morpheme],
+) -> None:
+    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_ALL_MORPHS_COUNT][0]
+    note.fields[index] = str(len(morphs))
 
 
 def update_unknowns_field(

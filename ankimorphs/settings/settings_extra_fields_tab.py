@@ -40,6 +40,7 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
 
         self._extra_fields_names = [
             ankimorphs_globals.EXTRA_ALL_MORPHS,
+            ankimorphs_globals.EXTRA_ALL_MORPHS_COUNT,
             ankimorphs_globals.EXTRA_FIELD_UNKNOWNS,
             ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT,
             ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED,
@@ -122,6 +123,7 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
         """
 
         extra_all_morphs: bool = False
+        extra_all_morphs_count: bool = False
         extra_score: bool = False
         extra_score_terms: bool = False
         extra_highlighted: bool = False
@@ -132,6 +134,7 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
             for _filter in self._config.filters:
                 if note_type == _filter.note_type:
                     extra_all_morphs = _filter.extra_all_morphs
+                    extra_all_morphs_count = _filter.extra_all_morphs_count
                     extra_score = _filter.extra_score
                     extra_score_terms = _filter.extra_score_terms
                     extra_highlighted = _filter.extra_highlighted
@@ -141,6 +144,7 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
 
         selected_extra_fields: dict[str, bool] = {
             ankimorphs_globals.EXTRA_ALL_MORPHS: extra_all_morphs,
+            ankimorphs_globals.EXTRA_ALL_MORPHS_COUNT: extra_all_morphs_count,
             ankimorphs_globals.EXTRA_FIELD_SCORE: extra_score,
             ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS: extra_score_terms,
             ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED: extra_highlighted,
@@ -217,6 +221,7 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
 
         # fmt: off
         extra_all_morphs = ankimorphs_globals.EXTRA_ALL_MORPHS in selected_fields
+        extra_all_morphs_count = ankimorphs_globals.EXTRA_ALL_MORPHS_COUNT in selected_fields
         extra_score = ankimorphs_globals.EXTRA_FIELD_SCORE in selected_fields
         extra_score_terms = ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS in selected_fields
         extra_highlighted = ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED in selected_fields
@@ -226,6 +231,7 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
 
         return {
             RawConfigFilterKeys.EXTRA_ALL_MORPHS: extra_all_morphs,
+            RawConfigFilterKeys.EXTRA_ALL_MORPHS_COUNT: extra_all_morphs_count,
             RawConfigFilterKeys.EXTRA_SCORE: extra_score,
             RawConfigFilterKeys.EXTRA_SCORE_TERMS: extra_score_terms,
             RawConfigFilterKeys.EXTRA_HIGHLIGHTED: extra_highlighted,

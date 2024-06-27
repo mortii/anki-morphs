@@ -219,7 +219,6 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                 )
 
                 score_values = CardScore(am_config, cards_morph_metrics)
-
                 card.due = score_values.score
 
                 tags_and_queue_utils.update_tags_and_queue(
@@ -237,6 +236,13 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                         note,
                         cards_morph_metrics.all_morphs,
                     )
+                if config_filter.extra_all_morphs_count:
+                    extra_field_utils.update_all_morphs_count_field(
+                        note_type_field_name_dict,
+                        note,
+                        cards_morph_metrics.all_morphs,
+                    )
+                # todo: change this to update on old cards as well
                 if config_filter.extra_unknowns:
                     extra_field_utils.update_unknowns_field(
                         am_config,
