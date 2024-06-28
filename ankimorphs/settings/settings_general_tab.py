@@ -68,5 +68,15 @@ class GeneralTab(SettingsTab):
         elif self.ui.priorityInflectionRadioButton.isChecked():
             self.previous_priority_selection = self.ui.priorityInflectionRadioButton
 
+    def restore_to_config_state(self) -> None:
+        # prevent the "reset tags?" dialog displaying when we discard changes
+        self.ui.priorityLemmaRadioButton.blockSignals(True)
+        self.ui.priorityInflectionRadioButton.blockSignals(True)
+
+        self.populate()
+
+        self.ui.priorityLemmaRadioButton.blockSignals(False)
+        self.ui.priorityInflectionRadioButton.blockSignals(False)
+
     def get_confirmation_text(self) -> str:
         return "Are you sure you want to restore default general settings?"
