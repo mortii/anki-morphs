@@ -749,8 +749,6 @@ def get_matching_read_filter(note: Note) -> AnkiMorphsConfigFilter | None:
 
 
 def show_critical_config_error() -> None:
-    # todo: update this
-
     critical_box = QMessageBox(mw)
     critical_box.setWindowTitle("AnkiMorphs Error")
     critical_box.setIcon(QMessageBox.Icon.Critical)
@@ -781,9 +779,15 @@ def show_warning_new_config_items() -> None:
     body: str = (
         "**New AnkiMorphs settings detected!**"
         "<br/><br/>"
-        "New settings have been added, which may affect how AnkiMorphs performs. Please read "
-        "the <a href='https://github.com/mortii/anki-morphs/releases'>changelog</a> for more"
-        " info, and reapply your settings."
+        "New settings have been added "
+        "(<a href='https://github.com/mortii/anki-morphs/releases'>changelog</a>), "
+        "which may affect how AnkiMorphs performs."
+        "<br/><br/>"
+        "To ensure optimal performance, please follow these steps:<br/>"
+        "1. Open the AnkiMorphs settings menu.<br/>"
+        "2. Review and adjust the settings as needed.<br/>"
+        "3. Apply the settings.<br/>"
+        "4. Recalc"
     )
     critical_box.setTextFormat(Qt.TextFormat.MarkdownText)
     critical_box.setText(body)
