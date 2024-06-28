@@ -39,13 +39,14 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
         }
 
         self._extra_fields_names = [
-            ankimorphs_globals.EXTRA_ALL_MORPHS,
-            ankimorphs_globals.EXTRA_ALL_MORPHS_COUNT,
+            ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS,
+            ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS_COUNT,
             ankimorphs_globals.EXTRA_FIELD_UNKNOWNS,
             ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT,
             ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED,
             ankimorphs_globals.EXTRA_FIELD_SCORE,
             ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS,
+            ankimorphs_globals.EXTRA_FIELD_STUDY_MORPHS,
         ]
 
         # hides the '1' number in the top left corner
@@ -129,6 +130,7 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
         extra_highlighted: bool = False
         extra_unknowns: bool = False
         extra_unknowns_count: bool = False
+        extra_study_morphs: bool = False
 
         if restore_defaults is False:
             for _filter in self._config.filters:
@@ -140,16 +142,18 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
                     extra_highlighted = _filter.extra_highlighted
                     extra_unknowns = _filter.extra_unknowns
                     extra_unknowns_count = _filter.extra_unknowns_count
+                    extra_study_morphs = _filter.extra_study_morphs
                     break
 
         selected_extra_fields: dict[str, bool] = {
-            ankimorphs_globals.EXTRA_ALL_MORPHS: extra_all_morphs,
-            ankimorphs_globals.EXTRA_ALL_MORPHS_COUNT: extra_all_morphs_count,
+            ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS: extra_all_morphs,
+            ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS_COUNT: extra_all_morphs_count,
             ankimorphs_globals.EXTRA_FIELD_SCORE: extra_score,
             ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS: extra_score_terms,
             ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED: extra_highlighted,
             ankimorphs_globals.EXTRA_FIELD_UNKNOWNS: extra_unknowns,
             ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT: extra_unknowns_count,
+            ankimorphs_globals.EXTRA_FIELD_STUDY_MORPHS: extra_study_morphs,
         }
         print(f"selected_extra_fields: {selected_extra_fields}")
         return selected_extra_fields
@@ -220,13 +224,14 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
                 break
 
         # fmt: off
-        extra_all_morphs = ankimorphs_globals.EXTRA_ALL_MORPHS in selected_fields
-        extra_all_morphs_count = ankimorphs_globals.EXTRA_ALL_MORPHS_COUNT in selected_fields
+        extra_all_morphs = ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS in selected_fields
+        extra_all_morphs_count = ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS_COUNT in selected_fields
         extra_score = ankimorphs_globals.EXTRA_FIELD_SCORE in selected_fields
         extra_score_terms = ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS in selected_fields
         extra_highlighted = ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED in selected_fields
         extra_unknowns = ankimorphs_globals.EXTRA_FIELD_UNKNOWNS in selected_fields
         extra_unknowns_count = ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT in selected_fields
+        extra_study_morphs = ankimorphs_globals.EXTRA_FIELD_STUDY_MORPHS in selected_fields
         # fmt: on
 
         return {
@@ -237,6 +242,7 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
             RawConfigFilterKeys.EXTRA_HIGHLIGHTED: extra_highlighted,
             RawConfigFilterKeys.EXTRA_UNKNOWNS: extra_unknowns,
             RawConfigFilterKeys.EXTRA_UNKNOWNS_COUNT: extra_unknowns_count,
+            RawConfigFilterKeys.EXTRA_STUDY_MORPHS: extra_study_morphs,
         }
 
     def get_confirmation_text(self) -> str:

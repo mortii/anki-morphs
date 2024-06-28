@@ -24,27 +24,33 @@ def new_extra_fields_are_selected() -> bool:
         assert note_type_dict is not None
 
         existing_field_names = model_manager.field_names(note_type_dict)
-
-        # fmt: off
-        extra_fields = [
-            (config_filter.extra_all_morphs, ankimorphs_globals.EXTRA_ALL_MORPHS),
-            (config_filter.extra_all_morphs_count, ankimorphs_globals.EXTRA_ALL_MORPHS_COUNT),
-            (config_filter.extra_unknowns, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS),
-            (config_filter.extra_unknowns_count, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT),
-            (config_filter.extra_highlighted, ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED),
-            (config_filter.extra_score, ankimorphs_globals.EXTRA_FIELD_SCORE),
-            (config_filter.extra_score_terms, ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS),
-        ]
-        # fmt: on
+        extra_fields_states = _get_states_of_extra_fields(config_filter)
 
         if any(
             field
-            for enabled, field in extra_fields
+            for enabled, field in extra_fields_states
             if enabled and field not in existing_field_names
         ):
             return True
 
     return False
+
+
+def _get_states_of_extra_fields(
+    config_filter: AnkiMorphsConfigFilter,
+) -> list[tuple[bool, str]]:
+    # fmt: off
+    return [
+        (config_filter.extra_all_morphs, ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS),
+        (config_filter.extra_all_morphs_count, ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS_COUNT),
+        (config_filter.extra_unknowns, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS),
+        (config_filter.extra_unknowns_count, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT),
+        (config_filter.extra_highlighted, ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED),
+        (config_filter.extra_score, ankimorphs_globals.EXTRA_FIELD_SCORE),
+        (config_filter.extra_score_terms, ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS),
+        (config_filter.extra_study_morphs, ankimorphs_globals.EXTRA_FIELD_STUDY_MORPHS),
+    ]
+    # fmt: on
 
 
 def add_extra_fields_to_note_type(
@@ -55,20 +61,9 @@ def add_extra_fields_to_note_type(
     assert note_type_dict is not None
 
     existing_field_names = model_manager.field_names(note_type_dict)
+    extra_fields_states = _get_states_of_extra_fields(config_filter)
 
-    # fmt: off
-    extra_fields = [
-        (config_filter.extra_all_morphs, ankimorphs_globals.EXTRA_ALL_MORPHS),
-        (config_filter.extra_all_morphs_count, ankimorphs_globals.EXTRA_ALL_MORPHS_COUNT),
-        (config_filter.extra_unknowns, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS),
-        (config_filter.extra_unknowns_count, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT),
-        (config_filter.extra_highlighted, ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED),
-        (config_filter.extra_score, ankimorphs_globals.EXTRA_FIELD_SCORE),
-        (config_filter.extra_score_terms, ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS),
-    ]
-    # fmt: on
-
-    for enabled, field in extra_fields:
+    for enabled, field in extra_fields_states:
         if enabled and field not in existing_field_names:
             new_field = model_manager.new_field(field)
             model_manager.add_field(note_type_dict, new_field)
@@ -86,16 +81,8 @@ def update_all_morphs_field(
     note: Note,
     all_morphs: list[Morpheme],
 ) -> None:
-    # TODO, LEMMA OR INFLECTION
-    all_morphs_string: str
-
-    if am_config.extra_fields_display_inflections:
-        all_morphs_string = "".join(f"{_morph.inflection}, " for _morph in all_morphs)
-    else:
-        all_morphs_string = "".join(f"{_morph.lemma}, " for _morph in all_morphs)
-
-    all_morphs_string = all_morphs_string[:-2]  # removes last comma and whitespace
-    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_ALL_MORPHS][0]
+    all_morphs_string: str = _get_string_of_morphs(am_config, all_morphs)
+    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS][0]
     note.fields[index] = all_morphs_string
 
 
@@ -104,7 +91,9 @@ def update_all_morphs_count_field(
     note: Note,
     all_morphs: list[Morpheme],
 ) -> None:
-    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_ALL_MORPHS_COUNT][0]
+    index: int = note_type_field_name_dict[
+        ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS_COUNT
+    ][0]
     note.fields[index] = str(len(all_morphs))
 
 
@@ -124,16 +113,9 @@ def update_unknowns_field(
         # card does not have morphs or is buggy in some way
         pass
 
-    focus_morph_string: str
-
-    if am_config.extra_fields_display_inflections:
-        focus_morph_string = "".join(f"{unknown.inflection}, " for unknown in unknowns)
-    else:
-        focus_morph_string = "".join(f"{unknown.lemma}, " for unknown in unknowns)
-
-    focus_morph_string = focus_morph_string[:-2]  # removes last comma and whitespace
+    unknowns_string: str = _get_string_of_morphs(am_config, unknowns)
     index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_UNKNOWNS][0]
-    note.fields[index] = focus_morph_string
+    note.fields[index] = unknowns_string
 
 
 def _get_unknown_morphs(
@@ -144,21 +126,30 @@ def _get_unknown_morphs(
     if am_config.evaluate_morph_inflection:
         for morph in card_morphs:
             assert morph.highest_inflection_learning_interval is not None
-            if (
-                morph.highest_inflection_learning_interval
-                < am_config.interval_for_known_morphs
-            ):
+            if morph.highest_inflection_learning_interval == 0:
                 unknowns.append(morph)
     else:
         for morph in card_morphs:
             assert morph.highest_lemma_learning_interval is not None
-            if (
-                morph.highest_lemma_learning_interval
-                < am_config.interval_for_known_morphs
-            ):
+            if morph.highest_lemma_learning_interval == 0:
                 unknowns.append(morph)
 
     return unknowns
+
+
+def _get_string_of_morphs(
+    am_config: AnkiMorphsConfig,
+    morphs: list[Morpheme],
+) -> str:
+    morphs_string: str
+
+    if am_config.extra_fields_display_inflections:
+        morphs_string = "".join(f"{morph.inflection}, " for morph in morphs)
+    else:
+        morphs_string = "".join(f"{unknown.lemma}, " for unknown in morphs)
+
+    morphs_string = morphs_string[:-2]  # removes last comma and whitespace
+    return morphs_string
 
 
 def update_unknowns_count_field(
@@ -190,6 +181,19 @@ def update_score_field(
 ) -> None:
     index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_SCORE][0]
     note.fields[index] = str(score)
+
+
+def update_study_morphs_field(
+    am_config: AnkiMorphsConfig,
+    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    note: Note,
+    unknowns: list[Morpheme],
+) -> None:
+    unknowns_string: str = _get_string_of_morphs(am_config, unknowns)
+    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_STUDY_MORPHS][
+        0
+    ]
+    note.fields[index] = unknowns_string
 
 
 def update_score_terms_field(

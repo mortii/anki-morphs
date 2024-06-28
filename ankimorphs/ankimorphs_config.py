@@ -58,6 +58,7 @@ class RawConfigFilterKeys:
     EXTRA_HIGHLIGHTED = "extra_highlighted"
     EXTRA_SCORE = "extra_score"
     EXTRA_SCORE_TERMS = "extra_score_terms"
+    EXTRA_STUDY_MORPHS = "extra_study_morphs"
 
 
 class RawConfigKeys:
@@ -209,6 +210,9 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
             )
             self.extra_score_terms: bool = self._get_filter_item(
                 key=RawConfigFilterKeys.EXTRA_SCORE_TERMS, expected_type=bool
+            )
+            self.extra_study_morphs: bool = self._get_filter_item(
+                key=RawConfigFilterKeys.EXTRA_STUDY_MORPHS, expected_type=bool
             )
 
         except AssertionError:
