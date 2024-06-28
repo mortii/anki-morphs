@@ -77,7 +77,6 @@ def add_extra_fields_to_note_type(
     # Refresh the note_type_dict to ensure it's updated
     note_type_dict = model_manager.by_name(config_filter.note_type)
     assert note_type_dict is not None
-
     return note_type_dict
 
 
@@ -90,7 +89,7 @@ def update_all_morphs_field(
     # TODO, LEMMA OR INFLECTION
     all_morphs_string: str
 
-    if am_config.unknowns_field_shows_inflections:
+    if am_config.extra_fields_display_inflections:
         all_morphs_string = "".join(f"{_morph.inflection}, " for _morph in all_morphs)
     else:
         all_morphs_string = "".join(f"{_morph.lemma}, " for _morph in all_morphs)
@@ -103,21 +102,31 @@ def update_all_morphs_field(
 def update_all_morphs_count_field(
     note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
-    morphs: list[Morpheme],
+    all_morphs: list[Morpheme],
 ) -> None:
     index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_ALL_MORPHS_COUNT][0]
-    note.fields[index] = str(len(morphs))
+    note.fields[index] = str(len(all_morphs))
 
 
 def update_unknowns_field(
     am_config: AnkiMorphsConfig,
     note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
-    unknowns: list[Morpheme],
+    card_id: int,
+    card_morph_map_cache: dict[int, list[Morpheme]],
 ) -> None:
+    unknowns: list[Morpheme] = []
+
+    try:
+        card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
+        unknowns = _get_unknown_morphs(am_config, card_morphs)
+    except KeyError:
+        # card does not have morphs or is buggy in some way
+        pass
+
     focus_morph_string: str
 
-    if am_config.unknowns_field_shows_inflections:
+    if am_config.extra_fields_display_inflections:
         focus_morph_string = "".join(f"{unknown.inflection}, " for unknown in unknowns)
     else:
         focus_morph_string = "".join(f"{unknown.lemma}, " for unknown in unknowns)
@@ -127,11 +136,47 @@ def update_unknowns_field(
     note.fields[index] = focus_morph_string
 
 
+def _get_unknown_morphs(
+    am_config: AnkiMorphsConfig, card_morphs: list[Morpheme]
+) -> list[Morpheme]:
+    unknowns: list[Morpheme] = []
+
+    if am_config.evaluate_morph_inflection:
+        for morph in card_morphs:
+            assert morph.highest_inflection_learning_interval is not None
+            if (
+                morph.highest_inflection_learning_interval
+                < am_config.interval_for_known_morphs
+            ):
+                unknowns.append(morph)
+    else:
+        for morph in card_morphs:
+            assert morph.highest_lemma_learning_interval is not None
+            if (
+                morph.highest_lemma_learning_interval
+                < am_config.interval_for_known_morphs
+            ):
+                unknowns.append(morph)
+
+    return unknowns
+
+
 def update_unknowns_count_field(
+    am_config: AnkiMorphsConfig,
     note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
-    unknowns: list[Morpheme],
+    card_id: int,
+    card_morph_map_cache: dict[int, list[Morpheme]],
 ) -> None:
+    unknowns: list[Morpheme] = []
+
+    try:
+        card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
+        unknowns = _get_unknown_morphs(am_config, card_morphs)
+    except KeyError:
+        # card does not have morphs or is buggy in some way
+        pass
+
     index: int = note_type_field_name_dict[
         ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT
     ][0]

@@ -22,7 +22,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>3</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="tab">
         <attribute name="title">
@@ -355,7 +355,7 @@
            <item>
             <widget class="QLabel" name="label_42">
              <property name="text">
-              <string>The &quot;am-study-morphs&quot; field displays:</string>
+              <string>The extra fields display morphs in this form:</string>
              </property>
             </widget>
            </item>
@@ -1746,7 +1746,6 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="recalcToolbarKnownRadioButtonGroup"/>
   <buttongroup name="buttonGroup"/>
  </buttongroups>
 </ui>

@@ -34,8 +34,8 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
         DataExtractor.__init__(self)
 
         self._raw_config_key_to_radio_button: dict[str, QRadioButton] = {
-            RawConfigKeys.UNKNOWNS_FIELD_SHOWS_INFLECTIONS: self.ui.unknownsFieldShowsInflectionsRadioButton,
-            RawConfigKeys.UNKNOWNS_FIELD_SHOWS_LEMMAS: self.ui.unknownsFieldShowsLemmasRadioButton,
+            RawConfigKeys.EXTRA_FIELDS_DISPLAY_INFLECTIONS: self.ui.unknownsFieldShowsInflectionsRadioButton,
+            RawConfigKeys.EXTRA_FIELDS_DISPLAY_LEMMAS: self.ui.unknownsFieldShowsLemmasRadioButton,
         }
 
         self._extra_fields_names = [

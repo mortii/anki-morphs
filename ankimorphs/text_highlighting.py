@@ -182,6 +182,7 @@ def _extract_span_elements_and_filter_string(
         # print(f"morph: {morph.lemma}, {morph.inflection}")
         assert morph.highest_inflection_learning_interval is not None
 
+        # todo: check for lemma use
         if morph.highest_inflection_learning_interval == 0:
             morph_status = "unknown"
         elif (

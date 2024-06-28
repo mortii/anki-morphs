@@ -93,10 +93,10 @@ class RawConfigKeys:
     RECALC_ON_SYNC = "recalc_on_sync"
     RECALC_SUSPEND_KNOWN_NEW_CARDS = "recalc_suspend_known_new_cards"
     READ_KNOWN_MORPHS_FOLDER = "read_known_morphs_folder"
-    TOOLBAR_STATS_USE_SEEN = "toolbar_stats_use_seen"
     TOOLBAR_STATS_USE_KNOWN = "toolbar_stats_use_known"
-    UNKNOWNS_FIELD_SHOWS_INFLECTIONS = "unknowns_field_shows_inflections"
-    UNKNOWNS_FIELD_SHOWS_LEMMAS = "unknowns_field_shows_lemmas"
+    TOOLBAR_STATS_USE_SEEN = "toolbar_stats_use_seen"
+    EXTRA_FIELDS_DISPLAY_INFLECTIONS = "extra_fields_display_inflections"
+    EXTRA_FIELDS_DISPLAY_LEMMAS = "extra_fields_display_lemmas"
     RECALC_OFFSET_NEW_CARDS = "recalc_offset_new_cards"
     RECALC_DUE_OFFSET = "recalc_due_offset"
     RECALC_NUMBER_OF_MORPHS_TO_OFFSET = "recalc_number_of_morphs_to_offset"
@@ -363,23 +363,23 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many
                 expected_type=bool,
                 use_default=is_default,
             )
-            self.toolbar_stats_use_seen: bool = self._get_config_item(
-                key=RawConfigKeys.TOOLBAR_STATS_USE_SEEN,
-                expected_type=bool,
-                use_default=is_default,
-            )
             self.toolbar_stats_use_known: bool = self._get_config_item(
                 key=RawConfigKeys.TOOLBAR_STATS_USE_KNOWN,
                 expected_type=bool,
                 use_default=is_default,
             )
-            self.unknowns_field_shows_inflections: bool = self._get_config_item(
-                key=RawConfigKeys.UNKNOWNS_FIELD_SHOWS_INFLECTIONS,
+            self.toolbar_stats_use_seen: bool = self._get_config_item(
+                key=RawConfigKeys.TOOLBAR_STATS_USE_SEEN,
                 expected_type=bool,
                 use_default=is_default,
             )
-            self.unknowns_field_shows_lemmas: bool = self._get_config_item(
-                key=RawConfigKeys.UNKNOWNS_FIELD_SHOWS_LEMMAS,
+            self.extra_fields_display_inflections: bool = self._get_config_item(
+                key=RawConfigKeys.EXTRA_FIELDS_DISPLAY_INFLECTIONS,
+                expected_type=bool,
+                use_default=is_default,
+            )
+            self.extra_fields_display_lemmas: bool = self._get_config_item(
+                key=RawConfigKeys.EXTRA_FIELDS_DISPLAY_LEMMAS,
                 expected_type=bool,
                 use_default=is_default,
             )

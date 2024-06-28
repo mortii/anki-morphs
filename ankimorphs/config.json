@@ -22,6 +22,8 @@
   "algorithm_upper_target_learning_morphs_coefficient_c": 0,
   "evaluate_morph_inflection": true,
   "evaluate_morph_lemma": false,
+  "extra_fields_display_inflections": true,
+  "extra_fields_display_lemmas": false,
   "filters": [
     {
       "extra_all_morphs": false,
@@ -80,7 +82,5 @@
   "tag_not_ready": "am-not-ready",
   "tag_ready": "am-ready",
   "toolbar_stats_use_known": false,
-  "toolbar_stats_use_seen": true,
-  "unknowns_field_shows_inflections": true,
-  "unknowns_field_shows_lemmas": false
+  "toolbar_stats_use_seen": true
 }
