@@ -180,7 +180,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         if not skip_confirmation:
             title = "Confirmation"
             text = self.get_confirmation_text()
-            confirmed = message_box_utils.warning_dialog(
+            confirmed = message_box_utils.show_warning_box(
                 title, text, parent=self._parent
             )
 
@@ -272,7 +272,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
             "Are you sure you want to delete the selected row?\n\n"
             "Note: This will also unselect the respective extra fields!"
         )
-        confirmed = message_box_utils.warning_dialog(title, text, parent=self._parent)
+        confirmed = message_box_utils.show_warning_box(title, text, parent=self._parent)
 
         if confirmed:
             selected_row = self.ui.note_filters_table.currentRow()

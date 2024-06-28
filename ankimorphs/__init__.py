@@ -81,7 +81,7 @@ def main() -> None:
     gui_hooks.sync_will_start.append(recalc_on_sync)
 
     gui_hooks.webview_will_show_context_menu.append(add_text_as_name_action)
-    gui_hooks.webview_will_show_context_menu.append(browse_am_unknowns_for_text_action)
+    gui_hooks.webview_will_show_context_menu.append(browse_study_morphs_for_text_action)
 
     gui_hooks.overview_did_refresh.append(update_seen_morphs)
 
@@ -528,13 +528,13 @@ def add_text_as_name_action(web_view: AnkiWebView, menu: QMenu) -> None:
     menu.addAction(action)
 
 
-def browse_am_unknowns_for_text_action(web_view: AnkiWebView, menu: QMenu) -> None:
+def browse_study_morphs_for_text_action(web_view: AnkiWebView, menu: QMenu) -> None:
     selected_text = web_view.selectedText()
     if selected_text == "":
         return
-    action = QAction(f"Browse in {ankimorphs_globals.EXTRA_FIELD_UNKNOWNS}", menu)
+    action = QAction(f"Browse in {ankimorphs_globals.EXTRA_FIELD_STUDY_MORPHS}", menu)
     action.triggered.connect(
-        lambda: browser_utils.browse_am_unknown_for_highlighted_morph(selected_text)
+        lambda: browser_utils.browse_study_morphs_for_highlighted_morph(selected_text)
     )
     menu.addAction(action)
 

@@ -107,7 +107,7 @@ class SettingsTab(ABC):  # pylint:disable=too-many-instance-attributes
         if not skip_confirmation:
             title = "Confirmation"
             text = self.get_confirmation_text()
-            confirmed = message_box_utils.warning_dialog(
+            confirmed = message_box_utils.show_warning_box(
                 title, text, parent=self._parent
             )
 

@@ -1,9 +1,15 @@
-from aqt.qt import QMessageBox, Qt, QWidget  # pylint:disable=no-name-in-module
+from __future__ import annotations
+
+from aqt.qt import (  # pylint:disable=no-name-in-module
+    QMessageBox,
+    QPushButton,
+    QStyle,
+    Qt,
+    QWidget,
+)
 
 
-def show_warning_box(
-    title: str, body: str, parent: QWidget, use_markdown: bool = True
-) -> bool:
+def show_warning_box(title: str, body: str, parent: QWidget) -> bool:
     """
     Returns 'True' if user clicked 'Ok' button
     Returns 'False' otherwise.
@@ -14,14 +20,42 @@ def show_warning_box(
     warning_box.setStandardButtons(
         QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
     )
+    warning_box.setTextFormat(Qt.TextFormat.MarkdownText)
     warning_box.setText(body)
-    if use_markdown:
-        warning_box.setTextFormat(Qt.TextFormat.MarkdownText)
-    else:
-        warning_box.setTextFormat(Qt.TextFormat.RichText)
 
     answer: int = warning_box.exec()
     if answer == QMessageBox.StandardButton.Yes:
+        return True
+    return False
+
+
+def show_discard_message_box(title: str, body: str, parent: QWidget) -> bool:
+    style: QStyle | None = parent.style()
+    assert style is not None
+
+    discard_button = QPushButton("Discard")
+    discard_icon = style.standardIcon(QStyle.StandardPixmap.SP_DialogDiscardButton)
+    discard_button.setIcon(discard_icon)
+
+    cancel_button = QPushButton("Cancel")
+    cancel_icon = style.standardIcon(QStyle.StandardPixmap.SP_DialogCancelButton)
+    cancel_button.setIcon(cancel_icon)
+    cancel_button.setAutoDefault(True)
+
+    warning_box = QMessageBox(parent)
+    warning_box.setWindowTitle(title)
+    warning_box.setIcon(QMessageBox.Icon.Question)
+    warning_box.setTextFormat(Qt.TextFormat.MarkdownText)
+    warning_box.setText(body)
+
+    warning_box.addButton(discard_button, QMessageBox.ButtonRole.DestructiveRole)
+    warning_box.addButton(cancel_button, QMessageBox.ButtonRole.RejectRole)
+    warning_box.setDefaultButton(cancel_button)
+
+    warning_box.exec()
+    clicked_button = warning_box.clickedButton()
+
+    if warning_box.buttonRole(clicked_button) == QMessageBox.ButtonRole.DestructiveRole:
         return True
     return False
 
@@ -46,11 +80,3 @@ def confirm_new_extra_fields_selection(parent: QWidget) -> bool:
     )
     answer = show_warning_box(title, text, parent=parent)
     return answer
-
-
-# todo: rename
-def warning_dialog(title: str, text: str, parent: QWidget) -> bool:
-    answer = show_warning_box(title, text, parent=parent)
-    if answer is True:
-        return True
-    return False

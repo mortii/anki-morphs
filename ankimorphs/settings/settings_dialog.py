@@ -122,7 +122,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
     def _restore_all_defaults(self) -> None:
         title = "Confirmation"
         text = "Are you sure you want to restore <b>all</b> default settings?"
-        confirmed = message_box_utils.warning_dialog(title, text, parent=self)
+        confirmed = message_box_utils.show_warning_box(title, text, parent=self)
 
         if confirmed:
             for _tab in self._all_tabs:
@@ -191,8 +191,10 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
         if self._tabs_have_unsaved_changes():
             title = "Unsaved changes"
-            text = "You have unsaved changes.\n\nDo you want to discard them?"
-            confirmed = message_box_utils.warning_dialog(title, text, parent=self)
+            text = "Discard unsaved changes?"
+            confirmed = message_box_utils.show_discard_message_box(
+                title, text, parent=self
+            )
 
             if confirmed:
                 for _tab in self._all_tabs:
