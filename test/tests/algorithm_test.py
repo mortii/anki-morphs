@@ -3,7 +3,7 @@ from __future__ import annotations
 from ankimorphs.recalc import card_score
 
 
-def test_target_difference_function():
+def test_target_difference_function() -> None:
     correct_values = [3, 2, 1, 0, 0, 0, 1, 4, 9, 16, 25, 36, 49, 64]
     produced_values = []
 

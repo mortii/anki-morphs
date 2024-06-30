@@ -3,6 +3,7 @@ import pprint
 from pathlib import Path
 from test.fake_configs import config_big_japanese_collection
 from test.fake_environment_module import (  # pylint:disable=unused-import
+    FakeEnvironment,
     FakeEnvironmentParams,
     fake_environment,
 )
@@ -11,6 +12,7 @@ from test.test_globals import (
     PATH_TESTS_DATA_CORRECT_OUTPUTS,
     PATH_TESTS_DATA_TESTS_OUTPUTS,
 )
+from typing import Any
 
 import pytest
 from csv_diff import compare, load_csv
@@ -55,8 +57,12 @@ case_big_japanese_collection_params = FakeEnvironmentParams(
     [True, False],
 )
 def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-locals, too-many-branches
-    fake_environment, morphemizer_description, only_lemma, comprehension_cutoff, qtbot
-):
+    fake_environment: FakeEnvironment,
+    morphemizer_description: str,
+    only_lemma: bool,
+    comprehension_cutoff: bool,
+    qtbot: Any,
+) -> None:
     """
     All of these files has the additional "occurrences" column, i.e. the
     option "add occurrences column" is always used.
@@ -97,7 +103,7 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-l
     print(f"loaded file: {correct_output_file}")
 
     gw.ui.inputDirLineEdit.setText(str(input_folder))
-    gw._background_gather_files_and_populate_files_column(col=None)
+    gw._background_gather_files_and_populate_files_column()
 
     index = -1
     for _index, mizer in enumerate(gw._morphemizers):
@@ -126,7 +132,7 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-l
     with open(correct_output_file, encoding="utf8") as a, open(
         test_output_file, encoding="utf8"
     ) as b:
-        diff: dict[str, list] = compare(load_csv(a), load_csv(b))
+        diff: dict[str, list[Any]] = compare(load_csv(a), load_csv(b))
         pprint.pprint(diff)
         assert len(diff) != 0
         for changes in diff.values():
@@ -187,6 +193,6 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-l
 
 
 @pytest.mark.xfail
-def test_readability_report(fake_environment):
+def test_readability_report(fake_environment: FakeEnvironment) -> None:
     # todo: readability report currently fails
     assert False

@@ -1,11 +1,13 @@
 import json
+from collections.abc import Iterator
+from typing import Any
 from unittest import mock
 
 import aqt
 import pytest
-import spacy
 
-from ankimorphs import AnkiMorphsConfig, ankimorphs_config
+from ankimorphs import ankimorphs_config
+from ankimorphs.ankimorphs_config import AnkiMorphsConfig
 from ankimorphs.morpheme import Morpheme
 from ankimorphs.morphemizers import spacy_wrapper
 from ankimorphs.morphemizers.spacy_wrapper import get_nlp
@@ -22,7 +24,7 @@ class SpacyMorph:
 @pytest.fixture(
     scope="module"  # module-scope: created and destroyed once per module. Cached.
 )
-def fake_environment():
+def fake_environment() -> Iterator[None]:
     print("fake environment initiated")
     mock_mw = mock.Mock(spec=aqt.mw)  # can use any mw to spec
 
@@ -43,10 +45,10 @@ def fake_environment():
     patch_testing_variable.stop()
 
 
-def test_ja_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_ja_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Japanese
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="ja_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="ja_core_news_sm")
     expression = "半田さん　朝代わってよ"
     correct_spacy_morphs: list[SpacyMorph] = [
         SpacyMorph(lemma="半田", inflection="半田", part_of_speech="PROPN"),
@@ -80,10 +82,10 @@ def test_ja_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_nb_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_nb_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Norsk Bokmål
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="nb_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="nb_core_news_sm")
     expression = "Gikk Harald nå?".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -112,10 +114,10 @@ def test_nb_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_en_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_en_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # English
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="en_core_web_sm")
+    nlp: Any = get_nlp(spacy_model_name="en_core_web_sm")
     expression = "At 3 o'clock, Harry's mother-in-law walked away.".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -162,12 +164,10 @@ def test_en_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_de_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_de_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # German
 
-    nlp: spacy.Language = get_nlp(
-        spacy_model_name="de_core_news_md"  # sm model is worse
-    )
+    nlp: Any = get_nlp(spacy_model_name="de_core_news_md")  # sm model is worse
     expression = "»Was ist los?«Harry schüttelte den Kopf und spähte.".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -211,10 +211,10 @@ def test_de_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_ca_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_ca_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Catalan
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="ca_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="ca_core_news_sm")
     # bad at proper nouns
     expression = "va caminar en Guillem?".lower()
 
@@ -246,10 +246,10 @@ def test_ca_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_es_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_es_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Spanish
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="es_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="es_core_news_sm")
     expression = "¿Pedro ya comió?".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -279,10 +279,10 @@ def test_es_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_fr_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_fr_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # French
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="fr_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="fr_core_news_sm")
     expression = "Ça m’est égal?".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -311,10 +311,10 @@ def test_fr_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_da_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_da_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Danish
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="da_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="da_core_news_sm")
     expression = "gik Diederik nu?".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -343,10 +343,10 @@ def test_da_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_sv_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_sv_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Swedish
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="sv_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="sv_core_news_sm")
     expression = "gick Astrid nu?".lower()  # the sv model is terrible at proper nouns
 
     correct_output: list[SpacyMorph] = [
@@ -375,10 +375,10 @@ def test_sv_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_nl_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_nl_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Dutch
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="nl_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="nl_core_news_sm")
     expression = "Is Lucas weggelopen?".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -407,10 +407,10 @@ def test_nl_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_hr_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_hr_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Croatian
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="hr_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="hr_core_news_sm")
     # hr model is bad at recognizing proper nouns
     expression = "Je li Krunoslav otišao?".lower()
 
@@ -442,10 +442,10 @@ def test_hr_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_fi_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_fi_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Finnish
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="fi_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="fi_core_news_sm")
     expression = "kävelikö Aarne pois?".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -474,10 +474,10 @@ def test_fi_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_el_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_el_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Greek
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="el_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="el_core_news_sm")
     # gl model is not great at proper nouns
     expression = "έφυγε ο Άλεξ".lower()
 
@@ -506,10 +506,10 @@ def test_el_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_it_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_it_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Italian
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="it_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="it_core_news_sm")
     # it model is not great at proper nouns
     expression = "Leonardo ha camminato?".lower()
 
@@ -539,10 +539,10 @@ def test_it_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_lt_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_lt_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Lithuanian
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="lt_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="lt_core_news_sm")
     expression = "Kur jūs dirbate?".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -571,10 +571,10 @@ def test_lt_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_mk_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_mk_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Macedonian
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="mk_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="mk_core_news_sm")
     expression = "дали Александар одеше?".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -603,10 +603,10 @@ def test_mk_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_pl_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_pl_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Polish
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="pl_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="pl_core_news_sm")
     expression = "czy Zofia chodziła?".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -635,10 +635,10 @@ def test_pl_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_pt_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_pt_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Portuguese
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="pt_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="pt_core_news_sm")
     # not great at proper nouns
     expression = "você caminhou?".lower()
 
@@ -666,10 +666,10 @@ def test_pt_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_ro_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_ro_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Romanian
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="ro_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="ro_core_news_sm")
     expression = "a mers Maria?".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -698,10 +698,10 @@ def test_ro_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_sl_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_sl_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Slovenian
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="sl_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="sl_core_news_sm")
     expression = "je Luka hodil?".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -730,10 +730,10 @@ def test_sl_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_ru_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_ru_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Russian
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="ru_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="ru_core_news_sm")
     expression = "Дмитрий ходил?".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -760,10 +760,10 @@ def test_ru_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_uk_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_uk_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Ukrainian
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="uk_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="uk_core_news_sm")
     expression = "Дмитро ходив?".lower()
 
     correct_output: list[SpacyMorph] = [
@@ -790,10 +790,10 @@ def test_uk_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_ko_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_ko_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Korean
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="ko_core_news_sm")
+    nlp: Any = get_nlp(spacy_model_name="ko_core_news_sm")
     expression = "한동훈 장관을 추대했다.".lower()
     # expression = "눌러".lower()
 
@@ -823,10 +823,10 @@ def test_ko_model(fake_environment) -> None:  # pylint:disable=unused-argument
     assert processed_morphs == correct_am_morphs
 
 
-def test_zh_model(fake_environment) -> None:  # pylint:disable=unused-argument
+def test_zh_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
     # Chinese
 
-    nlp: spacy.Language = get_nlp(spacy_model_name="zh_core_web_sm")
+    nlp: Any = get_nlp(spacy_model_name="zh_core_web_sm")
     expression = "你能肯定吗？".lower()
 
     correct_output: list[SpacyMorph] = [

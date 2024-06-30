@@ -139,7 +139,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         mw.progress.start(label="Gathering input files")
         operation = QueryOp(
             parent=self,
-            op=self._background_gather_files_and_populate_files_column,
+            op=lambda _: self._background_gather_files_and_populate_files_column(),
             success=lambda _: self._on_successfully_loaded_files(),
         )
         operation.failure(self._on_failure)
@@ -152,10 +152,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self.ui.generateFrequencyFilePushButton.setEnabled(True)
         self.ui.generateStudyPlanPushButton.setEnabled(True)
 
-    def _background_gather_files_and_populate_files_column(
-        self, col: Collection
-    ) -> None:
-        del col  # unused
+    def _background_gather_files_and_populate_files_column(self) -> None:
         assert mw is not None
 
         # clearing the list prevents duplicate when

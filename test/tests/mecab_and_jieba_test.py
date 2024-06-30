@@ -1,6 +1,7 @@
 import os
 import sys
-from test.fake_environment_module import PATH_TESTS_DATA
+from collections.abc import Iterator
+from test.test_globals import PATH_TESTS_DATA
 from unittest import mock
 
 import pytest
@@ -13,7 +14,7 @@ from ankimorphs.morphemizers.morphemizer import get_morphemizer_by_description
 @pytest.fixture(
     scope="module"  # module-scope: created and destroyed once per module. Cached.
 )
-def fake_environment():
+def fake_environment() -> Iterator[None]:
     patch_testing_variable = mock.patch.object(
         spacy_wrapper, "testing_environment", True
     )
@@ -27,8 +28,11 @@ def fake_environment():
 
 
 @pytest.mark.external_morphemizers
-def test_mecab_morpheme_generation(fake_environment):  # pylint:disable=unused-argument
+def test_mecab_morpheme_generation(  # pylint:disable=unused-argument
+    fake_environment: None,
+) -> None:
     morphemizer = get_morphemizer_by_description("AnkiMorphs: Japanese")
+    assert morphemizer is not None
 
     sentence = "本当に重要な任務の時しか 動かない"
     correct_morphs: set[Morpheme] = {
@@ -51,8 +55,11 @@ def test_mecab_morpheme_generation(fake_environment):  # pylint:disable=unused-a
 
 
 @pytest.mark.external_morphemizers
-def test_jieba_morpheme_generation(fake_environment):  # pylint:disable=unused-argument
+def test_jieba_morpheme_generation(  # pylint:disable=unused-argument
+    fake_environment: None,
+) -> None:
     morphemizer = get_morphemizer_by_description("AnkiMorphs: Chinese")
+    assert morphemizer is not None
 
     sentence = "请您说得慢些好吗？"
     correct_morphs: set[Morpheme] = {
@@ -72,7 +79,7 @@ def test_jieba_morpheme_generation(fake_environment):  # pylint:disable=unused-a
         assert morph in correct_morphs
 
     sentence = "一，二，三，跳！"
-    correct_morphs: set[Morpheme] = {
+    correct_morphs = {
         Morpheme("一", "一"),
         Morpheme("二", "二"),
         Morpheme("三", "三"),

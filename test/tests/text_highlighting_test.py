@@ -194,8 +194,11 @@ case_regex_escape_card_morphs = [
     indirect=["fake_environment"],
 )
 def test_highlighting(  # pylint:disable=unused-argument
-    fake_environment: FakeEnvironment, input_text, card_morphs, correct_output
-):
+    fake_environment: FakeEnvironment,
+    input_text: str,
+    card_morphs: list[Morpheme],
+    correct_output: str,
+) -> None:
     am_config = AnkiMorphsConfig()
     highlighted_text: str = text_highlighting.get_highlighted_text(
         am_config, card_morphs, input_text

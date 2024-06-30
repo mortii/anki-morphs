@@ -1,6 +1,6 @@
 from test.test_globals import PATH_DB_COPY
 
-from ankimorphs import AnkiMorphsDB
+from ankimorphs.ankimorphs_db import AnkiMorphsDB
 
 
 class FakeDB(AnkiMorphsDB):

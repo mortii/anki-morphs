@@ -1,15 +1,15 @@
 import pprint
 
-# from anki.cards import Card
-# from anki.notes import Note
+from anki.cards import Card
+from anki.notes import Note
 
 
 class CardData:
 
     def __init__(
         self,
-        card,
-        note,
+        card: Card,
+        note: Note,
         field_positions: dict[str, int],
     ):
 
@@ -21,7 +21,6 @@ class CardData:
 
     def __eq__(self, other: object) -> bool:
         assert isinstance(other, CardData)
-
         is_equal = True
 
         for field in self.__dict__:

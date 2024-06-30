@@ -56,7 +56,9 @@ case_dont_skip_inflections_expected = [1715776939301, 1715776946917, 17157769538
     ],
     indirect=["fake_environment"],
 )
-def test_custom_review(fake_environment: FakeEnvironment, expected_results: list[int]):
+def test_custom_review(
+    fake_environment: FakeEnvironment, expected_results: list[int]
+) -> None:
     mock_mw = fake_environment.mock_mw
     mock_db = fake_environment.mock_db
     am_config = AnkiMorphsConfig()

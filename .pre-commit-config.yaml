@@ -95,10 +95,6 @@ repos:
         language: system
         types: [ python ]
         files: 'ankimorphs/|^test/'
-        exclude: |
-          (?x)^(
-              ^test/.*|
-          )$
       - id: pytest
         name: pytest
         entry: pytest

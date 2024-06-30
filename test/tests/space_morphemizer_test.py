@@ -1,3 +1,5 @@
+from collections.abc import Iterator
+from test.fake_environment_module import FakeEnvironment
 from unittest import mock
 
 import pytest
@@ -9,7 +11,7 @@ from ankimorphs.morphemizers.morphemizer import get_morphemizer_by_description
 
 
 @pytest.fixture(scope="function")
-def fake_environment():
+def fake_environment() -> Iterator[None]:
     patch_testing_variable = mock.patch.object(
         spacy_wrapper, "testing_environment", True
     )
@@ -17,10 +19,13 @@ def fake_environment():
     yield
     patch_testing_variable.stop()
     # this resets the morphemizers for the future tests
+    # todo: refactor this to be more palatable
     ankimorphs.morphemizers.morphemizer.morphemizers = None
 
 
-def test_french(fake_environment):  # pylint:disable=unused-argument
+def test_french(  # pylint:disable=unused-argument
+    fake_environment: FakeEnvironment,
+) -> None:
     morphemizer = get_morphemizer_by_description("AnkiMorphs: Language w/ Spaces")
     assert morphemizer is not None
 
@@ -40,7 +45,9 @@ def test_french(fake_environment):  # pylint:disable=unused-argument
         assert morph in correct_morphs
 
 
-def test_english(fake_environment):  # pylint:disable=unused-argument
+def test_english(  # pylint:disable=unused-argument
+    fake_environment: FakeEnvironment,
+) -> None:
     morphemizer = get_morphemizer_by_description("AnkiMorphs: Language w/ Spaces")
     assert morphemizer is not None
 

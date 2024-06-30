@@ -121,7 +121,7 @@ case_offset_new_cards_lemma_params = FakeEnvironmentParams(
 )
 def test_recalc(  # pylint:disable=too-many-locals
     fake_environment: FakeEnvironment,
-):
+) -> None:
     modified_collection = fake_environment.modified_collection
     original_collection = fake_environment.original_collection
 
@@ -152,9 +152,12 @@ def test_recalc(  # pylint:disable=too-many-locals
     card_collection_length = len(original_collection_cards)
     assert card_collection_length > 0
 
+    card: Card
+    note: Note
+
     for card_id in original_collection_cards:
-        card: Card = original_collection.get_card(card_id)
-        note: Note = card.note()
+        card = original_collection.get_card(card_id)
+        note = card.note()
         card_due_dict[card_id] = CardData(card, note, field_positions)
 
     read_enabled_config_filters = ankimorphs_config.get_read_enabled_filters()
@@ -171,8 +174,8 @@ def test_recalc(  # pylint:disable=too-many-locals
     for card_id in mock_collection_cards:
         print(f"card_id: {card_id}")
 
-        card: Card = modified_collection.get_card(card_id)
-        note: Note = card.note()
+        card = modified_collection.get_card(card_id)
+        note = card.note()
 
         original_card_data = card_due_dict[card_id]
         new_card_data = CardData(card, note, field_positions)
@@ -277,7 +280,7 @@ case_default_morphemizer_params = FakeEnvironmentParams(
 
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
-    "fake_environment, _exception",
+    "fake_environment, expected_exception",
     [
         (case_default_note_type_params, DefaultSettingsException),
         (case_default_field_params, DefaultSettingsException),
@@ -291,17 +294,17 @@ case_default_morphemizer_params = FakeEnvironmentParams(
     indirect=["fake_environment"],
 )
 def test_recalc_with_default_settings(  # pylint:disable=unused-argument
-    fake_environment: FakeEnvironment, _exception
-):
+    fake_environment: FakeEnvironment, expected_exception: type[Exception]
+) -> None:
     read_enabled_config_filters = ankimorphs_config.get_read_enabled_filters()
     modify_enabled_config_filters = ankimorphs_config.get_modify_enabled_filters()
     settings_error: Exception | None = recalc_main._check_selected_settings_for_errors(
         read_enabled_config_filters, modify_enabled_config_filters
     )
-    assert isinstance(settings_error, _exception)
+    assert isinstance(settings_error, expected_exception)
 
 
 @pytest.mark.xfail
-def test_recalc_using_spacy_morphemizer():
+def test_recalc_using_spacy_morphemizer() -> None:
     # todo: add this at some point
     assert False
