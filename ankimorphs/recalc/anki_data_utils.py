@@ -94,11 +94,15 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         self.note_id = anki_row_data.note_id
         self.note_type_id = note_type_id
 
-        # this is set later when spacy is used
+        # this is set later in the caching process
         self.morphs: set[Morpheme] | None = None
 
 
 class AnkiMorphsCardData:
+    """
+    This is used when extracting data from the AnkiMorphsDB
+    """
+
     __slots__ = (
         "card_id",
         "note_id",

@@ -168,20 +168,15 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
                     }
                 )
 
-    morphs_from_files: list[dict[str, Any]] = []
     if am_config.read_known_morphs_folder is True:
         progress_utils.background_update_progress(label="Importing known morphs")
-        morphs_from_files = _get_morphs_from_files(am_config)
+        morph_table_data += _get_morphs_from_files(am_config)
+
+    progress_utils.background_update_progress(label="Updating learning intervals")
+    _update_learning_intervals(am_config, morph_table_data)
 
     progress_utils.background_update_progress(label="Saving to ankimorphs.db")
-
-    if am_config.evaluate_morph_lemma:
-        am_db.update_learning_intervals_and_insert_many_into_morph_table(
-            morph_table_data + morphs_from_files
-        )
-    else:
-        am_db.insert_many_into_morph_table(morph_table_data + morphs_from_files)
-
+    am_db.insert_many_into_morph_table(morph_table_data)
     am_db.insert_many_into_card_table(card_table_data)
     am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
     # am_db.print_table("Morphs")
@@ -223,3 +218,47 @@ def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:
                 )
 
     return morphs_from_files
+
+
+def _update_learning_intervals(
+    am_config: AnkiMorphsConfig, morph_table_data: list[dict[str, Any]]
+) -> None:
+    learning_intervals_of_lemmas: dict[str, int] = _get_learning_intervals_of_lemmas(
+        morph_table_data
+    )
+
+    if am_config.evaluate_morph_lemma:
+        # update both the lemma and inflection intervals
+        for morph_data_dict in morph_table_data:
+            lemma = morph_data_dict["lemma"]
+            morph_data_dict["highest_lemma_learning_interval"] = (
+                learning_intervals_of_lemmas[lemma]
+            )
+            morph_data_dict["highest_inflection_learning_interval"] = (
+                learning_intervals_of_lemmas[lemma]
+            )
+    else:
+        # only update lemma intervals
+        for morph_data_dict in morph_table_data:
+            lemma = morph_data_dict["lemma"]
+            morph_data_dict["highest_lemma_learning_interval"] = (
+                learning_intervals_of_lemmas[lemma]
+            )
+
+
+def _get_learning_intervals_of_lemmas(
+    morph_table_data: list[dict[str, Any]]
+) -> dict[str, int]:
+    learning_intervals_of_lemmas: dict[str, int] = {}
+
+    for morph_data_dict in morph_table_data:
+        lemma = morph_data_dict["lemma"]
+        inflection_interval = morph_data_dict["highest_inflection_learning_interval"]
+
+        if lemma in learning_intervals_of_lemmas:
+            if inflection_interval > learning_intervals_of_lemmas[lemma]:
+                learning_intervals_of_lemmas[lemma] = inflection_interval
+        else:
+            learning_intervals_of_lemmas[lemma] = inflection_interval
+
+    return learning_intervals_of_lemmas

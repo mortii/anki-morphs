@@ -125,6 +125,8 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         self, morph_list: list[dict[str, int | str | bool]]
     ) -> None:
         with self.con:
+            # we only need to update the inflections on conflict since the lemmas
+            # have already been updated before they are inserted here
             self.con.executemany(
                 """
                     INSERT INTO Morphs 
@@ -325,7 +327,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         return card_ids
 
-    def get_highest_learning_interval(self, base: str, inflected: str) -> int | None:
+    def get_highest_learning_interval(self, lemma: str, inflected: str) -> int | None:
         with self.con:
             highest_learning_interval = self.con.execute(
                 """
@@ -333,7 +335,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                     FROM Morphs
                     WHERE lemma = ? And inflection = ?
                     """,
-                (base, inflected),
+                (lemma, inflected),
             ).fetchone()
 
             if highest_learning_interval is None:
@@ -437,47 +439,6 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             # print(f"key: {key}, index: {index}")
 
         return morph_priorities
-
-    def update_learning_intervals_and_insert_many_into_morph_table(
-        self, morph_table_data: list[dict[str, Any]]
-    ) -> None:
-        lemmas_learning_intervals: dict[str, int] = {}
-
-        for morph_data_dict in morph_table_data:
-            lemma = morph_data_dict["lemma"]
-            inflection_interval = morph_data_dict[
-                "highest_inflection_learning_interval"
-            ]
-
-            if lemma in lemmas_learning_intervals:
-                if inflection_interval > lemmas_learning_intervals[lemma]:
-                    lemmas_learning_intervals[lemma] = inflection_interval
-            else:
-                lemmas_learning_intervals[lemma] = inflection_interval
-
-        for morph_data_dict in morph_table_data:
-            lemma = morph_data_dict["lemma"]
-            morph_data_dict["highest_lemma_learning_interval"] = (
-                lemmas_learning_intervals[lemma]
-            )
-            morph_data_dict["highest_inflection_learning_interval"] = (
-                lemmas_learning_intervals[lemma]
-            )
-
-        # print(f"morph_table_data lemmas")
-        # for morph_data_dict in morph_table_data:
-        #     pprint.pp(morph_data_dict)
-
-        self.insert_many_into_morph_table(morph_table_data)
-        #
-        # intermediate_morph_list = []
-        #
-        # if am_config.algorithm_lemma_priority:
-        #     for row in morphs_query:
-        #         intermediate_morph_list.append(row[0] + row[0])  # lemma + lemma
-        # else:
-        #     for row in morphs_query:
-        #         intermediate_morph_list.append(row[0] + row[1])  # lemma + inflection
 
     def print_table(self, table: str) -> None:
         try:

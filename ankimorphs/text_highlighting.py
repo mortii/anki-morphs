@@ -180,15 +180,18 @@ def _extract_span_elements_and_filter_string(
 
     for morph in morphs_by_size:
         # print(f"morph: {morph.lemma}, {morph.inflection}")
-        assert morph.highest_inflection_learning_interval is not None
+        learning_interval: int
 
-        # todo: check for lemma use
-        if morph.highest_inflection_learning_interval == 0:
+        if am_config.evaluate_morph_inflection:
+            learning_interval = getattr(morph, "highest_inflection_learning_interval")
+        else:
+            learning_interval = getattr(morph, "highest_lemma_learning_interval")
+
+        assert learning_interval is not None
+
+        if learning_interval == 0:
             morph_status = "unknown"
-        elif (
-            morph.highest_inflection_learning_interval
-            < am_config.interval_for_known_morphs
-        ):
+        elif learning_interval < am_config.interval_for_known_morphs:
             morph_status = "learning"
         else:
             morph_status = "known"
