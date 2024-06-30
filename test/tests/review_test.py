@@ -1,5 +1,8 @@
 from functools import partial
-from test.fake_configs import config_inflection_priority, config_lemma_priority
+from test.fake_configs import (
+    config_inflection_evaluation,
+    config_lemma_evaluation_lemma_extra_fields,
+)
 
 # todo: rename to "fake_environment" to "fake_environment_fixture"
 from test.fake_environment_module import (  # pylint:disable=unused-import
@@ -19,13 +22,13 @@ from ankimorphs.reviewing_utils import SkippedCards
 ################################################################
 #                  CASE: SKIP INFLECTIONS
 ################################################################
-# Config contains "lemma priority", i.e. we want to skip subsequent
+# Config contains "lemma evaluation", i.e. we want to skip subsequent
 # cards that have the same lemmas as those studied before
 ################################################################
 case_skip_inflections_params = FakeEnvironmentParams(
-    collection="lemma_priority_collection",
-    config=config_lemma_priority,
-    am_db="lemma_priority.db",
+    collection="lemma_evaluation_lemma_extra_fields_collection",
+    config=config_lemma_evaluation_lemma_extra_fields,
+    am_db="lemma_evaluation.db",
 )
 case_skip_inflections_expected = [1715776939301, 1718190526053, 1717943898444]
 
@@ -33,14 +36,14 @@ case_skip_inflections_expected = [1715776939301, 1718190526053, 1717943898444]
 ################################################################
 #               CASE: DON'T SKIP INFLECTIONS
 ################################################################
-# Config contains "inflection priority", i.e. we DON'T want to
+# Config contains "inflection evaluation", i.e. we DON'T want to
 # skip any subsequent cards that have the same lemmas as those
 # studied before
 ################################################################
 case_dont_skip_inflections_params = FakeEnvironmentParams(
-    collection="lemma_priority_collection",
-    config=config_inflection_priority,
-    am_db="lemma_priority.db",
+    collection="lemma_evaluation_lemma_extra_fields_collection",
+    config=config_inflection_evaluation,
+    am_db="lemma_evaluation.db",
 )
 case_dont_skip_inflections_expected = [1715776939301, 1715776946917, 1715776953867]
 

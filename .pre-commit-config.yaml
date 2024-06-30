@@ -99,9 +99,9 @@ repos:
           (?x)^(
               ^test/.*|
           )$
-#      - id: pytest
-#        name: pytest
-#        entry: pytest
-#        language: system
-#        pass_filenames: false
-#        always_run: true
+      - id: pytest
+        name: pytest
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true

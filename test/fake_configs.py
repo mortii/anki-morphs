@@ -17,11 +17,14 @@ default_config_dict["filters"][0]["field"] = "Front"
 default_config_dict["filters"][0][
     "morphemizer_description"
 ] = "AnkiMorphs: Language w/ Spaces"
+default_config_dict["filters"][0]["extra_all_morphs"] = True
+default_config_dict["filters"][0]["extra_all_morphs_count"] = True
 default_config_dict["filters"][0]["extra_highlighted"] = True
 default_config_dict["filters"][0]["extra_score"] = True
+default_config_dict["filters"][0]["extra_score_terms"] = True
+default_config_dict["filters"][0]["extra_study_morphs"] = True
 default_config_dict["filters"][0]["extra_unknowns"] = True
 default_config_dict["filters"][0]["extra_unknowns_count"] = True
-default_config_dict["filters"][0]["extra_score_terms"] = True
 default_config_dict["filters"][0]["field_index"] = 0
 default_config_dict["filters"][0]["morph_priority_selection"] = "Collection frequency"
 
@@ -89,24 +92,28 @@ config_known_morphs_enabled["filters"][0][
 
 
 ################################################################
-#             config_lemma_priority
+#        config_lemma_evaluation_lemma_extra_fields
 ################################################################
-# Matches the "lemma_priority_collection.anki2" collection.
+# Matches "lemma_evaluation_lemma_extra_fields_collection.anki2".
 ################################################################
-config_lemma_priority = copy.deepcopy(default_config_dict)
-config_lemma_priority["filters"][0]["morphemizer_description"] = "spaCy: en_core_web_sm"
-config_lemma_priority["evaluate_morph_inflection"] = False
-config_lemma_priority["evaluate_morph_lemma"] = True
+config_lemma_evaluation_lemma_extra_fields = copy.deepcopy(default_config_dict)
+config_lemma_evaluation_lemma_extra_fields["filters"][0][
+    "morphemizer_description"
+] = "spaCy: en_core_web_sm"
+config_lemma_evaluation_lemma_extra_fields["evaluate_morph_inflection"] = False
+config_lemma_evaluation_lemma_extra_fields["evaluate_morph_lemma"] = True
+config_lemma_evaluation_lemma_extra_fields["extra_fields_display_lemmas"] = True
+config_lemma_evaluation_lemma_extra_fields["extra_fields_display_inflections"] = False
 
 
 ################################################################
-#             config_inflection_priority
+#             config_inflection_evaluation
 ################################################################
-# The inverse of "config_lemma_priority"
+# The inverse of "config_lemma_evaluation_lemma_extra_fields"
 ################################################################
-config_inflection_priority = copy.deepcopy(config_lemma_priority)
-config_inflection_priority["evaluate_morph_inflection"] = True
-config_inflection_priority["evaluate_morph_lemma"] = False
+config_inflection_evaluation = copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
+config_inflection_evaluation["evaluate_morph_inflection"] = True
+config_inflection_evaluation["evaluate_morph_lemma"] = False
 
 
 ################################################################

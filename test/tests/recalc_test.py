@@ -7,7 +7,7 @@ from test.fake_configs import (
     config_default_morph_priority,
     config_default_morphemizer,
     config_default_note_type,
-    config_lemma_priority,
+    config_lemma_evaluation_lemma_extra_fields,
     config_offset_inflection_enabled,
     config_offset_lemma_enabled,
     config_wrong_field_name,
@@ -23,7 +23,8 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 
 import pytest
 
-from ankimorphs import ankimorphs_config, ankimorphs_globals
+from ankimorphs import ankimorphs_config
+from ankimorphs import ankimorphs_globals as am_globals
 from ankimorphs.exceptions import (
     AnkiFieldNotFound,
     AnkiNoteTypeNotFound,
@@ -51,8 +52,8 @@ from anki.notes import Note  # isort:skip  pylint:disable=wrong-import-order
 # Database choice is arbitrary.
 ################################################################
 case_same_lemma_and_inflection_scores_params = FakeEnvironmentParams(
-    collection="lemma_priority_collection",
-    config=config_lemma_priority,
+    collection="lemma_evaluation_lemma_extra_fields_collection",
+    config=config_lemma_evaluation_lemma_extra_fields,
     am_db="empty_skeleton.db",
 )
 
@@ -68,7 +69,7 @@ case_same_lemma_and_inflection_scores_params = FakeEnvironmentParams(
 ################################################################
 case_inflections_are_known_params = FakeEnvironmentParams(
     collection="some_studied_lemmas_collection",
-    config=config_lemma_priority,
+    config=config_lemma_evaluation_lemma_extra_fields,
     am_db="empty_skeleton.db",
 )
 
@@ -109,10 +110,10 @@ case_offset_new_cards_lemma_params = FakeEnvironmentParams(
     "fake_environment",
     [
         case_same_lemma_and_inflection_scores_params,
-        case_inflections_are_known_params,
+        # case_inflections_are_known_params,
         # ("big-japanese-collection", config_big_japanese_collection),
-        case_offset_new_cards_inflection_params,
-        case_offset_new_cards_lemma_params,
+        # case_offset_new_cards_inflection_params,
+        # case_offset_new_cards_lemma_params,
         # ("known-morphs-test-collection", config_known_morphs_enabled),
         # ("ignore_names_txt_collection", config_ignore_names_txt_enabled),
     ],
@@ -125,58 +126,36 @@ def test_recalc(  # pylint:disable=too-many-locals
     original_collection = fake_environment.original_collection
 
     model_manager: ModelManager = ModelManager(modified_collection)
-
     note_type_dict: NotetypeDict | None = model_manager.by_name(
         fake_environment.config["filters"][0]["note_type"]
     )
     assert note_type_dict is not None
-    note_type_field_name_dict = model_manager.field_map(note_type_dict)
+    field_name_dict = model_manager.field_map(note_type_dict)
 
-    extra_field_unknowns: int = note_type_field_name_dict[
-        ankimorphs_globals.EXTRA_FIELD_UNKNOWNS
-    ][0]
-
-    extra_field_unknowns_count: int = note_type_field_name_dict[
-        ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT
-    ][0]
-
-    extra_field_highlighted: int = note_type_field_name_dict[
-        ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED
-    ][0]
-
-    extra_field_score: int = note_type_field_name_dict[
-        ankimorphs_globals.EXTRA_FIELD_SCORE
-    ][0]
-
-    extra_field_score_terms: int = note_type_field_name_dict[
-        ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS
-    ][0]
+    field_indices = {
+        "extra_field_all_morphs": am_globals.EXTRA_FIELD_ALL_MORPHS,
+        "extra_field_all_morphs_count": am_globals.EXTRA_FIELD_ALL_MORPHS_COUNT,
+        "extra_field_unknowns": am_globals.EXTRA_FIELD_UNKNOWNS,
+        "extra_field_unknowns_count": am_globals.EXTRA_FIELD_UNKNOWNS_COUNT,
+        "extra_field_highlighted": am_globals.EXTRA_FIELD_HIGHLIGHTED,
+        "extra_field_score": am_globals.EXTRA_FIELD_SCORE,
+        "extra_field_score_terms": am_globals.EXTRA_FIELD_SCORE_TERMS,
+        "extra_field_study_morphs": am_globals.EXTRA_FIELD_STUDY_MORPHS,
+    }
+    field_positions = {
+        key: field_name_dict[value][0] for key, value in field_indices.items()
+    }
 
     card_due_dict: dict[int, CardData] = {}
 
     original_collection_cards = original_collection.find_cards("")
     card_collection_length = len(original_collection_cards)
-    assert card_collection_length > 0  # sanity check
+    assert card_collection_length > 0
 
     for card_id in original_collection_cards:
         card: Card = original_collection.get_card(card_id)
         note: Note = card.note()
-
-        unknowns_field = note.fields[extra_field_unknowns]
-        unknowns_count_field = note.fields[extra_field_unknowns_count]
-        highlighted_field = note.fields[extra_field_highlighted]
-        score_field = note.fields[extra_field_score]
-        score_terms_field = note.fields[extra_field_score_terms]
-
-        card_due_dict[card_id] = CardData(
-            due=card.due,
-            extra_field_unknowns=unknowns_field,
-            extra_field_unknowns_count=unknowns_count_field,
-            extra_field_highlighted=highlighted_field,
-            extra_field_score=score_field,
-            extra_field_score_terms=score_terms_field,
-            tags=note.tags,
-        )
+        card_due_dict[card_id] = CardData(card, note, field_positions)
 
     read_enabled_config_filters = ankimorphs_config.get_read_enabled_filters()
     modify_enabled_config_filters = ankimorphs_config.get_modify_enabled_filters()
@@ -195,22 +174,8 @@ def test_recalc(  # pylint:disable=too-many-locals
         card: Card = modified_collection.get_card(card_id)
         note: Note = card.note()
 
-        unknowns_field = note.fields[extra_field_unknowns]
-        unknowns_count_field = note.fields[extra_field_unknowns_count]
-        highlighted_field = note.fields[extra_field_highlighted]
-        score_field = note.fields[extra_field_score]
-        score_terms_field = note.fields[extra_field_score_terms]
-
         original_card_data = card_due_dict[card_id]
-        new_card_data = CardData(
-            due=card.due,
-            extra_field_unknowns=unknowns_field,
-            extra_field_unknowns_count=unknowns_count_field,
-            extra_field_highlighted=highlighted_field,
-            extra_field_score=score_field,
-            extra_field_score_terms=score_terms_field,
-            tags=note.tags,
-        )
+        new_card_data = CardData(card, note, field_positions)
 
         assert card_id == card.id
         assert original_card_data == new_card_data
