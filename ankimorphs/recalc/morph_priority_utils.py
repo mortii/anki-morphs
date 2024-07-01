@@ -108,7 +108,7 @@ def _get_inflection_priority_full_frequency_file(
             break
         # print(f"row: {row}")
         # print(f"row[inflection_priority_column]: {row[inflection_priority_column]}")
-        key = row[0] + row[1]
+        key = row[0] + row[1]  # todo: use dynamic column, dont assume 0
         morph_priority[key] = int(row[inflection_priority_column])
         # print(f"key: {key}, prio: {morph_priority[key]}")
 

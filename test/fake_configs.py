@@ -82,18 +82,11 @@ config_offset_lemma_enabled[ConfigKeys.EVALUATE_MORPH_LEMMA] = True
 ################################################################
 #             config_known_morphs_enabled
 ################################################################
-#
-#
-#
+# Matches `known-morphs-collection.anki2`.
 ################################################################
 # fmt: off
 config_known_morphs_enabled = copy.deepcopy(default_config_dict)
 config_known_morphs_enabled[ConfigKeys.READ_KNOWN_MORPHS_FOLDER] = True
-
-config_known_morphs_enabled_filter = config_known_morphs_enabled[ConfigKeys.FILTERS][0]
-config_known_morphs_enabled_filter[FilterKeys.NOTE_TYPE] = "known-morphs-note-type"
-config_known_morphs_enabled_filter[FilterKeys.FIELD] = "known-morphs-note-type"
-config_known_morphs_enabled_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "AnkiMorphs: Language w/ Spaces"
 # fmt: on
 
 ################################################################

@@ -41,3 +41,9 @@ class FrequencyFileMalformedException(Exception):
 
     def __init__(self, path: str):
         self.path = path
+
+
+class KnownMorphsFileMalformedException(Exception):
+    """The file is malformed"""
+
+    # todo: provide path feedback

@@ -26,6 +26,7 @@ from aqt.reviewer import Reviewer
 from ankimorphs import (
     ankimorphs_config,
     ankimorphs_db,
+    ankimorphs_globals,
     name_file_utils,
     progress_utils,
     reviewing_utils,
@@ -36,10 +37,17 @@ from ankimorphs.recalc import anki_data_utils, caching, recalc_main
 
 
 class FakeEnvironmentParams:
-    def __init__(self, collection: str, config: dict[str, Any], am_db: str):
+    def __init__(
+        self,
+        collection: str,
+        config: dict[str, Any],
+        am_db: str | None = None,
+        known_morphs_dir: str | None = None,
+    ):
         self.collection = collection
         self.config = config
         self.am_db = am_db
+        self.known_morphs_dir = known_morphs_dir
 
 
 class FakeEnvironment:
@@ -74,8 +82,15 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
         _config_data: dict[str, Any] = request.param.config
         assert isinstance(_config_data, dict)
 
-        _am_db_name: str = request.param.am_db
+        _am_db_name: str | None = request.param.am_db
+        if _am_db_name is None:
+            _am_db_name = "empty_skeleton.db"
         assert isinstance(_am_db_name, str)
+
+        _known_morphs_dir: str | None = request.param.known_morphs_dir
+        if _known_morphs_dir is None:
+            _known_morphs_dir = "known-morphs-valid"
+        assert isinstance(_known_morphs_dir, str)
 
     except AttributeError as _error:
         print('Missing "@pytest.mark.parametrize"')
@@ -105,7 +120,7 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     mock_mw.backend = setupLangAndBackend(
         pm=mock.Mock(name="fake_pm"), app=mock.Mock(name="fake_app"), force="en"
     )
-    mock_mw.pm.profileFolder.return_value = os.path.join("tests", "data")
+    mock_mw.pm.profileFolder.return_value = os.path.join("test", "data")
     mock_mw.progress.want_cancel.return_value = False
     mock_mw.addonManager.getConfig.return_value = _config_data
     mock_mw.reviewer = Reviewer(mock_mw)
@@ -144,6 +159,9 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     patch_testing_variable = mock.patch.object(
         spacy_wrapper, "testing_environment", True
     )
+    patch_known_morphs_dir = mock.patch.object(
+        ankimorphs_globals, "KNOWN_MORPHS_DIR_NAME", _known_morphs_dir
+    )
 
     patch_reviewing_am_db.start()
     patch_recalc_am_db.start()
@@ -151,6 +169,7 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     patch_tooltip.start()
 
     patch_testing_variable.start()
+    patch_known_morphs_dir.start()
     sys.path.append(str(fake_morphemizers_path))
 
     try:
@@ -165,29 +184,29 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     except anki.errors.DBError:
         yield None
 
-    finally:
-        mock_mw.col.close()
-        mock_db.con.close()
+    mock_mw.col.close()
+    mock_db.con.close()
 
-        patch_recalc_mw.stop()
-        patch_caching_mw.stop()
-        patch_progress_mw.stop()
-        patch_am_db_mw.stop()
-        patch_config_mw.stop()
-        patch_name_file_utils_mw.stop()
-        patch_anki_data_utils_mw.stop()
-        patch_reviewing_mw.stop()
-        patch_gd_mw.stop()
+    patch_recalc_mw.stop()
+    patch_caching_mw.stop()
+    patch_progress_mw.stop()
+    patch_am_db_mw.stop()
+    patch_config_mw.stop()
+    patch_name_file_utils_mw.stop()
+    patch_anki_data_utils_mw.stop()
+    patch_reviewing_mw.stop()
+    patch_gd_mw.stop()
 
-        patch_reviewing_am_db.stop()
-        patch_recalc_am_db.stop()
-        patch_caching_am_db.stop()
-        patch_tooltip.stop()
+    patch_reviewing_am_db.stop()
+    patch_recalc_am_db.stop()
+    patch_caching_am_db.stop()
+    patch_tooltip.stop()
 
-        patch_testing_variable.stop()
-        sys.path.remove(str(fake_morphemizers_path))
+    patch_testing_variable.stop()
+    patch_known_morphs_dir.stop()
+    sys.path.remove(str(fake_morphemizers_path))
 
-        Path.unlink(PATH_DB_COPY, missing_ok=True)
-        Path.unlink(collection_path_duplicate, missing_ok=True)
-        shutil.rmtree(path_original_collection_media, ignore_errors=True)
-        shutil.rmtree(collection_path_duplicate_media, ignore_errors=True)
+    Path.unlink(PATH_DB_COPY, missing_ok=True)
+    Path.unlink(collection_path_duplicate, missing_ok=True)
+    shutil.rmtree(path_original_collection_media, ignore_errors=True)
+    shutil.rmtree(collection_path_duplicate_media, ignore_errors=True)

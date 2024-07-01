@@ -6,10 +6,11 @@ from typing import Any
 
 from aqt import mw
 
-from .. import ankimorphs_globals, progress_utils
+from .. import ankimorphs_globals as am_globals
+from .. import progress_utils
 from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from ..ankimorphs_db import AnkiMorphsDB
-from ..exceptions import CancelledOperationException
+from ..exceptions import CancelledOperationException, KnownMorphsFileMalformedException
 from ..morphemizers import morphemizer as morphemizer_module
 from ..morphemizers import spacy_wrapper
 from ..morphemizers.morphemizer import SpacyMorphemizer
@@ -188,12 +189,18 @@ def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:
 
     morphs_from_files: list[dict[str, Any]] = []
     known_morphs_dir_path: Path = Path(
-        mw.pm.profileFolder(), ankimorphs_globals.KNOWN_MORPHS_DIR_NAME
+        mw.pm.profileFolder(), am_globals.KNOWN_MORPHS_DIR_NAME
     )
+
+    print(f"known_morphs_dir_path: {known_morphs_dir_path}")
+
     input_files: list[Path] = []
 
     for path in known_morphs_dir_path.rglob("*.csv"):
         input_files.append(path)
+
+    print(f"input_files: {input_files}")
+    print(f"input_files len: {len(input_files)}")
 
     for input_file in input_files:
         if mw.progress.want_cancel():  # user clicked 'x'
@@ -203,20 +210,90 @@ def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:
             label=f"Importing known morphs from file:<br>{input_file.relative_to(known_morphs_dir_path)}",
         )
 
+        # todo: add comment about supporting backwards compatibility
+
+        print(f"input_file: {input_file}")
+
         with open(input_file, encoding="utf-8") as csvfile:
             morph_reader = csv.reader(csvfile, delimiter=",")
-            next(morph_reader, None)  # skip the headers
-            for row in morph_reader:
-                lemma: str = row[0]
-                inflection: str = row[1]
-                morphs_from_files.append(
-                    {
-                        "lemma": lemma,
-                        "inflection": inflection,
-                        "highest_learning_interval": am_config.interval_for_known_morphs,
-                    }
+            headers: list[str] | None = next(morph_reader, None)
+
+            if headers is None:
+                raise KnownMorphsFileMalformedException
+
+            headers_lower = [header.lower() for header in headers]
+            # print(f"headers_lower_case: {headers_lower}")
+            # print(f"am_globals.LEMMA_HEADER.lower(): {am_globals.LEMMA_HEADER.lower()}")
+
+            if am_globals.LEMMA_HEADER.lower() not in headers_lower:
+                raise KnownMorphsFileMalformedException
+
+            lemma_column: int = headers_lower.index(am_globals.LEMMA_HEADER.lower())
+            inflection_column: int = -1
+
+            try:
+                inflection_column = headers_lower.index(
+                    am_globals.INFLECTION_HEADER.lower()
+                )
+            except ValueError:
+                print("ValueError!")
+
+            if inflection_column == -1:
+                morphs_from_files += _get_morphs_from_minimum_format(
+                    am_config, morph_reader, lemma_column
+                )
+            else:
+                morphs_from_files += _get_morphs_from_full_format(
+                    am_config, morph_reader, lemma_column, inflection_column
                 )
 
+    return morphs_from_files
+
+
+def _get_morphs_from_minimum_format(
+    am_config: AnkiMorphsConfig, morph_reader: Any, lemma_column: int
+) -> list[dict[str, Any]]:
+    morphs_from_files: list[dict[str, Any]] = []
+
+    print("_get_morphs_from_minimum_format")
+    for row in morph_reader:
+        print(f"row: {row}")
+        lemma: str = row[lemma_column]
+        print(f"lemma: {lemma}")
+        morphs_from_files.append(
+            {
+                "lemma": lemma,
+                "inflection": lemma,
+                "highest_lemma_learning_interval": am_config.interval_for_known_morphs,
+                "highest_inflection_learning_interval": am_config.interval_for_known_morphs,
+            }
+        )
+    return morphs_from_files
+
+
+def _get_morphs_from_full_format(
+    am_config: AnkiMorphsConfig,
+    morph_reader: Any,
+    lemma_column: int,
+    inflection_column: int,
+) -> list[dict[str, Any]]:
+    morphs_from_files: list[dict[str, Any]] = []
+
+    print("_get_morphs_from_full_format")
+
+    for row in morph_reader:
+        print(f"row: {row}")
+        lemma: str = row[lemma_column]
+        inflection: str = row[inflection_column]
+        print(f"lemma: {lemma}, inflection: {inflection}")
+        morphs_from_files.append(
+            {
+                "lemma": lemma,
+                "inflection": inflection,
+                "highest_lemma_learning_interval": am_config.interval_for_known_morphs,
+                "highest_inflection_learning_interval": am_config.interval_for_known_morphs,
+            }
+        )
     return morphs_from_files
 
 

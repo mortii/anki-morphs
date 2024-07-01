@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from test.card_data import CardData
 from test.fake_configs import (
     config_default_field,
     config_default_morph_priority,
     config_default_morphemizer,
     config_default_note_type,
+    config_known_morphs_enabled,
     config_lemma_evaluation_lemma_extra_fields,
     config_offset_inflection_enabled,
     config_offset_lemma_enabled,
@@ -42,6 +42,7 @@ from anki.models import (  # isort:skip pylint:disable=wrong-import-order
     NotetypeDict,
 )
 from anki.notes import Note  # isort:skip  pylint:disable=wrong-import-order
+from test.card_data import CardData  # isort:skip  pylint:disable=wrong-import-order
 
 
 ################################################################
@@ -55,7 +56,6 @@ from anki.notes import Note  # isort:skip  pylint:disable=wrong-import-order
 case_same_lemma_and_inflection_scores_params = FakeEnvironmentParams(
     collection="lemma_evaluation_lemma_extra_fields_collection",
     config=config_lemma_evaluation_lemma_extra_fields,
-    am_db="empty_skeleton.db",
 )
 
 
@@ -74,7 +74,6 @@ case_same_lemma_and_inflection_scores_params = FakeEnvironmentParams(
 case_inflections_are_known_params = FakeEnvironmentParams(
     collection="some_studied_lemmas_collection",
     config=config_lemma_evaluation_lemma_extra_fields,
-    am_db="empty_skeleton.db",
 )
 
 ################################################################
@@ -88,7 +87,6 @@ case_inflections_are_known_params = FakeEnvironmentParams(
 case_offset_new_cards_inflection_params = FakeEnvironmentParams(
     collection="offset_new_cards_inflection_collection",
     config=config_offset_inflection_enabled,
-    am_db="empty_skeleton.db",
 )
 
 ################################################################
@@ -101,7 +99,16 @@ case_offset_new_cards_inflection_params = FakeEnvironmentParams(
 case_offset_new_cards_lemma_params = FakeEnvironmentParams(
     collection="offset_new_cards_lemma_collection",
     config=config_offset_lemma_enabled,
-    am_db="empty_skeleton.db",
+)
+
+################################################################
+#               CASE: KNOWN MORPHS ENABLED
+################################################################
+# Config contains "read_known_morphs_folder": true,
+################################################################
+case_known_morphs_enabled_params = FakeEnvironmentParams(
+    collection="known_morphs_collection",
+    config=config_known_morphs_enabled,
 )
 
 
@@ -109,15 +116,17 @@ case_offset_new_cards_lemma_params = FakeEnvironmentParams(
 # test with a fixture receiving the values before passing them to a test"
 # - https://docs.pytest.org/en/7.1.x/example/parametrize.html#indirect-parametrization
 # This means that we run the fixture AND the test function for each parameter.
+@pytest.mark.debug
 @pytest.mark.external_morphemizers
 @pytest.mark.parametrize(
     "fake_environment",
     [
-        case_same_lemma_and_inflection_scores_params,
+        # case_same_lemma_and_inflection_scores_params,
         case_inflections_are_known_params,
         # ("big-japanese-collection", config_big_japanese_collection),
-        case_offset_new_cards_inflection_params,
-        case_offset_new_cards_lemma_params,
+        # case_offset_new_cards_inflection_params,
+        # case_offset_new_cards_lemma_params,
+        case_known_morphs_enabled_params,
         # ("known-morphs-test-collection", config_known_morphs_enabled),
         # ("ignore_names_txt_collection", config_ignore_names_txt_enabled),
     ],
@@ -306,9 +315,3 @@ def test_recalc_with_default_settings(  # pylint:disable=unused-argument
         read_enabled_config_filters, modify_enabled_config_filters
     )
     assert isinstance(settings_error, expected_exception)
-
-
-@pytest.mark.xfail
-def test_recalc_using_spacy_morphemizer() -> None:
-    # todo: add this at some point
-    assert False

@@ -57,7 +57,8 @@ Current card collections (test/data/card_collections):
   has been studied, so the other cards that have those lemmas should contain no unknowns.
 - `big-japanese-collection.anki2` (https://github.com/mortii/anki-decks)
 - `ignore_names_txt_collection.anki2`
-- `known-morphs-test-collection.anki2`
+- `known-morphs-collection.anki2`
+  - contains one card with 7 morphs, 5 of which are found in the 'known-morphs-valid' directory
 - `offset_new_cards_inflection_collection.anki2`
   - Contains two cards, both with "hello".
 - `offset_new_cards_lemma_collection.anki2`
