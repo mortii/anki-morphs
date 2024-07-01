@@ -7,7 +7,8 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
     QTreeWidgetItem,
 )
 
-from .. import ankimorphs_globals, message_box_utils
+from .. import ankimorphs_globals as am_globals
+from .. import message_box_utils
 from ..ankimorphs_config import (
     AnkiMorphsConfig,
     FilterTypeAlias,
@@ -39,14 +40,14 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
         }
 
         self._extra_fields_names = [
-            ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS,
-            ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS_COUNT,
-            ankimorphs_globals.EXTRA_FIELD_UNKNOWNS,
-            ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT,
-            ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED,
-            ankimorphs_globals.EXTRA_FIELD_SCORE,
-            ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS,
-            ankimorphs_globals.EXTRA_FIELD_STUDY_MORPHS,
+            am_globals.EXTRA_FIELD_ALL_MORPHS,
+            am_globals.EXTRA_FIELD_ALL_MORPHS_COUNT,
+            am_globals.EXTRA_FIELD_UNKNOWN_MORPHS,
+            am_globals.EXTRA_FIELD_UNKNOWN_MORPHS_COUNT,
+            am_globals.EXTRA_FIELD_HIGHLIGHTED,
+            am_globals.EXTRA_FIELD_SCORE,
+            am_globals.EXTRA_FIELD_SCORE_TERMS,
+            am_globals.EXTRA_FIELD_STUDY_MORPHS,
         ]
 
         # hides the '1' number in the top left corner
@@ -78,7 +79,7 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
         self.ui.extraFieldsTreeWidget.blockSignals(True)
 
         for note_type in self._selected_note_types:
-            if note_type == ankimorphs_globals.NONE_OPTION:
+            if note_type == am_globals.NONE_OPTION:
                 continue
 
             top_node = self._create_top_node(note_type, restore_defaults)
@@ -128,8 +129,8 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
         extra_score: bool = False
         extra_score_terms: bool = False
         extra_highlighted: bool = False
-        extra_unknowns: bool = False
-        extra_unknowns_count: bool = False
+        extra_unknown_morphs: bool = False
+        extra_unknown_morphs_count: bool = False
         extra_study_morphs: bool = False
 
         if restore_defaults is False:
@@ -140,20 +141,20 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
                     extra_score = _filter.extra_score
                     extra_score_terms = _filter.extra_score_terms
                     extra_highlighted = _filter.extra_highlighted
-                    extra_unknowns = _filter.extra_unknowns
-                    extra_unknowns_count = _filter.extra_unknowns_count
+                    extra_unknown_morphs = _filter.extra_unknown_morphs
+                    extra_unknown_morphs_count = _filter.extra_unknown_morphs_count
                     extra_study_morphs = _filter.extra_study_morphs
                     break
 
         selected_extra_fields: dict[str, bool] = {
-            ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS: extra_all_morphs,
-            ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS_COUNT: extra_all_morphs_count,
-            ankimorphs_globals.EXTRA_FIELD_SCORE: extra_score,
-            ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS: extra_score_terms,
-            ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED: extra_highlighted,
-            ankimorphs_globals.EXTRA_FIELD_UNKNOWNS: extra_unknowns,
-            ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT: extra_unknowns_count,
-            ankimorphs_globals.EXTRA_FIELD_STUDY_MORPHS: extra_study_morphs,
+            am_globals.EXTRA_FIELD_ALL_MORPHS: extra_all_morphs,
+            am_globals.EXTRA_FIELD_ALL_MORPHS_COUNT: extra_all_morphs_count,
+            am_globals.EXTRA_FIELD_SCORE: extra_score,
+            am_globals.EXTRA_FIELD_SCORE_TERMS: extra_score_terms,
+            am_globals.EXTRA_FIELD_HIGHLIGHTED: extra_highlighted,
+            am_globals.EXTRA_FIELD_UNKNOWN_MORPHS: extra_unknown_morphs,
+            am_globals.EXTRA_FIELD_UNKNOWN_MORPHS_COUNT: extra_unknown_morphs_count,
+            am_globals.EXTRA_FIELD_STUDY_MORPHS: extra_study_morphs,
         }
         print(f"selected_extra_fields: {selected_extra_fields}")
         return selected_extra_fields
@@ -224,14 +225,14 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
                 break
 
         # fmt: off
-        extra_all_morphs = ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS in selected_fields
-        extra_all_morphs_count = ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS_COUNT in selected_fields
-        extra_score = ankimorphs_globals.EXTRA_FIELD_SCORE in selected_fields
-        extra_score_terms = ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS in selected_fields
-        extra_highlighted = ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED in selected_fields
-        extra_unknowns = ankimorphs_globals.EXTRA_FIELD_UNKNOWNS in selected_fields
-        extra_unknowns_count = ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT in selected_fields
-        extra_study_morphs = ankimorphs_globals.EXTRA_FIELD_STUDY_MORPHS in selected_fields
+        extra_all_morphs = am_globals.EXTRA_FIELD_ALL_MORPHS in selected_fields
+        extra_all_morphs_count = am_globals.EXTRA_FIELD_ALL_MORPHS_COUNT in selected_fields
+        extra_score = am_globals.EXTRA_FIELD_SCORE in selected_fields
+        extra_score_terms = am_globals.EXTRA_FIELD_SCORE_TERMS in selected_fields
+        extra_highlighted = am_globals.EXTRA_FIELD_HIGHLIGHTED in selected_fields
+        extra_unknown_morphs = am_globals.EXTRA_FIELD_UNKNOWN_MORPHS in selected_fields
+        extra_unknown_morphs_count = am_globals.EXTRA_FIELD_UNKNOWN_MORPHS_COUNT in selected_fields
+        extra_study_morphs = am_globals.EXTRA_FIELD_STUDY_MORPHS in selected_fields
         # fmt: on
 
         return {
@@ -240,8 +241,8 @@ class ExtraFieldsTab(SettingsTab, DataSubscriber, DataExtractor):
             RawConfigFilterKeys.EXTRA_SCORE: extra_score,
             RawConfigFilterKeys.EXTRA_SCORE_TERMS: extra_score_terms,
             RawConfigFilterKeys.EXTRA_HIGHLIGHTED: extra_highlighted,
-            RawConfigFilterKeys.EXTRA_UNKNOWNS: extra_unknowns,
-            RawConfigFilterKeys.EXTRA_UNKNOWNS_COUNT: extra_unknowns_count,
+            RawConfigFilterKeys.EXTRA_UNKNOWN_MORPHS: extra_unknown_morphs,
+            RawConfigFilterKeys.EXTRA_UNKNOWN_MORPHS_COUNT: extra_unknown_morphs_count,
             RawConfigFilterKeys.EXTRA_STUDY_MORPHS: extra_study_morphs,
         }
 

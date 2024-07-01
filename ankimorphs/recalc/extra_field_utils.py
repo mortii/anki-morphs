@@ -4,7 +4,9 @@ from anki.models import FieldDict, ModelManager, NotetypeDict
 from anki.notes import Note
 from aqt import mw
 
-from .. import ankimorphs_config, ankimorphs_globals, text_highlighting
+from .. import ankimorphs_config
+from .. import ankimorphs_globals as am_globals
+from .. import text_highlighting
 from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from ..morpheme import Morpheme
 
@@ -41,14 +43,14 @@ def _get_states_of_extra_fields(
 ) -> list[tuple[bool, str]]:
     # fmt: off
     return [
-        (config_filter.extra_all_morphs, ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS),
-        (config_filter.extra_all_morphs_count, ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS_COUNT),
-        (config_filter.extra_unknowns, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS),
-        (config_filter.extra_unknowns_count, ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT),
-        (config_filter.extra_highlighted, ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED),
-        (config_filter.extra_score, ankimorphs_globals.EXTRA_FIELD_SCORE),
-        (config_filter.extra_score_terms, ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS),
-        (config_filter.extra_study_morphs, ankimorphs_globals.EXTRA_FIELD_STUDY_MORPHS),
+        (config_filter.extra_all_morphs, am_globals.EXTRA_FIELD_ALL_MORPHS),
+        (config_filter.extra_all_morphs_count, am_globals.EXTRA_FIELD_ALL_MORPHS_COUNT),
+        (config_filter.extra_unknown_morphs, am_globals.EXTRA_FIELD_UNKNOWN_MORPHS),
+        (config_filter.extra_unknown_morphs_count, am_globals.EXTRA_FIELD_UNKNOWN_MORPHS_COUNT),
+        (config_filter.extra_highlighted, am_globals.EXTRA_FIELD_HIGHLIGHTED),
+        (config_filter.extra_score, am_globals.EXTRA_FIELD_SCORE),
+        (config_filter.extra_score_terms, am_globals.EXTRA_FIELD_SCORE_TERMS),
+        (config_filter.extra_study_morphs, am_globals.EXTRA_FIELD_STUDY_MORPHS),
     ]
     # fmt: on
 
@@ -77,29 +79,27 @@ def add_extra_fields_to_note_type(
 
 def update_all_morphs_field(
     am_config: AnkiMorphsConfig,
-    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
     all_morphs: list[Morpheme],
 ) -> None:
     all_morphs_string: str = _get_string_of_morphs(am_config, all_morphs)
-    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS][0]
+    index: int = field_name_dict[am_globals.EXTRA_FIELD_ALL_MORPHS][0]
     note.fields[index] = all_morphs_string
 
 
 def update_all_morphs_count_field(
-    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
     all_morphs: list[Morpheme],
 ) -> None:
-    index: int = note_type_field_name_dict[
-        ankimorphs_globals.EXTRA_FIELD_ALL_MORPHS_COUNT
-    ][0]
+    index: int = field_name_dict[am_globals.EXTRA_FIELD_ALL_MORPHS_COUNT][0]
     note.fields[index] = str(len(all_morphs))
 
 
-def update_unknowns_field(
+def update_unknown_morphs_field(
     am_config: AnkiMorphsConfig,
-    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
     card_id: int,
     card_morph_map_cache: dict[int, list[Morpheme]],
@@ -114,7 +114,7 @@ def update_unknowns_field(
         pass
 
     unknowns_string: str = _get_string_of_morphs(am_config, unknowns)
-    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_UNKNOWNS][0]
+    index: int = field_name_dict[am_globals.EXTRA_FIELD_UNKNOWN_MORPHS][0]
     note.fields[index] = unknowns_string
 
 
@@ -152,9 +152,9 @@ def _get_string_of_morphs(
     return morphs_string
 
 
-def update_unknowns_count_field(
+def update_unknown_morphs_count_field(
     am_config: AnkiMorphsConfig,
-    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
     card_id: int,
     card_morph_map_cache: dict[int, list[Morpheme]],
@@ -168,49 +168,43 @@ def update_unknowns_count_field(
         # card does not have morphs or is buggy in some way
         pass
 
-    index: int = note_type_field_name_dict[
-        ankimorphs_globals.EXTRA_FIELD_UNKNOWNS_COUNT
-    ][0]
+    index: int = field_name_dict[am_globals.EXTRA_FIELD_UNKNOWN_MORPHS_COUNT][0]
     note.fields[index] = str(len(unknowns))
 
 
 def update_score_field(
-    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
     score: int,
 ) -> None:
-    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_SCORE][0]
+    index: int = field_name_dict[am_globals.EXTRA_FIELD_SCORE][0]
     note.fields[index] = str(score)
 
 
 def update_study_morphs_field(
     am_config: AnkiMorphsConfig,
-    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
     unknowns: list[Morpheme],
 ) -> None:
     unknowns_string: str = _get_string_of_morphs(am_config, unknowns)
-    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_STUDY_MORPHS][
-        0
-    ]
+    index: int = field_name_dict[am_globals.EXTRA_FIELD_STUDY_MORPHS][0]
     note.fields[index] = unknowns_string
 
 
 def update_score_terms_field(
-    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
     score_terms: str,
 ) -> None:
-    index: int = note_type_field_name_dict[ankimorphs_globals.EXTRA_FIELD_SCORE_TERMS][
-        0
-    ]
+    index: int = field_name_dict[am_globals.EXTRA_FIELD_SCORE_TERMS][0]
     note.fields[index] = score_terms
 
 
 def update_highlighted_field(  # pylint:disable=too-many-arguments
     am_config: AnkiMorphsConfig,
     config_filter: AnkiMorphsConfigFilter,
-    note_type_field_name_dict: dict[str, tuple[int, FieldDict]],
+    field_name_dict: dict[str, tuple[int, FieldDict]],
     card_morph_map_cache: dict[int, list[Morpheme]],
     card_id: int,
     note: Note,
@@ -221,7 +215,7 @@ def update_highlighted_field(  # pylint:disable=too-many-arguments
         # card does not have morphs or is buggy in some way
         return
 
-    expression_field_index: int = note_type_field_name_dict[config_filter.field][0]
+    expression_field_index: int = field_name_dict[config_filter.field][0]
     text_to_highlight = note.fields[expression_field_index]
 
     highlighted_text = text_highlighting.get_highlighted_text(
@@ -230,7 +224,5 @@ def update_highlighted_field(  # pylint:disable=too-many-arguments
         text_to_highlight,
     )
 
-    extra_field_index: int = note_type_field_name_dict[
-        ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED
-    ][0]
+    extra_field_index: int = field_name_dict[am_globals.EXTRA_FIELD_HIGHLIGHTED][0]
     note.fields[extra_field_index] = highlighted_text

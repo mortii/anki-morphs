@@ -25,6 +25,7 @@ import pytest
 
 from ankimorphs import ankimorphs_config
 from ankimorphs import ankimorphs_globals as am_globals
+from ankimorphs.ankimorphs_config import RawConfigFilterKeys
 from ankimorphs.exceptions import (
     AnkiFieldNotFound,
     AnkiNoteTypeNotFound,
@@ -62,9 +63,12 @@ case_same_lemma_and_inflection_scores_params = FakeEnvironmentParams(
 #                 CASE: INFLECTIONS ARE KNOWN
 ################################################################
 # Same as case 1, but at least one card of each lemma has been
-# studied, so here we check that all inflections are set to "known".
+# studied. This checks the following:
+# 1. all inflections are set to "known"
+# 2. the 'am-fresh-morphs' tag are set
+# 3. the 'am-study-morph' field has a value while
 # Since one card has recently been studied, it will also
-# serve as a test for the 'am-fresh-morphs' tag.
+# serve as a test for the .
 # Database choice is arbitrary.
 ################################################################
 case_inflections_are_known_params = FakeEnvironmentParams(
@@ -110,10 +114,10 @@ case_offset_new_cards_lemma_params = FakeEnvironmentParams(
     "fake_environment",
     [
         case_same_lemma_and_inflection_scores_params,
-        # case_inflections_are_known_params,
+        case_inflections_are_known_params,
         # ("big-japanese-collection", config_big_japanese_collection),
-        # case_offset_new_cards_inflection_params,
-        # case_offset_new_cards_lemma_params,
+        case_offset_new_cards_inflection_params,
+        case_offset_new_cards_lemma_params,
         # ("known-morphs-test-collection", config_known_morphs_enabled),
         # ("ignore_names_txt_collection", config_ignore_names_txt_enabled),
     ],
@@ -133,14 +137,14 @@ def test_recalc(  # pylint:disable=too-many-locals
     field_name_dict = model_manager.field_map(note_type_dict)
 
     field_indices = {
-        "extra_field_all_morphs": am_globals.EXTRA_FIELD_ALL_MORPHS,
-        "extra_field_all_morphs_count": am_globals.EXTRA_FIELD_ALL_MORPHS_COUNT,
-        "extra_field_unknowns": am_globals.EXTRA_FIELD_UNKNOWNS,
-        "extra_field_unknowns_count": am_globals.EXTRA_FIELD_UNKNOWNS_COUNT,
-        "extra_field_highlighted": am_globals.EXTRA_FIELD_HIGHLIGHTED,
-        "extra_field_score": am_globals.EXTRA_FIELD_SCORE,
-        "extra_field_score_terms": am_globals.EXTRA_FIELD_SCORE_TERMS,
-        "extra_field_study_morphs": am_globals.EXTRA_FIELD_STUDY_MORPHS,
+        RawConfigFilterKeys.EXTRA_ALL_MORPHS: am_globals.EXTRA_FIELD_ALL_MORPHS,
+        RawConfigFilterKeys.EXTRA_ALL_MORPHS_COUNT: am_globals.EXTRA_FIELD_ALL_MORPHS_COUNT,
+        RawConfigFilterKeys.EXTRA_UNKNOWN_MORPHS: am_globals.EXTRA_FIELD_UNKNOWN_MORPHS,
+        RawConfigFilterKeys.EXTRA_UNKNOWN_MORPHS_COUNT: am_globals.EXTRA_FIELD_UNKNOWN_MORPHS_COUNT,
+        RawConfigFilterKeys.EXTRA_HIGHLIGHTED: am_globals.EXTRA_FIELD_HIGHLIGHTED,
+        RawConfigFilterKeys.EXTRA_SCORE: am_globals.EXTRA_FIELD_SCORE,
+        RawConfigFilterKeys.EXTRA_SCORE_TERMS: am_globals.EXTRA_FIELD_SCORE_TERMS,
+        RawConfigFilterKeys.EXTRA_STUDY_MORPHS: am_globals.EXTRA_FIELD_STUDY_MORPHS,
     }
     field_positions = {
         key: field_name_dict[value][0] for key, value in field_indices.items()

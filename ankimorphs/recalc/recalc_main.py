@@ -178,8 +178,8 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
         note_type_dict: NotetypeDict = extra_field_utils.add_extra_fields_to_note_type(
             model_manager, config_filter
         )
-        note_type_field_name_dict: dict[str, tuple[int, FieldDict]] = (
-            model_manager.field_map(note_type_dict)
+        field_name_dict: dict[str, tuple[int, FieldDict]] = model_manager.field_map(
+            note_type_dict
         )
         morph_priorities: dict[str, int] = _get_morph_priority(
             am_db, am_config, config_filter
@@ -231,7 +231,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                 if config_filter.extra_study_morphs:
                     extra_field_utils.update_study_morphs_field(
                         am_config=am_config,
-                        note_type_field_name_dict=note_type_field_name_dict,
+                        field_name_dict=field_name_dict,
                         note=note,
                         unknowns=cards_morph_metrics.unknown_morphs,
                     )
@@ -239,42 +239,42 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                 if config_filter.extra_all_morphs:
                     extra_field_utils.update_all_morphs_field(
                         am_config=am_config,
-                        note_type_field_name_dict=note_type_field_name_dict,
+                        field_name_dict=field_name_dict,
                         note=note,
                         all_morphs=cards_morph_metrics.all_morphs,
                     )
                 if config_filter.extra_all_morphs_count:
                     extra_field_utils.update_all_morphs_count_field(
-                        note_type_field_name_dict=note_type_field_name_dict,
+                        field_name_dict=field_name_dict,
                         note=note,
                         all_morphs=cards_morph_metrics.all_morphs,
                     )
 
                 if config_filter.extra_score:
                     extra_field_utils.update_score_field(
-                        note_type_field_name_dict=note_type_field_name_dict,
+                        field_name_dict=field_name_dict,
                         note=note,
                         score=score_values.score,
                     )
                 if config_filter.extra_score_terms:
                     extra_field_utils.update_score_terms_field(
-                        note_type_field_name_dict=note_type_field_name_dict,
+                        field_name_dict=field_name_dict,
                         note=note,
                         score_terms=score_values.terms,
                     )
 
-            if config_filter.extra_unknowns:
-                extra_field_utils.update_unknowns_field(
+            if config_filter.extra_unknown_morphs:
+                extra_field_utils.update_unknown_morphs_field(
                     am_config=am_config,
-                    note_type_field_name_dict=note_type_field_name_dict,
+                    field_name_dict=field_name_dict,
                     note=note,
                     card_id=card_id,
                     card_morph_map_cache=card_morph_map_cache,
                 )
-            if config_filter.extra_unknowns_count:
-                extra_field_utils.update_unknowns_count_field(
+            if config_filter.extra_unknown_morphs_count:
+                extra_field_utils.update_unknown_morphs_count_field(
                     am_config=am_config,
-                    note_type_field_name_dict=note_type_field_name_dict,
+                    field_name_dict=field_name_dict,
                     note=note,
                     card_id=card_id,
                     card_morph_map_cache=card_morph_map_cache,
@@ -284,7 +284,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                 extra_field_utils.update_highlighted_field(
                     am_config,
                     config_filter,
-                    note_type_field_name_dict,
+                    field_name_dict,
                     card_morph_map_cache,
                     card.id,
                     note,

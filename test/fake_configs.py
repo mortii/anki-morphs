@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Any
 
 from ankimorphs import ankimorphs_globals
+from ankimorphs.ankimorphs_config import RawConfigFilterKeys as FilterKeys
+from ankimorphs.ankimorphs_config import RawConfigKeys as ConfigKeys
 
 DEFAULT_CONFIG_PATH = Path("ankimorphs", "config.json")
 
@@ -12,21 +14,21 @@ default_config_dict: dict[str, Any]
 with open(DEFAULT_CONFIG_PATH, encoding="utf-8") as _file:
     default_config_dict = json.load(_file)
 
-default_config_dict["filters"][0]["note_type"] = "Basic"
-default_config_dict["filters"][0]["field"] = "Front"
-default_config_dict["filters"][0][
-    "morphemizer_description"
-] = "AnkiMorphs: Language w/ Spaces"
-default_config_dict["filters"][0]["extra_all_morphs"] = True
-default_config_dict["filters"][0]["extra_all_morphs_count"] = True
-default_config_dict["filters"][0]["extra_highlighted"] = True
-default_config_dict["filters"][0]["extra_score"] = True
-default_config_dict["filters"][0]["extra_score_terms"] = True
-default_config_dict["filters"][0]["extra_study_morphs"] = True
-default_config_dict["filters"][0]["extra_unknowns"] = True
-default_config_dict["filters"][0]["extra_unknowns_count"] = True
-default_config_dict["filters"][0]["field_index"] = 0
-default_config_dict["filters"][0]["morph_priority_selection"] = "Collection frequency"
+default_config_filter = default_config_dict[ConfigKeys.FILTERS][0]
+default_config_filter[FilterKeys.NOTE_TYPE] = "Basic"
+default_config_filter[FilterKeys.FIELD] = "Front"
+default_config_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = (
+    "AnkiMorphs: Language w/ Spaces"
+)
+default_config_filter[FilterKeys.EXTRA_ALL_MORPHS] = True
+default_config_filter[FilterKeys.EXTRA_ALL_MORPHS_COUNT] = True
+default_config_filter[FilterKeys.EXTRA_HIGHLIGHTED] = True
+default_config_filter[FilterKeys.EXTRA_SCORE] = True
+default_config_filter[FilterKeys.EXTRA_SCORE_TERMS] = True
+default_config_filter[FilterKeys.EXTRA_STUDY_MORPHS] = True
+default_config_filter[FilterKeys.EXTRA_UNKNOWN_MORPHS] = True
+default_config_filter[FilterKeys.EXTRA_UNKNOWN_MORPHS_COUNT] = True
+default_config_filter[FilterKeys.MORPH_PRIORITY_SELECTION] = "Collection frequency"
 
 
 # print("default config dict:")
@@ -39,16 +41,18 @@ default_config_dict["filters"][0]["morph_priority_selection"] = "Collection freq
 #
 #
 ################################################################
+# fmt: off
 config_big_japanese_collection = copy.deepcopy(default_config_dict)
-config_big_japanese_collection["preprocess_ignore_bracket_contents"] = True
-config_big_japanese_collection["preprocess_ignore_names_morphemizer"] = True
-config_big_japanese_collection["preprocess_ignore_round_bracket_contents"] = True
-config_big_japanese_collection["preprocess_ignore_slim_round_bracket_contents"] = True
-config_big_japanese_collection["filters"][0]["note_type"] = "japanese_sub2srs"
-config_big_japanese_collection["filters"][0]["field"] = "Japanese"
-config_big_japanese_collection["filters"][0][
-    "morphemizer_description"
-] = "AnkiMorphs: Japanese"
+config_big_japanese_collection[ConfigKeys.PREPROCESS_IGNORE_BRACKET_CONTENTS] = True
+config_big_japanese_collection[ConfigKeys.PREPROCESS_IGNORE_NAMES_MORPHEMIZER] = True
+config_big_japanese_collection[ConfigKeys.PREPROCESS_IGNORE_ROUND_BRACKET_CONTENTS] = True
+config_big_japanese_collection[ConfigKeys.PREPROCESS_IGNORE_SLIM_ROUND_BRACKET_CONTENTS] = True
+
+config_big_japanese_collection_filter = config_big_japanese_collection[ConfigKeys.FILTERS][0]
+config_big_japanese_collection_filter[FilterKeys.NOTE_TYPE] = "japanese_sub2srs"
+config_big_japanese_collection_filter[FilterKeys.FIELD] = "Japanese"
+config_big_japanese_collection_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "AnkiMorphs: Japanese"
+# fmt: on
 
 
 ################################################################
@@ -57,11 +61,12 @@ config_big_japanese_collection["filters"][0][
 # Matches `offset_new_cards_inflection_collection.anki2`.
 # Evaluates morphs by inflection.
 ################################################################
+# fmt: off
 config_offset_inflection_enabled = copy.deepcopy(default_config_dict)
-config_offset_inflection_enabled["filters"][0][
-    "morphemizer_description"
-] = "spaCy: en_core_web_sm"
-config_offset_inflection_enabled["recalc_offset_new_cards"] = True
+config_offset_inflection_enabled[ConfigKeys.RECALC_OFFSET_NEW_CARDS] = True
+config_offset_inflection_enabled_filter = config_offset_inflection_enabled[ConfigKeys.FILTERS][0]
+config_offset_inflection_enabled_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "spaCy: en_core_web_sm"
+# fmt: on
 
 ################################################################
 #             config_offset_lemma_enabled
@@ -70,8 +75,8 @@ config_offset_inflection_enabled["recalc_offset_new_cards"] = True
 # Evaluates morphs by lemma.
 ################################################################
 config_offset_lemma_enabled = copy.deepcopy(config_offset_inflection_enabled)
-config_offset_lemma_enabled["evaluate_morph_inflection"] = False
-config_offset_lemma_enabled["evaluate_morph_lemma"] = True
+config_offset_lemma_enabled[ConfigKeys.EVALUATE_MORPH_INFLECTION] = False
+config_offset_lemma_enabled[ConfigKeys.EVALUATE_MORPH_LEMMA] = True
 
 
 ################################################################
@@ -81,30 +86,32 @@ config_offset_lemma_enabled["evaluate_morph_lemma"] = True
 #
 #
 ################################################################
+# fmt: off
 config_known_morphs_enabled = copy.deepcopy(default_config_dict)
-config_known_morphs_enabled["recalc_read_known_morphs_folder"] = True
-config_known_morphs_enabled["read_known_morphs_folder"] = False
-config_known_morphs_enabled["filters"][0]["note_type"] = "known-morphs-note-type"
-config_known_morphs_enabled["filters"][0]["field"] = "Front"
-config_known_morphs_enabled["filters"][0][
-    "morphemizer_description"
-] = "AnkiMorphs: Language w/ Spaces"
+config_known_morphs_enabled[ConfigKeys.READ_KNOWN_MORPHS_FOLDER] = True
 
+config_known_morphs_enabled_filter = config_known_morphs_enabled[ConfigKeys.FILTERS][0]
+config_known_morphs_enabled_filter[FilterKeys.NOTE_TYPE] = "known-morphs-note-type"
+config_known_morphs_enabled_filter[FilterKeys.FIELD] = "known-morphs-note-type"
+config_known_morphs_enabled_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "AnkiMorphs: Language w/ Spaces"
+# fmt: on
 
 ################################################################
 #        config_lemma_evaluation_lemma_extra_fields
 ################################################################
 # Matches "lemma_evaluation_lemma_extra_fields_collection.anki2".
 ################################################################
+# fmt: off
 config_lemma_evaluation_lemma_extra_fields = copy.deepcopy(default_config_dict)
-config_lemma_evaluation_lemma_extra_fields["filters"][0][
-    "morphemizer_description"
-] = "spaCy: en_core_web_sm"
-config_lemma_evaluation_lemma_extra_fields["evaluate_morph_inflection"] = False
-config_lemma_evaluation_lemma_extra_fields["evaluate_morph_lemma"] = True
-config_lemma_evaluation_lemma_extra_fields["extra_fields_display_lemmas"] = True
-config_lemma_evaluation_lemma_extra_fields["extra_fields_display_inflections"] = False
+config_lemma_evaluation_lemma_extra_fields[ConfigKeys.EVALUATE_MORPH_INFLECTION] = False
+config_lemma_evaluation_lemma_extra_fields[ConfigKeys.EVALUATE_MORPH_LEMMA] = True
+config_lemma_evaluation_lemma_extra_fields[ConfigKeys.EXTRA_FIELDS_DISPLAY_LEMMAS] = True
+config_lemma_evaluation_lemma_extra_fields[ConfigKeys.EXTRA_FIELDS_DISPLAY_INFLECTIONS] = False
 
+config_lemma_evaluation_lemma_extra_fields[ConfigKeys.FILTERS][0][
+    FilterKeys.MORPHEMIZER_DESCRIPTION
+] = "spaCy: en_core_web_sm"
+# fmt: on
 
 ################################################################
 #             config_inflection_evaluation
@@ -112,8 +119,8 @@ config_lemma_evaluation_lemma_extra_fields["extra_fields_display_inflections"] =
 # The inverse of "config_lemma_evaluation_lemma_extra_fields"
 ################################################################
 config_inflection_evaluation = copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
-config_inflection_evaluation["evaluate_morph_inflection"] = True
-config_inflection_evaluation["evaluate_morph_lemma"] = False
+config_inflection_evaluation[ConfigKeys.EVALUATE_MORPH_INFLECTION] = True
+config_inflection_evaluation[ConfigKeys.EVALUATE_MORPH_LEMMA] = False
 
 
 ################################################################
@@ -124,12 +131,10 @@ config_inflection_evaluation["evaluate_morph_lemma"] = False
 #
 ################################################################
 config_ignore_names_txt_enabled = copy.deepcopy(default_config_dict)
-config_ignore_names_txt_enabled["preprocess_ignore_names_textfile"] = True
-config_ignore_names_txt_enabled["filters"][0]["note_type"] = "note-type-with-names"
-config_ignore_names_txt_enabled["filters"][0]["field"] = "Front"
-config_ignore_names_txt_enabled["filters"][0][
-    "morphemizer_description"
-] = "AnkiMorphs: Language w/ Spaces"
+config_ignore_names_txt_enabled[ConfigKeys.PREPROCESS_IGNORE_NAMES_TEXTFILE] = True
+config_ignore_names_txt_enabled[ConfigKeys.FILTERS][0][
+    FilterKeys.NOTE_TYPE
+] = "note-type-with-names"
 
 
 ################################################################
@@ -140,7 +145,9 @@ config_ignore_names_txt_enabled["filters"][0][
 #
 ################################################################
 config_wrong_note_type = copy.deepcopy(config_ignore_names_txt_enabled)
-config_wrong_note_type["filters"][0]["note_type"] = "random_wrong_value"
+config_wrong_note_type[ConfigKeys.FILTERS][0][
+    FilterKeys.NOTE_TYPE
+] = "random_wrong_value"
 
 ################################################################
 #             config_wrong_field_name
@@ -150,7 +157,7 @@ config_wrong_note_type["filters"][0]["note_type"] = "random_wrong_value"
 #
 ################################################################
 config_wrong_field_name = copy.deepcopy(config_ignore_names_txt_enabled)
-config_wrong_field_name["filters"][0]["field"] = "random_wrong_value"
+config_wrong_field_name[ConfigKeys.FILTERS][0][FilterKeys.FIELD] = "random_wrong_value"
 
 ################################################################
 #            config_wrong_morph_priority
@@ -160,9 +167,10 @@ config_wrong_field_name["filters"][0]["field"] = "random_wrong_value"
 #
 ################################################################
 config_wrong_morph_priority = copy.deepcopy(config_ignore_names_txt_enabled)
-config_wrong_morph_priority["filters"][0][
-    "morph_priority_selection"
+config_wrong_morph_priority[ConfigKeys.FILTERS][0][
+    FilterKeys.MORPH_PRIORITY_SELECTION
 ] = "random_wrong_value"
+
 
 ################################################################
 #             config_wrong_morphemizer_description
@@ -172,8 +180,8 @@ config_wrong_morph_priority["filters"][0][
 #
 ################################################################
 config_wrong_morphemizer_description = copy.deepcopy(config_ignore_names_txt_enabled)
-config_wrong_morphemizer_description["filters"][0][
-    "morphemizer_description"
+config_wrong_morphemizer_description[ConfigKeys.FILTERS][0][
+    FilterKeys.MORPHEMIZER_DESCRIPTION
 ] = "random_wrong_value"
 
 ################################################################
@@ -184,7 +192,9 @@ config_wrong_morphemizer_description["filters"][0][
 #
 ################################################################
 config_default_note_type = copy.deepcopy(config_ignore_names_txt_enabled)
-config_default_note_type["filters"][0]["note_type"] = ankimorphs_globals.NONE_OPTION
+config_default_note_type[ConfigKeys.FILTERS][0][
+    FilterKeys.NOTE_TYPE
+] = ankimorphs_globals.NONE_OPTION
 
 ################################################################
 #             config_default_field
@@ -194,7 +204,9 @@ config_default_note_type["filters"][0]["note_type"] = ankimorphs_globals.NONE_OP
 #
 ################################################################
 config_default_field = copy.deepcopy(config_ignore_names_txt_enabled)
-config_default_field["filters"][0]["field"] = ankimorphs_globals.NONE_OPTION
+config_default_field[ConfigKeys.FILTERS][0][
+    FilterKeys.FIELD
+] = ankimorphs_globals.NONE_OPTION
 
 
 ################################################################
@@ -205,8 +217,8 @@ config_default_field["filters"][0]["field"] = ankimorphs_globals.NONE_OPTION
 #
 ################################################################
 config_default_morph_priority = copy.deepcopy(config_ignore_names_txt_enabled)
-config_default_morph_priority["filters"][0][
-    "morph_priority_selection"
+config_default_morph_priority[ConfigKeys.FILTERS][0][
+    FilterKeys.MORPH_PRIORITY_SELECTION
 ] = ankimorphs_globals.NONE_OPTION
 
 
@@ -218,6 +230,6 @@ config_default_morph_priority["filters"][0][
 #
 ################################################################
 config_default_morphemizer = copy.deepcopy(config_ignore_names_txt_enabled)
-config_default_morphemizer["filters"][0][
-    "morphemizer_description"
+config_default_morphemizer[ConfigKeys.FILTERS][0][
+    FilterKeys.MORPHEMIZER_DESCRIPTION
 ] = ankimorphs_globals.NONE_OPTION
