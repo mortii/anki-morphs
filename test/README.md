@@ -55,7 +55,8 @@ Current card collections (test/data/card_collections):
 - `some_studied_lemmas_collection.anki2`
   - duplicate of `lemma_evaluation_lemma_extra_fields_collection.anki2`, but one card for each lemma
   has been studied, so the other cards that have those lemmas should contain no unknowns.
-- `big-japanese-collection.anki2` (https://github.com/mortii/anki-decks)
+- `big-japanese-collection.anki2`
+  - monolithic card collection (https://github.com/mortii/anki-decks)
 - `ignore_names_txt_collection.anki2`
 - `known-morphs-collection.anki2`
   - contains one card with 7 morphs, 5 of which are found in the 'known-morphs-valid' directory
@@ -63,11 +64,6 @@ Current card collections (test/data/card_collections):
   - Contains two cards, both with "hello".
 - `offset_new_cards_lemma_collection.anki2`
   - duplicate of `lemma_priority_collection.anki2`, but has used the `recalc_offset_new_cards` config option
-
-
-Right now we have one monolithic card collection (which comes from here: https://github.com/mortii/anki-decks). This
-collection is used for catching unexpected edge cases. This collection does not lend itself for engineering edge cases
-that have been found elsewhere, so for that we make smaller collection that we test on.
 
 ## Engineering and adding collections
 

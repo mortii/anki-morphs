@@ -133,9 +133,7 @@ config_ignore_names_txt_enabled[ConfigKeys.FILTERS][0][
 ################################################################
 #             config_wrong_note_type
 ################################################################
-#
-#
-#
+# Works with any arbitrary collection and db
 ################################################################
 config_wrong_note_type = copy.deepcopy(config_ignore_names_txt_enabled)
 config_wrong_note_type[ConfigKeys.FILTERS][0][
@@ -145,9 +143,7 @@ config_wrong_note_type[ConfigKeys.FILTERS][0][
 ################################################################
 #             config_wrong_field_name
 ################################################################
-#
-#
-#
+# Works with any arbitrary collection and db
 ################################################################
 config_wrong_field_name = copy.deepcopy(config_ignore_names_txt_enabled)
 config_wrong_field_name[ConfigKeys.FILTERS][0][FilterKeys.FIELD] = "random_wrong_value"
@@ -155,9 +151,7 @@ config_wrong_field_name[ConfigKeys.FILTERS][0][FilterKeys.FIELD] = "random_wrong
 ################################################################
 #            config_wrong_morph_priority
 ################################################################
-#
-#
-#
+# Works with any arbitrary collection and db
 ################################################################
 config_wrong_morph_priority = copy.deepcopy(config_ignore_names_txt_enabled)
 config_wrong_morph_priority[ConfigKeys.FILTERS][0][
@@ -168,9 +162,7 @@ config_wrong_morph_priority[ConfigKeys.FILTERS][0][
 ################################################################
 #             config_wrong_morphemizer_description
 ################################################################
-#
-#
-#
+# Works with any arbitrary collection and db
 ################################################################
 config_wrong_morphemizer_description = copy.deepcopy(config_ignore_names_txt_enabled)
 config_wrong_morphemizer_description[ConfigKeys.FILTERS][0][
@@ -180,9 +172,7 @@ config_wrong_morphemizer_description[ConfigKeys.FILTERS][0][
 ################################################################
 #             config_default_note_type
 ################################################################
-#
-#
-#
+# Works with any arbitrary collection and db
 ################################################################
 config_default_note_type = copy.deepcopy(config_ignore_names_txt_enabled)
 config_default_note_type[ConfigKeys.FILTERS][0][
@@ -192,9 +182,7 @@ config_default_note_type[ConfigKeys.FILTERS][0][
 ################################################################
 #             config_default_field
 ################################################################
-#
-#
-#
+# Works with any arbitrary collection and db
 ################################################################
 config_default_field = copy.deepcopy(config_ignore_names_txt_enabled)
 config_default_field[ConfigKeys.FILTERS][0][
@@ -205,9 +193,7 @@ config_default_field[ConfigKeys.FILTERS][0][
 ################################################################
 #            config_default_morph_priority
 ################################################################
-#
-#
-#
+# Works with any arbitrary collection and db
 ################################################################
 config_default_morph_priority = copy.deepcopy(config_ignore_names_txt_enabled)
 config_default_morph_priority[ConfigKeys.FILTERS][0][
@@ -218,9 +204,7 @@ config_default_morph_priority[ConfigKeys.FILTERS][0][
 ################################################################
 #             config_default_morphemizer
 ################################################################
-#
-#
-#
+# Works with any arbitrary collection and db
 ################################################################
 config_default_morphemizer = copy.deepcopy(config_ignore_names_txt_enabled)
 config_default_morphemizer[ConfigKeys.FILTERS][0][

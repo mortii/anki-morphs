@@ -27,6 +27,7 @@ from ..exceptions import (
     DefaultSettingsException,
     FrequencyFileMalformedException,
     FrequencyFileNotFoundException,
+    KnownMorphsFileMalformedException,
     MorphemizerNotFoundException,
 )
 from ..morpheme import Morpheme
@@ -439,7 +440,7 @@ def _on_success(_start_time: float) -> None:
     print(f"Recalc duration: {round(end_time - _start_time, 3)} seconds")
 
 
-def _on_failure(
+def _on_failure(  # pylint:disable=too-many-branches
     error: (
         Exception
         | DefaultSettingsException
@@ -447,6 +448,7 @@ def _on_failure(
         | CancelledOperationException
         | FrequencyFileNotFoundException
         | FrequencyFileMalformedException
+        | KnownMorphsFileMalformedException
         | AnkiNoteTypeNotFound
         | AnkiFieldNotFound
     ),
@@ -496,6 +498,11 @@ def _on_failure(
     elif isinstance(error, FrequencyFileMalformedException):
         text = (
             f"Frequency file: {error.path} is malformed (possibly outdated).\n\n"
+            f"Please generate a new one."
+        )
+    elif isinstance(error, KnownMorphsFileMalformedException):
+        text = (
+            f"Known morphs file: {error.path} is malformed.\n\n"
             f"Please generate a new one."
         )
     else:

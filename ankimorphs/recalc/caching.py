@@ -219,14 +219,14 @@ def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:
             headers: list[str] | None = next(morph_reader, None)
 
             if headers is None:
-                raise KnownMorphsFileMalformedException
+                raise KnownMorphsFileMalformedException(input_file)
 
             headers_lower = [header.lower() for header in headers]
             # print(f"headers_lower_case: {headers_lower}")
             # print(f"am_globals.LEMMA_HEADER.lower(): {am_globals.LEMMA_HEADER.lower()}")
 
             if am_globals.LEMMA_HEADER.lower() not in headers_lower:
-                raise KnownMorphsFileMalformedException
+                raise KnownMorphsFileMalformedException(input_file)
 
             lemma_column: int = headers_lower.index(am_globals.LEMMA_HEADER.lower())
             inflection_column: int = -1
