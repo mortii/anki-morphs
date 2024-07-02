@@ -3,8 +3,6 @@ from test.fake_configs import (
     config_inflection_evaluation,
     config_lemma_evaluation_lemma_extra_fields,
 )
-
-# todo: rename to "fake_environment" to "fake_environment_fixture"
 from test.fake_environment_module import (  # pylint:disable=unused-import
     FakeEnvironment,
     FakeEnvironmentParams,

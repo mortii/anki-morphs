@@ -6,6 +6,7 @@ from test.fake_configs import (
     config_default_morph_priority,
     config_default_morphemizer,
     config_default_note_type,
+    config_ignore_names_txt_enabled,
     config_known_morphs_enabled,
     config_lemma_evaluation_lemma_extra_fields,
     config_offset_inflection_enabled,
@@ -112,22 +113,33 @@ case_known_morphs_enabled_params = FakeEnvironmentParams(
     config=config_known_morphs_enabled,
 )
 
+################################################################
+#               CASE: KNOWN MORPHS ENABLED
+################################################################
+# Config contains "preprocess_ignore_names_textfile": true,
+################################################################
+case_ignore_names_txt_enabled_params = FakeEnvironmentParams(
+    collection="ignore_names_txt_collection",
+    config=config_ignore_names_txt_enabled,
+)
+
 
 # "Using the indirect=True parameter when parametrizing a test allows to parametrize a
 # test with a fixture receiving the values before passing them to a test"
 # - https://docs.pytest.org/en/7.1.x/example/parametrize.html#indirect-parametrization
 # This means that we run the fixture AND the test function for each parameter.
 @pytest.mark.external_morphemizers
+@pytest.mark.debug
 @pytest.mark.parametrize(
     "fake_environment",
     [
         case_same_lemma_and_inflection_scores_params,
         case_inflections_are_known_params,
-        # ("big-japanese-collection", config_big_japanese_collection),
         case_offset_new_cards_inflection_params,
         case_offset_new_cards_lemma_params,
         case_known_morphs_enabled_params,
-        # ("ignore_names_txt_collection", config_ignore_names_txt_enabled),
+        case_ignore_names_txt_enabled_params,
+        # ("big-japanese-collection", config_big_japanese_collection),
     ],
     indirect=True,
 )
@@ -323,7 +335,6 @@ case_invalid_known_morphs_file_params = FakeEnvironmentParams(
 )
 
 
-@pytest.mark.debug
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
     "fake_environment",

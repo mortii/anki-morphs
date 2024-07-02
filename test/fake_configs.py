@@ -119,15 +119,10 @@ config_inflection_evaluation[ConfigKeys.EVALUATE_MORPH_LEMMA] = False
 ################################################################
 #            config_ignore_names_txt_enabled
 ################################################################
-#
-#
-#
+# Matches "ignore_names_txt_collection.anki2".
 ################################################################
 config_ignore_names_txt_enabled = copy.deepcopy(default_config_dict)
 config_ignore_names_txt_enabled[ConfigKeys.PREPROCESS_IGNORE_NAMES_TEXTFILE] = True
-config_ignore_names_txt_enabled[ConfigKeys.FILTERS][0][
-    FilterKeys.NOTE_TYPE
-] = "note-type-with-names"
 
 
 ################################################################
@@ -135,7 +130,7 @@ config_ignore_names_txt_enabled[ConfigKeys.FILTERS][0][
 ################################################################
 # Works with any arbitrary collection and db
 ################################################################
-config_wrong_note_type = copy.deepcopy(config_ignore_names_txt_enabled)
+config_wrong_note_type = copy.deepcopy(default_config_dict)
 config_wrong_note_type[ConfigKeys.FILTERS][0][
     FilterKeys.NOTE_TYPE
 ] = "random_wrong_value"
@@ -145,7 +140,7 @@ config_wrong_note_type[ConfigKeys.FILTERS][0][
 ################################################################
 # Works with any arbitrary collection and db
 ################################################################
-config_wrong_field_name = copy.deepcopy(config_ignore_names_txt_enabled)
+config_wrong_field_name = copy.deepcopy(default_config_dict)
 config_wrong_field_name[ConfigKeys.FILTERS][0][FilterKeys.FIELD] = "random_wrong_value"
 
 ################################################################
@@ -153,7 +148,7 @@ config_wrong_field_name[ConfigKeys.FILTERS][0][FilterKeys.FIELD] = "random_wrong
 ################################################################
 # Works with any arbitrary collection and db
 ################################################################
-config_wrong_morph_priority = copy.deepcopy(config_ignore_names_txt_enabled)
+config_wrong_morph_priority = copy.deepcopy(default_config_dict)
 config_wrong_morph_priority[ConfigKeys.FILTERS][0][
     FilterKeys.MORPH_PRIORITY_SELECTION
 ] = "random_wrong_value"
@@ -164,7 +159,7 @@ config_wrong_morph_priority[ConfigKeys.FILTERS][0][
 ################################################################
 # Works with any arbitrary collection and db
 ################################################################
-config_wrong_morphemizer_description = copy.deepcopy(config_ignore_names_txt_enabled)
+config_wrong_morphemizer_description = copy.deepcopy(default_config_dict)
 config_wrong_morphemizer_description[ConfigKeys.FILTERS][0][
     FilterKeys.MORPHEMIZER_DESCRIPTION
 ] = "random_wrong_value"
@@ -174,7 +169,7 @@ config_wrong_morphemizer_description[ConfigKeys.FILTERS][0][
 ################################################################
 # Works with any arbitrary collection and db
 ################################################################
-config_default_note_type = copy.deepcopy(config_ignore_names_txt_enabled)
+config_default_note_type = copy.deepcopy(default_config_dict)
 config_default_note_type[ConfigKeys.FILTERS][0][
     FilterKeys.NOTE_TYPE
 ] = ankimorphs_globals.NONE_OPTION
@@ -184,7 +179,7 @@ config_default_note_type[ConfigKeys.FILTERS][0][
 ################################################################
 # Works with any arbitrary collection and db
 ################################################################
-config_default_field = copy.deepcopy(config_ignore_names_txt_enabled)
+config_default_field = copy.deepcopy(default_config_dict)
 config_default_field[ConfigKeys.FILTERS][0][
     FilterKeys.FIELD
 ] = ankimorphs_globals.NONE_OPTION
@@ -195,7 +190,7 @@ config_default_field[ConfigKeys.FILTERS][0][
 ################################################################
 # Works with any arbitrary collection and db
 ################################################################
-config_default_morph_priority = copy.deepcopy(config_ignore_names_txt_enabled)
+config_default_morph_priority = copy.deepcopy(default_config_dict)
 config_default_morph_priority[ConfigKeys.FILTERS][0][
     FilterKeys.MORPH_PRIORITY_SELECTION
 ] = ankimorphs_globals.NONE_OPTION
@@ -206,7 +201,7 @@ config_default_morph_priority[ConfigKeys.FILTERS][0][
 ################################################################
 # Works with any arbitrary collection and db
 ################################################################
-config_default_morphemizer = copy.deepcopy(config_ignore_names_txt_enabled)
+config_default_morphemizer = copy.deepcopy(default_config_dict)
 config_default_morphemizer[ConfigKeys.FILTERS][0][
     FilterKeys.MORPHEMIZER_DESCRIPTION
 ] = ankimorphs_globals.NONE_OPTION

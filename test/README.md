@@ -58,6 +58,7 @@ Current card collections (test/data/card_collections):
 - `big-japanese-collection.anki2`
   - monolithic card collection (https://github.com/mortii/anki-decks)
 - `ignore_names_txt_collection.anki2`
+  - Contains one card that has two names, one of which is found in names.txt
 - `known-morphs-collection.anki2`
   - contains one card with 7 morphs, 5 of which are found in the 'known-morphs-valid' directory
 - `offset_new_cards_inflection_collection.anki2`
