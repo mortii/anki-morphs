@@ -42,7 +42,6 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         self.create_seen_morph_table()
 
     def create_cards_table(self) -> None:
-        # todo, im not sure "field" is needed...
         with self.con:
             self.con.execute(
                 """
@@ -52,7 +51,6 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                         note_id INTEGER,
                         note_type_id INTEGER,
                         card_type INTEGER,
-                        fields TEXT,
                         tags TEXT
                     )
                     """
@@ -114,7 +112,6 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                        :note_id,
                        :note_type_id,
                        :card_type,
-                       :fields,
                        :tags
                     )
                     """,
@@ -386,7 +383,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         result = self.con.execute(
             """
-            SELECT card_id, note_id, note_type_id, card_type, fields, tags
+            SELECT card_id, note_id, note_type_id, card_type, tags
             FROM Cards
             WHERE note_type_id = ?
             """,

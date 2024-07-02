@@ -108,7 +108,6 @@ class AnkiMorphsCardData:
         "note_id",
         "note_type_id",
         "card_type",
-        "fields",
         "tags",
     )
 
@@ -126,10 +125,7 @@ class AnkiMorphsCardData:
         self.card_type: int = data_row[3]
 
         assert isinstance(data_row[4], str)
-        self.fields: str = data_row[4]
-
-        assert isinstance(data_row[5], str)
-        self.tags: str = data_row[5]
+        self.tags: str = data_row[4]
 
 
 def create_card_data_dict(
