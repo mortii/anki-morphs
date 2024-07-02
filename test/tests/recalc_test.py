@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from test.fake_configs import (
+    config_big_japanese_collection,
     config_default_field,
     config_default_morph_priority,
     config_default_morphemizer,
@@ -123,12 +124,24 @@ case_ignore_names_txt_enabled_params = FakeEnvironmentParams(
     config=config_ignore_names_txt_enabled,
 )
 
+################################################################
+#               CASE: BIG JAPANESE COLLECTION
+################################################################
+# Monolithic collection, used for catching weird and unexpected
+# edge cases.
+################################################################
+case_big_japanese_collection_params = FakeEnvironmentParams(
+    collection="big_japanese_collection",
+    config=config_big_japanese_collection,
+)
+
 
 # "Using the indirect=True parameter when parametrizing a test allows to parametrize a
 # test with a fixture receiving the values before passing them to a test"
 # - https://docs.pytest.org/en/7.1.x/example/parametrize.html#indirect-parametrization
 # This means that we run the fixture AND the test function for each parameter.
 @pytest.mark.external_morphemizers
+@pytest.mark.debug
 @pytest.mark.parametrize(
     "fake_environment",
     [
@@ -138,7 +151,7 @@ case_ignore_names_txt_enabled_params = FakeEnvironmentParams(
         case_offset_new_cards_lemma_params,
         case_known_morphs_enabled_params,
         case_ignore_names_txt_enabled_params,
-        # ("big-japanese-collection", config_big_japanese_collection),
+        case_big_japanese_collection_params,
     ],
     indirect=True,
 )

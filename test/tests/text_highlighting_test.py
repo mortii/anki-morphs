@@ -193,7 +193,6 @@ case_highlight_based_on_lemma_morphs = [
 # Note: the collection isn't actually used, so it is an arbitrary choice,
 # but the config needs to have the option "preprocess_ignore_bracket_contents"
 # activated
-@pytest.mark.debug
 @pytest.mark.parametrize(
     "fake_environment, input_text, card_morphs, correct_output",
     [
