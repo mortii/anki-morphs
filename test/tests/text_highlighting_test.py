@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from test.fake_configs import config_big_japanese_collection
+from test.fake_configs import (
+    config_big_japanese_collection,
+    config_lemma_evaluation_ignore_brackets,
+)
 from test.fake_environment_module import (  # pylint:disable=unused-import
     FakeEnvironment,
     FakeEnvironmentParams,
@@ -26,7 +29,6 @@ from ankimorphs.morpheme import Morpheme
 case_japanese_one_params = FakeEnvironmentParams(
     collection="ignore_names_txt_collection",
     config=config_big_japanese_collection,
-    am_db="empty_skeleton.db",
 )
 
 CASE_JAPANESE_ONE_INPUT_TEXT: str = (
@@ -67,7 +69,6 @@ case_japanese_one_card_morphs: list[Morpheme] = [
 case_japanese_two_params = FakeEnvironmentParams(
     collection="ignore_names_txt_collection",
     config=config_big_japanese_collection,
-    am_db="empty_skeleton.db",
 )
 CASE_JAPANESE_TWO_INPUT_TEXT = "そうです ね"
 CASE_JAPANESE_TWO_CORRECT_OUTPUT = "そうです ね"
@@ -91,7 +92,6 @@ case_japanese_two_card_morphs = [
 case_german_params = FakeEnvironmentParams(
     collection="ignore_names_txt_collection",
     config=config_big_japanese_collection,
-    am_db="empty_skeleton.db",
 )
 CASE_GERMAN_INPUT_TEXT = "Das sind doch die Schädel von den Flüchtlingen, die wir gefunden hatten! Keine Sorge, dein Kopf wird auch schon bald in meiner Sammlung sein."
 CASE_GERMAN_CORRECT_OUTPUT = '<span morph-status="unknown">Das</span> <span morph-status="unknown">sind</span> <span morph-status="unknown">doch</span> <span morph-status="unknown">die</span> <span morph-status="unknown">Schädel</span> <span morph-status="unknown">von</span> <span morph-status="unknown">den</span> <span morph-status="unknown">Flüchtlingen</span>, <span morph-status="unknown">die</span> <span morph-status="unknown">wir</span> <span morph-status="unknown">gefunden</span> <span morph-status="unknown">hatten</span>! <span morph-status="unknown">Keine</span> <span morph-status="unknown">Sorge</span>, <span morph-status="unknown">dein</span> <span morph-status="unknown">Kopf</span> <span morph-status="unknown">wird</span> <span morph-status="unknown">auch</span> <span morph-status="unknown">schon</span> <span morph-status="unknown">bald</span> <span morph-status="unknown">in</span> <span morph-status="unknown">meiner</span> <span morph-status="unknown">Sammlung</span> <span morph-status="unknown">sein</span>.'
@@ -150,7 +150,6 @@ case_german_card_morphs = [
 case_regex_escape_params = FakeEnvironmentParams(
     collection="ignore_names_txt_collection",
     config=config_big_japanese_collection,
-    am_db="empty_skeleton.db",
 )
 CASE_REGEX_ESCAPE_INPUT_TEXT = "몇...?<div><br></div><div>몇...</div>"
 CASE_REGEX_ESCAPE_CORRECT_OUTPUT = '<span morph-status="unknown">몇</span>...?<div><br></div><div><span morph-status="unknown">몇</span>...</div>'
@@ -159,10 +158,42 @@ case_regex_escape_card_morphs = [
     Morpheme(lemma="몇", inflection="몇", highest_inflection_learning_interval=0),
 ]
 
+##############################################################################################
+#                                CASE: HIGHLIGHT BASED ON LEMMA
+##############################################################################################
+# Highlight the inflections based on the learning intervals of their respective lemmas
+# Collection choice is arbitrary.
+# Database choice is arbitrary.
+# The config needs "preprocess_ignore_bracket_contents" activated, and "evaluate_morph_lemma".
+##############################################################################################
+case_highlight_based_on_lemma_params = FakeEnvironmentParams(
+    collection="ignore_names_txt_collection",
+    config=config_lemma_evaluation_ignore_brackets,
+)
+CASE_HIGHLIGHT_BASED_ON_LEMMA_INPUT_TEXT = "hello world"
+CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT = (
+    '<span morph-status="known">hello</span> <span morph-status="learning">world</span>'
+)
+case_highlight_based_on_lemma_morphs = [
+    Morpheme(
+        lemma="hello",
+        inflection="hello",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=30,
+    ),
+    Morpheme(
+        lemma="world",
+        inflection="world",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+]
+
 
 # Note: the collection isn't actually used, so it is an arbitrary choice,
 # but the config needs to have the option "preprocess_ignore_bracket_contents"
 # activated
+@pytest.mark.debug
 @pytest.mark.parametrize(
     "fake_environment, input_text, card_morphs, correct_output",
     [
@@ -189,6 +220,12 @@ case_regex_escape_card_morphs = [
             CASE_REGEX_ESCAPE_INPUT_TEXT,
             case_regex_escape_card_morphs,
             CASE_REGEX_ESCAPE_CORRECT_OUTPUT,
+        ),
+        (
+            case_highlight_based_on_lemma_params,
+            CASE_HIGHLIGHT_BASED_ON_LEMMA_INPUT_TEXT,
+            case_highlight_based_on_lemma_morphs,
+            CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT,
         ),
     ],
     indirect=["fake_environment"],

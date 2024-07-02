@@ -56,17 +56,16 @@ config_big_japanese_collection_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "Ank
 
 
 ################################################################
-#             config_offset_inflection_enabled
+#                   config_lemma_evaluation
 ################################################################
-# Matches `offset_new_cards_inflection_collection.anki2`.
-# Evaluates morphs by inflection.
+# Evaluates morphs by lemma.
 ################################################################
 # fmt: off
-config_offset_inflection_enabled = copy.deepcopy(default_config_dict)
-config_offset_inflection_enabled[ConfigKeys.RECALC_OFFSET_NEW_CARDS] = True
-config_offset_inflection_enabled_filter = config_offset_inflection_enabled[ConfigKeys.FILTERS][0]
-config_offset_inflection_enabled_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "spaCy: en_core_web_sm"
+config_lemma_evaluation = copy.deepcopy(default_config_dict)
+config_lemma_evaluation[ConfigKeys.EVALUATE_MORPH_INFLECTION] = False
+config_lemma_evaluation[ConfigKeys.EVALUATE_MORPH_LEMMA] = True
 # fmt: on
+
 
 ################################################################
 #             config_offset_lemma_enabled
@@ -74,9 +73,37 @@ config_offset_inflection_enabled_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "s
 # Matches `offset_new_cards_lemma_collection.anki2`.
 # Evaluates morphs by lemma.
 ################################################################
-config_offset_lemma_enabled = copy.deepcopy(config_offset_inflection_enabled)
-config_offset_lemma_enabled[ConfigKeys.EVALUATE_MORPH_INFLECTION] = False
-config_offset_lemma_enabled[ConfigKeys.EVALUATE_MORPH_LEMMA] = True
+config_offset_lemma_enabled = copy.deepcopy(config_lemma_evaluation)
+config_offset_lemma_enabled[ConfigKeys.RECALC_OFFSET_NEW_CARDS] = True
+config_offset_lemma_enabled_filter = config_offset_lemma_enabled[ConfigKeys.FILTERS][0]
+config_offset_lemma_enabled_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = (
+    "spaCy: en_core_web_sm"
+)
+
+
+################################################################
+#             config_offset_inflection_enabled
+################################################################
+# Matches `offset_new_cards_inflection_collection.anki2`.
+# Evaluates morphs by inflection.
+################################################################
+# fmt: off
+config_offset_inflection_enabled = copy.deepcopy(config_offset_lemma_enabled)
+config_offset_inflection_enabled_filter = config_offset_inflection_enabled[ConfigKeys.FILTERS][0]
+config_offset_inflection_enabled[ConfigKeys.EVALUATE_MORPH_INFLECTION] = True
+config_offset_inflection_enabled[ConfigKeys.EVALUATE_MORPH_LEMMA] = False
+# fmt: on
+
+
+################################################################
+#           config_lemma_evaluation_ignore_brackets
+################################################################
+# Evaluates morphs by lemma, ignores bracket contents.
+################################################################
+# fmt: off
+config_lemma_evaluation_ignore_brackets = copy.deepcopy(config_lemma_evaluation)
+config_lemma_evaluation_ignore_brackets[ConfigKeys.PREPROCESS_IGNORE_BRACKET_CONTENTS] = True
+# fmt: on
 
 
 ################################################################
@@ -105,6 +132,7 @@ config_lemma_evaluation_lemma_extra_fields[ConfigKeys.FILTERS][0][
     FilterKeys.MORPHEMIZER_DESCRIPTION
 ] = "spaCy: en_core_web_sm"
 # fmt: on
+
 
 ################################################################
 #             config_inflection_evaluation
@@ -135,6 +163,7 @@ config_wrong_note_type[ConfigKeys.FILTERS][0][
     FilterKeys.NOTE_TYPE
 ] = "random_wrong_value"
 
+
 ################################################################
 #             config_wrong_field_name
 ################################################################
@@ -142,6 +171,7 @@ config_wrong_note_type[ConfigKeys.FILTERS][0][
 ################################################################
 config_wrong_field_name = copy.deepcopy(default_config_dict)
 config_wrong_field_name[ConfigKeys.FILTERS][0][FilterKeys.FIELD] = "random_wrong_value"
+
 
 ################################################################
 #            config_wrong_morph_priority
@@ -164,6 +194,7 @@ config_wrong_morphemizer_description[ConfigKeys.FILTERS][0][
     FilterKeys.MORPHEMIZER_DESCRIPTION
 ] = "random_wrong_value"
 
+
 ################################################################
 #             config_default_note_type
 ################################################################
@@ -173,6 +204,7 @@ config_default_note_type = copy.deepcopy(default_config_dict)
 config_default_note_type[ConfigKeys.FILTERS][0][
     FilterKeys.NOTE_TYPE
 ] = ankimorphs_globals.NONE_OPTION
+
 
 ################################################################
 #             config_default_field

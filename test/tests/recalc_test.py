@@ -129,7 +129,6 @@ case_ignore_names_txt_enabled_params = FakeEnvironmentParams(
 # - https://docs.pytest.org/en/7.1.x/example/parametrize.html#indirect-parametrization
 # This means that we run the fixture AND the test function for each parameter.
 @pytest.mark.external_morphemizers
-@pytest.mark.debug
 @pytest.mark.parametrize(
     "fake_environment",
     [
