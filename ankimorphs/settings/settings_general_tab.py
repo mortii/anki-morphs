@@ -43,6 +43,13 @@ class GeneralTab(SettingsTab):
         self.setup_buttons()
         self.update_previous_state()
 
+    def populate(self, use_default_config: bool = False) -> None:
+        super().populate()
+        if self.ui.priorityLemmaRadioButton.isChecked():
+            self.previous_priority_selection = self.ui.priorityLemmaRadioButton
+        else:
+            self.previous_priority_selection = self.ui.priorityInflectionRadioButton
+
     def setup_buttons(self) -> None:
         self.ui.restoreGeneralPushButton.setAutoDefault(False)
         self.ui.restoreGeneralPushButton.clicked.connect(self.restore_defaults)

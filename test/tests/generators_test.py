@@ -207,12 +207,11 @@ def _set_morphemizer(
 
 
 ################################################################
-#            CASE: BIG JAPANESE COLLECTION
+#            CASES: SOME STUDIED JAPANESE
 ################################################################
-# Checks the frequency files generated with using the am_db from
-# the `big_japanese_collection.anki2`.
-# The collection is arbitrary since the generators only use the
-# found db.
+# Checks if that the readability reports gives the correct
+# values in the readability report with the specified
+# db and the respective morphs evaluation options
 ################################################################
 case_some_studied_japanese_inflections = FakeEnvironmentParams(
     collection="some_studied_japanese_collection",
