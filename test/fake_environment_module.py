@@ -150,6 +150,9 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     patch_reviewing_am_db = mock.patch.object(reviewing_utils, "AnkiMorphsDB", FakeDB)
     patch_recalc_am_db = mock.patch.object(recalc_main, "AnkiMorphsDB", FakeDB)
     patch_caching_am_db = mock.patch.object(caching, "AnkiMorphsDB", FakeDB)
+    patch_generators_am_db = mock.patch.object(
+        generators_window, "AnkiMorphsDB", FakeDB
+    )
     mock_db = FakeDB()
 
     # tooltip tries to do gui stuff which breaks test
@@ -166,6 +169,7 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     patch_reviewing_am_db.start()
     patch_recalc_am_db.start()
     patch_caching_am_db.start()
+    patch_generators_am_db.start()
     patch_tooltip.start()
 
     patch_testing_variable.start()
@@ -200,6 +204,7 @@ def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
     patch_reviewing_am_db.stop()
     patch_recalc_am_db.stop()
     patch_caching_am_db.stop()
+    patch_generators_am_db.stop()
     patch_tooltip.stop()
 
     patch_testing_variable.stop()

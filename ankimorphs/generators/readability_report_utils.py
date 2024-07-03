@@ -46,28 +46,58 @@ def get_morph_stats_from_file(
     file_morphs: dict[str, MorphOccurrence],
 ) -> FileMorphsStats:
     file_morphs_stats = FileMorphsStats()
+    highest_learning_interval: int | None
 
-    for morph_occurrence_object in file_morphs.values():
-        morph = morph_occurrence_object.morph
-        occurrence = morph_occurrence_object.occurrence
+    if am_config.evaluate_morph_inflection:
+        for morph_occurrence_object in file_morphs.values():
+            morph = morph_occurrence_object.morph
+            occurrence = morph_occurrence_object.occurrence
+            highest_learning_interval = am_db.get_highest_inflection_learning_interval(
+                morph
+            )
 
-        highest_learning_interval: int | None = am_db.get_highest_learning_interval(
-            morph.lemma, morph.inflection
-        )
+            _update_file_morphs_stats(
+                file_morphs_stats=file_morphs_stats,
+                interval_for_known=am_config.interval_for_known_morphs,
+                morph=morph,
+                occurrence=occurrence,
+                highest_learning_interval=highest_learning_interval,
+            )
+    else:
+        for morph_occurrence_object in file_morphs.values():
+            morph = morph_occurrence_object.morph
+            occurrence = morph_occurrence_object.occurrence
+            highest_learning_interval = am_db.get_highest_lemma_learning_interval(morph)
 
-        if highest_learning_interval is None:
-            file_morphs_stats.total_unknowns += occurrence
-            file_morphs_stats.unique_unknowns.add(morph)
-            continue
-
-        if highest_learning_interval == 0:
-            file_morphs_stats.total_unknowns += occurrence
-            file_morphs_stats.unique_unknowns.add(morph)
-        elif highest_learning_interval < am_config.interval_for_known_morphs:
-            file_morphs_stats.total_learning += occurrence
-            file_morphs_stats.unique_learning.add(morph)
-        else:
-            file_morphs_stats.total_known += occurrence
-            file_morphs_stats.unique_known.add(morph)
+            _update_file_morphs_stats(
+                file_morphs_stats=file_morphs_stats,
+                interval_for_known=am_config.interval_for_known_morphs,
+                morph=morph,
+                occurrence=occurrence,
+                highest_learning_interval=highest_learning_interval,
+            )
 
     return file_morphs_stats
+
+
+def _update_file_morphs_stats(
+    file_morphs_stats: FileMorphsStats,
+    interval_for_known: int,
+    morph: Morpheme,
+    occurrence: int,
+    highest_learning_interval: int | None,
+) -> None:
+    if highest_learning_interval is None:
+        file_morphs_stats.total_unknowns += occurrence
+        file_morphs_stats.unique_unknowns.add(morph)
+        return
+
+    if highest_learning_interval == 0:
+        file_morphs_stats.total_unknowns += occurrence
+        file_morphs_stats.unique_unknowns.add(morph)
+    elif highest_learning_interval < interval_for_known:
+        file_morphs_stats.total_learning += occurrence
+        file_morphs_stats.unique_learning.add(morph)
+    else:
+        file_morphs_stats.total_known += occurrence
+        file_morphs_stats.unique_known.add(morph)

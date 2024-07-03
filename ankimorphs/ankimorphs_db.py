@@ -324,23 +324,44 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         return card_ids
 
-    def get_highest_learning_interval(self, lemma: str, inflected: str) -> int | None:
+    def get_highest_inflection_learning_interval(self, morph: Morpheme) -> int | None:
         with self.con:
             highest_learning_interval = self.con.execute(
                 """
-                    SELECT highest_learning_interval
+                    SELECT highest_inflection_learning_interval
                     FROM Morphs
                     WHERE lemma = ? And inflection = ?
                     """,
-                (lemma, inflected),
+                (morph.lemma, morph.inflection),
             ).fetchone()
 
             if highest_learning_interval is None:
+                print("highest_learning_interval is None")
                 return None
 
             # un-tuple the result
             highest_learning_interval = highest_learning_interval[0]
+            assert isinstance(highest_learning_interval, int)
+            return highest_learning_interval
 
+    def get_highest_lemma_learning_interval(self, morph: Morpheme) -> int | None:
+        with self.con:
+            highest_learning_interval = self.con.execute(
+                """
+                    SELECT highest_lemma_learning_interval
+                    FROM Morphs
+                    WHERE lemma = ?
+                    LIMIT 1
+                    """,
+                (morph.lemma,),
+            ).fetchone()
+
+            if highest_learning_interval is None:
+                print("highest_learning_interval is None")
+                return None
+
+            # un-tuple the result
+            highest_learning_interval = highest_learning_interval[0]
             assert isinstance(highest_learning_interval, int)
             return highest_learning_interval
 

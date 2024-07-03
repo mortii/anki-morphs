@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, Callable
 
 import aqt
-from anki.collection import Collection
 from aqt import mw
 from aqt.operations import QueryOp
 from aqt.qt import (  # pylint:disable=no-name-in-module
@@ -232,9 +231,8 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         # This is used by the Anki dialog manager
         self.show()
 
-    def _on_success(self, result: Any) -> None:
+    def _on_success(self) -> None:
         # This function runs on the main thread.
-        del result  # unused
         assert mw is not None
         assert mw.progress is not None
 
@@ -267,17 +265,13 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         mw.progress.start(label="Generating readability report")
         operation = QueryOp(
             parent=self,
-            op=self._background_generate_report,
-            success=self._on_success,
+            op=lambda _: self._background_generate_report(),
+            success=lambda _: self._on_success(),
         )
         operation.failure(self._on_failure)
         operation.with_progress().run_in_background()
 
-    def _background_generate_report(
-        self,
-        col: Collection,
-    ) -> None:
-        del col  # unused
+    def _background_generate_report(self) -> None:
         assert mw is not None
         assert mw.progress is not None
 
@@ -643,7 +637,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             op=lambda _: self._background_generate_frequency_file(
                 selected_output_options
             ),
-            success=self._on_success,
+            success=lambda _: self._on_success(),
         )
         operation.failure(self._on_failure)
         operation.with_progress().run_in_background()
@@ -703,7 +697,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         operation = QueryOp(
             parent=self,
             op=lambda _: self._background_generate_study_plan(selected_output_options),
-            success=self._on_success,
+            success=lambda _: self._on_success(),
         )
         operation.failure(self._on_failure)
         operation.with_progress().run_in_background()

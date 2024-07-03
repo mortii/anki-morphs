@@ -1,7 +1,13 @@
+from __future__ import annotations
+
 import os
 import pprint
 from pathlib import Path
-from test.fake_configs import config_big_japanese_collection
+from test.fake_configs import (
+    config_big_japanese_collection,
+    config_inflection_evaluation,
+    config_lemma_evaluation,
+)
 from test.fake_environment_module import (  # pylint:disable=unused-import
     FakeEnvironment,
     FakeEnvironmentParams,
@@ -15,6 +21,7 @@ from test.test_globals import (
 from typing import Any
 
 import pytest
+from aqt.qt import QTableWidgetItem  # pylint:disable=no-name-in-module
 from csv_diff import compare, load_csv
 
 from ankimorphs.generators.generators_output_dialog import (
@@ -105,14 +112,9 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-l
     gw.ui.inputDirLineEdit.setText(str(input_folder))
     gw._background_gather_files_and_populate_files_column()
 
-    index = -1
-    for _index, mizer in enumerate(gw._morphemizers):
-        # print(f"mizer.get_description(): {mizer.get_description()}")
-        if mizer.get_description() == morphemizer_description:
-            index = _index
-
-    # print(f"index: {index}")
-    gw.ui.morphemizerComboBox.setCurrentIndex(index)
+    _set_morphemizer(
+        generator_window=gw, morphemizer_description=morphemizer_description
+    )
 
     _default_output_file = test_output_file
     selected_output = GeneratorOutputDialog(_default_output_file)
@@ -139,6 +141,18 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-l
             assert len(changes) == 0
 
     os.remove(test_output_file)
+
+
+def _set_morphemizer(
+    generator_window: GeneratorWindow, morphemizer_description: str
+) -> None:
+    index = -1
+    for _index, mizer in enumerate(generator_window._morphemizers):
+        # print(f"mizer.get_description(): {mizer.get_description()}")
+        if mizer.get_description() == morphemizer_description:
+            index = _index
+    # print(f"index: {index}")
+    generator_window.ui.morphemizerComboBox.setCurrentIndex(index)
 
 
 # @pytest.mark.parametrize(
@@ -192,7 +206,95 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-l
 #     os.remove(test_output_file)
 
 
-@pytest.mark.xfail
-def test_readability_report(fake_environment: FakeEnvironment) -> None:
-    # todo: readability report currently fails
-    assert False
+################################################################
+#            CASE: BIG JAPANESE COLLECTION
+################################################################
+# Checks the frequency files generated with using the am_db from
+# the `big_japanese_collection.anki2`.
+# The collection is arbitrary since the generators only use the
+# found db.
+################################################################
+case_some_studied_japanese_inflections = FakeEnvironmentParams(
+    collection="some_studied_japanese_collection",
+    config=config_inflection_evaluation,
+    am_db="some_studied_japanese.db",
+)
+
+case_some_studied_japanese_lemmas = FakeEnvironmentParams(
+    collection="some_studied_japanese_collection",
+    config=config_lemma_evaluation,
+    am_db="some_studied_japanese.db",
+)
+
+
+@pytest.mark.debug
+@pytest.mark.parametrize(
+    "fake_environment, unique_known_number, unique_known_percent, total_known_number, total_known_percent",
+    [
+        (case_some_studied_japanese_inflections, "3", "0.6 %", "44", "2.7 %"),
+        (case_some_studied_japanese_lemmas, "16", "3.3 %", "83", "5.0 %"),
+    ],
+    indirect=["fake_environment"],
+)
+def test_readability_report(  # pylint:disable=too-many-arguments
+    fake_environment: FakeEnvironment,
+    unique_known_number: str,
+    unique_known_percent: str,
+    total_known_number: str,
+    total_known_percent: str,
+    qtbot: Any,
+) -> None:
+    gw = GeneratorWindow()
+    input_folder = Path(PATH_TESTS_DATA, "ja_subs")
+    gw.ui.inputDirLineEdit.setText(str(input_folder))
+
+    gw._background_gather_files_and_populate_files_column()
+
+    _set_morphemizer(
+        generator_window=gw, morphemizer_description="AnkiMorphs: Japanese"
+    )
+
+    gw._background_generate_report()
+
+    _row = 1
+    _item: QTableWidgetItem | None
+
+    _item = gw.ui.numericalTableWidget.item(_row, gw._file_name_column)
+    assert _item is not None
+    assert _item.text() == "Black Clover - 002 - The Boys` Promise [shiRo].jp.srt"
+
+    _item = gw.ui.percentTableWidget.item(_row, gw._file_name_column)
+    assert _item is not None
+    assert _item.text() == "Black Clover - 002 - The Boys` Promise [shiRo].jp.srt"
+
+    _item = gw.ui.numericalTableWidget.item(_row, gw._unique_morphs_column)
+    assert _item is not None
+    assert _item.text() == "482"
+
+    _item = gw.ui.percentTableWidget.item(_row, gw._unique_morphs_column)
+    assert _item is not None
+    assert _item.text() == "482"
+
+    _item = gw.ui.numericalTableWidget.item(_row, gw._unique_known_column)
+    assert _item is not None
+    assert _item.text() == unique_known_number
+
+    _item = gw.ui.percentTableWidget.item(_row, gw._unique_known_column)
+    assert _item is not None
+    assert _item.text() == unique_known_percent
+
+    _item = gw.ui.numericalTableWidget.item(_row, gw._total_morphs_column)
+    assert _item is not None
+    assert _item.text() == "1656"
+
+    _item = gw.ui.percentTableWidget.item(_row, gw._total_morphs_column)
+    assert _item is not None
+    assert _item.text() == "1656"
+
+    _item = gw.ui.numericalTableWidget.item(_row, gw._total_known_column)
+    assert _item is not None
+    assert _item.text() == total_known_number
+
+    _item = gw.ui.percentTableWidget.item(_row, gw._total_known_column)
+    assert _item is not None
+    assert _item.text() == total_known_percent
