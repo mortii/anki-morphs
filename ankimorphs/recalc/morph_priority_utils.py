@@ -56,19 +56,7 @@ def _get_morph_frequency_file_priority(
             # lemma_column = headers.index(ankimorphs_globals.LEMMA_HEADER)
             assert ankimorphs_globals.LEMMA_HEADER in headers
 
-            if only_use_lemma is False:
-                # here we always have an inflection column that contains priorities
-                assert ankimorphs_globals.INFLECTION_HEADER in headers
-
-                inflection_priority_column = headers.index(
-                    ankimorphs_globals.INFLECTION_PRIORITY_HEADER
-                )
-
-                morph_priority = _get_inflection_priority_full_frequency_file(
-                    morph_reader=morph_reader,
-                    inflection_priority_column=inflection_priority_column,
-                )
-            else:
+            if only_use_lemma:
                 # Here we have two options, a frequency file that either has
                 # a single column of only lemmas, or a full frequency file that
                 # contains a "Lemma-Priority" column
@@ -84,6 +72,18 @@ def _get_morph_frequency_file_priority(
                     morph_priority = get_lemma_priority_from_minimal_frequency_file(
                         morph_reader=morph_reader,
                     )
+            else:
+                # here we always have an inflection column that contains priorities
+                assert ankimorphs_globals.INFLECTION_HEADER in headers
+
+                inflection_priority_column = headers.index(
+                    ankimorphs_globals.INFLECTION_PRIORITY_HEADER
+                )
+
+                morph_priority = _get_inflection_priority_full_frequency_file(
+                    morph_reader=morph_reader,
+                    inflection_priority_column=inflection_priority_column,
+                )
 
     except FileNotFoundError as error:
         raise FrequencyFileNotFoundException(str(frequency_file_path)) from error

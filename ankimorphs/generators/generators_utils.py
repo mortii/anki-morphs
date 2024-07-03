@@ -4,7 +4,7 @@ import copy
 import csv
 from pathlib import Path
 
-from .. import ankimorphs_globals
+from .. import ankimorphs_globals as am_globals
 from ..ankimorphs_db import AnkiMorphsDB
 from ..morpheme import MorphOccurrence
 from .generators_output_dialog import OutputOptions
@@ -140,10 +140,10 @@ def lemma_and_inflection_writer(  # pylint:disable=too-many-locals
     output_file: Path = selected_output_options.output_path
 
     headers = [
-        ankimorphs_globals.LEMMA_HEADER,
-        ankimorphs_globals.INFLECTION_HEADER,
-        ankimorphs_globals.LEMMA_PRIORITY_HEADER,
-        ankimorphs_globals.INFLECTION_PRIORITY_HEADER,
+        am_globals.LEMMA_HEADER,
+        am_globals.INFLECTION_HEADER,
+        am_globals.LEMMA_PRIORITY_HEADER,
+        am_globals.INFLECTION_PRIORITY_HEADER,
     ]
 
     sorted_inflection_occurrences = dict(
@@ -198,10 +198,10 @@ def lemma_only_writer(
     total_morph_occurrences: dict[str, MorphOccurrence],
 ) -> None:
     output_file: Path = selected_output_options.output_path
-    headers = [ankimorphs_globals.LEMMA_HEADER]
+    headers = [am_globals.LEMMA_HEADER]
 
     if selected_output_options.selected_extra_occurrences_column:
-        headers.append(ankimorphs_globals.OCCURRENCES_HEADER)
+        headers.append(am_globals.OCCURRENCES_HEADER)
 
     sorted_lemma_occurrences: dict[str, MorphOccurrence] = (
         get_sorted_lemma_occurrence_dict(total_morph_occurrences)
@@ -233,6 +233,7 @@ def write_out_study_plan(  # pylint:disable=too-many-locals
     selected_output_options: OutputOptions,
     morph_occurrences_by_file: dict[Path, dict[str, MorphOccurrence]],
 ) -> None:
+    am_db = AnkiMorphsDB()
     output_file = selected_output_options.output_path
 
     # make sure the parent dirs exist before creating the file
@@ -245,14 +246,22 @@ def write_out_study_plan(  # pylint:disable=too-many-locals
     comprehension_threshold: int = selected_output_options.comprehension_threshold
 
     morph_in_study_plan: dict[str, None] = {}  # only care about lookup not value
-    morphs_learning_status: dict[str, str] = AnkiMorphsDB.get_morph_statuses()
+    morphs_learning_status: dict[str, str] = am_db.get_morph_learning_status()
 
     with open(output_file, mode="w+", encoding="utf-8", newline="") as csvfile:
         morph_writer = csv.writer(csvfile)
+
+        # headers = [
+        #     am_globals.LEMMA_HEADER,
+        #     am_globals.INFLECTION_HEADER,
+        #     am_globals.LEMMA_PRIORITY_HEADER,
+        #     am_globals.INFLECTION_PRIORITY_HEADER,
+        # ]
+
         morph_writer.writerow(
             [
-                "Morph-lemma",
-                "Morph-inflection",
+                am_globals.LEMMA_HEADER,
+                am_globals.INFLECTION_HEADER,
                 "Learning-status",
                 "Occurrence",
                 "File",

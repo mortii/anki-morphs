@@ -155,55 +155,50 @@ def _set_morphemizer(
     generator_window.ui.morphemizerComboBox.setCurrentIndex(index)
 
 
-# @pytest.mark.parametrize(
-#     "fake_environment",
-#     [("big-japanese-collection", config_big_japanese_collection)],
-#     indirect=True,
-# )
-# def test_study_plan_generator(  # pylint:disable=unused-argument, too-many-locals
-#     fake_environment, qtbot
-# ):
-#     gd = GeneratorWindow()
-#
-#     input_folder = Path(TESTS_DATA_PATH, "ja_subs")
-#     test_output_file = Path(
-#         TESTS_DATA_TESTS_OUTPUTS_PATH, "mecab_study_plan_test_output.csv"
-#     )
-#     correct_output_file = Path(TESTS_DATA_CORRECT_OUTPUTS_PATH, "mecab_study_plan.csv")
-#
-#     gd.ui.inputDirLineEdit.setText(str(input_folder))
-#     gd._background_gather_files_and_populate_files_column(col=None)
-#
-#     index = -1
-#     for _index, mizer in enumerate(gd._morphemizers):
-#         # print(f"mizer.get_description(): {mizer.get_description()}")
-#         if mizer.get_description() == "AnkiMorphs: Japanese":
-#             index = _index
-#
-#     # print(f"index: {index}")
-#     gd.ui.morphemizerComboBox.setCurrentIndex(index)
-#
-#     _default_output_file = Path(test_output_file)
-#     selected_output = GeneratorOutputDialog(_default_output_file)
-#     selected_output_options: OutputOptions = selected_output.get_selected_options()
-#
-#     # during test the tables might not get initialized so we do that here.
-#     am_db = AnkiMorphsDB()
-#     am_db.create_all_tables()
-#
-#     gd._background_generate_study_plan(selected_output_options)
-#
-#     with open(correct_output_file, encoding="utf8") as a, open(
-#         test_output_file, encoding="utf8"
-#     ) as b:
-#
-#         diff: dict[str, list] = compare(load_csv(a), load_csv(b))
-#         pprint.pprint(diff)
-#         assert len(diff) != 0
-#         for changes in diff.values():
-#             assert len(changes) == 0
-#
-#     os.remove(test_output_file)
+@pytest.mark.debug
+@pytest.mark.parametrize(
+    "fake_environment",
+    [case_big_japanese_collection_params],
+    indirect=True,
+)
+def test_study_plan_generator(  # pylint:disable=unused-argument, too-many-locals
+    fake_environment: FakeEnvironment, qtbot: Any
+) -> None:
+    gw = GeneratorWindow()
+
+    input_folder = Path(PATH_TESTS_DATA, "ja_subs")
+    test_output_file = Path(
+        PATH_TESTS_DATA_TESTS_OUTPUTS, "mecab_study_plan_test_output.csv"
+    )
+    correct_output_file = Path(
+        PATH_TESTS_DATA_CORRECT_OUTPUTS,
+        "mecab_study_plan.csv",
+    )
+
+    gw.ui.inputDirLineEdit.setText(str(input_folder))
+    gw._background_gather_files_and_populate_files_column()
+
+    _set_morphemizer(
+        generator_window=gw, morphemizer_description="AnkiMorphs: Japanese"
+    )
+
+    _default_output_file = Path(test_output_file)
+    selected_output = GeneratorOutputDialog(_default_output_file)
+    selected_output_options: OutputOptions = selected_output.get_selected_options()
+
+    gw._background_generate_study_plan(selected_output_options)
+
+    with open(correct_output_file, encoding="utf8") as a, open(
+        test_output_file, encoding="utf8"
+    ) as b:
+
+        diff: dict[str, list[Any]] = compare(load_csv(a), load_csv(b))
+        pprint.pprint(diff)
+        assert len(diff) != 0
+        for changes in diff.values():
+            assert len(changes) == 0
+
+    os.remove(test_output_file)
 
 
 ################################################################
@@ -226,7 +221,6 @@ case_some_studied_japanese_lemmas = FakeEnvironmentParams(
 )
 
 
-@pytest.mark.debug
 @pytest.mark.parametrize(
     "fake_environment, unique_known_number, unique_known_percent, total_known_number, total_known_percent",
     [
@@ -235,7 +229,7 @@ case_some_studied_japanese_lemmas = FakeEnvironmentParams(
     ],
     indirect=["fake_environment"],
 )
-def test_readability_report(  # pylint:disable=too-many-arguments
+def test_readability_report(  # pylint:disable=too-many-arguments, unused-argument
     fake_environment: FakeEnvironment,
     unique_known_number: str,
     unique_known_percent: str,

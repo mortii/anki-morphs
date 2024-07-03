@@ -582,6 +582,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
     @staticmethod
     def get_known_morphs(highest_learning_interval: int) -> list[tuple[str, str]]:
+        # todo
         known_morphs: list[tuple[str, str]] = []
         am_db = AnkiMorphsDB()
 
@@ -601,16 +602,14 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         return known_morphs
 
-    @staticmethod
-    def get_morph_statuses() -> dict[str, str]:
+    def get_morph_learning_status(self) -> dict[str, str]:
         morph_status_dict: dict[str, str] = {}
-        am_db = AnkiMorphsDB()
         am_config = AnkiMorphsConfig()
 
-        with am_db.con:
-            card_morphs_raw = am_db.con.execute(
+        with self.con:
+            card_morphs_raw = self.con.execute(
                 """
-                    SELECT lemma, inflection, highest_learning_interval
+                    SELECT lemma, inflection, highest_inflection_learning_interval
                     FROM Morphs
                     ORDER BY lemma, inflection
                     """,
