@@ -11,7 +11,7 @@ from test.fake_configs import (
 from test.fake_environment_module import (  # pylint:disable=unused-import
     FakeEnvironment,
     FakeEnvironmentParams,
-    fake_environment,
+    fake_environment_fixture,
 )
 from test.test_globals import (
     PATH_TESTS_DATA,
@@ -47,7 +47,7 @@ case_big_japanese_collection_params = FakeEnvironmentParams(
 
 # when stacking 'parametrize' we run the function with all permutations
 @pytest.mark.parametrize(
-    "fake_environment",
+    "fake_environment_fixture",
     [case_big_japanese_collection_params],
     indirect=True,
 )
@@ -64,7 +64,7 @@ case_big_japanese_collection_params = FakeEnvironmentParams(
     [True, False],
 )
 def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-locals, too-many-branches
-    fake_environment: FakeEnvironment,
+    fake_environment_fixture: FakeEnvironment,
     morphemizer_description: str,
     only_lemma: bool,
     comprehension_cutoff: bool,
@@ -155,14 +155,13 @@ def _set_morphemizer(
     generator_window.ui.morphemizerComboBox.setCurrentIndex(index)
 
 
-@pytest.mark.debug
 @pytest.mark.parametrize(
-    "fake_environment",
+    "fake_environment_fixture",
     [case_big_japanese_collection_params],
     indirect=True,
 )
 def test_study_plan_generator(  # pylint:disable=unused-argument, too-many-locals
-    fake_environment: FakeEnvironment, qtbot: Any
+    fake_environment_fixture: FakeEnvironment, qtbot: Any
 ) -> None:
     gw = GeneratorWindow()
 
@@ -222,15 +221,15 @@ case_some_studied_japanese_lemmas = FakeEnvironmentParams(
 
 
 @pytest.mark.parametrize(
-    "fake_environment, unique_known_number, unique_known_percent, total_known_number, total_known_percent",
+    "fake_environment_fixture, unique_known_number, unique_known_percent, total_known_number, total_known_percent",
     [
         (case_some_studied_japanese_inflections, "3", "0.6 %", "44", "2.7 %"),
         (case_some_studied_japanese_lemmas, "16", "3.3 %", "83", "5.0 %"),
     ],
-    indirect=["fake_environment"],
+    indirect=["fake_environment_fixture"],
 )
 def test_readability_report(  # pylint:disable=too-many-arguments, unused-argument
-    fake_environment: FakeEnvironment,
+    fake_environment_fixture: FakeEnvironment,
     unique_known_number: str,
     unique_known_percent: str,
     total_known_number: str,

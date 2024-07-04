@@ -24,7 +24,7 @@ class SpacyMorph:
 @pytest.fixture(
     scope="module"  # module-scope: created and destroyed once per module. Cached.
 )
-def fake_environment() -> Iterator[None]:
+def fake_environment_fixture() -> Iterator[None]:
     print("fake environment initiated")
     mock_mw = mock.Mock(spec=aqt.mw)  # can use any mw to spec
 
@@ -45,7 +45,9 @@ def fake_environment() -> Iterator[None]:
     patch_testing_variable.stop()
 
 
-def test_ja_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_ja_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Japanese
 
     nlp: Any = get_nlp(spacy_model_name="ja_core_news_sm")
@@ -82,7 +84,9 @@ def test_ja_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_nb_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_nb_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Norsk Bokmål
 
     nlp: Any = get_nlp(spacy_model_name="nb_core_news_sm")
@@ -114,7 +118,9 @@ def test_nb_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_en_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_en_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # English
 
     nlp: Any = get_nlp(spacy_model_name="en_core_web_sm")
@@ -164,7 +170,9 @@ def test_en_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_de_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_de_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # German
 
     nlp: Any = get_nlp(spacy_model_name="de_core_news_md")  # sm model is worse
@@ -211,7 +219,9 @@ def test_de_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_ca_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_ca_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Catalan
 
     nlp: Any = get_nlp(spacy_model_name="ca_core_news_sm")
@@ -246,7 +256,9 @@ def test_ca_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_es_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_es_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Spanish
 
     nlp: Any = get_nlp(spacy_model_name="es_core_news_sm")
@@ -279,7 +291,9 @@ def test_es_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_fr_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_fr_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # French
 
     nlp: Any = get_nlp(spacy_model_name="fr_core_news_sm")
@@ -311,7 +325,9 @@ def test_fr_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_da_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_da_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Danish
 
     nlp: Any = get_nlp(spacy_model_name="da_core_news_sm")
@@ -343,7 +359,9 @@ def test_da_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_sv_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_sv_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Swedish
 
     nlp: Any = get_nlp(spacy_model_name="sv_core_news_sm")
@@ -375,7 +393,9 @@ def test_sv_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_nl_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_nl_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Dutch
 
     nlp: Any = get_nlp(spacy_model_name="nl_core_news_sm")
@@ -407,7 +427,9 @@ def test_nl_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_hr_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_hr_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Croatian
 
     nlp: Any = get_nlp(spacy_model_name="hr_core_news_sm")
@@ -442,7 +464,9 @@ def test_hr_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_fi_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_fi_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Finnish
 
     nlp: Any = get_nlp(spacy_model_name="fi_core_news_sm")
@@ -474,7 +498,9 @@ def test_fi_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_el_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_el_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Greek
 
     nlp: Any = get_nlp(spacy_model_name="el_core_news_sm")
@@ -506,7 +532,9 @@ def test_el_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_it_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_it_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Italian
 
     nlp: Any = get_nlp(spacy_model_name="it_core_news_sm")
@@ -539,7 +567,9 @@ def test_it_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_lt_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_lt_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Lithuanian
 
     nlp: Any = get_nlp(spacy_model_name="lt_core_news_sm")
@@ -571,7 +601,9 @@ def test_lt_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_mk_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_mk_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Macedonian
 
     nlp: Any = get_nlp(spacy_model_name="mk_core_news_sm")
@@ -603,7 +635,9 @@ def test_mk_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_pl_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_pl_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Polish
 
     nlp: Any = get_nlp(spacy_model_name="pl_core_news_sm")
@@ -635,7 +669,9 @@ def test_pl_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_pt_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_pt_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Portuguese
 
     nlp: Any = get_nlp(spacy_model_name="pt_core_news_sm")
@@ -666,7 +702,9 @@ def test_pt_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_ro_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_ro_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Romanian
 
     nlp: Any = get_nlp(spacy_model_name="ro_core_news_sm")
@@ -698,7 +736,9 @@ def test_ro_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_sl_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_sl_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Slovenian
 
     nlp: Any = get_nlp(spacy_model_name="sl_core_news_sm")
@@ -730,7 +770,9 @@ def test_sl_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_ru_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_ru_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Russian
 
     nlp: Any = get_nlp(spacy_model_name="ru_core_news_sm")
@@ -760,7 +802,9 @@ def test_ru_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_uk_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_uk_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Ukrainian
 
     nlp: Any = get_nlp(spacy_model_name="uk_core_news_sm")
@@ -790,7 +834,9 @@ def test_uk_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_ko_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_ko_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Korean
 
     nlp: Any = get_nlp(spacy_model_name="ko_core_news_sm")
@@ -823,7 +869,9 @@ def test_ko_model(fake_environment: None) -> None:  # pylint:disable=unused-argu
     assert processed_morphs == correct_am_morphs
 
 
-def test_zh_model(fake_environment: None) -> None:  # pylint:disable=unused-argument
+def test_zh_model(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
+) -> None:
     # Chinese
 
     nlp: Any = get_nlp(spacy_model_name="zh_core_web_sm")

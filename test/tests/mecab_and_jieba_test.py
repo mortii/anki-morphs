@@ -14,7 +14,7 @@ from ankimorphs.morphemizers.morphemizer import get_morphemizer_by_description
 @pytest.fixture(
     scope="module"  # module-scope: created and destroyed once per module. Cached.
 )
-def fake_environment() -> Iterator[None]:
+def _fake_environment_fixture() -> Iterator[None]:
     patch_testing_variable = mock.patch.object(
         spacy_wrapper, "testing_environment", True
     )
@@ -29,7 +29,7 @@ def fake_environment() -> Iterator[None]:
 
 @pytest.mark.external_morphemizers
 def test_mecab_morpheme_generation(  # pylint:disable=unused-argument
-    fake_environment: None,
+    _fake_environment_fixture: None,
 ) -> None:
     morphemizer = get_morphemizer_by_description("AnkiMorphs: Japanese")
     assert morphemizer is not None
@@ -56,7 +56,7 @@ def test_mecab_morpheme_generation(  # pylint:disable=unused-argument
 
 @pytest.mark.external_morphemizers
 def test_jieba_morpheme_generation(  # pylint:disable=unused-argument
-    fake_environment: None,
+    _fake_environment_fixture: None,
 ) -> None:
     morphemizer = get_morphemizer_by_description("AnkiMorphs: Chinese")
     assert morphemizer is not None

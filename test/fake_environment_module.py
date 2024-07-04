@@ -68,7 +68,7 @@ class FakeEnvironment:
 
 
 @pytest.fixture(scope="function")
-def fake_environment(  # pylint:disable=too-many-locals, too-many-statements
+def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statements
     request: SubRequest,
 ) -> Iterator[FakeEnvironment | None]:
     # Sending arguments to a fixture requires a somewhat hacky

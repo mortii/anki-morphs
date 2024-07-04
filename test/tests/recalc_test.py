@@ -20,7 +20,7 @@ from test.fake_configs import (
 from test.fake_environment_module import (  # pylint:disable=unused-import
     FakeEnvironment,
     FakeEnvironmentParams,
-    fake_environment,
+    fake_environment_fixture,
 )
 
 import pytest
@@ -142,7 +142,7 @@ case_big_japanese_collection_params = FakeEnvironmentParams(
 # This means that we run the fixture AND the test function for each parameter.
 @pytest.mark.external_morphemizers
 @pytest.mark.parametrize(
-    "fake_environment",
+    "fake_environment_fixture",
     [
         case_same_lemma_and_inflection_scores_params,
         case_inflections_are_known_params,
@@ -155,14 +155,14 @@ case_big_japanese_collection_params = FakeEnvironmentParams(
     indirect=True,
 )
 def test_recalc(  # pylint:disable=too-many-locals
-    fake_environment: FakeEnvironment,
+    fake_environment_fixture: FakeEnvironment,
 ) -> None:
-    modified_collection = fake_environment.modified_collection
-    original_collection = fake_environment.original_collection
+    modified_collection = fake_environment_fixture.modified_collection
+    original_collection = fake_environment_fixture.original_collection
 
     model_manager: ModelManager = ModelManager(modified_collection)
     note_type_dict: NotetypeDict | None = model_manager.by_name(
-        fake_environment.config["filters"][0]["note_type"]
+        fake_environment_fixture.config["filters"][0]["note_type"]
     )
     assert note_type_dict is not None
     field_name_dict = model_manager.field_map(note_type_dict)
@@ -307,7 +307,7 @@ case_default_morphemizer_params = FakeEnvironmentParams(
 
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
-    "fake_environment, expected_exception",
+    "fake_environment_fixture, expected_exception",
     [
         (case_default_note_type_params, DefaultSettingsException),
         (case_default_field_params, DefaultSettingsException),
@@ -318,10 +318,10 @@ case_default_morphemizer_params = FakeEnvironmentParams(
         (case_wrong_field_name_params, AnkiFieldNotFound),
         (case_wrong_note_type_params, AnkiNoteTypeNotFound),
     ],
-    indirect=["fake_environment"],
+    indirect=["fake_environment_fixture"],
 )
 def test_recalc_with_default_settings(  # pylint:disable=unused-argument
-    fake_environment: FakeEnvironment, expected_exception: type[Exception]
+    fake_environment_fixture: FakeEnvironment, expected_exception: type[Exception]
 ) -> None:
     read_enabled_config_filters = ankimorphs_config.get_read_enabled_filters()
     modify_enabled_config_filters = ankimorphs_config.get_modify_enabled_filters()
@@ -348,12 +348,12 @@ case_invalid_known_morphs_file_params = FakeEnvironmentParams(
 
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
-    "fake_environment",
+    "fake_environment_fixture",
     [case_invalid_known_morphs_file_params],
-    indirect=["fake_environment"],
+    indirect=["fake_environment_fixture"],
 )
 def test_recalc_with_invalid_known_morphs_file(  # pylint:disable=unused-argument
-    fake_environment: FakeEnvironment,
+    fake_environment_fixture: FakeEnvironment,
 ) -> None:
     read_enabled_config_filters = ankimorphs_config.get_read_enabled_filters()
     modify_enabled_config_filters = ankimorphs_config.get_modify_enabled_filters()

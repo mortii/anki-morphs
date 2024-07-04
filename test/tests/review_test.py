@@ -6,7 +6,7 @@ from test.fake_configs import (
 from test.fake_environment_module import (  # pylint:disable=unused-import
     FakeEnvironment,
     FakeEnvironmentParams,
-    fake_environment,
+    fake_environment_fixture,
 )
 
 import pytest
@@ -47,18 +47,18 @@ case_dont_skip_inflections_expected = [1715776939301, 1715776946917, 17157769538
 
 
 @pytest.mark.parametrize(
-    "fake_environment, expected_results",
+    "fake_environment_fixture, expected_results",
     [
         (case_skip_inflections_params, case_skip_inflections_expected),
         (case_dont_skip_inflections_params, case_dont_skip_inflections_expected),
     ],
-    indirect=["fake_environment"],
+    indirect=["fake_environment_fixture"],
 )
 def test_custom_review(
-    fake_environment: FakeEnvironment, expected_results: list[int]
+    fake_environment_fixture: FakeEnvironment, expected_results: list[int]
 ) -> None:
-    mock_mw = fake_environment.mock_mw
-    mock_db = fake_environment.mock_db
+    mock_mw = fake_environment_fixture.mock_mw
+    mock_db = fake_environment_fixture.mock_db
     am_config = AnkiMorphsConfig()
     skipped_cards = SkippedCards()
 

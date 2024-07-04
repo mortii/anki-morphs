@@ -7,7 +7,7 @@ from test.fake_configs import (
 from test.fake_environment_module import (  # pylint:disable=unused-import
     FakeEnvironment,
     FakeEnvironmentParams,
-    fake_environment,
+    fake_environment_fixture,
 )
 
 import pytest
@@ -194,7 +194,7 @@ case_highlight_based_on_lemma_morphs = [
 # but the config needs to have the option "preprocess_ignore_bracket_contents"
 # activated
 @pytest.mark.parametrize(
-    "fake_environment, input_text, card_morphs, correct_output",
+    "fake_environment_fixture, input_text, card_morphs, correct_output",
     [
         (
             case_japanese_one_params,
@@ -227,10 +227,10 @@ case_highlight_based_on_lemma_morphs = [
             CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT,
         ),
     ],
-    indirect=["fake_environment"],
+    indirect=["fake_environment_fixture"],
 )
 def test_highlighting(  # pylint:disable=unused-argument
-    fake_environment: FakeEnvironment,
+    fake_environment_fixture: FakeEnvironment,
     input_text: str,
     card_morphs: list[Morpheme],
     correct_output: str,
