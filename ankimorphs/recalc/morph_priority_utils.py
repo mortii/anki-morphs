@@ -11,6 +11,7 @@ from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from ..ankimorphs_db import AnkiMorphsDB
 from ..exceptions import FrequencyFileMalformedException, FrequencyFileNotFoundException
 
+# todo: import this?
 _DEFAULT_SCORE: int = 2_047_483_647
 
 
@@ -28,16 +29,22 @@ def _get_morph_priority(
     else:
         morph_priorities = _get_morph_frequency_file_priority(
             frequency_file_name=am_config_filter.morph_priority_selection,
-            only_use_lemma=am_config.evaluate_morph_lemma,
+            only_lemma_priorities=am_config.evaluate_morph_lemma,
         )
 
     return morph_priorities
 
 
 def _get_morph_frequency_file_priority(
-    frequency_file_name: str, only_use_lemma: bool
+    frequency_file_name: str, only_lemma_priorities: bool
 ) -> dict[str, int]:
     assert mw is not None
+
+    print(f"mw.pm.profileFolder(): {mw.pm.profileFolder()}")
+    print(
+        f"ankimorphs_globals.FREQUENCY_FILES_DIR_NAME): {ankimorphs_globals.FREQUENCY_FILES_DIR_NAME}"
+    )
+    print(f"frequency_file_name: {frequency_file_name}")
 
     morph_priority: dict[str, int] = {}
     frequency_file_path = Path(
@@ -51,12 +58,20 @@ def _get_morph_frequency_file_priority(
             headers: list[str] | None = next(morph_reader, None)
 
             if headers is None:
-                raise FrequencyFileMalformedException(str(frequency_file_path))
+                raise FrequencyFileMalformedException(
+                    path=str(frequency_file_path),
+                    reason="Frequency file does not have headers.",
+                )
 
             # lemma_column = headers.index(ankimorphs_globals.LEMMA_HEADER)
-            assert ankimorphs_globals.LEMMA_HEADER in headers
+            if ankimorphs_globals.LEMMA_HEADER not in headers:
+                _reason = f"Frequency file is missing the '{ankimorphs_globals.LEMMA_HEADER}' header"
+                raise FrequencyFileMalformedException(
+                    path=str(frequency_file_path),
+                    reason=_reason,
+                )
 
-            if only_use_lemma:
+            if only_lemma_priorities:
                 # Here we have two options, a frequency file that either has
                 # a single column of only lemmas, or a full frequency file that
                 # contains a "Lemma-Priority" column
@@ -74,7 +89,12 @@ def _get_morph_frequency_file_priority(
                     )
             else:
                 # here we always have an inflection column that contains priorities
-                assert ankimorphs_globals.INFLECTION_HEADER in headers
+                if ankimorphs_globals.INFLECTION_PRIORITY_HEADER not in headers:
+                    _reason = f"Frequency file is missing the '{ankimorphs_globals.INFLECTION_PRIORITY_HEADER}' header"
+                    raise FrequencyFileMalformedException(
+                        path=str(frequency_file_path),
+                        reason=_reason,
+                    )
 
                 inflection_priority_column = headers.index(
                     ankimorphs_globals.INFLECTION_PRIORITY_HEADER
@@ -87,9 +107,6 @@ def _get_morph_frequency_file_priority(
 
     except FileNotFoundError as error:
         raise FrequencyFileNotFoundException(str(frequency_file_path)) from error
-    except (ValueError, AssertionError) as error:
-        # headers not found
-        raise FrequencyFileMalformedException(str(frequency_file_path)) from error
 
     return morph_priority
 

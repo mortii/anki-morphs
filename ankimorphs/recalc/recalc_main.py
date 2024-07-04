@@ -498,6 +498,7 @@ def _on_failure(  # pylint:disable=too-many-branches
     elif isinstance(error, FrequencyFileMalformedException):
         text = (
             f"Frequency file: {error.path} is malformed (possibly outdated).\n\n"
+            f"{error.reason}\n\n"
             f"Please generate a new one."
         )
     elif isinstance(error, KnownMorphsFileMalformedException):

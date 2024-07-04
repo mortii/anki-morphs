@@ -27,7 +27,6 @@ from ankimorphs.morpheme import Morpheme
 # Database choice is arbitrary.
 ##############################################################################################
 case_japanese_one_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_big_japanese_collection,
 )
 
@@ -67,7 +66,6 @@ case_japanese_one_card_morphs: list[Morpheme] = [
 # Database choice is arbitrary.
 ##############################################################################################
 case_japanese_two_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_big_japanese_collection,
 )
 CASE_JAPANESE_TWO_INPUT_TEXT = "そうです ね"
@@ -90,7 +88,6 @@ case_japanese_two_card_morphs = [
 # The config is arbitrary except that it needs "preprocess_ignore_bracket_contents" activated.
 ##############################################################################################
 case_german_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_big_japanese_collection,
 )
 CASE_GERMAN_INPUT_TEXT = "Das sind doch die Schädel von den Flüchtlingen, die wir gefunden hatten! Keine Sorge, dein Kopf wird auch schon bald in meiner Sammlung sein."
@@ -148,7 +145,6 @@ case_german_card_morphs = [
 # The config is arbitrary except that it needs "preprocess_ignore_bracket_contents" activated.
 ##############################################################################################
 case_regex_escape_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_big_japanese_collection,
 )
 CASE_REGEX_ESCAPE_INPUT_TEXT = "몇...?<div><br></div><div>몇...</div>"
@@ -167,7 +163,6 @@ case_regex_escape_card_morphs = [
 # The config needs "preprocess_ignore_bracket_contents" activated, and "evaluate_morph_lemma".
 ##############################################################################################
 case_highlight_based_on_lemma_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_lemma_evaluation_ignore_brackets,
 )
 CASE_HIGHLIGHT_BASED_ON_LEMMA_INPUT_TEXT = "hello world"

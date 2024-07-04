@@ -5,6 +5,7 @@ import shutil
 import sys
 from collections.abc import Iterator
 from pathlib import Path
+from test.fake_configs import default_config_dict
 from test.fake_db import FakeDB
 from test.test_globals import (
     PATH_CARD_COLLECTIONS,
@@ -33,20 +34,27 @@ from ankimorphs import (
 )
 from ankimorphs.generators import generators_utils, generators_window
 from ankimorphs.morphemizers import spacy_wrapper
-from ankimorphs.recalc import anki_data_utils, caching, recalc_main
+from ankimorphs.recalc import (
+    anki_data_utils,
+    caching,
+    morph_priority_utils,
+    recalc_main,
+)
 
 
 class FakeEnvironmentParams:
-    def __init__(
+    def __init__(  # pylint:disable=too-many-arguments
         self,
-        collection: str,
-        config: dict[str, Any],
+        collection: str | None = None,
+        config: dict[str, Any] | None = None,
         am_db: str | None = None,
+        frequency_files_dir: str | None = None,
         known_morphs_dir: str | None = None,
     ):
         self.collection = collection
         self.config = config
         self.am_db = am_db
+        self.frequency_files_dir = frequency_files_dir
         self.known_morphs_dir = known_morphs_dir
 
 
@@ -57,12 +65,16 @@ class FakeEnvironment:
         mock_mw: mock.Mock,
         mock_db: FakeDB,
         config: dict[str, Any],
+        frequency_files_dir: str,
+        known_morphs_dir: str,
         original_collection: Collection,
         modified_collection: Collection,
     ) -> None:
         self.mock_mw = mock_mw
         self.mock_db = mock_db
         self.config = config
+        self.frequency_files_dir = frequency_files_dir
+        self.known_morphs_dir = known_morphs_dir
         self.original_collection = original_collection
         self.modified_collection = modified_collection
 
@@ -77,15 +89,25 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
 
     try:
         _collection_file_name: str = request.param.collection
+        if _collection_file_name is None:
+            # this is a small collection, otherwise a completely arbitrary choice
+            _collection_file_name = "ignore_names_txt_collection"
         assert isinstance(_collection_file_name, str)
 
         _config_data: dict[str, Any] = request.param.config
+        if _config_data is None:
+            _config_data = default_config_dict
         assert isinstance(_config_data, dict)
 
         _am_db_name: str | None = request.param.am_db
         if _am_db_name is None:
             _am_db_name = "empty_skeleton.db"
         assert isinstance(_am_db_name, str)
+
+        _frequency_files_dir: str | None = request.param.frequency_files_dir
+        if _frequency_files_dir is None:
+            _frequency_files_dir = "correct_outputs"
+        assert isinstance(_frequency_files_dir, str)
 
         _known_morphs_dir: str | None = request.param.known_morphs_dir
         if _known_morphs_dir is None:
@@ -135,6 +157,7 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     patch_anki_data_utils_mw = mock.patch.object(anki_data_utils, "mw", mock_mw)
     patch_reviewing_mw = mock.patch.object(reviewing_utils, "mw", mock_mw)
     patch_gw_mw = mock.patch.object(generators_window, "mw", mock_mw)
+    patch_morph_priority_mw = mock.patch.object(morph_priority_utils, "mw", mock_mw)
 
     patch_recalc_mw.start()
     patch_caching_mw.start()
@@ -145,6 +168,7 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     patch_anki_data_utils_mw.start()
     patch_reviewing_mw.start()
     patch_gw_mw.start()
+    patch_morph_priority_mw.start()
 
     # 'mw' has to be patched before we can before we can create a db instance
     patch_reviewing_am_db = mock.patch.object(reviewing_utils, "AnkiMorphsDB", FakeDB)
@@ -165,6 +189,9 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     patch_testing_variable = mock.patch.object(
         spacy_wrapper, "testing_environment", True
     )
+    patch_frequency_files_dir = mock.patch.object(
+        ankimorphs_globals, "FREQUENCY_FILES_DIR_NAME", _frequency_files_dir
+    )
     patch_known_morphs_dir = mock.patch.object(
         ankimorphs_globals, "KNOWN_MORPHS_DIR_NAME", _known_morphs_dir
     )
@@ -177,6 +204,7 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     patch_tooltip.start()
 
     patch_testing_variable.start()
+    patch_frequency_files_dir.start()
     patch_known_morphs_dir.start()
     sys.path.append(str(fake_morphemizers_path))
 
@@ -185,6 +213,8 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
             mock_mw=mock_mw,
             mock_db=mock_db,
             config=_config_data,
+            known_morphs_dir=_known_morphs_dir,
+            frequency_files_dir=_frequency_files_dir,
             original_collection=Collection(str(path_original_collection)),
             modified_collection=mock_mw.col,
         )
@@ -204,6 +234,7 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     patch_anki_data_utils_mw.stop()
     patch_reviewing_mw.stop()
     patch_gw_mw.stop()
+    patch_morph_priority_mw.stop()
 
     patch_reviewing_am_db.stop()
     patch_recalc_am_db.stop()
@@ -213,6 +244,7 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     patch_tooltip.stop()
 
     patch_testing_variable.stop()
+    patch_frequency_files_dir.stop()
     patch_known_morphs_dir.stop()
     sys.path.remove(str(fake_morphemizers_path))
 

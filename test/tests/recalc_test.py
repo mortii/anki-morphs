@@ -228,7 +228,6 @@ def test_recalc(  # pylint:disable=too-many-locals
 # Database choice is arbitrary.
 ################################################################
 case_wrong_note_type_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_wrong_note_type,
 )
 
@@ -242,7 +241,6 @@ case_wrong_note_type_params = FakeEnvironmentParams(
 # Database choice is arbitrary.
 ################################################################
 case_wrong_field_name_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_wrong_field_name,
 )
 
@@ -256,7 +254,6 @@ case_wrong_field_name_params = FakeEnvironmentParams(
 # Database choice is arbitrary.
 ################################################################
 case_wrong_morph_priority_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_wrong_morph_priority,
 )
 
@@ -271,7 +268,6 @@ case_wrong_morph_priority_params = FakeEnvironmentParams(
 # Database choice is arbitrary.
 ################################################################
 case_wrong_morphemizer_description_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_wrong_morphemizer_description,
 )
 
@@ -285,22 +281,18 @@ case_wrong_morphemizer_description_params = FakeEnvironmentParams(
 # Database choice is arbitrary.
 ################################################################
 case_default_note_type_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_default_note_type,
 )
 
 case_default_field_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_default_field,
 )
 
 case_default_morph_priority_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_default_morph_priority,
 )
 
 case_default_morphemizer_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_default_morphemizer,
 )
 
@@ -340,7 +332,6 @@ def test_recalc_with_default_settings(  # pylint:disable=unused-argument
 # Database choice is arbitrary.
 ################################################################
 case_invalid_known_morphs_file_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_known_morphs_enabled,
     known_morphs_dir="known-morphs-invalid",
 )

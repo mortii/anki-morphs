@@ -42,8 +42,9 @@ class FrequencyFileNotFoundException(Exception):
 class FrequencyFileMalformedException(Exception):
     """Selected frequency file is malformed in some way"""
 
-    def __init__(self, path: str):
+    def __init__(self, path: str, reason: str):
         self.path = path
+        self.reason = reason
 
 
 class KnownMorphsFileMalformedException(Exception):

@@ -31,6 +31,10 @@ repos:
       - id: check-json
       - id: pretty-format-json
         args: ['--autofix']
+        exclude: |
+          (?x)^(
+              test/data/correct_outputs/.*|
+          )$
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
       - id: check-merge-conflict

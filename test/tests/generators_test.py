@@ -39,7 +39,6 @@ from ankimorphs.generators.generators_window import GeneratorWindow
 # found db.
 ################################################################
 case_big_japanese_collection_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
     config=config_big_japanese_collection,
     am_db="big_japanese_collection.db",
 )
