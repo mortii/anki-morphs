@@ -44,6 +44,10 @@ You can also rerun the last used seed:
 pytest --randomly-seed=last
 ```
 
+### Test coverage
+
+Run: `pytest --cov=ankimorphs --cov-report html` and click on `index.html` in `htmlcov/`
+
 
 ## Card collections
 

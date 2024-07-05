@@ -51,14 +51,17 @@ filterwarnings = [
 # pytest-expect: stores test expectations by saving the set of failing tests, allowing them to be marked as xfail when running them in future.
 # pytest-sugar: showing failures and errors instantly, adding a progress bar, improving the test results, and making the output look better.
 # pytest-randomly: randomly order tests and control random.seed.
+# pytest-cov: test coverage
 # - use "pytest --randomly-seed=xxxxxxx" to repeate failing seeds
-required_plugins = "pytest-qt pytest-xvfb pytest-expect pytest-sugar pytest-randomly"
+required_plugins = "pytest-qt pytest-xvfb pytest-expect pytest-sugar pytest-randomly pytest-cov"
 # xfail_strict = True: tests marked with @pytest.mark.xfail that actually succeed will by default fail the test suite
 xfail_strict = "True"
 # addopts: set of command line arguments as if they had been specified by the user
 # --strict-markers: markers not registered in the `markers` section of the configuration file raise errors.
 # --durations=5: show the N slowest setup/test durations (N=0 for all)
 # --maxfail=1: exit after first num failures or errors.
+# --cov=ankimorphs: filesystem path of the project to cover
+# --cov-report html: type of report to generate. Open html reeports by clicking `index.html` in `htmlcov/`
 addopts = "--strict-markers --durations=5 --maxfail=1000000"
 # markers: whitelist custom markers
 # example with: pytest -m slow

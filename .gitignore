@@ -16,3 +16,7 @@ anki_output.txt
 profile.svg
 tests/data/tests_outputs/*
 *.anki2-wal
+
+# test coverage stuff
+.coverage
+htmlcov/
