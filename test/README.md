@@ -64,7 +64,7 @@ Current card collections (test/data/card_collections):
 - `offset_new_cards_inflection_collection.anki2`
   - Contains two cards, both with "hello".
 - `offset_new_cards_lemma_collection.anki2`
-  - duplicate of `lemma_priority_collection.anki2`, but has used the `recalc_offset_new_cards` config option
+  - duplicate of `lemma_evaluation_lemma_extra_fields_collection.anki2`, but has used the `recalc_offset_new_cards` config option
 - `some_studied_japanese_collection.anki2`
   - contains one card with a couple of morphs, used for testing the readability report
 
