@@ -63,10 +63,11 @@ class CardMorphsMetrics:
         morph_priorities: dict[str, int],
         card_morphs: list[Morpheme],
     ) -> None:
-        morph_priority = default_morph_priority
 
         for morph in card_morphs:
             assert morph.highest_lemma_learning_interval is not None
+
+            morph_priority = default_morph_priority
 
             key = morph.lemma + morph.lemma
             if key in morph_priorities:
@@ -90,10 +91,11 @@ class CardMorphsMetrics:
         morph_priorities: dict[str, int],
         card_morphs: list[Morpheme],
     ) -> None:
-        morph_priority = default_morph_priority
 
         for morph in card_morphs:
             assert morph.highest_inflection_learning_interval is not None
+
+            morph_priority = default_morph_priority
 
             key = morph.lemma + morph.inflection
             if key in morph_priorities:
