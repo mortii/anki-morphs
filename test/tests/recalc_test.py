@@ -69,9 +69,7 @@ case_same_lemma_and_inflection_scores_params = FakeEnvironmentParams(
 # studied. This checks the following:
 # 1. all inflections are set to "known"
 # 2. the 'am-fresh-morphs' tag are set
-# 3. the 'am-study-morph' field has a value while
-# Since one card has recently been studied, it will also
-# serve as a test for the .
+# 3. the 'am-study-morph' field has a value
 # Database choice is arbitrary.
 ################################################################
 case_inflections_are_known_params = FakeEnvironmentParams(
@@ -140,6 +138,7 @@ case_big_japanese_collection_params = FakeEnvironmentParams(
 # test with a fixture receiving the values before passing them to a test"
 # - https://docs.pytest.org/en/7.1.x/example/parametrize.html#indirect-parametrization
 # This means that we run the fixture AND the test function for each parameter.
+@pytest.mark.debug
 @pytest.mark.external_morphemizers
 @pytest.mark.parametrize(
     "fake_environment_fixture",

@@ -101,40 +101,11 @@ def update_unknown_morphs_field(
     am_config: AnkiMorphsConfig,
     field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
-    card_id: int,
-    card_morph_map_cache: dict[int, list[Morpheme]],
+    unknown_morphs: list[Morpheme],
 ) -> None:
-    unknowns: list[Morpheme] = []
-
-    try:
-        card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
-        unknowns = _get_unknown_morphs(am_config, card_morphs)
-    except KeyError:
-        # card does not have morphs or is buggy in some way
-        pass
-
-    unknowns_string: str = _get_string_of_morphs(am_config, unknowns)
+    unknowns_string: str = _get_string_of_morphs(am_config, unknown_morphs)
     index: int = field_name_dict[am_globals.EXTRA_FIELD_UNKNOWN_MORPHS][0]
     note.fields[index] = unknowns_string
-
-
-def _get_unknown_morphs(
-    am_config: AnkiMorphsConfig, card_morphs: list[Morpheme]
-) -> list[Morpheme]:
-    unknowns: list[Morpheme] = []
-
-    if am_config.evaluate_morph_inflection:
-        for morph in card_morphs:
-            assert morph.highest_inflection_learning_interval is not None
-            if morph.highest_inflection_learning_interval == 0:
-                unknowns.append(morph)
-    else:
-        for morph in card_morphs:
-            assert morph.highest_lemma_learning_interval is not None
-            if morph.highest_lemma_learning_interval == 0:
-                unknowns.append(morph)
-
-    return unknowns
 
 
 def _get_string_of_morphs(
@@ -153,23 +124,12 @@ def _get_string_of_morphs(
 
 
 def update_unknown_morphs_count_field(
-    am_config: AnkiMorphsConfig,
     field_name_dict: dict[str, tuple[int, FieldDict]],
     note: Note,
-    card_id: int,
-    card_morph_map_cache: dict[int, list[Morpheme]],
+    unknown_morphs: list[Morpheme],
 ) -> None:
-    unknowns: list[Morpheme] = []
-
-    try:
-        card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
-        unknowns = _get_unknown_morphs(am_config, card_morphs)
-    except KeyError:
-        # card does not have morphs or is buggy in some way
-        pass
-
     index: int = field_name_dict[am_globals.EXTRA_FIELD_UNKNOWN_MORPHS_COUNT][0]
-    note.fields[index] = str(len(unknowns))
+    note.fields[index] = str(len(unknown_morphs))
 
 
 def update_score_field(
@@ -201,20 +161,13 @@ def update_score_terms_field(
     note.fields[index] = score_terms
 
 
-def update_highlighted_field(  # pylint:disable=too-many-arguments
+def update_highlighted_field(
     am_config: AnkiMorphsConfig,
     config_filter: AnkiMorphsConfigFilter,
     field_name_dict: dict[str, tuple[int, FieldDict]],
-    card_morph_map_cache: dict[int, list[Morpheme]],
-    card_id: int,
     note: Note,
+    card_morphs: list[Morpheme],
 ) -> None:
-    try:
-        card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
-    except KeyError:
-        # card does not have morphs or is buggy in some way
-        return
-
     expression_field_index: int = field_name_dict[config_filter.field][0]
     text_to_highlight = note.fields[expression_field_index]
 

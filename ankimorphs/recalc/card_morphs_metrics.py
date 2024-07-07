@@ -41,7 +41,7 @@ class CardMorphsMetrics:
         card_morphs: list[Morpheme],
     ) -> None:
 
-        # setting default avoid an extra if statement
+        # setting the default avoids an extra if statement
         default_morph_priority = len(morph_priorities) + 1
 
         if am_config.evaluate_morph_lemma:

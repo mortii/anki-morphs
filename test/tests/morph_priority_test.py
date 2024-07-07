@@ -81,7 +81,6 @@ case_collection_frequency_inflection_params = FakeEnvironmentParams(
 )
 
 
-@pytest.mark.debug
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
     "fake_environment_fixture, json_file_name",

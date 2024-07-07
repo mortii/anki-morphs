@@ -210,18 +210,18 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
             original_fields: list[str] = note.fields.copy()
             original_tags: list[str] = note.tags.copy()
 
-            if card.type == CARD_TYPE_NEW:
-                cards_morph_metrics = CardMorphsMetrics(
-                    am_config,
-                    card_id,
-                    card_morph_map_cache,
-                    morph_priorities,
-                )
+            cards_morph_metrics = CardMorphsMetrics(
+                am_config,
+                card_id,
+                card_morph_map_cache,
+                morph_priorities,
+            )
 
+            if card.type == CARD_TYPE_NEW:
                 score_values = CardScore(am_config, cards_morph_metrics)
                 card.due = score_values.score
 
-                tags_and_queue_utils.update_tags_and_queue(
+                tags_and_queue_utils.update_tags_and_queue_of_new_cards(
                     am_config=am_config,
                     note=note,
                     card=card,
@@ -263,32 +263,36 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                         note=note,
                         score_terms=score_values.terms,
                     )
+            else:
+                # not new cards
+                tags_and_queue_utils.update_tags_of_review_cards(
+                    am_config=am_config,
+                    note=note,
+                    has_learning_morphs=cards_morph_metrics.has_learning_morphs,
+                )
 
+            # always update these regardless of the state of the card
             if config_filter.extra_unknown_morphs:
                 extra_field_utils.update_unknown_morphs_field(
                     am_config=am_config,
                     field_name_dict=field_name_dict,
                     note=note,
-                    card_id=card_id,
-                    card_morph_map_cache=card_morph_map_cache,
+                    unknown_morphs=cards_morph_metrics.unknown_morphs,
                 )
             if config_filter.extra_unknown_morphs_count:
                 extra_field_utils.update_unknown_morphs_count_field(
-                    am_config=am_config,
                     field_name_dict=field_name_dict,
                     note=note,
-                    card_id=card_id,
-                    card_morph_map_cache=card_morph_map_cache,
+                    unknown_morphs=cards_morph_metrics.unknown_morphs,
                 )
 
             if config_filter.extra_highlighted:
                 extra_field_utils.update_highlighted_field(
-                    am_config,
-                    config_filter,
-                    field_name_dict,
-                    card_morph_map_cache,
-                    card.id,
-                    note,
+                    am_config=am_config,
+                    config_filter=config_filter,
+                    field_name_dict=field_name_dict,
+                    note=note,
+                    card_morphs=cards_morph_metrics.all_morphs,
                 )
 
             # we only want anki to update the cards and notes that have actually changed

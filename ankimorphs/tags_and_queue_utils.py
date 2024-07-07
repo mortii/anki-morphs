@@ -12,7 +12,7 @@ from ankimorphs import progress_utils
 from ankimorphs.ankimorphs_config import AnkiMorphsConfig
 
 
-def update_tags_and_queue(
+def update_tags_and_queue_of_new_cards(
     am_config: AnkiMorphsConfig,
     note: Note,
     card: Card,
@@ -72,6 +72,24 @@ def remove_exclusive_tags(note: Note, mutually_exclusive_tags: list[str]) -> Non
     for tag in mutually_exclusive_tags:
         if tag in note.tags:
             note.tags.remove(tag)
+
+
+def update_tags_of_review_cards(
+    am_config: AnkiMorphsConfig,
+    note: Note,
+    has_learning_morphs: bool,
+) -> None:
+    if am_config.tag_ready in note.tags:
+        note.tags.remove(am_config.tag_ready)
+    elif am_config.tag_not_ready in note.tags:
+        note.tags.remove(am_config.tag_not_ready)
+
+    if has_learning_morphs:
+        if am_config.tag_fresh not in note.tags:
+            note.tags.append(am_config.tag_fresh)
+    else:
+        if am_config.tag_fresh in note.tags:
+            note.tags.remove(am_config.tag_fresh)
 
 
 def reset_am_tags(parent: QWidget) -> None:

@@ -597,6 +597,11 @@ def test_function() -> None:
 
     # mw.col.update_note(note)
 
+    # card_id = 1720345836169
+    # card = mw.col.get_card(card_id)
+    # card.ivl += 30
+    # mw.col.update_card(card)
+
     am_db.con.close()
 
 
