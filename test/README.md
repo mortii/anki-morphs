@@ -70,7 +70,10 @@ Current card collections (test/data/card_collections):
 - `offset_new_cards_lemma_collection.anki2`
   - duplicate of `lemma_evaluation_lemma_extra_fields_collection.anki2`, but has used the `recalc_offset_new_cards` config option
 - `some_studied_japanese_collection.anki2`
-  - contains one card with a couple of morphs, used for testing the readability report
+  - contains three cards:
+    - one that has the tag 'am-known-manually'
+    - one with a learning interval of 1 day
+    - one with a learning interval of 30+ days
 
 ## Engineering and adding collections
 

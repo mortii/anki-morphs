@@ -365,6 +365,59 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             assert isinstance(highest_learning_interval, int)
             return highest_learning_interval
 
+    def get_morph_inflections_learning_statuses(self) -> dict[str, str]:
+        morph_status_dict: dict[str, str] = {}
+        am_config = AnkiMorphsConfig()
+
+        with self.con:
+            card_morphs_raw = self.con.execute(
+                """
+                    SELECT lemma, inflection, highest_inflection_learning_interval
+                    FROM Morphs
+                    ORDER BY lemma, inflection
+                    """,
+            ).fetchall()
+
+            for row in card_morphs_raw:
+                key = row[0] + row[1]
+                interval = row[2]
+                if interval >= am_config.interval_for_known_morphs:
+                    learning_status = "known"
+                elif interval > 0:
+                    learning_status = "learning"
+                else:
+                    learning_status = "unknown"
+
+                morph_status_dict[key] = learning_status
+
+        return morph_status_dict
+
+    def get_morph_lemmas_learning_statuses(self) -> dict[str, str]:
+        morph_status_dict: dict[str, str] = {}
+        am_config = AnkiMorphsConfig()
+
+        with self.con:
+            card_morphs_raw = self.con.execute(
+                """
+                    SELECT DISTINCT lemma, highest_lemma_learning_interval
+                    FROM Morphs
+                    """,
+            ).fetchall()
+
+            for row in card_morphs_raw:
+                key = row[0]
+                interval = row[1]
+                if interval >= am_config.interval_for_known_morphs:
+                    learning_status = "known"
+                elif interval > 0:
+                    learning_status = "learning"
+                else:
+                    learning_status = "unknown"
+
+                morph_status_dict[key] = learning_status
+
+        return morph_status_dict
+
     def get_card_morph_map_cache(self) -> dict[int, list[Morpheme]]:
         card_morph_map_cache: dict[int, list[Morpheme]] = {}
 
@@ -601,33 +654,6 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                 known_morphs.append((row[0], row[1]))
 
         return known_morphs
-
-    def get_morph_learning_status(self) -> dict[str, str]:
-        morph_status_dict: dict[str, str] = {}
-        am_config = AnkiMorphsConfig()
-
-        with self.con:
-            card_morphs_raw = self.con.execute(
-                """
-                    SELECT lemma, inflection, highest_inflection_learning_interval
-                    FROM Morphs
-                    ORDER BY lemma, inflection
-                    """,
-            ).fetchall()
-
-            for row in card_morphs_raw:
-                key = row[0] + row[1]
-                interval = row[2]
-                if interval >= am_config.interval_for_known_morphs:
-                    learning_status = "known"
-                elif interval > 0:
-                    learning_status = "learning"
-                else:
-                    learning_status = "unknown"
-
-                morph_status_dict[key] = learning_status
-
-        return morph_status_dict
 
 
 def _on_success(result: Any) -> None:

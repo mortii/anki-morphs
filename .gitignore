@@ -21,7 +21,7 @@ ankimorphs.db
 ankimorphs*.ankiaddon
 anki_output.txt
 profile.svg
-tests/data/tests_outputs/*
+test/data/tests_outputs/*
 *.anki2-wal
 
 # pytest-cov

@@ -55,7 +55,7 @@ case_big_japanese_collection_params = FakeEnvironmentParams(
     ["spaCy: ja_core_news_sm", "AnkiMorphs: Japanese"],
 )
 @pytest.mark.parametrize(
-    "only_lemma",
+    "only_store_lemma",
     [True, False],
 )
 @pytest.mark.parametrize(
@@ -65,7 +65,7 @@ case_big_japanese_collection_params = FakeEnvironmentParams(
 def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-locals, too-many-branches
     fake_environment_fixture: FakeEnvironment,
     morphemizer_description: str,
-    only_lemma: bool,
+    only_store_lemma: bool,
     comprehension_cutoff: bool,
     qtbot: Any,
 ) -> None:
@@ -79,7 +79,7 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-l
     test_output_file = Path(PATH_TESTS_DATA_TESTS_OUTPUTS, "test_output_file.csv")
 
     if morphemizer_description == "AnkiMorphs: Japanese":
-        if only_lemma:
+        if only_store_lemma:
             if comprehension_cutoff:
                 _file_name = "mecab_freq_lemma_comprehension.csv"
             else:
@@ -90,7 +90,7 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-l
             else:
                 _file_name = "mecab_freq_inflection_min_occurrence.csv"
     else:
-        if only_lemma:
+        if only_store_lemma:
             if comprehension_cutoff:
                 _file_name = "ja_core_news_sm_freq_lemma_comprehension.csv"
             else:
@@ -119,7 +119,7 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-l
     selected_output = GeneratorOutputDialog(_default_output_file)
     selected_output.ui.addOccurrencesColumnCheckBox.setChecked(True)
 
-    if only_lemma:
+    if only_store_lemma:
         selected_output.ui.storeOnlyMorphLemmaRadioButton.setChecked(True)
         selected_output.ui.storeMorphLemmaAndInflectionRadioButton.setChecked(False)
     if comprehension_cutoff:
@@ -154,51 +154,6 @@ def _set_morphemizer(
     generator_window.ui.morphemizerComboBox.setCurrentIndex(index)
 
 
-@pytest.mark.parametrize(
-    "fake_environment_fixture",
-    [case_big_japanese_collection_params],
-    indirect=True,
-)
-def test_study_plan_generator(  # pylint:disable=unused-argument, too-many-locals
-    fake_environment_fixture: FakeEnvironment, qtbot: Any
-) -> None:
-    gw = GeneratorWindow()
-
-    input_folder = Path(PATH_TESTS_DATA, "ja_subs")
-    test_output_file = Path(
-        PATH_TESTS_DATA_TESTS_OUTPUTS, "mecab_study_plan_test_output.csv"
-    )
-    correct_output_file = Path(
-        PATH_TESTS_DATA_CORRECT_OUTPUTS,
-        "mecab_study_plan.csv",
-    )
-
-    gw.ui.inputDirLineEdit.setText(str(input_folder))
-    gw._background_gather_files_and_populate_files_column()
-
-    _set_morphemizer(
-        generator_window=gw, morphemizer_description="AnkiMorphs: Japanese"
-    )
-
-    _default_output_file = Path(test_output_file)
-    selected_output = GeneratorOutputDialog(_default_output_file)
-    selected_output_options: OutputOptions = selected_output.get_selected_options()
-
-    gw._background_generate_study_plan(selected_output_options)
-
-    with open(correct_output_file, encoding="utf8") as a, open(
-        test_output_file, encoding="utf8"
-    ) as b:
-
-        diff: dict[str, list[Any]] = compare(load_csv(a), load_csv(b))
-        pprint.pprint(diff)
-        assert len(diff) != 0
-        for changes in diff.values():
-            assert len(changes) == 0
-
-    os.remove(test_output_file)
-
-
 ################################################################
 #            CASES: SOME STUDIED JAPANESE
 ################################################################
@@ -222,8 +177,8 @@ case_some_studied_japanese_lemmas = FakeEnvironmentParams(
 @pytest.mark.parametrize(
     "fake_environment_fixture, unique_known_number, unique_known_percent, total_known_number, total_known_percent",
     [
-        (case_some_studied_japanese_inflections, "3", "0.6 %", "44", "2.7 %"),
-        (case_some_studied_japanese_lemmas, "16", "3.3 %", "83", "5.0 %"),
+        (case_some_studied_japanese_inflections, "4", "0.8 %", "52", "3.1 %"),
+        (case_some_studied_japanese_lemmas, "17", "3.5 %", "91", "5.5 %"),
     ],
     indirect=["fake_environment_fixture"],
 )
@@ -289,3 +244,70 @@ def test_readability_report(  # pylint:disable=too-many-arguments, unused-argume
     _item = gw.ui.percentTableWidget.item(_row, gw._total_known_column)
     assert _item is not None
     assert _item.text() == total_known_percent
+
+
+@pytest.mark.parametrize(
+    "fake_environment_fixture",
+    [case_some_studied_japanese_inflections],
+    indirect=True,
+)
+@pytest.mark.parametrize(
+    "only_store_lemma",
+    [True, False],
+)
+def test_study_plan_generator(  # pylint:disable=unused-argument, too-many-locals
+    fake_environment_fixture: FakeEnvironment, only_store_lemma: bool, qtbot: Any
+) -> None:
+    gw = GeneratorWindow()
+
+    input_folder = Path(PATH_TESTS_DATA, "ja_subs")
+    test_output_file = Path(
+        PATH_TESTS_DATA_TESTS_OUTPUTS, "mecab_study_plan_test_output.csv"
+    )
+    if only_store_lemma:
+        correct_output_file = Path(
+            PATH_TESTS_DATA_CORRECT_OUTPUTS,
+            "mecab_study_plan_lemma.csv",
+        )
+    else:
+        correct_output_file = Path(
+            PATH_TESTS_DATA_CORRECT_OUTPUTS,
+            "mecab_study_plan_inflection.csv",
+        )
+
+    gw.ui.inputDirLineEdit.setText(str(input_folder))
+    gw._background_gather_files_and_populate_files_column()
+
+    _set_morphemizer(
+        generator_window=gw, morphemizer_description="AnkiMorphs: Japanese"
+    )
+
+    _default_output_file = Path(test_output_file)
+    selected_output = GeneratorOutputDialog(_default_output_file)
+    selected_output_options: OutputOptions = selected_output.get_selected_options()
+    selected_output_options.selected_extra_occurrences_column = True
+
+    # additional test of using minimum occurrence: 2
+    selected_output_options.min_occurrence = True
+    selected_output_options.min_occurrence_threshold = 2
+
+    if only_store_lemma:
+        selected_output_options.store_only_lemma = True
+        selected_output_options.store_lemma_and_inflection = False
+    else:
+        selected_output_options.store_only_lemma = False
+        selected_output_options.store_lemma_and_inflection = True
+
+    gw._background_generate_study_plan(selected_output_options)
+
+    with open(correct_output_file, encoding="utf8") as a, open(
+        test_output_file, encoding="utf8"
+    ) as b:
+
+        diff: dict[str, list[Any]] = compare(load_csv(a), load_csv(b))
+        pprint.pprint(diff)
+        assert len(diff) != 0
+        for changes in diff.values():
+            assert len(changes) == 0
+
+    os.remove(test_output_file)

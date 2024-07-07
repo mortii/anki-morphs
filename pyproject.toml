@@ -90,7 +90,8 @@ ignore_names = [
   "closeWithCallback",
   "closeEvent",
   "toolbar_stats_use_seen",
-  "extra_fields_display_lemmas"
+  "extra_fields_display_lemmas",
+  "min_occurrence"
 ]
 min_confidence = 60
 sort_by_size = true
