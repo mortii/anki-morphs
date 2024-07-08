@@ -38,6 +38,18 @@ default_fake_environment_params = FakeEnvironmentParams()
             True,
             "ja_core_news_sm_freq_lemma_min_occurrence_lemma_priority.json",
         ),
+        (
+            default_fake_environment_params,
+            "mecab_study_plan_lemma.csv",
+            True,
+            "mecab_study_plan_lemma_priority.json",
+        ),
+        (
+            default_fake_environment_params,
+            "mecab_study_plan_inflection.csv",
+            False,
+            "mecab_study_plan_inflection_priority.json",
+        ),
     ],
     indirect=["fake_environment_fixture"],
 )
@@ -130,20 +142,39 @@ case_no_headers_params = FakeEnvironmentParams(
 )
 
 
+@pytest.mark.debug
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
-    "fake_environment_fixture, csv_file_name",
+    "fake_environment_fixture, csv_file_name, only_lemma_priorities",
     [
-        (case_no_headers_params, "frequency_file_no_headers.csv"),
+        (case_no_headers_params, "frequency_file_no_headers.csv", True),
+        (
+            default_fake_environment_params,
+            "mecab_study_plan_inflection.csv",
+            True,
+        ),
+        (
+            default_fake_environment_params,
+            "mecab_study_plan_lemma.csv",
+            False,
+        ),
+        (
+            default_fake_environment_params,
+            "ja_core_news_sm_freq_lemma_min_occurrence.csv",
+            False,
+        ),
     ],
     indirect=["fake_environment_fixture"],
 )
 def test_morph_priority_with_invalid_frequency_file(  # pylint:disable=unused-argument
-    fake_environment_fixture: FakeEnvironment, csv_file_name: str
+    fake_environment_fixture: FakeEnvironment,
+    csv_file_name: str,
+    only_lemma_priorities: bool,
 ) -> None:
     try:
         morph_priority_utils._get_morph_frequency_file_priority(
-            frequency_file_name=csv_file_name, only_lemma_priorities=True
+            frequency_file_name=csv_file_name,
+            only_lemma_priorities=only_lemma_priorities,
         )
     except FrequencyFileMalformedException:
         pass

@@ -236,6 +236,7 @@ def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:
                     am_globals.INFLECTION_HEADER.lower()
                 )
             except ValueError:
+                # todo: raise exception?
                 print("ValueError!")
 
             if inflection_column == -1:

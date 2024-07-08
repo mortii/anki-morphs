@@ -22,7 +22,7 @@ def print_thread_name() -> None:
 
 
 def save_to_json_file(file_path: Path, _dict: dict[Any, Any]) -> None:
-    """Changes the file extension to .json and saves it"""
+    """Changes the file extension to .json and outputs to that location"""
     json_file: Path = file_path.with_suffix(".json")
 
     with json_file.open("w", encoding="utf-8") as file:
