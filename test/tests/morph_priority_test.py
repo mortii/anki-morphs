@@ -142,7 +142,6 @@ case_no_headers_params = FakeEnvironmentParams(
 )
 
 
-@pytest.mark.debug
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
     "fake_environment_fixture, csv_file_name, only_lemma_priorities",

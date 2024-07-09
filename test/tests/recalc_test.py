@@ -10,6 +10,7 @@ from test.fake_configs import (
     config_ignore_names_txt_enabled,
     config_known_morphs_enabled,
     config_lemma_evaluation_lemma_extra_fields,
+    config_max_morph_priority,
     config_offset_inflection_enabled,
     config_offset_lemma_enabled,
     config_wrong_field_name,
@@ -133,11 +134,24 @@ case_big_japanese_collection_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
 
+################################################################
+#               CASE: MAX MORPH PRIORITY
+################################################################
+# This collection uses the `ja_core_news_sm_freq_inflection_min_occurrence.csv`
+# frequency file, and checks if morphs not contained in that file
+# are given the max morph priority.
+################################################################
+case_max_morph_priority_params = FakeEnvironmentParams(
+    collection="max_morph_priority_collection",
+    config=config_max_morph_priority,
+)
+
 
 # "Using the indirect=True parameter when parametrizing a test allows to parametrize a
 # test with a fixture receiving the values before passing them to a test"
 # - https://docs.pytest.org/en/7.1.x/example/parametrize.html#indirect-parametrization
 # This means that we run the fixture AND the test function for each parameter.
+@pytest.mark.debug
 @pytest.mark.external_morphemizers
 @pytest.mark.parametrize(
     "fake_environment_fixture",
@@ -149,6 +163,7 @@ case_big_japanese_collection_params = FakeEnvironmentParams(
         case_known_morphs_enabled_params,
         case_ignore_names_txt_enabled_params,
         case_big_japanese_collection_params,
+        case_max_morph_priority_params,
     ],
     indirect=True,
 )

@@ -59,7 +59,7 @@ Current card collections (test/data/card_collections):
 - `some_studied_lemmas_collection.anki2`
   - duplicate of `lemma_evaluation_lemma_extra_fields_collection.anki2`, but one card for each lemma
   has been studied, so the other cards that have those lemmas should contain no unknowns.
-- `big-japanese-collection.anki2`
+- `big_japanese_collection.anki2`
   - monolithic card collection (https://github.com/mortii/anki-decks)
 - `ignore_names_txt_collection.anki2`
   - Contains one card that has two names, one of which is found in names.txt
@@ -74,6 +74,9 @@ Current card collections (test/data/card_collections):
     - one that has the tag 'am-known-manually'
     - one with a learning interval of 1 day
     - one with a learning interval of 30+ days
+- `max_morph_priority_collection.anki2`
+  - contains two cards, and uses the frequency file `ja_core_news_sm_freq_inflection_min_occurrence.csv`. One card
+  has a morph that is found in the frequency file, the other card does not, which should give it a max morph priority value.
 
 ## Engineering and adding collections
 
