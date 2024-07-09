@@ -511,6 +511,46 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         return morph_priorities
 
+    def get_known_lemmas_with_count(
+        self, highest_lemma_learning_interval: int
+    ) -> list[tuple[str, int]]:
+        """
+        returns: (lemma, lemma_count)
+        """
+        with self.con:
+            return self.con.execute(
+                """
+                SELECT morph_lemma, COUNT(morph_lemma)
+                FROM Card_Morph_Map cmm
+                INNER JOIN Morphs m ON
+                    cmm.morph_lemma = m.lemma AND cmm.morph_inflection = m.inflection
+                WHERE m.highest_lemma_learning_interval >= ?
+                GROUP BY morph_lemma
+                ORDER BY morph_lemma
+                """,
+                (highest_lemma_learning_interval,),
+            ).fetchall()
+
+    def get_lemmas_and_inflections_with_count(
+        self, highest_inflection_learning_interval: int
+    ) -> list[tuple[str, str, int]]:
+        """
+        returns: (lemma, inflection, inflection_count)
+        """
+        with self.con:
+            return self.con.execute(
+                """
+                SELECT morph_lemma, morph_inflection, COUNT(morph_inflection)
+                FROM Card_Morph_Map cmm
+                INNER JOIN Morphs m ON
+                    cmm.morph_lemma = m.lemma AND cmm.morph_inflection = m.inflection
+                WHERE m.highest_inflection_learning_interval >= ?
+                GROUP BY morph_lemma, morph_inflection
+                ORDER BY morph_lemma, morph_inflection
+                """,
+                (highest_inflection_learning_interval,),
+            ).fetchall()
+
     def print_table(self, table: str) -> None:
         try:
             # using f-string is terrible practice, but this is a trivial operation
@@ -632,28 +672,6 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                 name_morphs,
             )
         am_db.con.close()
-
-    @staticmethod
-    def get_known_morphs(highest_learning_interval: int) -> list[tuple[str, str]]:
-        # todo
-        known_morphs: list[tuple[str, str]] = []
-        am_db = AnkiMorphsDB()
-
-        with am_db.con:
-            card_morphs_raw = am_db.con.execute(
-                """
-                    SELECT lemma, inflection
-                    FROM Morphs
-                    WHERE highest_learning_interval >= ?
-                    ORDER BY lemma, inflection
-                    """,
-                (highest_learning_interval,),
-            ).fetchall()
-
-            for row in card_morphs_raw:
-                known_morphs.append((row[0], row[1]))
-
-        return known_morphs
 
 
 def _on_success(result: Any) -> None:
