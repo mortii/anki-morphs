@@ -265,6 +265,7 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     shutil.rmtree(path_original_collection_media, ignore_errors=True)
     shutil.rmtree(collection_path_duplicate_media, ignore_errors=True)
 
-    for file in PATH_TESTS_DATA_TESTS_OUTPUTS.iterdir():
-        if file.is_file():
-            file.unlink()
+    if PATH_TESTS_DATA_TESTS_OUTPUTS.exists():
+        for file in PATH_TESTS_DATA_TESTS_OUTPUTS.iterdir():
+            if file.is_file():
+                file.unlink()
