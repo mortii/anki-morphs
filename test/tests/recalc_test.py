@@ -151,7 +151,6 @@ case_max_morph_priority_params = FakeEnvironmentParams(
 # test with a fixture receiving the values before passing them to a test"
 # - https://docs.pytest.org/en/7.1.x/example/parametrize.html#indirect-parametrization
 # This means that we run the fixture AND the test function for each parameter.
-@pytest.mark.debug
 @pytest.mark.external_morphemizers
 @pytest.mark.parametrize(
     "fake_environment_fixture",

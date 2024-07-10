@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import os
-import pprint
 from pathlib import Path
+from test import test_utils
 from test.fake_configs import (
     config_big_japanese_collection,
     config_inflection_evaluation,
@@ -22,7 +21,6 @@ from typing import Any
 
 import pytest
 from aqt.qt import QTableWidgetItem  # pylint:disable=no-name-in-module
-from csv_diff import compare, load_csv
 
 from ankimorphs.generators.generators_output_dialog import (
     GeneratorOutputDialog,
@@ -130,16 +128,9 @@ def test_frequency_file_generator(  # pylint:disable=unused-argument, too-many-l
 
     gw._background_generate_frequency_file(selected_output_options)
 
-    with open(correct_output_file, encoding="utf8") as a, open(
-        test_output_file, encoding="utf8"
-    ) as b:
-        diff: dict[str, list[Any]] = compare(load_csv(a), load_csv(b))
-        pprint.pprint(diff)
-        assert len(diff) != 0
-        for changes in diff.values():
-            assert len(changes) == 0
-
-    os.remove(test_output_file)
+    test_utils.assert_csv_files_are_identical(
+        correct_output_file=correct_output_file, test_output_file=test_output_file
+    )
 
 
 def _set_morphemizer(
@@ -300,14 +291,6 @@ def test_study_plan_generator(  # pylint:disable=unused-argument, too-many-local
 
     gw._background_generate_study_plan(selected_output_options)
 
-    with open(correct_output_file, encoding="utf8") as a, open(
-        test_output_file, encoding="utf8"
-    ) as b:
-
-        diff: dict[str, list[Any]] = compare(load_csv(a), load_csv(b))
-        pprint.pprint(diff)
-        assert len(diff) != 0
-        for changes in diff.values():
-            assert len(changes) == 0
-
-    os.remove(test_output_file)
+    test_utils.assert_csv_files_are_identical(
+        correct_output_file=correct_output_file, test_output_file=test_output_file
+    )

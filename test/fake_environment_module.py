@@ -12,6 +12,7 @@ from test.test_globals import (
     PATH_DB_COPY,
     PATH_TESTS_DATA,
     PATH_TESTS_DATA_DBS,
+    PATH_TESTS_DATA_TESTS_OUTPUTS,
 )
 from typing import Any
 from unittest import mock
@@ -28,6 +29,7 @@ from ankimorphs import (
     ankimorphs_config,
     ankimorphs_db,
     ankimorphs_globals,
+    known_morphs_exporter,
     name_file_utils,
     progress_utils,
     reviewing_utils,
@@ -158,6 +160,7 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     patch_reviewing_mw = mock.patch.object(reviewing_utils, "mw", mock_mw)
     patch_gw_mw = mock.patch.object(generators_window, "mw", mock_mw)
     patch_morph_priority_mw = mock.patch.object(morph_priority_utils, "mw", mock_mw)
+    patch_morphs_exporter_mw = mock.patch.object(known_morphs_exporter, "mw", mock_mw)
 
     patch_recalc_mw.start()
     patch_caching_mw.start()
@@ -169,6 +172,7 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     patch_reviewing_mw.start()
     patch_gw_mw.start()
     patch_morph_priority_mw.start()
+    patch_morphs_exporter_mw.start()
 
     # 'mw' has to be patched before we can before we can create a db instance
     patch_reviewing_am_db = mock.patch.object(reviewing_utils, "AnkiMorphsDB", FakeDB)
@@ -180,6 +184,10 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     patch_generators_utils_am_db = mock.patch.object(
         generators_utils, "AnkiMorphsDB", FakeDB
     )
+    patch_morphs_exporter_am_db = mock.patch.object(
+        known_morphs_exporter, "AnkiMorphsDB", FakeDB
+    )
+
     mock_db = FakeDB()
 
     # tooltip tries to do gui stuff which breaks test
@@ -201,6 +209,8 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     patch_caching_am_db.start()
     patch_generators_window_am_db.start()
     patch_generators_utils_am_db.start()
+    patch_morphs_exporter_am_db.start()
+
     patch_tooltip.start()
 
     patch_testing_variable.start()
@@ -235,12 +245,14 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     patch_reviewing_mw.stop()
     patch_gw_mw.stop()
     patch_morph_priority_mw.stop()
+    patch_morphs_exporter_mw.stop()
 
     patch_reviewing_am_db.stop()
     patch_recalc_am_db.stop()
     patch_caching_am_db.stop()
     patch_generators_window_am_db.stop()
     patch_generators_utils_am_db.stop()
+    patch_morphs_exporter_am_db.stop()
     patch_tooltip.stop()
 
     patch_testing_variable.stop()
@@ -252,3 +264,7 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     Path.unlink(collection_path_duplicate, missing_ok=True)
     shutil.rmtree(path_original_collection_media, ignore_errors=True)
     shutil.rmtree(collection_path_duplicate_media, ignore_errors=True)
+
+    for file in PATH_TESTS_DATA_TESTS_OUTPUTS.iterdir():
+        if file.is_file():
+            file.unlink()

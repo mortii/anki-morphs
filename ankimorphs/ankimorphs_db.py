@@ -126,7 +126,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             # have already been updated before they are inserted here
             self.con.executemany(
                 """
-                    INSERT INTO Morphs 
+                    INSERT INTO Morphs
                     VALUES
                     (
                        :lemma,
@@ -531,7 +531,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                 (highest_lemma_learning_interval,),
             ).fetchall()
 
-    def get_lemmas_and_inflections_with_count(
+    def get_known_lemmas_and_inflections_with_count(
         self, highest_inflection_learning_interval: int
     ) -> list[tuple[str, str, int]]:
         """

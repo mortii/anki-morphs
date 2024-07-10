@@ -7,7 +7,7 @@ The testing framework is `Pytest` with these plugins:
 - [pytest-sugar](https://pypi.org/project/pytest-sugar/): showing failures and errors instantly, adding a progress bar, improving the test results, and making the output look better.
 - [pytest-randomly](https://pypi.org/project/pytest-randomly/): randomly order tests and control random.seed.
 
-Some default options are set in the `pyproject.toml` file under the `[tool.pytest.ini_options]` section. 
+Some default options are set in the `pyproject.toml` file under the `[tool.pytest.ini_options]` section.
 
 ## Running tests
 

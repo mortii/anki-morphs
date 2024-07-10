@@ -26,8 +26,9 @@ class KnownMorphsExporterDialog(QDialog):
         super().__init__(parent=None)  # no parent makes the dialog modeless
         self.ui = Ui_KnownMorphsExporterDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
+        self.am_config = AnkiMorphsConfig()
 
-        self.ui.knownIntervalSpinBox.setValue(21)  # usually considered known
+        self.ui.knownIntervalSpinBox.setValue(self.am_config.interval_for_known_morphs)
 
         self._setup_output_path()
         self._setup_buttons()
@@ -51,8 +52,7 @@ class KnownMorphsExporterDialog(QDialog):
         self.ui.selectOutputPushButton.clicked.connect(self._on_output_button_clicked)
         self.ui.exportKnownMorphsPushButton.clicked.connect(self._export_known_morphs)
 
-        am_config = AnkiMorphsConfig()
-        if am_config.evaluate_morph_lemma:
+        if self.am_config.evaluate_morph_lemma:
             self.ui.storeOnlyMorphLemmaRadioButton.setChecked(True)
             self.ui.storeMorphLemmaAndInflectionRadioButton.setChecked(False)
         else:
@@ -123,7 +123,7 @@ class KnownMorphsExporterDialog(QDialog):
             headers.append("Occurrence")
 
         export_list: list[tuple[str, str, int]] = (
-            AnkiMorphsDB().get_lemmas_and_inflections_with_count(known_interval)
+            AnkiMorphsDB().get_known_lemmas_and_inflections_with_count(known_interval)
         )
 
         with open(output_file, mode="w+", encoding="utf-8", newline="") as csvfile:

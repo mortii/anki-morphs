@@ -35,6 +35,11 @@ repos:
           (?x)^(
               test/data/correct_outputs/.*|
           )$
+      - id: trailing-whitespace
+        exclude: |
+          (?x)^(
+              docs/.*|
+          )$
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
       - id: check-merge-conflict
