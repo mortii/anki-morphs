@@ -19,7 +19,7 @@
    Python 3.9.[x]
    ```
    then you are ready move on to the next step.
-2. **Setting up dev environment:**
+2. **Setting up the dev environment:**
 
    We want to use a virtual environment for a few reasons: we don't want to install the project's dependencies on the
    global environment (your pc) because you might end up with package conflicts or accidentally downgrading packages,
@@ -32,6 +32,9 @@
     python -m pip install -r requirements.txt
     pre-commit install
     ```
+ 
+   Also install `Xvfb` on your system, e.g.: `sudo apt-get install xvfb`, this prevents windows popping up when `pre-commit` runs `pytest`.
+
    Remember to activate the virtual environment any time before you start working on the project, some IDEs do this
    automatically.
 2. **Set the project python interpreter** to be `anki-morphs/venv/bin/python` to get your IDE to recognize the packages
@@ -74,12 +77,12 @@
       and re-run the commit. E.g:
 
       ```bash
-      $ vim recalc.py
+      $ vim recalc_main.py
       $ git commit -am "made changes"
       isort (python)..........Failed
         - hook id: isort
         - files were modified by this hook
-      Fixing /home/{...}/recalc.py
+      Fixing /home/{...}/recalc_main.py
       $ git commit -am "made changes"
         [main c0bd018] made changes
         1 file changed, 56 insertions(+)

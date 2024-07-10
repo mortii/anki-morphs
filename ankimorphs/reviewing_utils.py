@@ -399,11 +399,22 @@ class SkippedCards:
                 self.did_skip_card = True
         elif am_config.skip_unknown_morph_seen_today_cards:
             morphs_already_seen_morphs_today: set[str] = (
-                am_db.get_all_morphs_seen_today()
+                am_db.get_all_morphs_seen_today(
+                    only_lemma=am_config.evaluate_morph_lemma
+                )
             )
             card_unknown_morphs_raw: set[tuple[str, str]] | None = (
-                am_db.get_morphs_of_card(card_id, search_unknowns=True)
+                am_db.get_card_morphs(
+                    card_id,
+                    search_unknowns=True,
+                    only_lemma=am_config.evaluate_morph_lemma,
+                )
             )
+            # print(
+            #     f"morphs_already_seen_morphs_today: {morphs_already_seen_morphs_today}"
+            # )
+            # print(f"card_unknown_morphs_raw: {card_unknown_morphs_raw}")
+
             if card_unknown_morphs_raw is not None:
                 card_unknown_morphs: set[str] = {
                     morph_raw[0] + morph_raw[1] for morph_raw in card_unknown_morphs_raw

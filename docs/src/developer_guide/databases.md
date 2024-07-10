@@ -25,7 +25,6 @@ card_id INTEGER PRIMARY KEY ASC,
 note_id INTEGER,
 note_type_id INTEGER,
 card_type INTEGER,
-fields TEXT,
 tags TEXT
 ```
 

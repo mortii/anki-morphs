@@ -25,6 +25,7 @@ pre-commit==3.7.1
 pt_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.7.0/pt_core_news_sm-3.7.0-py3-none-any.whl
 pylint==3.2.5
 pytest==8.2.2
+pytest-cov==5.0.0
 pytest-expect==1.1.0
 pytest-qt==4.4.0
 pytest-randomly==3.15.0

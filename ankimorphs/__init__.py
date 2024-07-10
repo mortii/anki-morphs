@@ -39,17 +39,19 @@ from . import (
     ankimorphs_config,
     ankimorphs_globals,
     browser_utils,
+    message_box_utils,
     name_file_utils,
-    recalc,
     reviewing_utils,
-    settings_dialog,
+    tags_and_queue_utils,
     toolbar_stats,
 )
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
-from .generators_window import GeneratorWindow
+from .generators.generators_window import GeneratorWindow
 from .known_morphs_exporter import KnownMorphsExporterDialog
-from .settings_dialog import SettingsDialog
+from .recalc import recalc_main
+from .settings import settings_dialog
+from .settings.settings_dialog import SettingsDialog
 from .tag_selection_dialog import TagSelectionDialog
 from .toolbar_stats import MorphToolbarStats
 
@@ -79,7 +81,7 @@ def main() -> None:
     gui_hooks.sync_will_start.append(recalc_on_sync)
 
     gui_hooks.webview_will_show_context_menu.append(add_text_as_name_action)
-    gui_hooks.webview_will_show_context_menu.append(browse_am_unknowns_for_text_action)
+    gui_hooks.webview_will_show_context_menu.append(browse_study_morphs_for_text_action)
 
     gui_hooks.overview_did_refresh.append(update_seen_morphs)
 
@@ -91,37 +93,47 @@ def main() -> None:
 
 
 def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
-    # Adds the 'U: A:' and 'Recalc' to the toolbar
+    # Adds the 'L: I:' and 'Recalc' to the toolbar
 
     morph_toolbar_stats = MorphToolbarStats()
+    am_config = AnkiMorphsConfig()
 
-    links.append(
-        toolbar.create_link(
-            cmd="recalc_toolbar",
-            label="Recalc",
-            func=recalc.recalc,
-            tip="AnkiMorphs Recalc",
-            id="recalc_toolbar",
-        )
+    known_morphs_tooltip_message = (
+        "L = Known Morph Lemmas<br>I = Known Morph Inflections"
     )
-    links.append(
-        toolbar.create_link(
-            cmd="unique_morphs",
-            label=morph_toolbar_stats.unique_morphs,
-            func=lambda: tooltip("U = Known Unique Morphs<br>A = All Known Morphs"),
-            tip="U = Known Unique Morphs",
-            id="unique_morphs",
+
+    if am_config.hide_recalc_toolbar is False:
+        links.append(
+            toolbar.create_link(
+                cmd="recalc_toolbar",
+                label="Recalc",
+                func=recalc_main.recalc,
+                tip="AnkiMorphs Recalc",
+                id="recalc_toolbar",
+            )
         )
-    )
-    links.append(
-        toolbar.create_link(
-            cmd="all_morphs",
-            label=morph_toolbar_stats.all_morphs,
-            func=lambda: tooltip("U = Known Unique Morphs<br>A = All Known Morphs"),
-            tip="A = All Known Morphs",
-            id="all_morphs",
+
+    if am_config.hide_lemma_toolbar is False:
+        links.append(
+            toolbar.create_link(
+                cmd="known_lemmas",
+                label=morph_toolbar_stats.lemmas,
+                func=lambda: tooltip(known_morphs_tooltip_message),
+                tip="L = Known Morph Lemmas",
+                id="known_lemmas",
+            )
         )
-    )
+
+    if am_config.hide_inflection_toolbar is False:
+        links.append(
+            toolbar.create_link(
+                cmd="known_inflections",
+                label=morph_toolbar_stats.inflections,
+                func=lambda: tooltip(known_morphs_tooltip_message),
+                tip="I = Known Morph Inflections",
+                id="known_inflections",
+            )
+        )
 
 
 def load_am_profile_configs() -> None:
@@ -211,6 +223,7 @@ def init_tool_menu_and_actions() -> None:
     recalc_action = create_recalc_action(am_config)
     generators_action = create_generators_dialog_action(am_config)
     known_morphs_exporter_action = create_known_morphs_exporter_action(am_config)
+    reset_tags_action = create_tag_reset_action()
     guide_action = create_guide_action()
     changelog_action = create_changelog_action()
 
@@ -219,6 +232,7 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu.addAction(recalc_action)
     am_tool_menu.addAction(generators_action)
     am_tool_menu.addAction(known_morphs_exporter_action)
+    am_tool_menu.addAction(reset_tags_action)
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
 
@@ -289,7 +303,7 @@ def recalc_on_sync() -> None:
     else:
         am_config = AnkiMorphsConfig()
         if am_config.recalc_on_sync:
-            recalc.recalc()
+            recalc_main.recalc()
 
 
 def replace_reviewer_functions() -> None:
@@ -378,9 +392,26 @@ def rebuild_seen_morphs(changes: OpChangesAfterUndo) -> None:
 
 def clean_profile_session() -> None:
     global _updated_seen_morphs_for_profile
-
     _updated_seen_morphs_for_profile = False
     AnkiMorphsDB.drop_seen_morphs_table()
+
+
+def reset_am_tags() -> None:
+    assert mw is not None
+
+    am_config = AnkiMorphsConfig()
+
+    title = "Reset Tags?"
+    body = (
+        'Clicking "Yes" will remove the following tags from all cards:\n\n'
+        f"- {am_config.tag_known_automatically}\n\n"
+        f"- {am_config.tag_ready}\n\n"
+        f"- {am_config.tag_not_ready}\n\n"
+        f"- {am_config.tag_fresh}\n\n"
+    )
+    want_reset = message_box_utils.show_warning_box(title, body, parent=mw)
+    if want_reset:
+        tags_and_queue_utils.reset_am_tags(parent=mw)
 
 
 def create_am_tool_menu() -> QMenu:
@@ -395,7 +426,7 @@ def create_am_tool_menu() -> QMenu:
 def create_recalc_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Recalc", mw)
     action.setShortcut(am_config.shortcut_recalc)
-    action.triggered.connect(recalc.recalc)
+    action.triggered.connect(recalc_main.recalc)
     return action
 
 
@@ -405,6 +436,12 @@ def create_settings_action(am_config: AnkiMorphsConfig) -> QAction:
     action.triggered.connect(
         partial(aqt.dialogs.open, name=ankimorphs_globals.SETTINGS_DIALOG_NAME)
     )
+    return action
+
+
+def create_tag_reset_action() -> QAction:
+    action = QAction("&Reset Tags", mw)
+    action.triggered.connect(reset_am_tags)
     return action
 
 
@@ -491,13 +528,13 @@ def add_text_as_name_action(web_view: AnkiWebView, menu: QMenu) -> None:
     menu.addAction(action)
 
 
-def browse_am_unknowns_for_text_action(web_view: AnkiWebView, menu: QMenu) -> None:
+def browse_study_morphs_for_text_action(web_view: AnkiWebView, menu: QMenu) -> None:
     selected_text = web_view.selectedText()
     if selected_text == "":
         return
-    action = QAction(f"Browse in {ankimorphs_globals.EXTRA_FIELD_UNKNOWNS}", menu)
+    action = QAction(f"Browse in {ankimorphs_globals.EXTRA_FIELD_STUDY_MORPHS}", menu)
     action.triggered.connect(
-        lambda: browser_utils.browse_am_unknown_for_highlighted_morph(selected_text)
+        lambda: browser_utils.browse_study_morphs_for_highlighted_morph(selected_text)
     )
     menu.addAction(action)
 
@@ -559,6 +596,11 @@ def test_function() -> None:
     # model_manager.update_dict(note_type_dict)
 
     # mw.col.update_note(note)
+
+    # card_id = 1720345836169
+    # card = mw.col.get_card(card_id)
+    # card.ivl += 30
+    # mw.col.update_card(card)
 
     am_db.con.close()
 

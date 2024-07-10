@@ -7,7 +7,7 @@ default_language_version:
 exclude: |
   (?x)^(
       ankimorphs/ui/.*|
-      tests/data/morphemizers/.*|
+      test/data/morphemizers/.*|
   )$
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -24,26 +24,29 @@ repos:
               docs/src/img/deck-options.mp4|
               docs/src/img/learn-now.mp4|
               docs/src/img/adding-extra-fields.mp4|
-              tests/data/card_collections/big-japanese-collection.anki2|
-              tests/data/populated_ankimorphs.db|
+              test/data/card_collections/big_japanese_collection.anki2|
+              test/data/am_dbs/big_japanese_collection.db|
           )$
       - id: check-case-conflict
       - id: check-json
       - id: pretty-format-json
         args: ['--autofix']
+        exclude: |
+          (?x)^(
+              test/data/correct_outputs/.*|
+          )$
+      - id: trailing-whitespace
+        exclude: |
+          (?x)^(
+              docs/.*|
+          )$
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
       - id: check-merge-conflict
       - id: check-toml
       - id: debug-statements
       - id: name-tests-test
-        files: '^tests'
-        exclude: |
-          (?x)^(
-              ^tests/environment_setup_for_tests.py|
-              ^tests/README.md|
-              ^tests/data/.*|
-          )$
+        files: '^test/tests'
       - id: requirements-txt-fixer
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0
@@ -51,7 +54,7 @@ repos:
       - id: codespell
         exclude: |
           (?x)^(
-              tests/.*|
+              test/.*|
               docs/src/frequency_lists/.*|
           )$
   - repo: https://github.com/pre-commit/pygrep-hooks
@@ -69,13 +72,13 @@ repos:
     hooks:
       - id: pyupgrade
         args: [--py39-plus]
-        files: 'ankimorphs/|^tests/'
+        files: 'ankimorphs/|^test/'
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
       - id: isort
         name: isort (python)
-        files: 'ankimorphs/|^tests/'
+        files: 'ankimorphs/|^test/'
   - repo: https://github.com/jendrikseipp/vulture
     rev: v2.11
     hooks:
@@ -88,23 +91,19 @@ repos:
         language: system
         require_serial: true
         types: [ python ]
-        files: 'ankimorphs/|^tests/'
+        files: 'ankimorphs/|^test/'
       - id: black
         name: black
         entry: black
         language: system
         types: [ python ]
-        files: 'ankimorphs/|^tests/'
+        files: 'ankimorphs/|^test/'
       - id: mypy
         name: mypy
         entry: mypy
         language: system
         types: [ python ]
-        files: 'ankimorphs/|^tests/'
-        exclude: |
-          (?x)^(
-              ^tests/.*|
-          )$
+        files: 'ankimorphs/|^test/'
       - id: pytest
         name: pytest
         entry: pytest

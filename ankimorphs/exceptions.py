@@ -1,3 +1,6 @@
+from pathlib import Path
+
+
 class DefaultSettingsException(Exception):
     """Raised when the default settings are used and no note type is selected"""
 
@@ -34,3 +37,18 @@ class FrequencyFileNotFoundException(Exception):
 
     def __init__(self, path: str):
         self.path = path
+
+
+class FrequencyFileMalformedException(Exception):
+    """Selected frequency file is malformed in some way"""
+
+    def __init__(self, path: str, reason: str):
+        self.path = path
+        self.reason = reason
+
+
+class KnownMorphsFileMalformedException(Exception):
+    """Found known morphs file is malformed in some way"""
+
+    def __init__(self, path: Path):
+        self.path: str = path.name
