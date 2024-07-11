@@ -4,7 +4,7 @@ import csv
 import datetime
 import os
 from pathlib import Path
-from typing import Any, Callable
+from typing import Callable
 
 import aqt
 from aqt import mw
@@ -73,7 +73,7 @@ class KnownMorphsExporterDialog(QDialog):
         operation = QueryOp(
             parent=mw,
             op=lambda _: self._background_export_known_morphs(),
-            success=self._on_success,
+            success=lambda _: self._on_success(),
         )
         operation.failure(self._on_failure)
         operation.with_progress().run_in_background()
@@ -174,15 +174,12 @@ class KnownMorphsExporterDialog(QDialog):
         # This is used by the Anki dialog manager
         self.show()
 
-    def _on_success(self, result: Any) -> None:
+    def _on_success(self) -> None:
         # This function runs on the main thread.
-        del result  # unused
         assert mw is not None
         assert mw.progress is not None
-
         mw.toolbar.draw()  # updates stats
         mw.progress.finish()
-
         tooltip("Known morphs file created", parent=self)
 
     def _on_failure(

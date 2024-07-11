@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, Callable
+from typing import Callable
 
 from anki.cards import Card
-from anki.collection import Collection, UndoStatus
+from anki.collection import UndoStatus
 from anki.consts import CARD_TYPE_NEW
 from anki.notes import Note
 from aqt import mw
@@ -54,24 +54,17 @@ def am_next_card() -> None:
 
     operation = QueryOp(
         parent=mw,
-        op=partial(
-            _get_next_card_background,
-            am_config=am_config,
-            skipped_cards=skipped_cards,
-        ),
-        success=partial(_show_card, am_config=am_config, skipped_cards=skipped_cards),
+        op=lambda _: _get_next_card_background(am_config, skipped_cards),
+        success=lambda _: _show_card(am_config, skipped_cards),
     )
     operation.failure(_on_failure)
     operation.with_progress().run_in_background()
 
 
 def _get_next_card_background(
-    collection: Collection,
     am_config: AnkiMorphsConfig,
     skipped_cards: SkippedCards,
 ) -> None:
-    del collection  # unused
-
     assert mw is not None
     assert mw.reviewer is not None
 
@@ -170,13 +163,9 @@ def _get_valid_undo_status() -> UndoStatus:
 
 
 def _show_card(
-    result: Any,
     am_config: AnkiMorphsConfig,
     skipped_cards: SkippedCards,
 ) -> None:
-    # this function runs on the main thread
-    del result  # unused
-
     assert mw is not None
     assert mw.reviewer is not None
 

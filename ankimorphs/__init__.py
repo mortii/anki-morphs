@@ -293,9 +293,9 @@ def init_browser_menus_and_actions() -> None:
 
 
 def recalc_on_sync() -> None:
-    # Sync automatically happens on Anki startup, but we don't
-    # want to run recalc at that point since it might be unnecessary,
-    # so we check for that first.
+    # Anki automatically syncs on startup, but we want to avoid running
+    # recalc at that time as it may be unnecessary.
+
     global _startup_sync
 
     if _startup_sync:
@@ -319,23 +319,27 @@ def replace_reviewer_functions() -> None:
 
 
 def insert_seen_morphs(
-    reviewer: Reviewer, card: Card, ease: Literal[1, 2, 3, 4]
+    _reviewer: Reviewer, card: Card, _ease: Literal[1, 2, 3, 4]
 ) -> None:
-    del reviewer, ease  # unused
+    """
+    The '_reviewer' and '_ease' arguments are unused
+    """
     am_db = AnkiMorphsDB()
     am_db.update_seen_morphs_today_single_card(card.id)
     am_db.con.close()
 
 
-def update_seen_morphs(overview: Overview) -> None:
-    # Overview is NOT the starting screen, it's the screen you get
-    # when clicking on a deck. That is a good time to run this
-    # function because it is only really necessary to know 'seen morphs'
-    # before starting to review. This was previously run on the
-    # profile_did_open hook, but that sometimes caused interference
-    # with add-on updater (they both happened at the same time).
+def update_seen_morphs(_overview: Overview) -> None:
+    """
+    The '_overview' argument is unused
+    """
+    # Overview is NOT the starting screen; it's the screen you see
+    # when you click on a deck. This is a good time to run this function,
+    # as 'seen morphs' only need to be known before starting a review.
+    # Previously, this function was run on the profile_did_open hook,
+    # but that sometimes caused interference with the add-on updater
+    # since both occurred simultaneously.
 
-    del overview  # unused
     global _updated_seen_morphs_for_profile
 
     if _updated_seen_morphs_for_profile:
@@ -356,7 +360,11 @@ def update_seen_morphs(overview: Overview) -> None:
     _updated_seen_morphs_for_profile = True
 
 
-def rebuild_seen_morphs(changes: OpChangesAfterUndo) -> None:
+def rebuild_seen_morphs(_changes: OpChangesAfterUndo) -> None:
+    """
+    The '_changes' argument is unused
+    """
+
     ################################################################
     #                      TRACKING SEEN MORPHS
     ################################################################
@@ -379,8 +387,6 @@ def rebuild_seen_morphs(changes: OpChangesAfterUndo) -> None:
     # Since this is such a nightmare to deal with (and is hopefully
     # a rare occurrence), this will just be left as unexpected behavior.
     ################################################################
-    del changes  # unused
-
     AnkiMorphsDB.rebuild_seen_morphs_today()
 
     if ankimorphs_globals.DEV_MODE:

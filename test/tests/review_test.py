@@ -64,7 +64,6 @@ def test_custom_review(
 
     mock_mw.reviewer.nextCard = partial(
         reviewing_utils._get_next_card_background,
-        collection=mock_mw.col,
         am_config=am_config,
         skipped_cards=skipped_cards,
     )

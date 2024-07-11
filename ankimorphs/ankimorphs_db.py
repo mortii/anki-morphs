@@ -5,9 +5,8 @@ import sqlite3
 from collections import Counter
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
 
-from anki.collection import Collection, SearchNode
+from anki.collection import SearchNode
 from anki.models import NotetypeId
 from aqt import mw
 from aqt.operations import QueryOp
@@ -589,17 +588,16 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         mw.progress.start(label="Updating seen morphs...")
         operation = QueryOp(
             parent=mw,
-            op=AnkiMorphsDB.rebuild_seen_morphs_today_background,
-            success=_on_success,
+            op=lambda _: AnkiMorphsDB.rebuild_seen_morphs_today_background(),
+            success=lambda _: _on_success(),
         )
         operation.failure(_on_failure)
         operation.with_progress().run_in_background()
 
     @staticmethod
-    def rebuild_seen_morphs_today_background(collection: Collection) -> None:
+    def rebuild_seen_morphs_today_background() -> None:
         # sqlite can only use a db instance in the same thread it was created
         # on, which is why this function is static.
-        del collection  # unused
         assert mw is not None
 
         am_db = AnkiMorphsDB()
@@ -674,9 +672,8 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         am_db.con.close()
 
 
-def _on_success(result: Any) -> None:
+def _on_success() -> None:
     # This function runs on the main thread.
-    del result  # unused
     assert mw is not None
     assert mw.progress is not None
     mw.progress.finish()
