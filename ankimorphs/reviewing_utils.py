@@ -399,10 +399,6 @@ class SkippedCards:
                     only_lemma=am_config.evaluate_morph_lemma,
                 )
             )
-            # print(
-            #     f"morphs_already_seen_morphs_today: {morphs_already_seen_morphs_today}"
-            # )
-            # print(f"card_unknown_morphs_raw: {card_unknown_morphs_raw}")
 
             if card_unknown_morphs_raw is not None:
                 card_unknown_morphs: set[str] = {

@@ -8,7 +8,7 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 
 import pytest
 
-from ankimorphs import debug_utils
+from ankimorphs import debugging_utils
 from ankimorphs.ankimorphs_config import AnkiMorphsConfig
 from ankimorphs.exceptions import FrequencyFileMalformedException
 from ankimorphs.recalc import morph_priority_utils
@@ -69,7 +69,7 @@ def test_morph_priority_with_frequency_file(  # pylint:disable=unused-argument
         json_file_name,
     )
 
-    correct_morphs_priorities = debug_utils.load_dict_from_json_file(json_file_path)
+    correct_morphs_priorities = debugging_utils.load_dict_from_json_file(json_file_path)
     assert len(correct_morphs_priorities) > 0
     assert morph_priorities == correct_morphs_priorities
 
@@ -126,7 +126,7 @@ def test_morph_priority_with_collection_frequency(  # pylint:disable=unused-argu
         json_file_name,
     )
 
-    correct_morphs_priorities = debug_utils.load_dict_from_json_file(json_file_path)
+    correct_morphs_priorities = debugging_utils.load_dict_from_json_file(json_file_path)
     assert len(correct_morphs_priorities) > 0
     assert morph_priorities == correct_morphs_priorities
 
