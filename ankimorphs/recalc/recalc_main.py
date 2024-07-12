@@ -472,7 +472,10 @@ def _on_failure(  # pylint:disable=too-many-branches
     title = "AnkiMorphs Error"
 
     if isinstance(error, DefaultSettingsException):
-        text = f'Found a note filter containing a "{ankimorphs_globals.NONE_OPTION}" option. Please select something else.'
+        text = (
+            f'Found a note filter containing a "{ankimorphs_globals.NONE_OPTION}" option. Please select something else.\n\n'
+            f"Note filter guide: https://mortii.github.io/anki-morphs/user_guide/setup/settings/note-filter.html"
+        )
     elif isinstance(error, AnkiNoteTypeNotFound):
         text = "The AnkiMorphs settings uses one or more note types that no longer exists. Please redo your settings."
     elif isinstance(error, AnkiFieldNotFound):
