@@ -59,7 +59,7 @@ def test_morph_priority_with_frequency_file(  # pylint:disable=unused-argument
     only_lemma_priorities: bool,
     json_file_name: str,
 ) -> None:
-    morph_priorities = morph_priority_utils._get_morph_frequency_file_priority(
+    morph_priorities = morph_priority_utils._load_morph_priorities_from_file(
         frequency_file_name=csv_file_name, only_lemma_priorities=only_lemma_priorities
     )
 
@@ -171,7 +171,7 @@ def test_morph_priority_with_invalid_frequency_file(  # pylint:disable=unused-ar
     only_lemma_priorities: bool,
 ) -> None:
     try:
-        morph_priority_utils._get_morph_frequency_file_priority(
+        morph_priority_utils._load_morph_priorities_from_file(
             frequency_file_name=csv_file_name,
             only_lemma_priorities=only_lemma_priorities,
         )

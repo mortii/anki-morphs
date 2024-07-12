@@ -470,7 +470,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
     # the cache needs to have a max size to maintain garbage collection
     @functools.lru_cache(maxsize=131072)
-    def get_morph_collection_priorities(
+    def get_morph_priorities_from_collection(
         self, am_config: AnkiMorphsConfig
     ) -> dict[str, int]:
         # Sorting the morphs (ORDER BY) is crucial to avoid bugs

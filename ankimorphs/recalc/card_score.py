@@ -8,7 +8,7 @@ from .card_morphs_metrics import CardMorphsMetrics
 # which should give plenty of leeway (10^8).
 _DEFAULT_SCORE: int = 2_047_483_647
 
-morph_unknown_penalty: int = 1_000_000
+MORPH_UNKNOWN_PENALTY: int = 1_000_000
 
 
 ####################################################################################
@@ -149,12 +149,13 @@ class CardScore:
             + all_morphs_target_difference_score
         )
 
-        if _score >= morph_unknown_penalty:
+        if _score >= MORPH_UNKNOWN_PENALTY:
+            # todo: add back the math lemmas
             # Cap morph priority penalties as described in #(2.2)
-            _score = morph_unknown_penalty - 1
+            _score = MORPH_UNKNOWN_PENALTY - 1
 
         unknown_morphs_amount_score = (
-            len(card_morph_metrics.unknown_morphs) * morph_unknown_penalty
+            len(card_morph_metrics.unknown_morphs) * MORPH_UNKNOWN_PENALTY
         )
         _score += unknown_morphs_amount_score
 
@@ -176,7 +177,7 @@ class CardScore:
         # print(f"score: {score}")
         # print()
 
-        # Note: have a whitespace before the <br> tags to avoid bugs
+        # Note: we have a whitespace before the <br> tags to avoid bugs
         self.terms = f"""
                 unknown_morphs_amount_score: {unknown_morphs_amount_score}, <br>
                 unknown_morphs_total_priority_score: {unknown_morphs_total_priority_score}, <br>
