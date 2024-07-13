@@ -135,7 +135,7 @@ config_ignore_names_txt_enabled[ConfigKeys.PREPROCESS_IGNORE_NAMES_TEXTFILE] = T
 ################################################################
 #             config_big_japanese_collection
 ################################################################
-# Matches `big-japanese-collection.anki2`
+# Matches `big_japanese_collection.anki2`
 ################################################################
 # fmt: off
 config_big_japanese_collection = copy.deepcopy(default_config_dict)
@@ -148,6 +148,19 @@ config_big_japanese_collection_filter = config_big_japanese_collection[ConfigKey
 config_big_japanese_collection_filter[FilterKeys.NOTE_TYPE] = "japanese_sub2srs"
 config_big_japanese_collection_filter[FilterKeys.FIELD] = "Japanese"
 config_big_japanese_collection_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "AnkiMorphs: Japanese"
+# fmt: on
+
+
+################################################################
+#             config_max_morph_priority
+################################################################
+# Matches `max_morph_priority_collection.anki2`
+################################################################
+# fmt: off
+config_max_morph_priority = copy.deepcopy(default_config_dict)
+config_max_morph_priority_filter = config_max_morph_priority[ConfigKeys.FILTERS][0]
+config_max_morph_priority_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "AnkiMorphs: Japanese"
+config_max_morph_priority_filter[FilterKeys.MORPH_PRIORITY_SELECTION] = "ja_core_news_sm_freq_inflection_min_occurrence.csv"
 # fmt: on
 
 

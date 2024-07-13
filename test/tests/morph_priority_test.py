@@ -8,7 +8,7 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 
 import pytest
 
-from ankimorphs import debug_utils
+from ankimorphs import debugging_utils
 from ankimorphs.ankimorphs_config import AnkiMorphsConfig
 from ankimorphs.exceptions import FrequencyFileMalformedException
 from ankimorphs.recalc import morph_priority_utils
@@ -38,6 +38,18 @@ default_fake_environment_params = FakeEnvironmentParams()
             True,
             "ja_core_news_sm_freq_lemma_min_occurrence_lemma_priority.json",
         ),
+        (
+            default_fake_environment_params,
+            "mecab_study_plan_lemma.csv",
+            True,
+            "mecab_study_plan_lemma_priority.json",
+        ),
+        (
+            default_fake_environment_params,
+            "mecab_study_plan_inflection.csv",
+            False,
+            "mecab_study_plan_inflection_priority.json",
+        ),
     ],
     indirect=["fake_environment_fixture"],
 )
@@ -47,7 +59,7 @@ def test_morph_priority_with_frequency_file(  # pylint:disable=unused-argument
     only_lemma_priorities: bool,
     json_file_name: str,
 ) -> None:
-    morph_priorities = morph_priority_utils._get_morph_frequency_file_priority(
+    morph_priorities = morph_priority_utils._load_morph_priorities_from_file(
         frequency_file_name=csv_file_name, only_lemma_priorities=only_lemma_priorities
     )
 
@@ -57,7 +69,7 @@ def test_morph_priority_with_frequency_file(  # pylint:disable=unused-argument
         json_file_name,
     )
 
-    correct_morphs_priorities = debug_utils.load_dict_from_json_file(json_file_path)
+    correct_morphs_priorities = debugging_utils.load_dict_from_json_file(json_file_path)
     assert len(correct_morphs_priorities) > 0
     assert morph_priorities == correct_morphs_priorities
 
@@ -81,7 +93,6 @@ case_collection_frequency_inflection_params = FakeEnvironmentParams(
 )
 
 
-@pytest.mark.debug
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
     "fake_environment_fixture, json_file_name",
@@ -115,7 +126,7 @@ def test_morph_priority_with_collection_frequency(  # pylint:disable=unused-argu
         json_file_name,
     )
 
-    correct_morphs_priorities = debug_utils.load_dict_from_json_file(json_file_path)
+    correct_morphs_priorities = debugging_utils.load_dict_from_json_file(json_file_path)
     assert len(correct_morphs_priorities) > 0
     assert morph_priorities == correct_morphs_priorities
 
@@ -133,18 +144,36 @@ case_no_headers_params = FakeEnvironmentParams(
 
 @pytest.mark.should_cause_exception
 @pytest.mark.parametrize(
-    "fake_environment_fixture, csv_file_name",
+    "fake_environment_fixture, csv_file_name, only_lemma_priorities",
     [
-        (case_no_headers_params, "frequency_file_no_headers.csv"),
+        (case_no_headers_params, "frequency_file_no_headers.csv", True),
+        (
+            default_fake_environment_params,
+            "mecab_study_plan_inflection.csv",
+            True,
+        ),
+        (
+            default_fake_environment_params,
+            "mecab_study_plan_lemma.csv",
+            False,
+        ),
+        (
+            default_fake_environment_params,
+            "ja_core_news_sm_freq_lemma_min_occurrence.csv",
+            False,
+        ),
     ],
     indirect=["fake_environment_fixture"],
 )
 def test_morph_priority_with_invalid_frequency_file(  # pylint:disable=unused-argument
-    fake_environment_fixture: FakeEnvironment, csv_file_name: str
+    fake_environment_fixture: FakeEnvironment,
+    csv_file_name: str,
+    only_lemma_priorities: bool,
 ) -> None:
     try:
-        morph_priority_utils._get_morph_frequency_file_priority(
-            frequency_file_name=csv_file_name, only_lemma_priorities=True
+        morph_priority_utils._load_morph_priorities_from_file(
+            frequency_file_name=csv_file_name,
+            only_lemma_priorities=only_lemma_priorities,
         )
     except FrequencyFileMalformedException:
         pass

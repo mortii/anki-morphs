@@ -188,66 +188,75 @@ def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:
     assert mw is not None
 
     morphs_from_files: list[dict[str, Any]] = []
-    known_morphs_dir_path: Path = Path(
-        mw.pm.profileFolder(), am_globals.KNOWN_MORPHS_DIR_NAME
-    )
-
-    print(f"known_morphs_dir_path: {known_morphs_dir_path}")
-
-    input_files: list[Path] = []
-
-    for path in known_morphs_dir_path.rglob("*.csv"):
-        input_files.append(path)
-
-    print(f"input_files: {input_files}")
-    print(f"input_files len: {len(input_files)}")
+    input_files: list[Path] = _get_known_morphs_files()
 
     for input_file in input_files:
         if mw.progress.want_cancel():  # user clicked 'x'
             raise CancelledOperationException
 
         progress_utils.background_update_progress(
-            label=f"Importing known morphs from file:<br>{input_file.relative_to(known_morphs_dir_path)}",
+            label=f"Importing known morphs from file:<br>{input_file.name}",
         )
-
-        # todo: add comment about supporting backwards compatibility
-
-        print(f"input_file: {input_file}")
 
         with open(input_file, encoding="utf-8") as csvfile:
             morph_reader = csv.reader(csvfile, delimiter=",")
             headers: list[str] | None = next(morph_reader, None)
 
-            if headers is None:
-                raise KnownMorphsFileMalformedException(input_file)
-
-            headers_lower = [header.lower() for header in headers]
-            # print(f"headers_lower_case: {headers_lower}")
-            # print(f"am_globals.LEMMA_HEADER.lower(): {am_globals.LEMMA_HEADER.lower()}")
-
-            if am_globals.LEMMA_HEADER.lower() not in headers_lower:
-                raise KnownMorphsFileMalformedException(input_file)
-
-            lemma_column: int = headers_lower.index(am_globals.LEMMA_HEADER.lower())
-            inflection_column: int = -1
-
-            try:
-                inflection_column = headers_lower.index(
-                    am_globals.INFLECTION_HEADER.lower()
+            lemma_column_index, inflection_column_index = (
+                _get_lemma_and_inflection_columns(
+                    input_file_path=input_file, headers=headers
                 )
-            except ValueError:
-                print("ValueError!")
+            )
 
-            if inflection_column == -1:
+            if inflection_column_index == -1:
                 morphs_from_files += _get_morphs_from_minimum_format(
-                    am_config, morph_reader, lemma_column
+                    am_config, morph_reader, lemma_column_index
                 )
             else:
                 morphs_from_files += _get_morphs_from_full_format(
-                    am_config, morph_reader, lemma_column, inflection_column
+                    am_config, morph_reader, lemma_column_index, inflection_column_index
                 )
 
     return morphs_from_files
+
+
+def _get_known_morphs_files() -> list[Path]:
+    assert mw is not None
+    input_files: list[Path] = []
+    known_morphs_dir_path: Path = Path(
+        mw.pm.profileFolder(), am_globals.KNOWN_MORPHS_DIR_NAME
+    )
+    for path in known_morphs_dir_path.rglob("*.csv"):
+        input_files.append(path)
+    return input_files
+
+
+def _get_lemma_and_inflection_columns(
+    input_file_path: Path, headers: list[str] | None
+) -> tuple[int, int]:
+    if headers is None:
+        raise KnownMorphsFileMalformedException(input_file_path)
+
+    # we lower case the headers to make it backwards
+    # compatible with 'known morphs' files from AnkiMorphs v2
+    headers_lower = [header.lower() for header in headers]
+
+    if am_globals.LEMMA_HEADER.lower() not in headers_lower:
+        raise KnownMorphsFileMalformedException(input_file_path)
+
+    lemma_column_index: int = headers_lower.index(am_globals.LEMMA_HEADER.lower())
+    inflection_column_index: int = -1
+
+    try:
+        inflection_column_index = headers_lower.index(
+            am_globals.INFLECTION_HEADER.lower()
+        )
+    except ValueError:
+        # ValueError just means it's not a full format file, which
+        # we handle later, so this can safely be ignored.
+        pass
+
+    return lemma_column_index, inflection_column_index
 
 
 def _get_morphs_from_minimum_format(

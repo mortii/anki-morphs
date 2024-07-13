@@ -26,7 +26,7 @@ from ankimorphs.reviewing_utils import SkippedCards
 case_skip_inflections_params = FakeEnvironmentParams(
     collection="lemma_evaluation_lemma_extra_fields_collection",
     config=config_lemma_evaluation_lemma_extra_fields,
-    am_db="lemma_evaluation.db",
+    am_db="lemma_evaluation_lemma_extra_fields.db",
 )
 case_skip_inflections_expected = [1715776939301, 1718190526053, 1717943898444]
 
@@ -41,7 +41,7 @@ case_skip_inflections_expected = [1715776939301, 1718190526053, 1717943898444]
 case_dont_skip_inflections_params = FakeEnvironmentParams(
     collection="lemma_evaluation_lemma_extra_fields_collection",
     config=config_inflection_evaluation,
-    am_db="lemma_evaluation.db",
+    am_db="lemma_evaluation_lemma_extra_fields.db",
 )
 case_dont_skip_inflections_expected = [1715776939301, 1715776946917, 1715776953867]
 
@@ -64,7 +64,6 @@ def test_custom_review(
 
     mock_mw.reviewer.nextCard = partial(
         reviewing_utils._get_next_card_background,
-        collection=mock_mw.col,
         am_config=am_config,
         skipped_cards=skipped_cards,
     )

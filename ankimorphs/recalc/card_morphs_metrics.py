@@ -28,89 +28,56 @@ class CardMorphsMetrics:
 
         try:
             card_morphs: list[Morpheme] = card_morph_map_cache[card_id]
-            self.all_morphs = card_morphs
-            self._process(am_config, morph_priorities, card_morphs)
         except KeyError:
             # card does not have morphs or is buggy in some way
-            pass
+            return
+
+        self.all_morphs = card_morphs
+        self._process(am_config, morph_priorities)
 
     def _process(
         self,
         am_config: AnkiMorphsConfig,
         morph_priorities: dict[str, int],
-        card_morphs: list[Morpheme],
     ) -> None:
-
-        # setting default avoid an extra if statement
         default_morph_priority = len(morph_priorities) + 1
+        learning_interval_attribute: str
+        sub_key_attribute: str
 
-        if am_config.evaluate_morph_lemma:
-            self._process_using_lemma(
-                am_config, default_morph_priority, morph_priorities, card_morphs
-            )
+        if am_config.evaluate_morph_inflection:
+            learning_interval_attribute = "highest_inflection_learning_interval"
+            sub_key_attribute = "inflection"
         else:
-            self._process_using_inflection(
-                am_config, default_morph_priority, morph_priorities, card_morphs
-            )
+            learning_interval_attribute = "highest_lemma_learning_interval"
+            sub_key_attribute = "lemma"
+
+        for morph in self.all_morphs:
+            learning_interval = getattr(morph, learning_interval_attribute)
+            assert learning_interval is not None
+
+            sub_key = getattr(morph, sub_key_attribute)
+            assert sub_key is not None
+
+            # this is a composite key consisting of either:
+            # - (morph.lemma + morph.lemma)
+            # - (morph.lemma + morph.inflection)
+            key = morph.lemma + sub_key
+
+            if key in morph_priorities:
+                morph_priority = morph_priorities[key]
+            else:
+                morph_priority = default_morph_priority
+
+            self.total_priority_all_morphs += morph_priority
+
+            if learning_interval == 0:
+                self.unknown_morphs.append(morph)
+                self.total_priority_unknown_morphs += morph_priority
+            elif learning_interval < am_config.interval_for_known_morphs:
+                self.num_learning_morphs += 1
 
         if self.num_learning_morphs > 0:
             self.has_learning_morphs = True
-
-    def _process_using_lemma(
-        self,
-        am_config: AnkiMorphsConfig,
-        default_morph_priority: int,
-        morph_priorities: dict[str, int],
-        card_morphs: list[Morpheme],
-    ) -> None:
-
-        for morph in card_morphs:
-            assert morph.highest_lemma_learning_interval is not None
-
-            morph_priority = default_morph_priority
-
-            key = morph.lemma + morph.lemma
-            if key in morph_priorities:
-                morph_priority = morph_priorities[key]
-
-            self.total_priority_all_morphs += morph_priority
-
-            if morph.highest_lemma_learning_interval == 0:
-                self.unknown_morphs.append(morph)
-                self.total_priority_unknown_morphs += morph_priority
-            elif (
-                morph.highest_lemma_learning_interval
-                < am_config.interval_for_known_morphs
-            ):
-                self.num_learning_morphs += 1
-
-    def _process_using_inflection(
-        self,
-        am_config: AnkiMorphsConfig,
-        default_morph_priority: int,
-        morph_priorities: dict[str, int],
-        card_morphs: list[Morpheme],
-    ) -> None:
-
-        for morph in card_morphs:
-            assert morph.highest_inflection_learning_interval is not None
-
-            morph_priority = default_morph_priority
-
-            key = morph.lemma + morph.inflection
-            if key in morph_priorities:
-                morph_priority = morph_priorities[key]
-
-            self.total_priority_all_morphs += morph_priority
-
-            if morph.highest_inflection_learning_interval == 0:
-                self.unknown_morphs.append(morph)
-                self.total_priority_unknown_morphs += morph_priority
-            elif (
-                morph.highest_inflection_learning_interval
-                < am_config.interval_for_known_morphs
-            ):
-                self.num_learning_morphs += 1
 
     @staticmethod
     def get_unknown_inflections(

@@ -11,6 +11,7 @@ def background_update_progress_potentially_cancel(
     assert mw is not None
 
     if counter % increment == 0:
+        # time.sleep(0.3)
         if mw.progress.want_cancel():  # user clicked 'x'
             raise CancelledOperationException
 

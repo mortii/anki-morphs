@@ -6,13 +6,40 @@ from typing import Any
 
 from aqt import mw
 
-from .. import ankimorphs_globals
+from .. import ankimorphs_globals as am_globals
 from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from ..ankimorphs_db import AnkiMorphsDB
 from ..exceptions import FrequencyFileMalformedException, FrequencyFileNotFoundException
+from .card_score import MORPH_UNKNOWN_PENALTY
 
-# todo: import this?
-_DEFAULT_SCORE: int = 2_047_483_647
+
+class FrequencyFileType:
+    FrequencyFile = "FrequencyFile"
+    StudyPlan = "StudyPlan"
+
+
+class FrequencyFileFormat:
+    Minimal = "Minimal"
+    Full = "Full"
+
+
+class FrequencyFile:
+
+    def __init__(  # pylint:disable=too-many-arguments
+        self,
+        file_type: str,
+        file_format: str,
+        lemma_header_index: int,
+        inflection_header_index: int | None = None,
+        lemma_priority_header_index: int | None = None,
+        inflection_priority_header_index: int | None = None,
+    ):
+        self.type = file_type
+        self.format = file_format
+        self.lemma_header_index = lemma_header_index
+        self.inflection_header_index = inflection_header_index
+        self.lemma_priority_header_index = lemma_priority_header_index
+        self.inflection_priority_header_index = inflection_priority_header_index
 
 
 def _get_morph_priority(
@@ -20,155 +47,244 @@ def _get_morph_priority(
     am_config: AnkiMorphsConfig,
     am_config_filter: AnkiMorphsConfigFilter,
 ) -> dict[str, int]:
+    if am_config_filter.morph_priority_selection == am_globals.COLLECTION_FREQUENCY_OPTION:  # fmt: skip
+        return am_db.get_morph_priorities_from_collection(am_config)
 
-    if (
-        am_config_filter.morph_priority_selection
-        == ankimorphs_globals.COLLECTION_FREQUENCY_OPTION
-    ):
-        morph_priorities = am_db.get_morph_collection_priorities(am_config)
-    else:
-        morph_priorities = _get_morph_frequency_file_priority(
-            frequency_file_name=am_config_filter.morph_priority_selection,
-            only_lemma_priorities=am_config.evaluate_morph_lemma,
-        )
-
-    return morph_priorities
+    return _load_morph_priorities_from_file(
+        frequency_file_name=am_config_filter.morph_priority_selection,
+        only_lemma_priorities=am_config.evaluate_morph_lemma,
+    )
 
 
-def _get_morph_frequency_file_priority(
+def _load_morph_priorities_from_file(
     frequency_file_name: str, only_lemma_priorities: bool
 ) -> dict[str, int]:
     assert mw is not None
 
     print(f"mw.pm.profileFolder(): {mw.pm.profileFolder()}")
     print(
-        f"ankimorphs_globals.FREQUENCY_FILES_DIR_NAME): {ankimorphs_globals.FREQUENCY_FILES_DIR_NAME}"
+        f"am_globals.FREQUENCY_FILES_DIR_NAME): {am_globals.FREQUENCY_FILES_DIR_NAME}"
     )
     print(f"frequency_file_name: {frequency_file_name}")
 
-    morph_priority: dict[str, int] = {}
     frequency_file_path = Path(
         mw.pm.profileFolder(),
-        ankimorphs_globals.FREQUENCY_FILES_DIR_NAME,
+        am_globals.FREQUENCY_FILES_DIR_NAME,
         frequency_file_name,
     )
     try:
         with open(frequency_file_path, mode="r+", encoding="utf-8") as csvfile:
             morph_reader = csv.reader(csvfile, delimiter=",")
             headers: list[str] | None = next(morph_reader, None)
+            frequency_file: FrequencyFile = _get_file_type_and_format(
+                frequency_file_path, headers
+            )
+            return _get_morph_priorities_from_file(
+                frequency_file_path=frequency_file_path,
+                morph_reader=morph_reader,
+                frequency_file=frequency_file,
+                only_lemma_priorities=only_lemma_priorities,
+            )
+    except FileNotFoundError as exc:
+        raise FrequencyFileNotFoundException(str(frequency_file_path)) from exc
 
-            if headers is None:
+
+def _get_morph_priorities_from_file(
+    frequency_file_path: Path,
+    morph_reader: Any,
+    frequency_file: FrequencyFile,
+    only_lemma_priorities: bool,
+) -> dict[str, int]:
+    # Full-format frequency files were designed to allow switching between evaluating
+    # morphs based on their lemma or their inflections. However, this switching
+    # is not possible with full-format study plans, so they must be treated differently.
+    #
+    # Scenarios to handle:
+    #  - frequency file minimal (only lemma) format
+    #    - evaluating lemma -> ok
+    #    - evaluating inflection -> raise exception
+    #  - frequency file full (lemma and inflection) format
+    #    - evaluating lemma -> ok
+    #    - evaluating inflection -> ok
+    #  - study plan minimal (only lemma) format
+    #    - evaluating lemma -> ok
+    #    - evaluating inflection -> raise exception
+    #  - study plan full (lemma and inflection) format
+    #    - evaluating lemma -> raise exception
+    #    - evaluating inflection -> ok
+
+    if only_lemma_priorities:
+        if frequency_file.format == FrequencyFileFormat.Full:
+            if frequency_file.type == FrequencyFileType.StudyPlan:
                 raise FrequencyFileMalformedException(
-                    path=str(frequency_file_path),
-                    reason="Frequency file does not have headers.",
+                    path=frequency_file_path,
+                    reason="Study plans containing inflections are incompatible with the 'evaluate lemmas' option.",
                 )
+            return _get_lemma_priority_from_full_frequency_file(
+                morph_reader, frequency_file
+            )
+        # this could be either a study plan or frequency file,
+        # but both are handled the same
+        return get_lemma_priority_from_minimal_frequency_file(
+            morph_reader, frequency_file
+        )
 
-            # lemma_column = headers.index(ankimorphs_globals.LEMMA_HEADER)
-            if ankimorphs_globals.LEMMA_HEADER not in headers:
-                _reason = f"Frequency file is missing the '{ankimorphs_globals.LEMMA_HEADER}' header"
-                raise FrequencyFileMalformedException(
-                    path=str(frequency_file_path),
-                    reason=_reason,
-                )
+    if frequency_file.format == FrequencyFileFormat.Minimal:
+        raise FrequencyFileMalformedException(
+            path=frequency_file_path,
+            reason="Frequency files or study plans without inflections are incompatible with the 'evaluate inflections' option.",
+        )
 
-            if only_lemma_priorities:
-                # Here we have two options, a frequency file that either has
-                # a single column of only lemmas, or a full frequency file that
-                # contains a "Lemma-Priority" column
-                if ankimorphs_globals.LEMMA_PRIORITY_HEADER in headers:
-                    lemma_priority_column = headers.index(
-                        ankimorphs_globals.LEMMA_PRIORITY_HEADER
-                    )
-                    morph_priority = _get_lemma_priority_from_full_frequency_file(
-                        morph_reader=morph_reader,
-                        lemma_priority_column=lemma_priority_column,
-                    )
-                else:
-                    morph_priority = get_lemma_priority_from_minimal_frequency_file(
-                        morph_reader=morph_reader,
-                    )
-            else:
-                # here we always have an inflection column that contains priorities
-                if ankimorphs_globals.INFLECTION_PRIORITY_HEADER not in headers:
-                    _reason = f"Frequency file is missing the '{ankimorphs_globals.INFLECTION_PRIORITY_HEADER}' header"
-                    raise FrequencyFileMalformedException(
-                        path=str(frequency_file_path),
-                        reason=_reason,
-                    )
+    if frequency_file.type == FrequencyFileType.FrequencyFile:
+        return _get_inflection_priority_full_frequency_file(
+            morph_reader, frequency_file
+        )
 
-                inflection_priority_column = headers.index(
-                    ankimorphs_globals.INFLECTION_PRIORITY_HEADER
-                )
+    if frequency_file.type == FrequencyFileType.StudyPlan:
+        return _get_inflection_priority_full_study_plan(morph_reader, frequency_file)
 
-                morph_priority = _get_inflection_priority_full_frequency_file(
-                    morph_reader=morph_reader,
-                    inflection_priority_column=inflection_priority_column,
-                )
+    # this should never be reached
+    raise FrequencyFileMalformedException(
+        path=frequency_file_path, reason="unsupported frequency file type or format"
+    )
 
-    except FileNotFoundError as error:
-        raise FrequencyFileNotFoundException(str(frequency_file_path)) from error
+
+def _get_file_type_and_format(
+    frequency_file_path: Path, headers: list[str] | None
+) -> FrequencyFile:
+    # Here is how to differentiate between the types and formats:
+    #  - Minimal frequency file/study plan: does __not__ have the am_globals.INFLECTION_HEADER
+    #  - Full frequency file: has the am_globals.INFLECTION_PRIORITY_HEADER
+    #  - Full study plan: does __not__ have the am_globals.INFLECTION_PRIORITY_HEADER
+
+    print(f"headers: {headers}")
+
+    if headers is None or len(headers) == 0:
+        raise FrequencyFileMalformedException(
+            path=str(frequency_file_path),
+            reason="Frequency file does not have headers.",
+        )
+
+    if am_globals.LEMMA_HEADER not in headers:
+        reason = f"Frequency file is missing the '{am_globals.LEMMA_HEADER}' header"
+        raise FrequencyFileMalformedException(
+            path=str(frequency_file_path),
+            reason=reason,
+        )
+
+    lemma_header_index: int = headers.index(am_globals.LEMMA_HEADER)
+
+    if am_globals.INFLECTION_HEADER not in headers:
+        # this is either a minimal frequency file or a minimal study plan,
+        # but we don't have to differentiate the file types since
+        # minimal format files are handled in the same way
+        return FrequencyFile(
+            file_type=FrequencyFileType.FrequencyFile,  # arbitrary choice
+            file_format=FrequencyFileFormat.Minimal,
+            lemma_header_index=lemma_header_index,
+        )
+
+    inflection_header_index: int = headers.index(am_globals.INFLECTION_HEADER)
+
+    if am_globals.LEMMA_PRIORITY_HEADER in headers:
+        # full format frequency file
+        lemma_priority_header_index: int = headers.index(
+            am_globals.LEMMA_PRIORITY_HEADER
+        )
+        try:
+            # this should always exist at this point
+            inflection_priority_header_index: int = headers.index(
+                am_globals.INFLECTION_PRIORITY_HEADER
+            )
+        except ValueError as exc:
+            reason = f"Frequency file is missing the '{am_globals.INFLECTION_PRIORITY_HEADER}' header"
+            raise FrequencyFileMalformedException(
+                path=str(frequency_file_path),
+                reason=reason,
+            ) from exc
+
+        print("has am_globals.LEMMA_PRIORITY_HEADER in headers")
+        return FrequencyFile(
+            file_type=FrequencyFileType.FrequencyFile,
+            file_format=FrequencyFileFormat.Full,
+            lemma_header_index=lemma_header_index,
+            inflection_header_index=inflection_header_index,
+            lemma_priority_header_index=lemma_priority_header_index,
+            inflection_priority_header_index=inflection_priority_header_index,
+        )
+
+    # here we should be left with a full format study plan
+    return FrequencyFile(
+        file_type=FrequencyFileType.StudyPlan,
+        lemma_header_index=lemma_header_index,
+        file_format=FrequencyFileFormat.Full,
+        inflection_header_index=inflection_header_index,
+    )
+
+
+def _get_inflection_priority_full_frequency_file(
+    morph_reader: Any, file_type_and_format: FrequencyFile
+) -> dict[str, int]:
+    morph_priority: dict[str, int] = {}
+
+    for index, row in enumerate(morph_reader):
+        if index > MORPH_UNKNOWN_PENALTY:
+            # rows after this will be ignored by the scoring algorithm
+            break
+        lemma = row[file_type_and_format.lemma_header_index]
+        inflection = row[file_type_and_format.inflection_header_index]
+        key = lemma + inflection
+        morph_priority[key] = int(
+            row[file_type_and_format.inflection_priority_header_index]
+        )
 
     return morph_priority
 
 
-def _get_inflection_priority_full_frequency_file(
-    morph_reader: Any, inflection_priority_column: int
+def _get_inflection_priority_full_study_plan(
+    morph_reader: Any, file_type_and_format: FrequencyFile
 ) -> dict[str, int]:
     morph_priority: dict[str, int] = {}
 
-    # print(f"inflection_priority_column: {inflection_priority_column}")
-
     for index, row in enumerate(morph_reader):
-        if index > _DEFAULT_SCORE:  # todo, change this
-            # the scoring algorithm ignores values > 50K
-            # so any rows after this will be ignored anyway
+        if index > MORPH_UNKNOWN_PENALTY:
+            # rows after this will be ignored by the scoring algorithm
             break
-        # print(f"row: {row}")
-        # print(f"row[inflection_priority_column]: {row[inflection_priority_column]}")
-        key = row[0] + row[1]  # todo: use dynamic column, dont assume 0
-        morph_priority[key] = int(row[inflection_priority_column])
-        # print(f"key: {key}, prio: {morph_priority[key]}")
+        lemma = row[file_type_and_format.lemma_header_index]
+        inflection = row[file_type_and_format.inflection_header_index]
+        key = lemma + inflection
+        morph_priority[key] = index
 
     return morph_priority
 
 
 def _get_lemma_priority_from_full_frequency_file(
-    morph_reader: Any, lemma_priority_column: int
+    morph_reader: Any, file_type_and_format: FrequencyFile
 ) -> dict[str, int]:
     morph_priority: dict[str, int] = {}
 
-    # print(f"inflection_priority_column: {inflection_priority_column}")
-
     for index, row in enumerate(morph_reader):
-        if index > _DEFAULT_SCORE:  # todo, change this
-            # the scoring algorithm ignores values > 50K
-            # so any rows after this will be ignored anyway
+        if index > MORPH_UNKNOWN_PENALTY:
+            # rows after this will be ignored by the scoring algorithm
             break
-        # print(f"row: {row}")
-        # print(f"row[inflection_priority_column]: {row[inflection_priority_column]}")
-        key = row[0] + row[0]
-        morph_priority[key] = int(row[lemma_priority_column])
-        # print(f"key: {key}, prio: {morph_priority[key]}")
+        lemma = row[file_type_and_format.lemma_header_index]
+        key = lemma + lemma
+        morph_priority[key] = int(row[file_type_and_format.lemma_priority_header_index])
 
     return morph_priority
 
 
 def get_lemma_priority_from_minimal_frequency_file(
-    morph_reader: Any,
+    morph_reader: Any, file_type_and_format: FrequencyFile
 ) -> dict[str, int]:
     morph_priority: dict[str, int] = {}
 
-    # print(f"inflection_priority_column: {inflection_priority_column}")
-
     for index, row in enumerate(morph_reader):
-        if index > _DEFAULT_SCORE:  # todo, change this
-            # the scoring algorithm ignores values > 50K
-            # so any rows after this will be ignored anyway
+        if index > MORPH_UNKNOWN_PENALTY:
+            # rows after this will be ignored by the scoring algorithm
             break
-        # print(f"row: {row}")
-        # print(f"row[inflection_priority_column]: {row[inflection_priority_column]}")
-        key = row[0] + row[0]
+        lemma = row[file_type_and_format.lemma_header_index]
+        key = lemma + lemma
         morph_priority[key] = index
-        # print(f"key: {key}, prio: {morph_priority[key]}")
 
     return morph_priority

@@ -37,20 +37,18 @@ class CardHandlingTab(SettingsTab):
 
     def populate(self, use_default_config: bool = False) -> None:
         super().populate(use_default_config)
-        self._toggle_disable_shift_cards_settings(
-            check_state=self.ui.shiftNewCardsCheckBox.checkState()
-        )
+        self._toggle_disable_shift_cards_settings()
 
     def setup_buttons(self) -> None:
         self.ui.restoreCardHandlingPushButton.setAutoDefault(False)
         self.ui.restoreCardHandlingPushButton.clicked.connect(self.restore_defaults)
 
-        self.ui.shiftNewCardsCheckBox.checkStateChanged.connect(
+        self.ui.shiftNewCardsCheckBox.stateChanged.connect(
             self._toggle_disable_shift_cards_settings
         )
 
-    def _toggle_disable_shift_cards_settings(self, check_state: Qt.CheckState) -> None:
-        if check_state == Qt.CheckState.Unchecked:
+    def _toggle_disable_shift_cards_settings(self) -> None:
+        if self.ui.shiftNewCardsCheckBox.checkState() == Qt.CheckState.Unchecked:
             self.ui.dueOffsetSpinBox.setDisabled(True)
             self.ui.offsetFirstMorphsSpinBox.setDisabled(True)
         else:

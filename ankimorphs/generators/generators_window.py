@@ -652,6 +652,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             self._generate_morph_occurrences_by_file()
         )
 
+        # todo update this message
         mw.taskman.run_on_main(
             partial(
                 mw.progress.update,
@@ -718,17 +719,6 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
                 label="Sorting morphs",
             )
         )
-
-        # for every file, sort the morph occurrence dicts
-        for file, morph_dict in morph_occurrences_by_file.items():
-            sorted_morph_frequency = dict(
-                sorted(
-                    morph_dict.items(),
-                    key=lambda item: item[1].occurrence,
-                    reverse=True,
-                )
-            )
-            morph_occurrences_by_file[file] = sorted_morph_frequency
 
         generators_utils.write_out_study_plan(
             input_dir_root=self._input_dir_root,

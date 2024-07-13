@@ -77,7 +77,7 @@ markers = [
 paths = ["ankimorphs"]
 exclude = [
   "ankimorphs/ui/",
-  "ankimorphs/debug_utils.py",
+  "ankimorphs/debugging_utils.py",
   "ankimorphs/table_utils.py",
   "ankimorphs/morphemizers/spacy_wrapper.py",
   "ankimorphs/morphemizers/mecab_wrapper.py"
@@ -90,7 +90,8 @@ ignore_names = [
   "closeWithCallback",
   "closeEvent",
   "toolbar_stats_use_seen",
-  "extra_fields_display_lemmas"
+  "extra_fields_display_lemmas",
+  "min_occurrence"
 ]
 min_confidence = 60
 sort_by_size = true
