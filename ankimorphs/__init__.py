@@ -48,6 +48,7 @@ from . import (
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
 from .generators.generators_window import GeneratorWindow
+from .progress.progress_window import ProgressWindow
 from .known_morphs_exporter import KnownMorphsExporterDialog
 from .recalc import recalc_main
 from .settings import settings_dialog
@@ -198,6 +199,10 @@ def register_addon_dialogs() -> None:
         creator=GeneratorWindow,
     )
     aqt.dialogs.register_dialog(
+        name=ankimorphs_globals.PROGRESS_DIALOG_NAME,
+        creator=ProgressWindow,
+    )
+    aqt.dialogs.register_dialog(
         name=ankimorphs_globals.KNOWN_MORPHS_EXPORTER_DIALOG_NAME,
         creator=KnownMorphsExporterDialog,
     )
@@ -222,6 +227,7 @@ def init_tool_menu_and_actions() -> None:
     settings_action = create_settings_action(am_config)
     recalc_action = create_recalc_action(am_config)
     generators_action = create_generators_dialog_action(am_config)
+    progress_action = create_progress_dialog_action(am_config)
     known_morphs_exporter_action = create_known_morphs_exporter_action(am_config)
     reset_tags_action = create_tag_reset_action()
     guide_action = create_guide_action()
@@ -231,6 +237,7 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu.addAction(settings_action)
     am_tool_menu.addAction(recalc_action)
     am_tool_menu.addAction(generators_action)
+    am_tool_menu.addAction(progress_action)
     am_tool_menu.addAction(known_morphs_exporter_action)
     am_tool_menu.addAction(reset_tags_action)
     am_tool_menu.addAction(guide_action)
@@ -546,6 +553,17 @@ def create_generators_dialog_action(am_config: AnkiMorphsConfig) -> QAction:
         partial(
             aqt.dialogs.open,
             name=ankimorphs_globals.GENERATOR_DIALOG_NAME,
+        )
+    )
+    return action
+
+def create_progress_dialog_action(am_config: AnkiMorphsConfig) -> QAction:
+    action = QAction("&Progress", mw)
+    action.setShortcut(am_config.shortcut_progress)
+    action.triggered.connect(
+        partial(
+            aqt.dialogs.open,
+            name=ankimorphs_globals.PROGRESS_DIALOG_NAME,
         )
     )
     return action

@@ -17,6 +17,7 @@ FREQUENCY_FILES_DIR_NAME = "frequency-files"
 SETTINGS_DIALOG_NAME: str = "am_settings_dialog"
 TAG_SELECTOR_DIALOG_NAME: str = "am_tag_selector_dialog"
 GENERATOR_DIALOG_NAME: str = "am_generator_dialog"
+PROGRESS_DIALOG_NAME: str = "am_progress_dialog"
 KNOWN_MORPHS_EXPORTER_DIALOG_NAME: str = "am_known_morphs_exporter_dialog"
 
 # The static names of the extra fields

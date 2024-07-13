@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ProgressWindow</class>
+ <widget class="QMainWindow" name="ProgressWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1035</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Progress</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_5">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QPushButton" name="selectFolderPushButton">
+            <property name="text">
+             <string>Select Folder</string>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Morphemizer:</string>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>File formats:</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QLineEdit" name="inputDirLineEdit"/>
+          </item>
+          <item>
+           <widget class="QComboBox" name="morphemizerComboBox"/>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QCheckBox" name="txtFilesCheckBox">
+              <property name="text">
+               <string>.txt</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="srtFilesCheckBox">
+              <property name="text">
+               <string>.srt</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="vttFilesCheckBox">
+              <property name="text">
+               <string>.vtt</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="mdFilesCheckBox">
+              <property name="text">
+               <string>.md</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item alignment="Qt::AlignTop">
+           <widget class="QPushButton" name="loadFilesPushButton">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>57</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Load
+Files</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="topMargin">
+         <number>10</number>
+        </property>
+        <property name="bottomMargin">
+         <number>10</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Preprocess:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_10">
+            <item>
+             <widget class="QCheckBox" name="squareBracketsCheckBox">
+              <property name="text">
+               <string>Ignore content in square brackets []</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="namesMorphemizerCheckBox">
+              <property name="text">
+               <string>Ignore names found by morphemizer</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QCheckBox" name="roundBracketsCheckBox">
+              <property name="text">
+               <string>ignore content in round brackets（）</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="namesFileCheckBox">
+              <property name="text">
+               <string>Ignore names found in names.txt</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <item>
+             <widget class="QCheckBox" name="slimRoundBracketsCheckBox">
+              <property name="text">
+               <string>ignore content in slim round brackets ()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="numbersCheckBox">
+              <property name="text">
+               <string>Ignore numbers</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <property name="spacing">
+           <number>15</number>
+          </property>
+          <property name="topMargin">
+           <number>20</number>
+          </property>
+          <property name="bottomMargin">
+           <number>20</number>
+          </property>
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="generateReportPushButton">
+            <property name="text">
+             <string>Generate Readability Report</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="generateFrequencyFilePushButton">
+            <property name="text">
+             <string>Generate Frequency File</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="generateStudyPlanPushButton">
+            <property name="text">
+             <string>Generate Study Plan</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTabWidget" name="tablesTabWidget">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="tab">
+         <attribute name="title">
+          <string>Numerical</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <widget class="QTableWidget" name="numericalTableWidget">
+            <column>
+             <property name="text">
+              <string>File</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Unique
+Morphs</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Unique 
+Known</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Unique
+Learning</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Unique
+Unknown</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Total
+Morphs</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Total
+Known</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Total
+Learning</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Total
+Unknown</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_2">
+         <attribute name="title">
+          <string>Percentage</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <widget class="QTableWidget" name="percentTableWidget">
+            <column>
+             <property name="text">
+              <string>File</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Unique
+Morphs</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Unique 
+Known</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Unique
+Learning</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Unique
+Unknown</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Total
+Morphs</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Total
+Known</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Total
+Learning</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Total
+Unknown</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
