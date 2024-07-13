@@ -97,7 +97,7 @@ def _update_progress_report(
 
 # I may want to pass bins into this function?
 def get_progress_reports(
-        am_config: AnkiMorphsConfig, am_db: AnkiMorphsDB 
+        am_config: AnkiMorphsConfig, am_db: AnkiMorphsDB, bins: Bins 
 ) -> list[ProgressReport]:
     
     reports = []
@@ -113,17 +113,18 @@ def get_progress_reports(
             am_db, am_config, config_filter
         )
 
-        min_priority = 1; max_priority = 200
-        report = ProgressReport(min_priority,max_priority,config_filter)
+        for min_priority, max_priority in bins.indexes:
+            report = ProgressReport(min_priority,max_priority,config_filter)
 
-        morph_status = am_db.get_morph_lemmas_learning_statuses()
-        for morph in morph_status:
-            if morph not in morph_priorities:
-                continue
-            elif  morph_priorities[morph] >= min_priority and \
-                  morph_priorities[morph] <= max_priority:
-                _update_progress_report(report, morph, morph_status[morph])
-        reports.append(report)
+            morph_status = am_db.get_morph_lemmas_learning_statuses()
+            for morph in morph_status:
+                key = morph + morph
+                if key not in morph_priorities:
+                    continue
+                elif  morph_priorities[key] >= min_priority and \
+                      morph_priorities[key] <= max_priority:
+                    _update_progress_report(report, morph, morph_status[morph])
+            reports.append(report)
 
     return reports
 

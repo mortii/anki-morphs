@@ -34,7 +34,7 @@ from . import progress_text_processing, progress_utils, readability_report_utils
 from .progress_output_dialog import GeneratorOutputDialog, OutputOptions
 from .progress_text_processing import PreprocessOptions
 from .readability_report_utils import FileMorphsStats
-from .progress_utils import get_progress_reports
+from .progress_utils import get_progress_reports, Bins
 
 
 class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attributes
@@ -53,15 +53,17 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
         #self._input_files: list[Path] = []
 
         self._morph_priorities_column = 0
-        self._total_known_column = 1
-        self._total_unknown_column = 2
+        self._total_morphs_column = 1
+        self._known_column = 2
+        self._learning_column = 3
+        self._unknowns_column = 4
         #self._unique_learning_column = 3
         #self._unique_unknowns_column = 4
         #self._total_morphs_column = 5
         #self._total_known_column = 6
         #self._total_learning_column = 7
         #self._total_unknowns_column = 8
-        self._number_of_columns = 3
+        self._number_of_columns = 5
 
         #self._morphemizers: list[Morphemizer] = morphemizer.get_all_morphemizers()
         #self._populate_morphemizers()
@@ -76,28 +78,21 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
 
     def _setup_table(self, table: QTableWidget) -> None:
         table.setAlternatingRowColors(True)
+        table.setSortingEnabled(False)
         table.setColumnCount(self._number_of_columns)
 
         table.setColumnWidth(self._morph_priorities_column, 200)
-        table.setColumnWidth(self._total_known_column, 90)
-        table.setColumnWidth(self._total_unknown_column, 90)
-
-        table.setSortingEnabled(False)
-        table.setSortingEnabled(False)
-
-        #table.setColumnWidth(self._unique_learning_column, 90)
-        #table.setColumnWidth(self._unique_unknowns_column, 90)
-        #table.setColumnWidth(self._total_morphs_column, 90)
-        #table.setColumnWidth(self._total_known_column, 90)
-        #table.setColumnWidth(self._total_learning_column, 90)
-        #table.setColumnWidth(self._total_unknowns_column, 90)
+        table.setColumnWidth(self._total_morphs_column, 90)
+        table.setColumnWidth(self._known_column, 90)
+        table.setColumnWidth(self._learning_column, 90)
+        table.setColumnWidth(self._unknowns_column, 90)
 
         table_horizontal_headers: QHeaderView | None = table.horizontalHeader()
         assert table_horizontal_headers is not None
         table_horizontal_headers.setSectionsMovable(True)
 
         # disables manual editing of the table
-        self.ui.numericalTableWidget.setEditTriggers(
+        table.setEditTriggers(
             QAbstractItemView.EditTrigger.NoEditTriggers
         )
 
@@ -116,24 +111,6 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
         #self.ui.generateReportPushButton.setDisabled(True)
         #self.ui.generateFrequencyFilePushButton.setDisabled(True)
         #self.ui.generateStudyPlanPushButton.setDisabled(True)
-
-    #def _populate_morphemizers(self) -> None:
-    #    morphemizer_names = [mizer.get_description() for mizer in self._morphemizers]
-    #    self.ui.morphemizerComboBox.addItems(morphemizer_names)
-
-    #def _setup_checkboxes(self) -> None:
-    #    self.ui.txtFilesCheckBox.setChecked(True)
-    #    self.ui.srtFilesCheckBox.setChecked(True)
-    #    self.ui.vttFilesCheckBox.setChecked(True)
-    #    self.ui.mdFilesCheckBox.setChecked(True)
-
-    #def _on_select_folder_clicked(self) -> None:
-    #    input_dir: str = QFileDialog.getExistingDirectory(
-    #        parent=self,
-    #        caption="Directory with files to analyze",
-    #        directory=QDir().homePath(),
-    #    )
-    #    self.ui.inputDirLineEdit.setText(input_dir)
 
     def _on_calculate_progress_button_clicked(self) -> None:
         # calculate progress stats and populate table in the background, 
@@ -162,68 +139,94 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
 
         am_config = AnkiMorphsConfig()
         am_db = AnkiMorphsDB()
-        reports = get_progress_reports(am_config, am_db)
-        print(reports[0].get_total_known() / reports[0].get_total_morphs())
-        print("Success")
-#
-    #    # clearing the list prevents duplicate when
-    #    # the load button is clicked more than once
-    #    self._input_files.clear()
-#
-    #    input_dir = self.ui.inputDirLineEdit.text()
-    #    self._input_dir_root = Path(input_dir)
-    #    extensions = self._get_checked_extensions()
-#
-    #    # os.walk goes through all the sub-dirs recursively
-    #    for dir_path, _, file_names in os.walk(input_dir):
-    #        for file_name in file_names:
-    #            if mw.progress.want_cancel():  # user clicked 'x'
-    #                raise CancelledOperationException
-    #            if file_name.lower().endswith(extensions):
-    #                file_path = Path(dir_path, file_name)
-    #                self._input_files.append(file_path)
-#
-    #    # without this sorting, the initial order will be (seemingly) random
-    #    self._input_files.sort()
-    #    self._populate_files_column()
 
-    #def _populate_files_column(self) -> None:
-    #    # sorting has to be disabled before populating because bugs can occur
-#
-    #    # clear previous results
-    #    self.ui.numericalTableWidget.clearContents()
-    #    self.ui.percentTableWidget.clearContents()
-#
-    #    self.ui.numericalTableWidget.setRowCount(len(self._input_files))
-    #    self.ui.percentTableWidget.setRowCount(len(self._input_files))
-#
-    #    for _row, _file_name in enumerate(self._input_files):
-    #        relative_file_name = str(_file_name.relative_to(self._input_dir_root))
-#
-    #        file_name_item_numerical = QTableWidgetItem(relative_file_name)
-    #        file_name_item_percentage = QTableWidgetItem(relative_file_name)
-#
-    #        self.ui.numericalTableWidget.setItem(
-    #            _row, self._file_name_column, file_name_item_numerical
-    #        )
-    #        self.ui.percentTableWidget.setItem(
-    #            _row, self._file_name_column, file_name_item_percentage
-    #        )
+        default_bins = Bins([(1,1000),(501,1000),(1001,2000),(2001,3000)])
+        reports = get_progress_reports(am_config, am_db, default_bins)
+        self._populate_tables(reports)
 
-    #def _get_checked_extensions(self) -> tuple[str, ...]:
-    #    extensions = []
-#
-    #    if self.ui.txtFilesCheckBox.isChecked():
-    #        extensions.append(".txt")
-    #    if self.ui.srtFilesCheckBox.isChecked():
-    #        extensions.append(".srt")
-    #    if self.ui.vttFilesCheckBox.isChecked():
-    #        extensions.append(".vtt")
-    #    if self.ui.mdFilesCheckBox.isChecked():
-    #        extensions.append(".md")
-#
-    #    # we return a tuple to make it compatible with .endswith()
-    #    return tuple(extensions)
+    def _populate_tables(self, reports: list[ProgressReport]) -> None:
+        
+        assert isinstance(self.ui, Ui_ProgressWindow)
+
+        self.ui.numericalTableWidget.clearContents()
+        self.ui.percentTableWidget.clearContents()
+
+        self.ui.numericalTableWidget.setRowCount(len(reports))
+        self.ui.percentTableWidget.setRowCount(len(reports))
+
+        for row, report in enumerate(reports):
+            self._populate_numerical_table(report, row)
+            self._populate_percent_table(report, row)
+
+
+
+    def _populate_numerical_table(self, report: ProgressReport, row: int) -> None:
+
+        known_percent = round(report.get_total_known()/report.get_total_morphs()*100,1)
+        learning_percent = round(report.get_total_learning()/report.get_total_morphs()*100,1)
+        unknowns_percent = round(100 - known_percent - learning_percent,1) 
+
+        morph_priorities_item = QTableWidgetItem(f"{report.min_priority}-{report.max_priority}")
+        total_morphs_item = QTableWidgetIntegerItem(report.get_total_morphs())
+        known_item = QTableWidgetIntegerItem(report.get_total_known())
+        learning_item = QTableWidgetIntegerItem(report.get_total_learning())
+        unknowns_item = QTableWidgetIntegerItem(report.get_total_unknowns())
+
+        morph_priorities_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        total_morphs_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        known_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        learning_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        unknowns_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.ui.numericalTableWidget.setItem(
+            row, self._morph_priorities_column, morph_priorities_item
+        )
+        self.ui.numericalTableWidget.setItem(
+            row, self._total_morphs_column, total_morphs_item
+        )
+        self.ui.numericalTableWidget.setItem(
+            row, self._known_column, known_item
+        )
+        self.ui.numericalTableWidget.setItem(
+            row, self._learning_column, learning_item
+        )
+        self.ui.numericalTableWidget.setItem(
+            row, self._unknowns_column, unknowns_item
+        )
+
+    def _populate_percent_table(self, report: ProgressReport, row: int) -> None:
+
+        known_percent = round(report.get_total_known()/report.get_total_morphs()*100,1)
+        learning_percent = round(report.get_total_learning()/report.get_total_morphs()*100,1)
+        unknowns_percent = round(100 - known_percent - learning_percent,1) # Avoids rounding errors
+
+        morph_priorities_item = QTableWidgetItem(f"{report.min_priority}-{report.max_priority}")
+        total_morphs_item = QTableWidgetIntegerItem(report.get_total_morphs())
+        known_item = QTableWidgetPercentItem(known_percent)
+        learning_item = QTableWidgetPercentItem(learning_percent)
+        unknowns_item = QTableWidgetPercentItem(unknowns_percent)
+
+        morph_priorities_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        total_morphs_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        known_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        learning_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        unknowns_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.ui.percentTableWidget.setItem(
+            row, self._morph_priorities_column, morph_priorities_item
+        )
+        self.ui.percentTableWidget.setItem(
+            row, self._total_morphs_column, total_morphs_item
+        )
+        self.ui.percentTableWidget.setItem(
+            row, self._known_column, known_item
+        )
+        self.ui.percentTableWidget.setItem(
+            row, self._learning_column, learning_item
+        )
+        self.ui.percentTableWidget.setItem(
+            row, self._unknowns_column, unknowns_item
+        )
 
     def closeWithCallback(  # pylint:disable=invalid-name
         self, callback: Callable[[], None]
@@ -244,7 +247,7 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
         assert mw.progress is not None
 
         mw.progress.finish()
-        tooltip("Generator finished", parent=self)
+        tooltip("Progress report finished", parent=self)
 
     def _on_failure(
         self,
@@ -256,7 +259,7 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
         mw.progress.finish()
 
         if isinstance(error, CancelledOperationException):
-            tooltip("Cancelled progress calculation", parent=self)
+            tooltip("Cancelled progress report calculation", parent=self)
         else:
             raise error
 

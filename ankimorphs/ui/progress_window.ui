@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>792</width>
-    <height>607</height>
+    <height>506</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,7 +36,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Calculate Progress</string>
+             <string>Calculate Progress Report</string>
             </property>
            </widget>
           </item>
@@ -55,7 +55,7 @@
         <item>
          <widget class="QLabel" name="label_3">
           <property name="text">
-           <string>Preprocess:</string>
+           <string>Options (nonfunctional for now)</string>
           </property>
          </widget>
         </item>
@@ -138,7 +138,7 @@
       <item>
        <widget class="QTabWidget" name="tablesTabWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -154,7 +154,17 @@
             </column>
             <column>
              <property name="text">
+              <string>Unique Morphs</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
               <string>Total Known</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Total Learning</string>
              </property>
             </column>
             <column>
@@ -175,55 +185,27 @@
            <widget class="QTableWidget" name="percentTableWidget">
             <column>
              <property name="text">
-              <string>File</string>
+              <string>Priority Range</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Unique
-Morphs</string>
+              <string>Unique Morphs</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Unique 
-Known</string>
+              <string>% Known</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Unique
-Learning</string>
+              <string>% Learning</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Unique
-Unknown</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Total
-Morphs</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Total
-Known</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Total
-Learning</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Total
-Unknown</string>
+              <string>% Unknown</string>
              </property>
             </column>
            </widget>
