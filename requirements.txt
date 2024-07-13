@@ -1,5 +1,5 @@
 anki==24.06.3
-aqt[qt6]==24.06.3
+aqt==24.06.3
 black==24.4.2
 ca_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ca_core_news_sm-3.7.0/ca_core_news_sm-3.7.0-py3-none-any.whl
 csv-diff==1.1
@@ -24,6 +24,11 @@ pl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pl
 pre-commit==3.7.1
 pt_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.7.0/pt_core_news_sm-3.7.0-py3-none-any.whl
 pylint==3.2.5
+PyQt6==6.6.1  # used by anki, newer versions can cause crashes in prod
+PyQt6-Qt6==6.6.1  # used by anki, newer versions can cause crashes in prod
+PyQt6-WebEngine==6.6.0  # used by anki, newer versions can cause crashes in prod
+PyQt6-WebEngine-Qt6==6.6.0  # used by anki, newer versions can cause crashes in prod
+PyQt6_sip==13.6.0  # used by anki, newer versions can cause crashes in prod
 pytest==8.2.2
 pytest-cov==5.0.0
 pytest-expect==1.1.0
