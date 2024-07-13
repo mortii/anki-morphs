@@ -24,7 +24,8 @@ from aqt.utils import tooltip
 from .. import ankimorphs_globals
 from ..ankimorphs_config import AnkiMorphsConfig
 from ..ankimorphs_db import AnkiMorphsDB
-from ..exceptions import CancelledOperationException, EmptyFileSelectionException
+from ..exceptions import CancelledOperationException, EmptyFileSelectionException, \
+NoMorphsInPriorityRangeException
 from ..morpheme import MorphOccurrence
 from ..morphemizers import morphemizer, spacy_wrapper
 from ..morphemizers.morphemizer import Morphemizer, SpacyMorphemizer
@@ -57,13 +58,13 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
         self._known_column = 2
         self._learning_column = 3
         self._unknowns_column = 4
-        #self._unique_learning_column = 3
+        self._missing_column = 5
         #self._unique_unknowns_column = 4
         #self._total_morphs_column = 5
         #self._total_known_column = 6
         #self._total_learning_column = 7
         #self._total_unknowns_column = 8
-        self._number_of_columns = 5
+        self._number_of_columns = 6
 
         #self._morphemizers: list[Morphemizer] = morphemizer.get_all_morphemizers()
         #self._populate_morphemizers()
@@ -86,6 +87,8 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
         table.setColumnWidth(self._known_column, 90)
         table.setColumnWidth(self._learning_column, 90)
         table.setColumnWidth(self._unknowns_column, 90)
+        table.setColumnWidth(self._missing_column, 90)
+
 
         table_horizontal_headers: QHeaderView | None = table.horizontalHeader()
         assert table_horizontal_headers is not None
@@ -140,7 +143,8 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
         am_config = AnkiMorphsConfig()
         am_db = AnkiMorphsDB()
 
-        default_bins = Bins([(1,1000),(501,1000),(1001,2000),(2001,3000)])
+        default_bins = Bins([(1,500),(501,1000),(1001,2000),(2001,3000),
+                             (3001,4000),(4001,5000),(5001,10000),(60000,70000)])
         reports = get_progress_reports(am_config, am_db, default_bins)
         self._populate_tables(reports)
 
@@ -155,8 +159,14 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
         self.ui.percentTableWidget.setRowCount(len(reports))
 
         for row, report in enumerate(reports):
-            self._populate_numerical_table(report, row)
-            self._populate_percent_table(report, row)
+            if report.get_total_morphs() == 0:
+                self.ui.numericalTableWidget.setRowCount(row)
+                self.ui.percentTableWidget.setRowCount(row)
+                raise NoMorphsInPriorityRangeException(report.min_priority,
+                    report.max_priority)
+            else:
+                self._populate_numerical_table(report, row)
+                self._populate_percent_table(report, row)
 
 
 
@@ -164,19 +174,26 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
 
         known_percent = round(report.get_total_known()/report.get_total_morphs()*100,1)
         learning_percent = round(report.get_total_learning()/report.get_total_morphs()*100,1)
-        unknowns_percent = round(100 - known_percent - learning_percent,1) 
+        unknowns_percent = round(report.get_total_unknowns()/report.get_total_morphs()*100,1)
+
+        # Eliminates any possiblity of strange rounding 
+        missing_percent = round(100 - known_percent - learning_percent - unknowns_percent,1) 
 
         morph_priorities_item = QTableWidgetItem(f"{report.min_priority}-{report.max_priority}")
         total_morphs_item = QTableWidgetIntegerItem(report.get_total_morphs())
         known_item = QTableWidgetIntegerItem(report.get_total_known())
         learning_item = QTableWidgetIntegerItem(report.get_total_learning())
         unknowns_item = QTableWidgetIntegerItem(report.get_total_unknowns())
+        missing_item = QTableWidgetIntegerItem(report.get_total_missing())
+
 
         morph_priorities_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         total_morphs_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         known_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         learning_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         unknowns_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        missing_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
 
         self.ui.numericalTableWidget.setItem(
             row, self._morph_priorities_column, morph_priorities_item
@@ -192,25 +209,35 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
         )
         self.ui.numericalTableWidget.setItem(
             row, self._unknowns_column, unknowns_item
+        )
+        self.ui.numericalTableWidget.setItem(
+            row, self._missing_column, missing_item
         )
 
     def _populate_percent_table(self, report: ProgressReport, row: int) -> None:
 
         known_percent = round(report.get_total_known()/report.get_total_morphs()*100,1)
         learning_percent = round(report.get_total_learning()/report.get_total_morphs()*100,1)
-        unknowns_percent = round(100 - known_percent - learning_percent,1) # Avoids rounding errors
+        unknowns_percent = round(report.get_total_unknowns()/report.get_total_morphs()*100,1)
+
+        # Eliminates any possiblity of strange rounding 
+        missing_percent = round(100 - known_percent - learning_percent - unknowns_percent,1) 
 
         morph_priorities_item = QTableWidgetItem(f"{report.min_priority}-{report.max_priority}")
         total_morphs_item = QTableWidgetIntegerItem(report.get_total_morphs())
         known_item = QTableWidgetPercentItem(known_percent)
         learning_item = QTableWidgetPercentItem(learning_percent)
         unknowns_item = QTableWidgetPercentItem(unknowns_percent)
+        missing_item = QTableWidgetPercentItem(missing_percent)
+
 
         morph_priorities_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         total_morphs_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         known_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         learning_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         unknowns_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        missing_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
 
         self.ui.percentTableWidget.setItem(
             row, self._morph_priorities_column, morph_priorities_item
@@ -226,6 +253,9 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
         )
         self.ui.percentTableWidget.setItem(
             row, self._unknowns_column, unknowns_item
+        )
+        self.ui.percentTableWidget.setItem(
+            row, self._missing_column, missing_item
         )
 
     def closeWithCallback(  # pylint:disable=invalid-name
@@ -251,7 +281,7 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
 
     def _on_failure(
         self,
-        error: Exception | CancelledOperationException,
+        error: Exception | CancelledOperationException | NoMorphsInPriorityRangeException,
     ) -> None:
         # This function runs on the main thread.
         assert mw is not None
@@ -260,6 +290,9 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
 
         if isinstance(error, CancelledOperationException):
             tooltip("Cancelled progress report calculation", parent=self)
+        elif isinstance(error, NoMorphsInPriorityRangeException):
+             tooltip(f"No morphs in priority range {error.min_priority}-{error.max_priority}", 
+                    parent=self)
         else:
             raise error
 

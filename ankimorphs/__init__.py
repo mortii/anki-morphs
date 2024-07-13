@@ -564,7 +564,7 @@ def create_generators_dialog_action(am_config: AnkiMorphsConfig) -> QAction:
     return action
 
 def create_progress_dialog_action(am_config: AnkiMorphsConfig) -> QAction:
-    action = QAction("&Progress", mw)
+    action = QAction("&Progress Report", mw)
     action.setShortcut(am_config.shortcut_progress)
     action.triggered.connect(
         partial(

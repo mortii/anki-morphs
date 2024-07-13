@@ -66,6 +66,7 @@ class ProgressReport:
         self.unique_known: set[str] = set()
         self.unique_learning: set[str] = set()
         self.unique_unknowns: set[str] = set()
+        self.unique_missing: set[str] = set()
 
     def get_total_known(self) -> int:
         return len(self.unique_known)
@@ -75,58 +76,85 @@ class ProgressReport:
     
     def get_total_unknowns(self) -> int:
         return len(self.unique_unknowns)
+
+    def get_total_missing(self) -> int:
+        return len(self.unique_missing)
+    
     def get_total_morphs(self) -> int:
         return self.get_total_known() + self.get_total_learning() + \
-               self.get_total_unknowns()
+               self.get_total_unknowns() + self.get_total_missing()
 
 
 def _update_progress_report(
     progress_report: ProgressReport,
     morph: str,
-    learning_status: str
+    morph_status: str
 ) -> None:
 
-    if learning_status == "unknown":
-        progress_report.unique_unknowns.add(morph)
-    elif learning_status == "learning":
-        progress_report.unique_learning.add(morph)
-    elif learning_status == "known":
+    if morph_status == "known":
         progress_report.unique_known.add(morph)
+    elif morph_status == "learning":
+        progress_report.unique_learning.add(morph)
+    elif morph_status == "unknown":
+        progress_report.unique_unknowns.add(morph)
+    elif morph_status == "missing":
+        progress_report.unique_missing.add(morph)
     else:
         raise  
 
-# I may want to pass bins into this function?
 def get_progress_reports(
         am_config: AnkiMorphsConfig, am_db: AnkiMorphsDB, bins: Bins 
 ) -> list[ProgressReport]:
     
     reports = []
-
-    # To start, let's just calculate for all enabled filters.
     read_enabled_config_filters: list[AnkiMorphsConfigFilter] = (
         ankimorphs_config.get_read_enabled_filters()
     )
 
+    morph_learning_statues: dict[str,str]
+    if am_config.evaluate_morph_lemma:
+        morph_learning_statuses = am_db.get_morph_lemmas_learning_statuses()
+    else:
+        morph_learning_statuses = am_db.get_morph_inflections_learning_statuses()
+
+
+    # For now, do calculation only for enabled filters.
     for config_filter in read_enabled_config_filters:
 
-        morph_priorities: dict[str, int] = _get_morph_priority(
+        total_morph_priorities: dict[str, int] = _get_morph_priority(
             am_db, am_config, config_filter
         )
 
         for min_priority, max_priority in bins.indexes:
+            
             report = ProgressReport(min_priority,max_priority,config_filter)
 
-            morph_status = am_db.get_morph_lemmas_learning_statuses()
-            for morph in morph_status:
-                key = morph + morph
-                if key not in morph_priorities:
-                    continue
-                elif  morph_priorities[key] >= min_priority and \
-                      morph_priorities[key] <= max_priority:
-                    _update_progress_report(report, morph, morph_status[morph])
+            morph_priorities = _get_morph_priorities_subset(total_morph_priorities, 
+                min_priority, max_priority)
+
+            for morph in morph_priorities:
+                if am_config.evaluate_morph_lemma:
+                    morph = morph[:len(morph)//2] # expect morph=lemma+lemma
+
+                morph_status = 'missing'
+                if morph in morph_learning_statuses: # if the morph is in the database
+                    morph_status = morph_learning_statuses[morph]
+
+                _update_progress_report(report, morph, morph_status)
+            
             reports.append(report)
 
     return reports
+
+
+def _get_morph_priorities_subset(
+        morph_priorities: dict[str,int], min_priority: int, max_priority: int
+) -> dict[str,int]:
+    def is_in_range(item):
+        _, priority = item
+        return priority >= min_priority and priority <= max_priority
+
+    return dict(filter(is_in_range, morph_priorities.items()))
 
 
 
