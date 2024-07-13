@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1035</width>
-    <height>600</height>
+    <width>792</width>
+    <height>607</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,86 +20,6 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout">
-          <item>
-           <widget class="QPushButton" name="selectFolderPushButton">
-            <property name="text">
-             <string>Select Folder</string>
-            </property>
-           </widget>
-          </item>
-          <item alignment="Qt::AlignHCenter">
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Morphemizer:</string>
-            </property>
-           </widget>
-          </item>
-          <item alignment="Qt::AlignHCenter">
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>File formats:</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <widget class="QLineEdit" name="inputDirLineEdit"/>
-          </item>
-          <item>
-           <widget class="QComboBox" name="morphemizerComboBox"/>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <item>
-             <widget class="QCheckBox" name="txtFilesCheckBox">
-              <property name="text">
-               <string>.txt</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="srtFilesCheckBox">
-              <property name="text">
-               <string>.srt</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="vttFilesCheckBox">
-              <property name="text">
-               <string>.vtt</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="mdFilesCheckBox">
-              <property name="text">
-               <string>.md</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </item>
-        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <property name="topMargin">
            <number>0</number>
@@ -108,7 +28,7 @@
            <number>0</number>
           </property>
           <item alignment="Qt::AlignTop">
-           <widget class="QPushButton" name="loadFilesPushButton">
+           <widget class="QPushButton" name="calculateProgressPushButton">
             <property name="minimumSize">
              <size>
               <width>0</width>
@@ -116,8 +36,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Load
-Files</string>
+             <string>Calculate Progress</string>
             </property>
            </widget>
           </item>
@@ -214,66 +133,6 @@ Files</string>
           </item>
          </layout>
         </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_7">
-          <property name="spacing">
-           <number>15</number>
-          </property>
-          <property name="topMargin">
-           <number>20</number>
-          </property>
-          <property name="bottomMargin">
-           <number>20</number>
-          </property>
-          <item>
-           <spacer name="horizontalSpacer_4">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="generateReportPushButton">
-            <property name="text">
-             <string>Generate Readability Report</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="generateFrequencyFilePushButton">
-            <property name="text">
-             <string>Generate Frequency File</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="generateStudyPlanPushButton">
-            <property name="text">
-             <string>Generate Study Plan</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
        </layout>
       </item>
       <item>
@@ -290,55 +149,17 @@ Files</string>
            <widget class="QTableWidget" name="numericalTableWidget">
             <column>
              <property name="text">
-              <string>File</string>
+              <string>Priority Range</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Unique
-Morphs</string>
+              <string>Total Known</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Unique 
-Known</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Unique
-Learning</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Unique
-Unknown</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Total
-Morphs</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Total
-Known</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Total
-Learning</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Total
-Unknown</string>
+              <string>Total Unknown</string>
              </property>
             </column>
            </widget>

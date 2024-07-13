@@ -16,11 +16,11 @@ from ..text_preprocessing import (
     slim_round_brackets_regexp,
     square_brackets_regex,
 )
-from ..ui.generators_window_ui import Ui_GeneratorsWindow
+from ..ui.progress_window_ui import Ui_ProgressWindow
 
 
 class PreprocessOptions:
-    def __init__(self, ui: Ui_GeneratorsWindow):
+    def __init__(self, ui: Ui_ProgressWindow):
         self.filter_square_brackets: bool = ui.squareBracketsCheckBox.isChecked()
         self.filter_round_brackets: bool = ui.roundBracketsCheckBox.isChecked()
         self.filter_slim_round_brackets: bool = ui.slimRoundBracketsCheckBox.isChecked()

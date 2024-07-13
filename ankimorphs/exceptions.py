@@ -41,6 +41,13 @@ class FrequencyFileNotFoundException(Exception):
         self.path = path
 
 
+class InvalidBinIndexException(Exception):
+    """Invalid indexes used to construct Bins"""
+
+    def __init(self, invalid_bin_index : tuple[int,int]):
+        self.invalid_bin_index = invalid_bin_index
+
+
 class FrequencyFileMalformedException(Exception):
     """Selected frequency file is malformed in some way"""
 
