@@ -53,42 +53,61 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
 
         #self._input_files: list[Path] = []
 
-        self._morph_priorities_column = 0
-        self._total_morphs_column = 1
-        self._known_column = 2
-        self._learning_column = 3
-        self._unknowns_column = 4
-        self._missing_column = 5
-        #self._unique_unknowns_column = 4
-        #self._total_morphs_column = 5
-        #self._total_known_column = 6
-        #self._total_learning_column = 7
-        #self._total_unknowns_column = 8
-        self._number_of_columns = 6
+        self._columns = {}
+        # For all tables
+        self._columns['morph_priorities'] = 0
+        # For numerical and percentage tables
+        self._columns['total_morphs'] = 1
+        self._columns['known'] = 2
+        self._columns['learning'] = 3
+        self._columns['unknowns'] = 4
+        self._columns['missing'] = 5
+        # For morph lists
+        self._columns['lemma'] = 1
+        self._columns['inflection'] = 2
+        self._columns['status'] = 3
 
-        #self._morphemizers: list[Morphemizer] = morphemizer.get_all_morphemizers()
-        #self._populate_morphemizers()
-        #self._setup_checkboxes()
-        #self._input_dir_root: Path
+        self.num_numerical_percent_columns = 6
+        self.num_morph_list_columns = 4
 
-        self._setup_table(self.ui.numericalTableWidget)
-        self._setup_table(self.ui.percentTableWidget)
+        self._setup_numerical_percent_table(self.ui.numericalTableWidget)
+        self._setup_numerical_percent_table(self.ui.percentTableWidget)
+        self._setup_morph_list_table(self.ui.morphListTableWidget)
         self._setup_buttons()
+        self._setup_checkboxes()
 
         self.show()
 
-    def _setup_table(self, table: QTableWidget) -> None:
+    def _setup_numerical_percent_table(self, table: QTableWidget) -> None:
         table.setAlternatingRowColors(True)
         table.setSortingEnabled(False)
-        table.setColumnCount(self._number_of_columns)
+        table.setColumnCount(self.num_numerical_percent_columns)
 
-        table.setColumnWidth(self._morph_priorities_column, 200)
-        table.setColumnWidth(self._total_morphs_column, 90)
-        table.setColumnWidth(self._known_column, 90)
-        table.setColumnWidth(self._learning_column, 90)
-        table.setColumnWidth(self._unknowns_column, 90)
-        table.setColumnWidth(self._missing_column, 90)
+        table.setColumnWidth(self._columns['morph_priorities'], 200)
+        table.setColumnWidth(self._columns['total_morphs'], 90)
+        table.setColumnWidth(self._columns['known'], 90)
+        table.setColumnWidth(self._columns['learning'], 90)
+        table.setColumnWidth(self._columns['unknowns'], 90)
+        table.setColumnWidth(self._columns['missing'], 90)
 
+        table_horizontal_headers: QHeaderView | None = table.horizontalHeader()
+        assert table_horizontal_headers is not None
+        table_horizontal_headers.setSectionsMovable(True)
+
+        # disables manual editing of the table
+        table.setEditTriggers(
+            QAbstractItemView.EditTrigger.NoEditTriggers
+        )
+
+    def _setup_morph_list_table(self, table: QTableWidget) -> None:
+        table.setAlternatingRowColors(True)
+        table.setSortingEnabled(False)
+        table.setColumnCount(self.num_morph_list_columns)
+
+        table.setColumnWidth(self._columns['morph_priorities'], 200)
+        table.setColumnWidth(self._columns['lemma'], 90)
+        table.setColumnWidth(self._columns['inflection'], 90)
+        table.setColumnWidth(self._columns['status'], 90)
 
         table_horizontal_headers: QHeaderView | None = table.horizontalHeader()
         assert table_horizontal_headers is not None
@@ -115,6 +134,17 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
         #self.ui.generateFrequencyFilePushButton.setDisabled(True)
         #self.ui.generateStudyPlanPushButton.setDisabled(True)
 
+    def _setup_checkboxes(self) -> None:
+        self.ui.cumulativeCheckBox.setChecked(False)
+        am_config = AnkiMorphsConfig()
+        if am_config.evaluate_morph_lemma:
+            self.ui.lemmaRadioButton.setChecked(True)
+            self.ui.inflectionRadioButton.setChecked(False)
+        else:
+            self.ui.lemmaRadioButton.setChecked(False)
+            self.ui.inflectionRadioButton.setChecked(True)
+
+
     def _on_calculate_progress_button_clicked(self) -> None:
         # calculate progress stats and populate table in the background, 
         # since it could take a long time to complete
@@ -136,6 +166,31 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
     #    self.ui.generateFrequencyFilePushButton.setEnabled(True)
     #    self.ui.generateStudyPlanPushButton.setEnabled(True)
 
+    def _get_selected_bins(self) -> Bins:
+
+        min_priority = self.ui.minPrioritySpinBox.value()
+        original_min_priority = min_priority
+        max_priority = self.ui.maxPrioritySpinBox.value()
+        bin_size = self.ui.binSizeSpinBox.value()
+        use_cumulative_statistics = self.ui.cumulativeCheckBox.isChecked() 
+
+        spec = []
+        while min_priority+bin_size-1 < max_priority:
+            if use_cumulative_statistics:
+                spec.append((original_min_priority,min_priority+bin_size-1))
+            else:
+                spec.append((min_priority,min_priority+bin_size-1))
+            
+            min_priority = min_priority+bin_size
+
+        if use_cumulative_statistics:
+            spec.append((original_min_priority,max_priority))
+        else:
+            spec.append((min_priority,max_priority))
+
+        return Bins(spec)
+
+
     def _background_calculate_progress_and_populate_tables(self) -> None:
         assert mw is not None
         assert mw.progress is not None
@@ -143,9 +198,10 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
         am_config = AnkiMorphsConfig()
         am_db = AnkiMorphsDB()
 
-        default_bins = Bins([(1,500),(501,1000),(1001,2000),(2001,3000),
-                             (3001,4000),(4001,5000),(5001,10000),(60000,70000)])
-        reports = get_progress_reports(am_config, am_db, default_bins)
+
+        bins = self._get_selected_bins()
+
+        reports = get_progress_reports(am_config, am_db, bins)
         self._populate_tables(reports)
 
     def _populate_tables(self, reports: list[ProgressReport]) -> None:
@@ -196,22 +252,22 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
 
 
         self.ui.numericalTableWidget.setItem(
-            row, self._morph_priorities_column, morph_priorities_item
+            row, self._columns['morph_priorities'], morph_priorities_item
         )
         self.ui.numericalTableWidget.setItem(
-            row, self._total_morphs_column, total_morphs_item
+            row, self._columns['total_morphs'], total_morphs_item
         )
         self.ui.numericalTableWidget.setItem(
-            row, self._known_column, known_item
+            row, self._columns['known'], known_item
         )
         self.ui.numericalTableWidget.setItem(
-            row, self._learning_column, learning_item
+            row, self._columns['learning'], learning_item
         )
         self.ui.numericalTableWidget.setItem(
-            row, self._unknowns_column, unknowns_item
+            row, self._columns['unknowns'], unknowns_item
         )
         self.ui.numericalTableWidget.setItem(
-            row, self._missing_column, missing_item
+            row, self._columns['missing'], missing_item
         )
 
     def _populate_percent_table(self, report: ProgressReport, row: int) -> None:
@@ -240,23 +296,24 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
 
 
         self.ui.percentTableWidget.setItem(
-            row, self._morph_priorities_column, morph_priorities_item
+            row, self._columns['morph_priorities'], morph_priorities_item
         )
         self.ui.percentTableWidget.setItem(
-            row, self._total_morphs_column, total_morphs_item
+            row, self._columns['total_morphs'], total_morphs_item
         )
         self.ui.percentTableWidget.setItem(
-            row, self._known_column, known_item
+            row, self._columns['known'], known_item
         )
         self.ui.percentTableWidget.setItem(
-            row, self._learning_column, learning_item
+            row, self._columns['learning'], learning_item
         )
         self.ui.percentTableWidget.setItem(
-            row, self._unknowns_column, unknowns_item
+            row, self._columns['unknowns'], unknowns_item
         )
         self.ui.percentTableWidget.setItem(
-            row, self._missing_column, missing_item
+            row, self._columns['missing'], missing_item
         )
+
 
     def closeWithCallback(  # pylint:disable=invalid-name
         self, callback: Callable[[], None]
