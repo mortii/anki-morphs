@@ -11,16 +11,6 @@ from ..morpheme import MorphOccurrence
 from .progression_output_dialog import OutputOptions
 from ..recalc.morph_priority_utils import _get_morph_priority
 
-
-# We want a function that takes in bins (and maybe a config and db?)
-# and returns a some sort of progress report.
-# This function should load the database and the morph priorities, 
-# bin them, then do a calculation
-
-# thinking a bit more about architecture.
-# Each ProgressReport has an associated bin_range AND config. 
-# These can be added together as needed...
-
 class Bins:
     """Stores bins for morph priority."""
     def __init__(
@@ -38,20 +28,9 @@ class Bins:
 
 
 class ProgressReport:
-    #__slots__ = ( # What are these?
-    #    "unique_morphs",
-    #    "unique_known",
-    #    "unique_learning",
-    #    "unique_unknowns",
-    #    "total_morphs",
-    #    "total_known",
-    #    "total_learning",
-    #    "total_unknowns",
-    #)
 
     def __init__(
-        self, min_priority: int, max_priority: int, 
-        config_filter: AnkiMorphsConfigFilter
+        self, min_priority: int, max_priority: int
     ) -> None:
         
         if min_priority < 1 or max_priority < min_priority:
@@ -59,10 +38,9 @@ class ProgressReport:
         
         self.min_priority = min_priority
         self.max_priority = max_priority
-        self.config_filter = config_filter
 
         # Ideally, these would be sets of Morphemes. However, I haven't
-        # yet figured out if these objects are really available...
+        # yet figured out if these objects are easily accessible. 
         self.unique_known: set[str] = set()
         self.unique_learning: set[str] = set()
         self.unique_unknowns: set[str] = set()
@@ -103,46 +81,32 @@ def _update_progress_report(
         raise  
 
 def get_progress_reports(
-        am_config: AnkiMorphsConfig, am_db: AnkiMorphsDB, bins: Bins 
+        am_config: AnkiMorphsConfig, am_db: AnkiMorphsDB, bins: Bins, 
+        morph_priorities: dict[str,int], only_lemma_priorities: bool
 ) -> list[ProgressReport]:
     
     reports = []
-    read_enabled_config_filters: list[AnkiMorphsConfigFilter] = (
-        ankimorphs_config.get_read_enabled_filters()
-    )
 
-    morph_learning_statues: dict[str,str]
-    if am_config.evaluate_morph_lemma:
+    morph_learning_statuses: dict[str,str]
+    if only_lemma_priorities:
         morph_learning_statuses = am_db.get_morph_lemmas_learning_statuses()
     else:
         morph_learning_statuses = am_db.get_morph_inflections_learning_statuses()
 
-
-    # For now, do calculation only for enabled filters.
-    for config_filter in read_enabled_config_filters:
-
-        total_morph_priorities: dict[str, int] = _get_morph_priority(
-            am_db, am_config, config_filter
-        )
-
-        for min_priority, max_priority in bins.indexes:
-            
-            report = ProgressReport(min_priority,max_priority,config_filter)
-
-            morph_priorities = _get_morph_priorities_subset(total_morph_priorities, 
-                min_priority, max_priority)
-
-            for morph in morph_priorities:
-                if am_config.evaluate_morph_lemma:
-                    morph = morph[:len(morph)//2] # expect morph=lemma+lemma
-
-                morph_status = 'missing'
-                if morph in morph_learning_statuses: # if the morph is in the database
-                    morph_status = morph_learning_statuses[morph]
-
-                _update_progress_report(report, morph, morph_status)
-            
-            reports.append(report)
+    for min_priority, max_priority in bins.indexes:
+        
+        report = ProgressReport(min_priority,max_priority)
+        morph_priorities_subset = _get_morph_priorities_subset(morph_priorities, 
+            min_priority, max_priority)
+        for morph in morph_priorities_subset:
+            if only_lemma_priorities:
+                morph = morph[:len(morph)//2] # expect morph=lemma+lemma
+            morph_status = 'missing'
+            if morph in morph_learning_statuses: # if the morph is in the database
+                morph_status = morph_learning_statuses[morph]
+            _update_progress_report(report, morph, morph_status)
+        
+        reports.append(report)
 
     return reports
 

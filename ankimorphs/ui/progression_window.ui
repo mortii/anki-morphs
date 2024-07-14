@@ -26,6 +26,42 @@
          <number>10</number>
         </property>
         <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QLabel" name="label_6">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Morph Priority</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="morphPriorityCBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="currentIndex">
+             <number>-1</number>
+            </property>
+            <property name="sizeAdjustPolicy">
+             <enum>QComboBox::AdjustToContents</enum>
+            </property>
+            <property name="placeholderText">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -71,6 +107,9 @@
                       <bold>false</bold>
                      </font>
                     </property>
+                    <property name="toolTip">
+                     <string>Changeable in settings</string>
+                    </property>
                     <property name="text">
                      <string>Morph evaluation mode:</string>
                     </property>
@@ -79,10 +118,10 @@
                   <item>
                    <widget class="QRadioButton" name="lemmaRadioButton">
                     <property name="enabled">
-                     <bool>false</bool>
+                     <bool>true</bool>
                     </property>
                     <property name="toolTip">
-                     <string/>
+                     <string>Changeable in settings</string>
                     </property>
                     <property name="text">
                      <string>Lemma</string>
@@ -92,7 +131,10 @@
                   <item>
                    <widget class="QRadioButton" name="inflectionRadioButton">
                     <property name="enabled">
-                     <bool>false</bool>
+                     <bool>true</bool>
+                    </property>
+                    <property name="toolTip">
+                     <string>Changeable in settings</string>
                     </property>
                     <property name="text">
                      <string>Inflection</string>
@@ -304,7 +346,7 @@ Report</string>
          </sizepolicy>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">

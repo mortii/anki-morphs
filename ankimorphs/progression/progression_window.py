@@ -24,8 +24,8 @@ from aqt.utils import tooltip
 from .. import ankimorphs_globals
 from ..ankimorphs_config import AnkiMorphsConfig
 from ..ankimorphs_db import AnkiMorphsDB
-from ..exceptions import CancelledOperationException, EmptyFileSelectionException, \
-NoMorphsInPriorityRangeException
+from ..exceptions import CancelledOperationException, \
+NoMorphsInPriorityRangeException, FrequencyFileMalformedException
 from ..morpheme import MorphOccurrence
 from ..morphemizers import morphemizer, spacy_wrapper
 from ..morphemizers.morphemizer import Morphemizer, SpacyMorphemizer
@@ -35,7 +35,10 @@ from . import progression_text_processing, progression_utils, readability_report
 from .progression_output_dialog import GeneratorOutputDialog, OutputOptions
 from .progression_text_processing import PreprocessOptions
 from .readability_report_utils import FileMorphsStats
-from .progression_utils import get_progress_reports, Bins
+from .progression_utils import Bins, get_progress_reports
+from ..settings.settings_note_filters_tab import NoteFiltersTab
+from ..recalc.morph_priority_utils import _get_morph_priority, _load_morph_priorities_from_file
+
 
 
 class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attributes
@@ -75,6 +78,7 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         self._setup_morph_list_table(self.ui.morphListTableWidget)
         self._setup_buttons()
         self._setup_checkboxes()
+        self._setup_morph_priority_cbox()
 
         self.show()
 
@@ -144,6 +148,13 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
             self.ui.lemmaRadioButton.setChecked(False)
             self.ui.inflectionRadioButton.setChecked(True)
 
+    def _setup_morph_priority_cbox(self) -> None:
+        frequency_files: list[str] = [
+            ankimorphs_globals.COLLECTION_FREQUENCY_OPTION,
+        ]
+        frequency_files += NoteFiltersTab._get_frequency_files()
+        self.ui.morphPriorityCBox.addItems(frequency_files)
+
 
     def _on_calculate_progress_button_clicked(self) -> None:
         # calculate progress stats and populate table in the background, 
@@ -190,6 +201,22 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
 
         return Bins(spec)
 
+    def _get_selected_morph_priorities(self) -> dict[str,str]:
+
+        am_db = AnkiMorphsDB()
+
+        if self.ui.morphPriorityCBox.currentIndex() == 0: # Collection frequency
+            return am_db.get_morph_priorities_from_collection(True)
+        #Else
+        return _load_morph_priorities_from_file(
+            frequency_file_name=self.ui.morphPriorityCBox.currentText(),
+            only_lemma_priorities=self._is_lemma_priority_selected(),
+        )
+
+    def _is_lemma_priority_selected(self) -> bool:
+
+        return self.ui.lemmaRadioButton.isChecked()
+
 
     def _background_calculate_progress_and_populate_tables(self) -> None:
         assert mw is not None
@@ -198,10 +225,11 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         am_config = AnkiMorphsConfig()
         am_db = AnkiMorphsDB()
 
-
         bins = self._get_selected_bins()
 
-        reports = get_progress_reports(am_config, am_db, bins)
+        morph_priorities = self._get_selected_morph_priorities()
+        reports = get_progress_reports(am_config, am_db, bins, morph_priorities, 
+                                       self._is_lemma_priority_selected())
         self._populate_tables(reports)
 
     def _populate_tables(self, reports: list[ProgressReport]) -> None:
@@ -338,7 +366,8 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
 
     def _on_failure(
         self,
-        error: Exception | CancelledOperationException | NoMorphsInPriorityRangeException,
+        error: Exception | CancelledOperationException | NoMorphsInPriorityRangeException | 
+               FrequencyFileMalformedException,
     ) -> None:
         # This function runs on the main thread.
         assert mw is not None
@@ -350,6 +379,10 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         elif isinstance(error, NoMorphsInPriorityRangeException):
              tooltip(f"No morphs in priority range {error.min_priority}-{error.max_priority}", 
                     parent=self)
+        elif isinstance(error, FrequencyFileMalformedException):
+             tooltip(error.reason, 
+                    parent=self)
+
         else:
             raise error
 

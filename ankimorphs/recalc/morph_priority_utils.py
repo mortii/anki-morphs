@@ -48,7 +48,9 @@ def _get_morph_priority(
     am_config_filter: AnkiMorphsConfigFilter,
 ) -> dict[str, int]:
     if am_config_filter.morph_priority_selection == am_globals.COLLECTION_FREQUENCY_OPTION:  # fmt: skip
-        return am_db.get_morph_priorities_from_collection(am_config)
+        return am_db.get_morph_priorities_from_collection(
+            only_lemma_priorities=am_config.evaluate_morph_lemma
+        )
 
     return _load_morph_priorities_from_file(
         frequency_file_name=am_config_filter.morph_priority_selection,
