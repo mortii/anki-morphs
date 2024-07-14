@@ -8,7 +8,7 @@ from .. import ankimorphs_config
 from .. import ankimorphs_globals as am_globals
 from ..ankimorphs_db import AnkiMorphsDB
 from ..morpheme import MorphOccurrence
-from .progress_output_dialog import OutputOptions
+from .progression_output_dialog import OutputOptions
 from ..recalc.morph_priority_utils import _get_morph_priority
 
 

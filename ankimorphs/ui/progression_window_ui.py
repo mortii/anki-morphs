@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'progress_window.ui'
+# Form implementation generated from reading ui file 'progression_window.ui'
 #
 # Created by: PyQt6 UI code generator 6.7.0
 #
@@ -9,11 +9,11 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
-class Ui_ProgressWindow(object):
-    def setupUi(self, ProgressWindow):
-        ProgressWindow.setObjectName("ProgressWindow")
-        ProgressWindow.resize(748, 467)
-        self.centralwidget = QtWidgets.QWidget(parent=ProgressWindow)
+class Ui_ProgressionWindow(object):
+    def setupUi(self, ProgressionWindow):
+        ProgressionWindow.setObjectName("ProgressionWindow")
+        ProgressionWindow.resize(748, 467)
+        self.centralwidget = QtWidgets.QWidget(parent=ProgressionWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.centralwidget)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
@@ -214,59 +214,59 @@ class Ui_ProgressWindow(object):
         self.qTabWidget.addTab(self.tab_3, "")
         self.verticalLayout_4.addWidget(self.qTabWidget)
         self.verticalLayout_5.addLayout(self.verticalLayout_4)
-        ProgressWindow.setCentralWidget(self.centralwidget)
+        ProgressionWindow.setCentralWidget(self.centralwidget)
 
-        self.retranslateUi(ProgressWindow)
+        self.retranslateUi(ProgressionWindow)
         self.qTabWidget.setCurrentIndex(1)
-        QtCore.QMetaObject.connectSlotsByName(ProgressWindow)
+        QtCore.QMetaObject.connectSlotsByName(ProgressionWindow)
 
-    def retranslateUi(self, ProgressWindow):
+    def retranslateUi(self, ProgressionWindow):
         _translate = QtCore.QCoreApplication.translate
-        ProgressWindow.setWindowTitle(_translate("ProgressWindow", "Progress Report"))
-        self.label_3.setText(_translate("ProgressWindow", "Options"))
-        self.cumulativeCheckBox.setText(_translate("ProgressWindow", "Report cumulative statistics"))
-        self.label.setText(_translate("ProgressWindow", "Morph evaluation mode:"))
-        self.lemmaRadioButton.setText(_translate("ProgressWindow", "Lemma"))
-        self.inflectionRadioButton.setText(_translate("ProgressWindow", "Inflection"))
-        self.label_2.setText(_translate("ProgressWindow", "Priority range:"))
-        self.label_4.setText(_translate("ProgressWindow", "to"))
-        self.label_5.setText(_translate("ProgressWindow", "Bin size:"))
-        self.calculateProgressPushButton.setText(_translate("ProgressWindow", "Calculate\n"
+        ProgressionWindow.setWindowTitle(_translate("ProgressionWindow", "Progression"))
+        self.label_3.setText(_translate("ProgressionWindow", "Options"))
+        self.cumulativeCheckBox.setText(_translate("ProgressionWindow", "Report cumulative statistics"))
+        self.label.setText(_translate("ProgressionWindow", "Morph evaluation mode:"))
+        self.lemmaRadioButton.setText(_translate("ProgressionWindow", "Lemma"))
+        self.inflectionRadioButton.setText(_translate("ProgressionWindow", "Inflection"))
+        self.label_2.setText(_translate("ProgressionWindow", "Priority range:"))
+        self.label_4.setText(_translate("ProgressionWindow", "to"))
+        self.label_5.setText(_translate("ProgressionWindow", "Bin size:"))
+        self.calculateProgressPushButton.setText(_translate("ProgressionWindow", "Calculate\n"
 "Progress \n"
 "Report"))
-        self.exportMorphListPushButton.setText(_translate("ProgressWindow", "Export Morph List"))
+        self.exportMorphListPushButton.setText(_translate("ProgressionWindow", "Export Morph List"))
         item = self.numericalTableWidget.horizontalHeaderItem(0)
-        item.setText(_translate("ProgressWindow", "Priority Range"))
+        item.setText(_translate("ProgressionWindow", "Priority Range"))
         item = self.numericalTableWidget.horizontalHeaderItem(1)
-        item.setText(_translate("ProgressWindow", "Unique Morphs"))
+        item.setText(_translate("ProgressionWindow", "Unique Morphs"))
         item = self.numericalTableWidget.horizontalHeaderItem(2)
-        item.setText(_translate("ProgressWindow", "Total Known"))
+        item.setText(_translate("ProgressionWindow", "Total Known"))
         item = self.numericalTableWidget.horizontalHeaderItem(3)
-        item.setText(_translate("ProgressWindow", "Total Learning"))
+        item.setText(_translate("ProgressionWindow", "Total Learning"))
         item = self.numericalTableWidget.horizontalHeaderItem(4)
-        item.setText(_translate("ProgressWindow", "Total Unknown"))
+        item.setText(_translate("ProgressionWindow", "Total Unknown"))
         item = self.numericalTableWidget.horizontalHeaderItem(5)
-        item.setText(_translate("ProgressWindow", "Total Missing"))
-        self.qTabWidget.setTabText(self.qTabWidget.indexOf(self.tab), _translate("ProgressWindow", "Numerical"))
+        item.setText(_translate("ProgressionWindow", "Total Missing"))
+        self.qTabWidget.setTabText(self.qTabWidget.indexOf(self.tab), _translate("ProgressionWindow", "Numerical"))
         item = self.percentTableWidget.horizontalHeaderItem(0)
-        item.setText(_translate("ProgressWindow", "Priority Range"))
+        item.setText(_translate("ProgressionWindow", "Priority Range"))
         item = self.percentTableWidget.horizontalHeaderItem(1)
-        item.setText(_translate("ProgressWindow", "Unique Morphs"))
+        item.setText(_translate("ProgressionWindow", "Unique Morphs"))
         item = self.percentTableWidget.horizontalHeaderItem(2)
-        item.setText(_translate("ProgressWindow", "% Known"))
+        item.setText(_translate("ProgressionWindow", "% Known"))
         item = self.percentTableWidget.horizontalHeaderItem(3)
-        item.setText(_translate("ProgressWindow", "% Learning"))
+        item.setText(_translate("ProgressionWindow", "% Learning"))
         item = self.percentTableWidget.horizontalHeaderItem(4)
-        item.setText(_translate("ProgressWindow", "% Unknown"))
+        item.setText(_translate("ProgressionWindow", "% Unknown"))
         item = self.percentTableWidget.horizontalHeaderItem(5)
-        item.setText(_translate("ProgressWindow", "% Missing"))
-        self.qTabWidget.setTabText(self.qTabWidget.indexOf(self.tab_2), _translate("ProgressWindow", "Percentage"))
+        item.setText(_translate("ProgressionWindow", "% Missing"))
+        self.qTabWidget.setTabText(self.qTabWidget.indexOf(self.tab_2), _translate("ProgressionWindow", "Percentage"))
         item = self.morphListTableWidget.horizontalHeaderItem(0)
-        item.setText(_translate("ProgressWindow", "Priority"))
+        item.setText(_translate("ProgressionWindow", "Priority"))
         item = self.morphListTableWidget.horizontalHeaderItem(1)
-        item.setText(_translate("ProgressWindow", "Lemma"))
+        item.setText(_translate("ProgressionWindow", "Lemma"))
         item = self.morphListTableWidget.horizontalHeaderItem(2)
-        item.setText(_translate("ProgressWindow", "Inflection"))
+        item.setText(_translate("ProgressionWindow", "Inflection"))
         item = self.morphListTableWidget.horizontalHeaderItem(3)
-        item.setText(_translate("ProgressWindow", "Status"))
-        self.qTabWidget.setTabText(self.qTabWidget.indexOf(self.tab_3), _translate("ProgressWindow", "Morph List"))
+        item.setText(_translate("ProgressionWindow", "Status"))
+        self.qTabWidget.setTabText(self.qTabWidget.indexOf(self.tab_3), _translate("ProgressionWindow", "Morph List"))

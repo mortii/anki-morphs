@@ -74,7 +74,7 @@ class RawConfigKeys:
     SHORTCUT_LEARN_NOW = "shortcut_learn_now"
     SHORTCUT_VIEW_MORPHEMES = "shortcut_view_morphemes"
     SHORTCUT_GENERATORS = "shortcut_generators"
-    SHORTCUT_PROGRESS = "shortcut_progress"
+    SHORTCUT_PROGRESSION = "shortcut_progression"
     SHORTCUT_KNOWN_MORPHS_EXPORTER = "shortcut_known_morphs_exporter"
     SKIP_ONLY_KNOWN_MORPHS_CARDS = "skip_only_known_morphs_cards"
     SKIP_UNKNOWN_MORPH_SEEN_TODAY_CARDS = "skip_unknown_morph_seen_today_cards"
@@ -291,8 +291,8 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many
                 expected_type=str,
                 use_default=is_default,
             )
-            self.shortcut_progress: QKeySequence = self._get_key_sequence_config(
-                key=RawConfigKeys.SHORTCUT_PROGRESS,
+            self.shortcut_progression: QKeySequence = self._get_key_sequence_config(
+                key=RawConfigKeys.SHORTCUT_PROGRESSION,
                 expected_type=str,
                 use_default=is_default,
             )

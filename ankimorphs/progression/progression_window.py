@@ -30,15 +30,15 @@ from ..morpheme import MorphOccurrence
 from ..morphemizers import morphemizer, spacy_wrapper
 from ..morphemizers.morphemizer import Morphemizer, SpacyMorphemizer
 from ..table_utils import QTableWidgetIntegerItem, QTableWidgetPercentItem
-from ..ui.progress_window_ui import Ui_ProgressWindow
-from . import progress_text_processing, progress_utils, readability_report_utils
-from .progress_output_dialog import GeneratorOutputDialog, OutputOptions
-from .progress_text_processing import PreprocessOptions
+from ..ui.progression_window_ui import Ui_ProgressionWindow
+from . import progression_text_processing, progression_utils, readability_report_utils
+from .progression_output_dialog import GeneratorOutputDialog, OutputOptions
+from .progression_text_processing import PreprocessOptions
 from .readability_report_utils import FileMorphsStats
-from .progress_utils import get_progress_reports, Bins
+from .progression_utils import get_progress_reports, Bins
 
 
-class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attributes
+class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attributes
     ##############################################################################
     #                                   BASE
     ##############################################################################
@@ -48,7 +48,7 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
     ) -> None:
         super().__init__(parent)
 
-        self.ui = Ui_ProgressWindow()
+        self.ui = Ui_ProgressionWindow()
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
 
         #self._input_files: list[Path] = []
@@ -206,7 +206,7 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
 
     def _populate_tables(self, reports: list[ProgressReport]) -> None:
         
-        assert isinstance(self.ui, Ui_ProgressWindow)
+        assert isinstance(self.ui, Ui_ProgressionWindow)
 
         self.ui.numericalTableWidget.clearContents()
         self.ui.percentTableWidget.clearContents()
@@ -320,7 +320,7 @@ class ProgressWindow(QMainWindow):  # pylint:disable=too-many-instance-attribute
     ) -> None:
         # This is used by the Anki dialog manager
         self.close()
-        dialog_name = ankimorphs_globals.PROGRESS_DIALOG_NAME
+        dialog_name = ankimorphs_globals.PROGRESSION_DIALOG_NAME
         aqt.dialogs.markClosed(dialog_name)
         callback()
 
