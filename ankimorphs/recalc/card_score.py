@@ -121,16 +121,17 @@ class CardScore:
             / len(card_morph_metrics.all_morphs)
         )
 
+        all_morphs_total_priority_score = (
+            am_config.algorithm_total_priority_all_morphs
+            * card_morph_metrics.total_priority_all_morphs
+        )
         unknown_morphs_total_priority_score = (
             am_config.algorithm_total_priority_unknown_morphs
             * card_morph_metrics.total_priority_unknown_morphs
         )
+
         all_morphs_avg_priority_score = (
             am_config.algorithm_average_priority_all_morphs * all_morphs_avg_priority
-        )
-        all_morphs_total_priority_score = (
-            am_config.algorithm_total_priority_all_morphs
-            * card_morph_metrics.total_priority_all_morphs
         )
         leaning_morphs_target_difference_score = (
             am_config.algorithm_learning_morphs_target_distance
@@ -141,7 +142,7 @@ class CardScore:
             * all_morphs_target_difference
         )
 
-        _score: int = (
+        tuning: int = (
             unknown_morphs_total_priority_score
             + all_morphs_avg_priority_score
             + all_morphs_total_priority_score
@@ -149,33 +150,14 @@ class CardScore:
             + all_morphs_target_difference_score
         )
 
-        if _score >= MORPH_UNKNOWN_PENALTY:
-            # todo: add back the math lemmas
-            # Cap morph priority penalties as described in #(2.2)
-            _score = MORPH_UNKNOWN_PENALTY - 1
-
         unknown_morphs_amount_score = (
             len(card_morph_metrics.unknown_morphs) * MORPH_UNKNOWN_PENALTY
         )
-        _score += unknown_morphs_amount_score
+
+        _score = unknown_morphs_amount_score + min(tuning, MORPH_UNKNOWN_PENALTY - 1)
 
         # cap score to prevent 32-bit integer overflow
         self.score = min(_score, _DEFAULT_SCORE)
-
-        # print(f"card id: {card_id}")
-        # print(f"card_morphs_inflections: {[morph.inflection for morph in card_morphs]}")
-        # print(f"unknown_morphs: {len(unknown_morphs)}")
-        # print(f"learning_morphs: {num_learning_morphs}")
-        # print(f"unknown_morphs_amount_score: {unknown_morphs_amount_score}")
-        # print(f"unknown_morphs_total_priority_score: {unknown_morphs_total_priority_score}")
-        # print(f"all_morphs_avg_priority_score: {all_morphs_avg_priority_score}")
-        # print(f"all_morphs_total_priority_score: {all_morphs_total_priority_score}")
-        # print(
-        #     f"leaning_morphs_target_difference_score: {leaning_morphs_target_difference_score}"
-        # )
-        # print(f"all_morphs_target_difference_score: {all_morphs_target_difference_score}")
-        # print(f"score: {score}")
-        # print()
 
         # Note: we have a whitespace before the <br> tags to avoid bugs
         self.terms = f"""
@@ -186,26 +168,6 @@ class CardScore:
                 leaning_morphs_target_difference_score: {leaning_morphs_target_difference_score}, <br>
                 all_morphs_target_difference_score: {all_morphs_target_difference_score}
             """
-
-
-def _get_morph_targets_difference(
-    num_morphs: int,
-    high_target: int,
-    low_target: int,
-    coefficients_high: tuple[int, int, int],
-    coefficients_low: tuple[int, int, int],
-) -> int:
-    if num_morphs > high_target:
-        difference = abs(num_morphs - high_target)
-        a, b, c = coefficients_high
-    elif num_morphs < low_target:
-        difference = abs(num_morphs - low_target)
-        a, b, c = coefficients_low
-    else:
-        return 0
-
-    # https://www.geogebra.org/graphing/ta3eqb8y
-    return a * (difference**2) + b * difference + c
 
 
 def _get_all_morphs_target_difference(
@@ -254,3 +216,23 @@ def _get_learning_morphs_target_difference(
         coefficients_high=coefficients_high,
         coefficients_low=coefficients_low,
     )
+
+
+def _get_morph_targets_difference(
+    num_morphs: int,
+    high_target: int,
+    low_target: int,
+    coefficients_high: tuple[int, int, int],
+    coefficients_low: tuple[int, int, int],
+) -> int:
+    if num_morphs > high_target:
+        difference = abs(num_morphs - high_target)
+        a, b, c = coefficients_high
+    elif num_morphs < low_target:
+        difference = abs(num_morphs - low_target)
+        a, b, c = coefficients_low
+    else:
+        return 0
+
+    # https://www.geogebra.org/graphing/ta3eqb8y
+    return a * (difference**2) + b * difference + c
