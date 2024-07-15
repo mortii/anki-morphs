@@ -17,7 +17,7 @@ class CardMorphsMetrics:
         am_config: AnkiMorphsConfig,
         card_id: int,
         card_morph_map_cache: dict[int, list[Morpheme]],
-        morph_priorities: dict[str, int],
+        morph_priorities: dict[tuple[str, str], int],
     ) -> None:
         self.all_morphs: list[Morpheme] = []
         self.unknown_morphs: list[Morpheme] = []
@@ -38,7 +38,7 @@ class CardMorphsMetrics:
     def _process(
         self,
         am_config: AnkiMorphsConfig,
-        morph_priorities: dict[str, int],
+        morph_priorities: dict[tuple[str, str], int],
     ) -> None:
         default_morph_priority = len(morph_priorities) + 1
         learning_interval_attribute: str
@@ -59,9 +59,9 @@ class CardMorphsMetrics:
             assert sub_key is not None
 
             # this is a composite key consisting of either:
-            # - (morph.lemma + morph.lemma)
-            # - (morph.lemma + morph.inflection)
-            key = morph.lemma + sub_key
+            # - (morph.lemma, morph.lemma)
+            # - (morph.lemma, morph.inflection)
+            key = (morph.lemma, sub_key)
 
             if key in morph_priorities:
                 morph_priority = morph_priorities[key]

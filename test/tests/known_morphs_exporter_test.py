@@ -43,7 +43,6 @@ case_exporting_inflections_params = FakeEnvironmentParams(
 )
 
 
-@pytest.mark.debug
 @pytest.mark.parametrize(
     "fake_environment_fixture, only_store_lemma",
     [

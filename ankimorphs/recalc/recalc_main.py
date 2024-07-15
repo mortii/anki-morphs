@@ -182,7 +182,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
         field_name_dict: dict[str, tuple[int, FieldDict]] = model_manager.field_map(
             note_type_dict
         )
-        morph_priorities: dict[str, int] = _get_morph_priority(
+        morph_priorities: dict[tuple[str, str], int] = _get_morph_priority(
             am_db, am_config, config_filter
         )
         cards_data_dict: dict[int, AnkiMorphsCardData] = am_db.get_am_cards_data_dict(

@@ -1,13 +1,13 @@
 {
-    "manman": 0,
-    "thethe": 1,
-    "crawlcrawled": 2,
-    "crawlcrawls": 3,
-    "runran": 4,
-    "runruns": 5,
-    "stopstopped": 6,
-    "stopstops": 7,
-    "walkwalk": 8,
-    "walkwalked": 9,
-    "walkwalking": 10
+    "man|man": 0,
+    "the|the": 1,
+    "crawl|crawled": 2,
+    "crawl|crawls": 3,
+    "run|ran": 4,
+    "run|runs": 5,
+    "stop|stopped": 6,
+    "stop|stops": 7,
+    "walk|walk": 8,
+    "walk|walked": 9,
+    "walk|walking": 10
 }

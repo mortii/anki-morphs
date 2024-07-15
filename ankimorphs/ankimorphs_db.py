@@ -472,7 +472,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
     @functools.lru_cache(maxsize=131072)
     def get_morph_priorities_from_collection(
         self, only_lemma_priorities: bool
-    ) -> dict[str, int]:
+    ) -> dict[tuple[str, str], int]:
         # Sorting the morphs (ORDER BY) is crucial to avoid bugs
         morphs_query = self.con.execute(
             """
@@ -485,26 +485,23 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         intermediate_morph_list = []
 
         if only_lemma_priorities:
-            for row in morphs_query:
-                intermediate_morph_list.append(row[0] + row[0])  # lemma + lemma
+            for lemma, _ in morphs_query:
+                intermediate_morph_list.append((lemma, lemma))
         else:
-            for row in morphs_query:
-                intermediate_morph_list.append(row[0] + row[1])  # lemma + inflection
+            for lemma, inflection in morphs_query:
+                intermediate_morph_list.append((lemma, inflection))
 
-        morphs_sorted_amount: dict[str, int] = dict(
+        morphs_sorted_amount: dict[tuple[str, str], int] = dict(
             Counter(intermediate_morph_list).most_common()
         )
 
-        morph_priorities: dict[str, int] = {}
-
-        # print("local morph priorities")
+        morph_priorities: dict[tuple[str, str], int] = {}
 
         # Reverse the values, the lower the priority number is, the more it is prioritized.
         # Note: we can use a shortcut of providing the same priority (index) for both
         # the lemma and the inflection since we generate the intermediate lists from
         # scratch every recalc, so which ever ends up being used will have the correct value.
         for index, key in enumerate(morphs_sorted_amount):
-            # morphs_sorted_amount[key] = index+
             morph_priorities[key] = index
             # print(f"key: {key}, index: {index}")
 
