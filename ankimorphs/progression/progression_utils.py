@@ -82,11 +82,12 @@ def _update_progress_report(
 
 def get_progress_reports(
         am_config: AnkiMorphsConfig, am_db: AnkiMorphsDB, bins: Bins, 
-        morph_priorities: dict[str,int], only_lemma_priorities: bool
+        morph_priorities: dict[(str,str),int], only_lemma_priorities: bool
 ) -> list[ProgressReport]:
     
     reports = []
 
+    # This could be cleaner - it would be good to reimplemnt these db methods
     morph_learning_statuses: dict[str,str]
     if only_lemma_priorities:
         morph_learning_statuses = am_db.get_morph_lemmas_learning_statuses()
@@ -99,11 +100,13 @@ def get_progress_reports(
         morph_priorities_subset = _get_morph_priorities_subset(morph_priorities, 
             min_priority, max_priority)
         for morph in morph_priorities_subset:
+            learning_status_key = morph[0] + morph[1]
             if only_lemma_priorities:
-                morph = morph[:len(morph)//2] # expect morph=lemma+lemma
+                learning_status_key = morph[0] # expect morph=(lemma,lemma)
+
             morph_status = 'missing'
-            if morph in morph_learning_statuses: # if the morph is in the database
-                morph_status = morph_learning_statuses[morph]
+            if learning_status_key in morph_learning_statuses: # if the morph is in the database
+                morph_status = morph_learning_statuses[learning_status_key]
             _update_progress_report(report, morph, morph_status)
         
         reports.append(report)
@@ -112,7 +115,7 @@ def get_progress_reports(
 
 
 def _get_morph_priorities_subset(
-        morph_priorities: dict[str,int], min_priority: int, max_priority: int
+        morph_priorities: dict[(str,str),int], min_priority: int, max_priority: int
 ) -> dict[str,int]:
     def is_in_range(item):
         _, priority = item
