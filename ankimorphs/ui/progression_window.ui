@@ -442,7 +442,7 @@ Report</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QTableWidget" name="morphListTableWidget">
+           <widget class="QTableWidget" name="morphTableWidget">
             <property name="enabled">
              <bool>true</bool>
             </property>

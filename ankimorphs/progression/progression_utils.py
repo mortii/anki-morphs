@@ -81,7 +81,7 @@ def _update_progress_report(
         raise  
 
 def get_progress_reports(
-        am_config: AnkiMorphsConfig, am_db: AnkiMorphsDB, bins: Bins, 
+        am_db: AnkiMorphsDB, bins: Bins, 
         morph_priorities: dict[(str,str),int], only_lemma_priorities: bool
 ) -> list[ProgressReport]:
     
@@ -122,6 +122,43 @@ def _get_morph_priorities_subset(
         return priority >= min_priority and priority <= max_priority
 
     return dict(filter(is_in_range, morph_priorities.items()))
+
+def get_priority_ordered_morph_statuses(
+        am_db: AnkiMorphsDB,  
+        morph_priorities: dict[(str,str),int], only_lemma_priorities: bool
+) -> list[ProgressReport]:
+    
+    # (lemma, inflection, and status) in increasing priority order
+    morph_statuses: list[(str,str,str)] = []
+
+    sorted_morph_priorities = dict(
+        sorted(
+            morph_priorities.items(),
+            key=lambda item: item[1],
+        )
+    )
+
+    morph_learning_statuses: dict[str,str]
+    if only_lemma_priorities:
+        morph_learning_statuses = am_db.get_morph_lemmas_learning_statuses()
+    else:
+        morph_learning_statuses = am_db.get_morph_inflections_learning_statuses()
+
+    for morph in sorted_morph_priorities:
+        learning_status_key = morph[0] + morph[1]
+        if only_lemma_priorities:
+            learning_status_key = morph[0] # expect morph=(lemma,lemma)
+        
+        morph_status = 'missing'
+        if learning_status_key in morph_learning_statuses: # if the morph is in the database
+            morph_status = morph_learning_statuses[learning_status_key]
+
+        if only_lemma_priorities:
+            morph_statuses.append((morph[0], '-', morph_status))
+        else:
+            morph_statuses.append((morph[0],morph[1],morph_status))
+
+    return morph_statuses
 
 
 
