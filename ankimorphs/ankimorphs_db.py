@@ -471,7 +471,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
     # the cache needs to have a max size to maintain garbage collection
     @functools.lru_cache(maxsize=131072)
     def get_morph_priorities_from_collection(
-        self, am_config: AnkiMorphsConfig
+        self, only_lemma_priorities: bool
     ) -> dict[tuple[str, str], int]:
         # Sorting the morphs (ORDER BY) is crucial to avoid bugs
         morphs_query = self.con.execute(
@@ -484,7 +484,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         intermediate_morph_list = []
 
-        if am_config.evaluate_morph_lemma:
+        if only_lemma_priorities:
             for lemma, _ in morphs_query:
                 intermediate_morph_list.append((lemma, lemma))
         else:
