@@ -238,7 +238,7 @@ class Ui_ProgressionWindow(object):
 
         self.retranslateUi(ProgressionWindow)
         self.morphPriorityCBox.setCurrentIndex(-1)
-        self.qTabWidget.setCurrentIndex(2)
+        self.qTabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(ProgressionWindow)
 
     def retranslateUi(self, ProgressionWindow):
