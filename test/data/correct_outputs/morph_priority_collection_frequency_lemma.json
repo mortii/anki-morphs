@@ -1,8 +1,8 @@
 {
-    "manman": 0,
-    "thethe": 1,
-    "walkwalk": 2,
-    "crawlcrawl": 3,
-    "runrun": 4,
-    "stopstop": 5
+    "man|man": 0,
+    "the|the": 1,
+    "walk|walk": 2,
+    "crawl|crawl": 3,
+    "run|run": 4,
+    "stop|stop": 5
 }

@@ -22,19 +22,27 @@ def print_thread_name() -> None:
     print(f"thread name: {threading.current_thread().name}")
 
 
-def save_to_json_file(file_path: Path, _dict: dict[Any, Any]) -> None:
+def save_to_json_file(file_path: Path, _dict: dict[tuple[str, str], int]) -> None:
     """Changes the file extension to .json and outputs to that location"""
     json_file: Path = file_path.with_suffix(".json")
 
+    # the json module only does not support dict with tuple keys,
+    # so we have to convert the keys to single strings and then
+    # reverse the process when loading them later
+    dict_with_str_keys = {f"{k[0]}|{k[1]}": v for k, v in _dict.items()}
+
     with json_file.open("w", encoding="utf-8") as file:
-        json.dump(_dict, file, ensure_ascii=False, indent=4)
+        json.dump(dict_with_str_keys, file, ensure_ascii=False, indent=4)
 
 
 def load_dict_from_json_file(file_path: Path) -> dict[Any, Any]:
     with file_path.open("r", encoding="utf-8") as file:
         dict_from_file = json.load(file)
         assert isinstance(dict_from_file, dict)
-        return dict_from_file
+
+        # Convert the string keys back to tuples
+        _dict = {tuple(k.split("|")): v for k, v in dict_from_file.items()}
+        return _dict
 
 
 def print_current_directory() -> None:
