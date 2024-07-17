@@ -87,7 +87,7 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         table.setSortingEnabled(False)
         table.setColumnCount(self.num_numerical_percent_columns)
 
-        table.setColumnWidth(self._columns['morph_priorities'], 200)
+        table.setColumnWidth(self._columns['morph_priorities'], 90)
         table.setColumnWidth(self._columns['total_morphs'], 90)
         table.setColumnWidth(self._columns['known'], 90)
         table.setColumnWidth(self._columns['learning'], 90)
@@ -108,7 +108,7 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         table.setSortingEnabled(False)
         table.setColumnCount(self.num_morph_columns)
 
-        table.setColumnWidth(self._columns['morph_priorities'], 200)
+        table.setColumnWidth(self._columns['morph_priorities'], 90)
         table.setColumnWidth(self._columns['lemma'], 90)
         table.setColumnWidth(self._columns['inflection'], 90)
         table.setColumnWidth(self._columns['status'], 90)
@@ -179,27 +179,12 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
 
     def _get_selected_bins(self) -> Bins:
 
-        min_priority = self.ui.minPrioritySpinBox.value()
-        original_min_priority = min_priority
-        max_priority = self.ui.maxPrioritySpinBox.value()
-        bin_size = self.ui.binSizeSpinBox.value()
-        use_cumulative_statistics = self.ui.cumulativeCheckBox.isChecked() 
-
-        spec = []
-        while min_priority+bin_size-1 < max_priority:
-            if use_cumulative_statistics:
-                spec.append((original_min_priority,min_priority+bin_size-1))
-            else:
-                spec.append((min_priority,min_priority+bin_size-1))
-            
-            min_priority = min_priority+bin_size
-
-        if use_cumulative_statistics:
-            spec.append((original_min_priority,max_priority))
-        else:
-            spec.append((min_priority,max_priority))
-
-        return Bins(spec)
+        return Bins(
+            min_priority = self.ui.minPrioritySpinBox.value(),
+            max_priority = self.ui.maxPrioritySpinBox.value(),
+            bin_size = self.ui.binSizeSpinBox.value(),
+            is_cumulative = self.ui.cumulativeCheckBox.isChecked() 
+        )
 
     def _get_selected_morph_priorities(self) -> dict[str,str]:
 
@@ -230,7 +215,7 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         morph_priorities = self._get_selected_morph_priorities()
         reports = get_progress_reports(am_db, bins, morph_priorities, 
                                        self._is_lemma_priority_selected())
-        morph_statuses = get_priority_ordered_morph_statuses(am_db, morph_priorities,
+        morph_statuses = get_priority_ordered_morph_statuses(am_db, bins, morph_priorities,
                                        self._is_lemma_priority_selected())
         self._populate_tables(reports,morph_statuses)
 
@@ -353,12 +338,12 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
             row, self._columns['missing'], missing_item
         )
 
-    def _populate_morph_table(self, morph_status: (str,str,str), row: int) -> None:
+    def _populate_morph_table(self, morph_status: (int,str,str,str), row: int) -> None:
 
-        morph_priorities_item = QTableWidgetItem(f"{row+1}")
-        lemma_item = QTableWidgetItem(morph_status[0])
-        inflection_item = QTableWidgetItem(morph_status[1])
-        status_item = QTableWidgetItem(morph_status[2])
+        morph_priorities_item = QTableWidgetIntegerItem(morph_status[0])
+        lemma_item = QTableWidgetItem(morph_status[1])
+        inflection_item = QTableWidgetItem(morph_status[2])
+        status_item = QTableWidgetItem(morph_status[3])
 
         morph_priorities_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         lemma_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)

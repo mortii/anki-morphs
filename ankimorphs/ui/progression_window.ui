@@ -204,7 +204,7 @@
                      <number>1</number>
                     </property>
                     <property name="maximum">
-                     <number>10000</number>
+                     <number>50000</number>
                     </property>
                     <property name="singleStep">
                      <number>500</number>
@@ -358,6 +358,9 @@ Report</string>
             <attribute name="horizontalHeaderStretchLastSection">
              <bool>false</bool>
             </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
             <attribute name="verticalHeaderStretchLastSection">
              <bool>false</bool>
             </attribute>
@@ -402,6 +405,9 @@ Report</string>
          <layout class="QVBoxLayout" name="verticalLayout_7">
           <item>
            <widget class="QTableWidget" name="percentTableWidget">
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
             <column>
              <property name="text">
               <string>Priority Range</string>
@@ -461,6 +467,9 @@ Report</string>
             <property name="autoFillBackground">
              <bool>false</bool>
             </property>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
             <column>
              <property name="text">
               <string>Priority</string>

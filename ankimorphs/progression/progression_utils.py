@@ -14,18 +14,35 @@ from ..recalc.morph_priority_utils import _get_morph_priority
 class Bins:
     """Stores bins for morph priority."""
     def __init__(
-        self, indexes: list[int,int]
+        self, min_priority: int, max_priority: int, bin_size: int, 
+        is_cumulative: bool
     ) -> None:
 
-        # Lower index should be larger than upper index,
-        # and both should be positive integers
-        for bin_index in indexes:
-            lower_index, upper_index = bin_index
-            if lower_index < 1 or upper_index < lower_index:
-                raise InvalidBinIndexException(bin_index)
-        
-        self.indexes = indexes
+        self.min_priority = min_priority
+        self.max_priority = max_priority
+        self.bin_size = bin_size
+        self.is_cumulative = is_cumulative
 
+        # Placeholder
+        if min_priority >= max_priority: 
+                raise InvalidBinIndexException((min_priority,max_priority))
+
+        self.indexes = []
+        min_index = min_priority
+        while min_index+bin_size-1 < max_priority:
+            if is_cumulative:
+                self.indexes.append((min_priority,min_index+bin_size-1))
+            else:
+                self.indexes.append((min_index,min_index+bin_size-1))
+            
+            min_index += bin_size
+
+        if is_cumulative:
+            self.indexes.append((min_priority,max_priority))
+        else:
+            self.indexes.append((min_index,max_priority))
+
+        
 
 class ProgressReport:
 
@@ -124,12 +141,15 @@ def _get_morph_priorities_subset(
     return dict(filter(is_in_range, morph_priorities.items()))
 
 def get_priority_ordered_morph_statuses(
-        am_db: AnkiMorphsDB,  
+        am_db: AnkiMorphsDB, bins: Bins, 
         morph_priorities: dict[(str,str),int], only_lemma_priorities: bool
-) -> list[ProgressReport]:
+) -> list[(int,str,str,str)]:
     
     # (lemma, inflection, and status) in increasing priority order
-    morph_statuses: list[(str,str,str)] = []
+    morph_statuses: list[(int,str,str,str)] = []
+
+    morph_priorities = _get_morph_priorities_subset(morph_priorities, 
+        bins.min_priority, bins.max_priority)
 
     sorted_morph_priorities = dict(
         sorted(
@@ -145,6 +165,7 @@ def get_priority_ordered_morph_statuses(
         morph_learning_statuses = am_db.get_morph_inflections_learning_statuses()
 
     for morph in sorted_morph_priorities:
+        priority = sorted_morph_priorities[morph]
         learning_status_key = morph[0] + morph[1]
         if only_lemma_priorities:
             learning_status_key = morph[0] # expect morph=(lemma,lemma)
@@ -154,9 +175,9 @@ def get_priority_ordered_morph_statuses(
             morph_status = morph_learning_statuses[learning_status_key]
 
         if only_lemma_priorities:
-            morph_statuses.append((morph[0], '-', morph_status))
+            morph_statuses.append((priority,morph[0], '-', morph_status))
         else:
-            morph_statuses.append((morph[0],morph[1],morph_status))
+            morph_statuses.append((priority,morph[0],morph[1],morph_status))
 
     return morph_statuses
 
