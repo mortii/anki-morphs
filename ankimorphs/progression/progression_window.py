@@ -123,20 +123,8 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         )
 
     def _setup_buttons(self) -> None:
-        #self.ui.selectFolderPushButton.clicked.connect(self._on_select_folder_clicked)
-        self.ui.calculateProgressPushButton.clicked.connect(self._on_calculate_progress_button_clicked)
-        #self.ui.generateReportPushButton.clicked.connect(
-        #    self._generate_readability_report
-        #)
-        #self.ui.generateFrequencyFilePushButton.clicked.connect(
-        #    self._generate_frequency_file
-        #)
-        #self.ui.generateStudyPlanPushButton.clicked.connect(self._generate_study_plan)
 
-        ## disable generator buttons until files have been loaded
-        #self.ui.generateReportPushButton.setDisabled(True)
-        #self.ui.generateFrequencyFilePushButton.setDisabled(True)
-        #self.ui.generateStudyPlanPushButton.setDisabled(True)
+        self.ui.calculateProgressPushButton.clicked.connect(self._on_calculate_progress_button_clicked)
 
     def _setup_checkboxes(self) -> None:
         self.ui.cumulativeCheckBox.setChecked(False)
@@ -169,13 +157,6 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         )
         operation.failure(self._on_failure)
         operation.with_progress().run_in_background()
-
-    def _on_success(self) -> None:
-        assert mw is not None
-        mw.progress.finish()
-    #    self.ui.generateReportPushButton.setEnabled(True)
-    #    self.ui.generateFrequencyFilePushButton.setEnabled(True)
-    #    self.ui.generateStudyPlanPushButton.setEnabled(True)
 
     def _get_selected_bins(self) -> Bins:
 
@@ -382,6 +363,8 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         assert mw is not None
         assert mw.progress is not None
 
+        self.ui.calculateProgressPushButton.setText("Recalculate\nProgress\nReport")
+
         mw.progress.finish()
         tooltip("Progress report finished", parent=self)
 
@@ -393,6 +376,9 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         # This function runs on the main thread.
         assert mw is not None
         assert mw.progress is not None
+
+        self.ui.calculateProgressPushButton.setText("Recalculate\nProgress\nReport")
+
         mw.progress.finish()
 
         if isinstance(error, CancelledOperationException):
