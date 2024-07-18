@@ -41,11 +41,12 @@ class FrequencyFileNotFoundException(Exception):
         self.path = path
 
 
-class InvalidBinIndexException(Exception):
+class InvalidBinsException(Exception):
     """Invalid indexes used to construct Bins"""
 
-    def __init__(self, invalid_bin_index : tuple[int,int]):
-        self.invalid_bin_index = invalid_bin_index
+    def __init__(self, min_index: int, max_index: int):
+        self.min_index = min_index
+        self.max_index = max_index
 
 
 class NoMorphsInPriorityRangeException(Exception):

@@ -1,67 +1,59 @@
 from __future__ import annotations
 
-import copy
-import csv
-from pathlib import Path
-
 from .. import ankimorphs_config
-from .. import ankimorphs_globals as am_globals
 from ..ankimorphs_db import AnkiMorphsDB
-from ..morpheme import MorphOccurrence
-from .progression_output_dialog import OutputOptions
 from ..recalc.morph_priority_utils import _get_morph_priority
+from ..exceptions import InvalidBinsException
 
 class Bins:
-    """Stores bins for morph priority."""
-    def __init__(
-        self, min_priority: int, max_priority: int, bin_size: int, 
+    """Bins, used for morph priority."""
+    def __init__(self, 
+        min_index: int, 
+        max_index: int, 
+        bin_size: int, 
         is_cumulative: bool
     ) -> None:
 
-        self.min_priority = min_priority
-        self.max_priority = max_priority
+        self.min_index = min_index
+        self.max_index = max_index
         self.bin_size = bin_size
         self.is_cumulative = is_cumulative
 
-        # Placeholder
-        if min_priority >= max_priority: 
-                raise InvalidBinIndexException((min_priority,max_priority))
+        if min_index >= max_index: 
+            raise InvalidBinsException(min_index,max_index)
 
         self.indexes = []
-        min_index = min_priority
-        while min_index+bin_size-1 < max_priority:
+        working_min_index = min_index
+        while working_min_index+bin_size-1 < max_index:
             if is_cumulative:
-                self.indexes.append((min_priority,min_index+bin_size-1))
+                self.indexes.append((min_index,
+                                     working_min_index+bin_size-1))
             else:
-                self.indexes.append((min_index,min_index+bin_size-1))
+                self.indexes.append((working_min_index,
+                                     working_min_index+bin_size-1))
             
-            min_index += bin_size
+            working_min_index += bin_size
 
         if is_cumulative:
-            self.indexes.append((min_priority,max_priority))
+            self.indexes.append((min_index,max_index))
         else:
-            self.indexes.append((min_index,max_priority))
-
+            self.indexes.append((working_min_index,max_index))
         
 
 class ProgressReport:
-
-    def __init__(
-        self, min_priority: int, max_priority: int
+    """Stores lists of know, learning, unknown, and missing morphs."""
+    def __init__(self, min_priority: int, max_priority: int
     ) -> None:
-        
-        if min_priority < 1 or max_priority < min_priority:
-            raise InvalidBinIndexException()
         
         self.min_priority = min_priority
         self.max_priority = max_priority
 
-        # Ideally, these would be sets of Morphemes. However, I haven't
-        # yet figured out if these objects are easily accessible. 
-        self.unique_known: set[str] = set()
-        self.unique_learning: set[str] = set()
-        self.unique_unknowns: set[str] = set()
-        self.unique_missing: set[str] = set()
+        # Morphs are represented as (lemma,inflection/lemma) keys,
+        # identical to morph_priorities
+        self.unique_known:    set[tuple[str,str]] = set()
+        self.unique_learning: set[tuple[str,str]] = set()
+        self.unique_unknowns: set[tuple[str,str]] = set()
+        self.unique_missing:  set[tuple[str,str]] = set()
 
     def get_total_known(self) -> int:
         return len(self.unique_known)
@@ -82,10 +74,10 @@ class ProgressReport:
 
 def _update_progress_report(
     progress_report: ProgressReport,
-    morph: str,
+    morph: tuple[str,str],
     morph_status: str
 ) -> None:
-
+    """Adds morph and status information to a progress report."""
     if morph_status == "known":
         progress_report.unique_known.add(morph)
     elif morph_status == "learning":
@@ -98,25 +90,30 @@ def _update_progress_report(
         raise  
 
 def get_progress_reports(
-        am_db: AnkiMorphsDB, bins: Bins, 
-        morph_priorities: dict[(str,str),int], only_lemma_priorities: bool
+        am_db: AnkiMorphsDB, 
+        bins: Bins, 
+        morph_priorities: dict[tuple[str,str],int], 
+        only_lemma_priorities: bool
 ) -> list[ProgressReport]:
     
     reports = []
 
-    # This could be cleaner - it would be good to reimplemnt these db methods
+    # This function could be cleaner if the learning status dictionaries were 
+    # keyed like the morph_priority dictionaries. 
     morph_learning_statuses: dict[str,str]
     if only_lemma_priorities:
         morph_learning_statuses = am_db.get_morph_lemmas_learning_statuses()
     else:
         morph_learning_statuses = am_db.get_morph_inflections_learning_statuses()
 
-    for min_priority, max_priority in bins.indexes:
-        
+    for min_priority, max_priority in bins.indexes: 
+
         report = ProgressReport(min_priority,max_priority)
         morph_priorities_subset = _get_morph_priorities_subset(morph_priorities, 
             min_priority, max_priority)
+
         for morph in morph_priorities_subset:
+            
             learning_status_key = morph[0] + morph[1]
             if only_lemma_priorities:
                 learning_status_key = morph[0] # expect morph=(lemma,lemma)
@@ -130,26 +127,20 @@ def get_progress_reports(
 
     return reports
 
-
-def _get_morph_priorities_subset(
-        morph_priorities: dict[(str,str),int], min_priority: int, max_priority: int
-) -> dict[str,int]:
-    def is_in_range(item):
-        _, priority = item
-        return priority >= min_priority and priority <= max_priority
-
-    return dict(filter(is_in_range, morph_priorities.items()))
-
 def get_priority_ordered_morph_statuses(
         am_db: AnkiMorphsDB, bins: Bins, 
-        morph_priorities: dict[(str,str),int], only_lemma_priorities: bool
-) -> list[(int,str,str,str)]:
-    
+        morph_priorities: dict[tuple[str,str],int], 
+        only_lemma_priorities: bool
+) -> list[tuple[int,str,str,str]]:
+    """Returns a list of (priority,lemma,inflection,status) tuples in order of
+    increasing priority"""
     # (lemma, inflection, and status) in increasing priority order
-    morph_statuses: list[(int,str,str,str)] = []
+    morph_statuses: list[tuple[int,str,str,str]] = []
 
-    morph_priorities = _get_morph_priorities_subset(morph_priorities, 
-        bins.min_priority, bins.max_priority)
+    morph_priorities = _get_morph_priorities_subset(
+        morph_priorities, 
+        bins.min_index, bins.max_index
+    )
 
     sorted_morph_priorities = dict(
         sorted(
@@ -182,11 +173,16 @@ def get_priority_ordered_morph_statuses(
     return morph_statuses
 
 
+def _get_morph_priorities_subset(
+        morph_priorities: dict[tuple[str,str],int], 
+        min_priority: int, max_priority: int
+) -> dict[tuple[str,str],int]:
+    """Returns morph priorities within a priority range."""
+    def is_in_range(item):
+        _, priority = item
+        return priority >= min_priority and priority <= max_priority
 
-
-
-
-
+    return dict(filter(is_in_range, morph_priorities.items()))
 
 
 

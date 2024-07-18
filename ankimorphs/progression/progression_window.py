@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable
@@ -25,20 +26,13 @@ from .. import ankimorphs_globals
 from ..ankimorphs_config import AnkiMorphsConfig
 from ..ankimorphs_db import AnkiMorphsDB
 from ..exceptions import CancelledOperationException, \
-NoMorphsInPriorityRangeException, FrequencyFileMalformedException
-from ..morpheme import MorphOccurrence
-from ..morphemizers import morphemizer, spacy_wrapper
-from ..morphemizers.morphemizer import Morphemizer, SpacyMorphemizer
+NoMorphsInPriorityRangeException, FrequencyFileMalformedException, InvalidBinsException
 from ..table_utils import QTableWidgetIntegerItem, QTableWidgetPercentItem
 from ..ui.progression_window_ui import Ui_ProgressionWindow
-from . import progression_text_processing, progression_utils, readability_report_utils
-from .progression_output_dialog import GeneratorOutputDialog, OutputOptions
-from .progression_text_processing import PreprocessOptions
-from .readability_report_utils import FileMorphsStats
-from .progression_utils import Bins, get_progress_reports, get_priority_ordered_morph_statuses
+from . import progression_utils
+from .progression_utils import ProgressReport, Bins, get_progress_reports, get_priority_ordered_morph_statuses
 from ..settings.settings_note_filters_tab import NoteFiltersTab
 from ..recalc.morph_priority_utils import _get_morph_priority, _load_morph_priorities_from_file
-
 
 
 class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attributes
@@ -53,8 +47,6 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
 
         self.ui = Ui_ProgressionWindow()
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
-
-        #self._input_files: list[Path] = []
 
         self._columns = {}
         # For all tables
@@ -123,7 +115,6 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         )
 
     def _setup_buttons(self) -> None:
-
         self.ui.calculateProgressPushButton.clicked.connect(self._on_calculate_progress_button_clicked)
 
     def _setup_checkboxes(self) -> None:
@@ -149,7 +140,7 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         # since it could take a long time to complete
         assert mw is not None
 
-        mw.progress.start(label="Calculating progress")
+        mw.progress.start(label="Calculating progress report")
         operation = QueryOp(
             parent=self,
             op=lambda _: self._background_calculate_progress_and_populate_tables(),
@@ -161,13 +152,13 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
     def _get_selected_bins(self) -> Bins:
 
         return Bins(
-            min_priority = self.ui.minPrioritySpinBox.value(),
-            max_priority = self.ui.maxPrioritySpinBox.value(),
+            min_index = self.ui.minPrioritySpinBox.value(),
+            max_index = self.ui.maxPrioritySpinBox.value(),
             bin_size = self.ui.binSizeSpinBox.value(),
             is_cumulative = self.ui.cumulativeCheckBox.isChecked() 
         )
 
-    def _get_selected_morph_priorities(self) -> dict[str,str]:
+    def _get_selected_morph_priorities(self) -> dict[tuple[str,str],int]:
 
         am_db = AnkiMorphsDB()
 
@@ -186,7 +177,6 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
 
     def _background_calculate_progress_and_populate_tables(self) -> None:
         assert mw is not None
-        assert mw.progress is not None
 
         am_config = AnkiMorphsConfig()
         am_db = AnkiMorphsDB()
@@ -194,14 +184,39 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         bins = self._get_selected_bins()
 
         morph_priorities = self._get_selected_morph_priorities()
+        mw.taskman.run_on_main(
+            partial(
+                mw.progress.update,
+                label="Calculating binned statistics",
+            )
+        )
         reports = get_progress_reports(am_db, bins, morph_priorities, 
                                        self._is_lemma_priority_selected())
+        if mw.progress.want_cancel():  
+            raise CancelledOperationException
+        
+        mw.taskman.run_on_main(
+            partial(
+                mw.progress.update,
+                label="Calculating morph statuses",
+            )
+        )
         morph_statuses = get_priority_ordered_morph_statuses(am_db, bins, morph_priorities,
                                        self._is_lemma_priority_selected())
+        if mw.progress.want_cancel():  
+            raise CancelledOperationException
+        
+        mw.taskman.run_on_main(
+            partial(
+                mw.progress.update,
+                label="Populating tables",
+            )
+        )
         self._populate_tables(reports,morph_statuses)
 
     def _populate_tables(self, 
-        reports: list[ProgressReport], morph_statuses: list((str,str,str))
+        reports: list[ProgressReport], 
+        morph_statuses: list[tuple[int,str,str,str]],
     ) -> None:
         
         assert isinstance(self.ui, Ui_ProgressionWindow)
@@ -214,13 +229,14 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         self.ui.percentTableWidget.setRowCount(len(reports))
         self.ui.morphTableWidget.setRowCount(len(morph_statuses))
 
-        error_flag = False
+        error_indexes: tuple[int,int] | None = None
 
         for row, report in enumerate(reports):
             if report.get_total_morphs() == 0:
                 self.ui.numericalTableWidget.setRowCount(row)
                 self.ui.percentTableWidget.setRowCount(row)
-                error_flag = True
+                error_indexes = (report.min_priority, report.max_priority)
+                break
             else:
                 self._populate_numerical_table(report, row)
                 self._populate_percent_table(report, row)
@@ -228,9 +244,11 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         for row, morph_status in enumerate(morph_statuses):
             self._populate_morph_table(morph_status,row) 
 
-        if error_flag:
-            raise NoMorphsInPriorityRangeException(report.min_priority,
-                    report.max_priority)
+        if error_indexes is not None:
+            raise NoMorphsInPriorityRangeException(
+                min_priority = error_indexes[0],
+                max_priority = error_indexes[1]
+            )
 
 
     def _populate_numerical_table(self, report: ProgressReport, row: int) -> None:
@@ -249,14 +267,12 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         unknowns_item = QTableWidgetIntegerItem(report.get_total_unknowns())
         missing_item = QTableWidgetIntegerItem(report.get_total_missing())
 
-
         morph_priorities_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         total_morphs_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         known_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         learning_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         unknowns_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         missing_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-
 
         self.ui.numericalTableWidget.setItem(
             row, self._columns['morph_priorities'], morph_priorities_item
@@ -319,7 +335,7 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
             row, self._columns['missing'], missing_item
         )
 
-    def _populate_morph_table(self, morph_status: (int,str,str,str), row: int) -> None:
+    def _populate_morph_table(self, morph_status: tuple[int,str,str,str], row: int) -> None:
 
         morph_priorities_item = QTableWidgetIntegerItem(morph_status[0])
         lemma_item = QTableWidgetItem(morph_status[1])
@@ -371,7 +387,7 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
     def _on_failure(
         self,
         error: Exception | CancelledOperationException | NoMorphsInPriorityRangeException | 
-               FrequencyFileMalformedException,
+               FrequencyFileMalformedException | InvalidBinsException,
     ) -> None:
         # This function runs on the main thread.
         assert mw is not None
@@ -388,6 +404,9 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
                     parent=self)
         elif isinstance(error, FrequencyFileMalformedException):
              tooltip(error.reason, 
+                    parent=self)
+        elif isinstance(error, InvalidBinsException):
+             tooltip(f"Invalid priority range", 
                     parent=self)
 
         else:
