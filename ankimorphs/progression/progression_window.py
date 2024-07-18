@@ -163,7 +163,9 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         am_db = AnkiMorphsDB()
 
         if self.ui.morphPriorityCBox.currentIndex() == 0: # Collection frequency
-            return am_db.get_morph_priorities_from_collection(True)
+            return am_db.get_morph_priorities_from_collection(
+                only_lemma_priorities=self._is_lemma_priority_selected()
+            )
         #Else
         return _load_morph_priorities_from_file(
             frequency_file_name=self.ui.morphPriorityCBox.currentText(),
