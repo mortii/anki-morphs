@@ -81,12 +81,12 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         table.setSortingEnabled(False)
         table.setColumnCount(self.num_numerical_percent_columns)
 
-        table.setColumnWidth(self._columns["morph_priorities"], 90)
-        table.setColumnWidth(self._columns["total_morphs"], 90)
-        table.setColumnWidth(self._columns["known"], 90)
-        table.setColumnWidth(self._columns["learning"], 90)
-        table.setColumnWidth(self._columns["unknowns"], 90)
-        table.setColumnWidth(self._columns["missing"], 90)
+        table.setColumnWidth(self._columns["morph_priorities"], 130)
+        table.setColumnWidth(self._columns["total_morphs"], 110)
+        table.setColumnWidth(self._columns["known"], 110)
+        table.setColumnWidth(self._columns["learning"], 110)
+        table.setColumnWidth(self._columns["unknowns"], 110)
+        table.setColumnWidth(self._columns["missing"], 110)
 
         table_horizontal_headers: QHeaderView | None = table.horizontalHeader()
         assert table_horizontal_headers is not None

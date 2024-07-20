@@ -28,6 +28,7 @@
   - [Browser](user_guide/usage/browser.md)
   - [Generators](user_guide/usage/generators.md)
   - [Exporting Known Morphs](user_guide/usage/known-morphs-exporter.md)
+  - [Progression](user_guide/usage/progression.md)
 - [Tips & Tricks](user_guide/setup/tips-and-tricks.md)
 - [Known Problems](user_guide/known-problems.md)
 - [Changelog](user_guide/changelog.md)
