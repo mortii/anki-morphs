@@ -48,8 +48,8 @@ from . import (
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
 from .generators.generators_window import GeneratorWindow
-from .progression.progression_window import ProgressionWindow
 from .known_morphs_exporter import KnownMorphsExporterDialog
+from .progression.progression_window import ProgressionWindow
 from .recalc import recalc_main
 from .settings import settings_dialog
 from .settings.settings_dialog import SettingsDialog
@@ -562,6 +562,7 @@ def create_generators_dialog_action(am_config: AnkiMorphsConfig) -> QAction:
         )
     )
     return action
+
 
 def create_progression_dialog_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Progression", mw)

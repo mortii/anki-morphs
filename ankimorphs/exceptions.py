@@ -56,6 +56,7 @@ class NoMorphsInPriorityRangeException(Exception):
         self.min_priority = min_priority
         self.max_priority = max_priority
 
+
 class FrequencyFileMalformedException(Exception):
     """Selected frequency file is malformed in some way"""
 
