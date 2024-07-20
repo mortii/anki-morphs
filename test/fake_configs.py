@@ -163,25 +163,6 @@ config_max_morph_priority_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "AnkiMorp
 config_max_morph_priority_filter[FilterKeys.MORPH_PRIORITY_SELECTION] = "ja_core_news_sm_freq_inflection_min_occurrence.csv"
 # fmt: on
 
-################################################################
-#             config_external_lemma_priority
-################################################################
-# Works with any arbitrary collection and db.
-################################################################
-# fmt: off
-config_external_lemma_priority = copy.deepcopy(default_config_dict)
-config_external_lemma_priority[FilterKeys.MORPH_PRIORITY_SELECTION] = "ja_core_news_sm_freq_lemma_min_occurrence.csv"
-# fmt: on
-
-################################################################
-#             config_external_inflection_priority
-################################################################
-# Works with any arbitrary collection and db.
-################################################################
-# fmt: off
-config_external_inflection_priority = copy.deepcopy(default_config_dict)
-config_external_inflection_priority[FilterKeys.MORPH_PRIORITY_SELECTION] = "ja_core_news_sm_freq_inflection_min_occurrence.csv"
-# fmt: on
 
 ################################################################
 #             config_wrong_note_type
