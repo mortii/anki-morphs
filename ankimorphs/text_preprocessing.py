@@ -4,7 +4,7 @@ from typing import Any
 from . import name_file_utils
 from .ankimorphs_config import AnkiMorphsConfig
 from .morpheme import Morpheme
-from .morphemizer import Morphemizer
+from .morphemizers.morphemizer import Morphemizer
 
 square_brackets_regex = re.compile(r"\[[^]]*]")
 round_brackets_regex = re.compile(r"（[^）]*）")
@@ -18,7 +18,6 @@ def get_processed_spacy_morphs(am_config: AnkiMorphsConfig, doc: Any) -> list[Mo
     morphs: list[Morpheme] = []
 
     for w in doc:
-        # print(f"w: {w}")
         if not non_alpha_regexp.search(w.text):
             continue
 

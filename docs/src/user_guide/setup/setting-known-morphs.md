@@ -6,8 +6,8 @@ cards then it can lead to loss of information. To address this issue, you can st
 
 ![known-morphs-folder.png](../../img/known-morphs-folder.png)
 
-Any .csv file that has the [frequency file format](prioritizing.md#custom-frequency-files) (like those produces by the
+Any .csv file that has the [priority file format](prioritizing.md#custom-priority-files) (like those produces by the
 [Known Morphs Exporter](../usage/known-morphs-exporter.md)), and is placed within this folder, can be read during [Recalc](../usage/recalc.md) and saved to the database.
 
 You can activate this feature by selecting `Read files in 'known-morphs' folder and register morphs as known`
-in the [Recalc settings](../setup/settings/recalc.md).
+in the [general settings tab](../setup/settings/general.md).

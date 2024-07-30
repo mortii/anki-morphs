@@ -25,7 +25,6 @@ card_id INTEGER PRIMARY KEY ASC,
 note_id INTEGER,
 note_type_id INTEGER,
 card_type INTEGER,
-fields TEXT,
 tags TEXT
 ```
 
@@ -52,12 +51,12 @@ To make sure the morphs are unique, we make the primary key the lemma AND inflec
 can be identical even if they are derived from two different bases, eg:
 
 ```
-Inflection : Base
+Inflection : Lemma
 ある : 有る
 ある : 或る
 ```
 
-Using an int as a primary key is preferable over text objects, but hashing the norm and base would lead to a high
+Using an int as a primary key is preferable over text objects, but hashing the lemma and inflection would lead to a high
 likelihood of collisions because of the following:
 
     # sqlite integers are max 2^(63)-1 = 9,223,372,036,854,775,807

@@ -9,18 +9,18 @@ After installing AnkiMorphs you will find that some changes have been made to An
 The toolbar now has three new items:
 
 - [Recalc](../usage/recalc.md)
-- `U`, which stands for `Known Unique Morphs`
-- `A`, which stands for `All Known Morphs`
+- `L`, which stands for `Known Morph Lemmas`
+- `I`, which stands for `All Morph Inflections`
 
 <details>
-  <summary style="display:list-item">English examples of U and A</summary>
+  <summary style="display:list-item">English examples of L and I</summary>
 
 
 <blockquote>
 
-**Each column in the table contains variations of the same morph.**
+**Each column in the table contains a morph lemma, and every row in a column contains a different inflection of that lemma.**
 
-Knowing the morph in the highlighted cell below would give you U: 1 and A: 1
+Knowing the morph in the highlighted cell below would give you L: 1 and I: 1
 <div class='morph-variation'>
 <table>
     <colgroup>
@@ -55,7 +55,7 @@ Knowing the morph in the highlighted cell below would give you U: 1 and A: 1
 </table>
 </div>
 
-Knowing the morphs in the highlighted cells below would give you U: 1 and A: 2
+Knowing the morphs in the highlighted cells below would give you L: 1 and I: 2
 
 <div class='morph-variation'>
 <table>
@@ -91,7 +91,7 @@ Knowing the morphs in the highlighted cells below would give you U: 1 and A: 2
 </table>
 </div>
 
-Knowing the morphs in the highlighted cells below would give you U: 2 and A: 3
+Knowing the morphs in the highlighted cells below would give you L: 2 and I: 3
 
 <div class='morph-variation'>
 <table>
@@ -133,14 +133,14 @@ Knowing the morphs in the highlighted cells below would give you U: 2 and A: 3
 
 
 <details>
-  <summary style="display:list-item">Japanese examples of U and A</summary>
+  <summary style="display:list-item">Japanese examples of L and I</summary>
 
 
 <blockquote>
 
-**Each column in the table contains variations of the same morph.**
+**Each column in the table contains a morph lemma, and every row in a column contains a different inflection of that lemma.**
 
-Knowing the morph in the highlighted cell below would give you U: 1 and A: 1
+Knowing the morph in the highlighted cell below would give you L: 1 and I: 1
 <div class='morph-variation'>
 <table>
     <colgroup>
@@ -169,7 +169,7 @@ Knowing the morph in the highlighted cell below would give you U: 1 and A: 1
 </table>
 </div>
 
-Knowing the morphs in the highlighted cells below would give you U: 1 and A: 2
+Knowing the morphs in the highlighted cells below would give you L: 1 and I: 2
 
 <div class='morph-variation'>
 <table>
@@ -199,7 +199,7 @@ Knowing the morphs in the highlighted cells below would give you U: 1 and A: 2
 </table>
 </div>
 
-Knowing the morphs in the highlighted cells below would give you U: 2 and A: 3
+Knowing the morphs in the highlighted cells below would give you L: 2 and I: 3
 
 <div class='morph-variation'>
 <table>
@@ -232,9 +232,9 @@ Knowing the morphs in the highlighted cells below would give you U: 2 and A: 3
 </blockquote>
 </details>
 
-The `U` and `A` numbers are updated after every [Recalc](../usage/recalc.md).
+The `L` and `I` numbers are updated after every [Recalc](../usage/recalc.md).
 
-> **Note**: Chinese and other languages that don't have inflections will result in `U` and `A` having equal numbers.
+> **Note**: Chinese and other languages that don't have inflections will result in `L` and `I` having equal numbers.
 
 
 ## Browse
@@ -261,4 +261,6 @@ You can find info about the options here:
 * [Settings](../setup/settings.md)
 * [Recalc](../usage/recalc.md)
 * [Generators](../usage/generators.md)
+* [Progression](../usage/progression.md)
+* [Reset Tags](../usage/reset_tags.md)
 * [Known Morphs Exporter](../usage/known-morphs-exporter.md)

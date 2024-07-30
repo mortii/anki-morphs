@@ -34,7 +34,9 @@ pyuic6 -o ankimorphs/ui/view_morphs_dialog_ui.py ankimorphs/ui/view_morphs_dialo
 ```bash
 pyuic6 -o ankimorphs/ui/generator_output_dialog_ui.py ankimorphs/ui/generator_output_dialog.ui
 ```
-
+```bash
+pyuic6 -o ankimorphs/ui/progression_window_ui.py ankimorphs/ui/progression_window.ui
+```
 
 Useful guides:
 - https://realpython.com/qt-designer-python/

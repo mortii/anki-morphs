@@ -127,7 +127,7 @@ def browse_same_morphs(  # pylint:disable=too-many-arguments
     browser.onSearchActivated()
 
 
-def browse_am_unknown_for_highlighted_morph(selected_text: str) -> None:
+def browse_study_morphs_for_highlighted_morph(selected_text: str) -> None:
     # Find all cards that have the am-unknowns field equal to the
     # selected text. Unlike browse_same_morphs which looks for card
     # ids of cards in the AnkiMorphsDB, this function does a query
@@ -148,7 +148,7 @@ def browse_am_unknown_for_highlighted_morph(selected_text: str) -> None:
         SearchNode(literal_text=selected_text),
     )
 
-    query = f'"{ankimorphs_globals.EXTRA_FIELD_UNKNOWNS}:{escaped_selected_text}"'
+    query = f'"{ankimorphs_globals.EXTRA_FIELD_STUDY_MORPHS}:{escaped_selected_text}"'
     search_edit.setText(query)
     browser.onSearchActivated()
 

@@ -88,7 +88,7 @@ farther back in the queue when we Recalc.
 
 For more info read:
 
-[Recalc Settings: Shift new cards that are not the first to have the unknown morph](../setup/settings/recalc.md)
+[Card Handling: Shift new cards that are not the first to have the unknown morph](../setup/settings/card_handling.md)
 
 ### Right-Clicking Highlighted Text
 

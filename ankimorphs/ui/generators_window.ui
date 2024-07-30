@@ -246,9 +246,9 @@ Files</string>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="generateFrequencyFilePushButton">
+           <widget class="QPushButton" name="generatePriorityFilePushButton">
             <property name="text">
-             <string>Generate Frequency File</string>
+             <string>Generate Priority File</string>
             </property>
            </widget>
           </item>

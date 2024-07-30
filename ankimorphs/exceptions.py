@@ -1,3 +1,8 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+
 class DefaultSettingsException(Exception):
     """Raised when the default settings are used and no note type is selected"""
 
@@ -29,8 +34,31 @@ class MorphemizerNotFoundException(Exception):
         self.morphemizer_name = morphemizer_name
 
 
-class FrequencyFileNotFoundException(Exception):
-    """Selected frequency files not found"""
+class PriorityFileNotFoundException(Exception):
+    """Selected priority files not found"""
 
     def __init__(self, path: str):
         self.path = path
+
+
+class InvalidBinsException(Exception):
+    """Invalid indexes used to construct Bins"""
+
+    def __init__(self, min_index: int, max_index: int):
+        self.min_index = min_index
+        self.max_index = max_index
+
+
+class PriorityFileMalformedException(Exception):
+    """Selected priority file is malformed in some way"""
+
+    def __init__(self, path: Path | str, reason: str):
+        self.path: str = str(path) if isinstance(path, Path) else path
+        self.reason: str = reason
+
+
+class KnownMorphsFileMalformedException(Exception):
+    """Found known morphs file is malformed in some way"""
+
+    def __init__(self, path: Path):
+        self.path: str = path.name

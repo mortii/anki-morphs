@@ -1,0 +1,8 @@
+{
+    "man|man": 0,
+    "the|the": 1,
+    "walk|walk": 2,
+    "crawl|crawl": 3,
+    "run|run": 4,
+    "stop|stop": 5
+}

@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>923</width>
-    <height>472</height>
+    <width>918</width>
+    <height>495</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,66 +21,70 @@
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QTabWidget" name="tabWidget">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="currentIndex">
         <number>0</number>
        </property>
-       <widget class="QWidget" name="note_filters_tab">
+       <widget class="QWidget" name="general_tab">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <attribute name="title">
-         <string>Note Filters</string>
+         <string>General</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
+        <layout class="QVBoxLayout" name="verticalLayout_18">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
+          <layout class="QVBoxLayout" name="verticalLayout_27">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
            <item>
-            <widget class="QTableWidget" name="note_filters_table">
-             <column>
-              <property name="text">
-               <string>Note Type</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Tags</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Field</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Morphemizer</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Morph Priority</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Read</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Modify</string>
-              </property>
-             </column>
+            <widget class="QLabel" name="label_35">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Evaluate morphs based on their:</string>
+             </property>
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <layout class="QHBoxLayout" name="horizontalLayout_20">
              <item>
-              <widget class="QPushButton" name="deleteRowPushButton">
+              <widget class="QRadioButton" name="priorityLemmaRadioButton">
                <property name="text">
-                <string>Delete Selected Row</string>
+                <string>Lemma</string>
                </property>
+               <attribute name="buttonGroup">
+                <string notr="true">buttonGroup</string>
+               </attribute>
               </widget>
              </item>
              <item>
-              <spacer name="horizontalSpacer_3">
+              <widget class="QRadioButton" name="priorityInflectionRadioButton">
+               <property name="text">
+                <string>Inflection</string>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">buttonGroup</string>
+               </attribute>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_20">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
@@ -92,59 +96,374 @@
                </property>
               </spacer>
              </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_21">
+           <item>
+            <widget class="QLabel" name="label_39">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Known Morphs:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <property name="leftMargin">
+              <number>3</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
-              <widget class="QPushButton" name="addNewRowPushButton">
+              <widget class="QLabel" name="label_16">
                <property name="text">
-                <string>Add New Row</string>
+                <string>Morphs are considered known when they have a learning interval of</string>
                </property>
               </widget>
              </item>
+             <item>
+              <widget class="QSpinBox" name="recalcIntervalSpinBox"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_17">
+               <property name="text">
+                <string>days or more</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_13">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
             </layout>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="recalcReadKnownMorphsFolderCheckBox">
+             <property name="text">
+              <string>Read files in 'known-morphs' folder and register morphs as known</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_17">
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_40">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Recalc:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="recalcBeforeSyncCheckBox">
+             <property name="text">
+              <string>Automatically Recalc before Anki sync</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_7">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>170</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_25">
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="restoreGeneralPushButton">
+             <property name="text">
+              <string>Restore Default General Settings</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_21">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="note_filters_tab">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <attribute name="title">
+         <string>Note Filters</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QTableWidget" name="note_filters_table">
+           <column>
+            <property name="text">
+             <string>Note Type</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Tags</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Field</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Morphemizer</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Morph Priority</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Read</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Modify</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QPushButton" name="deleteRowPushButton">
+             <property name="text">
+              <string>Delete Selected Row</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="addNewRowPushButton">
+             <property name="text">
+              <string>Add New Row</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_26">
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="restoreNoteFiltersPushButton">
+             <property name="text">
+              <string>Restore Default Note Filters Settings</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_23">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
           </layout>
          </item>
         </layout>
        </widget>
        <widget class="QWidget" name="extra_fields_tab">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <attribute name="title">
          <string>Extra Fields</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
+          <widget class="QLabel" name="label">
+           <property name="styleSheet">
+            <string notr="true">margin-bottom: 10px;</string>
+           </property>
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;AnkiMorphs can automatically add special fields to your cards and populate them. Read the &lt;a href=&quot;https://mortii.github.io/anki-morphs/user_guide/setup/settings/extra-fields.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#8783ff;&quot;&gt;guide&lt;/span&gt;&lt;/a&gt; for more info.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="textFormat">
+            <enum>Qt::MarkdownText</enum>
+           </property>
+           <property name="openExternalLinks">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
           <layout class="QVBoxLayout" name="verticalLayout_5">
+           <property name="leftMargin">
+            <number>7</number>
+           </property>
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
            <item>
-            <widget class="QLabel" name="label">
-             <property name="styleSheet">
-              <string notr="true">margin-bottom: 10px;</string>
-             </property>
+            <widget class="QLabel" name="label_42">
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;AnkiMorphs can automatically add special fields to your cards and populate them.&lt;/p&gt;&lt;p&gt;Read the &lt;a href=&quot;https://mortii.github.io/anki-morphs/user_guide/setup/settings/extra-fields.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#8783ff;&quot;&gt;guide&lt;/span&gt;&lt;/a&gt; for more info.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="textFormat">
-              <enum>Qt::MarkdownText</enum>
-             </property>
-             <property name="openExternalLinks">
-              <bool>true</bool>
+              <string>The extra fields display morphs in this form:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QTreeWidget" name="treeWidget">
-             <column>
-              <property name="text">
-               <string notr="true">1</string>
-              </property>
-             </column>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QRadioButton" name="unknownsFieldShowsLemmasRadioButton">
+               <property name="text">
+                <string>Lemma</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="unknownsFieldShowsInflectionsRadioButton">
+               <property name="text">
+                <string>Inflection</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_8">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QTreeWidget" name="extraFieldsTreeWidget">
+           <column>
+            <property name="text">
+             <string notr="true">1</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_9">
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="restoreExtraFieldsPushButton">
+             <property name="text">
+              <string>Restore Default Extra Fields Settings</string>
+             </property>
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_3"/>
+            <spacer name="horizontalSpacer_22">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
           </layout>
          </item>
         </layout>
        </widget>
        <widget class="QWidget" name="tags_tab">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <attribute name="title">
          <string>Tags</string>
         </attribute>
@@ -166,6 +485,13 @@
                 <widget class="QLabel" name="label_3">
                  <property name="text">
                   <string>Multiple unknown morphs</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_46">
+                 <property name="text">
+                  <string>Fresh morphs</string>
                  </property>
                 </widget>
                </item>
@@ -199,6 +525,9 @@
                </item>
                <item>
                 <widget class="QLineEdit" name="tagNotReadyLineEdit"/>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="tagfreshLineEdit"/>
                </item>
                <item>
                 <widget class="QLineEdit" name="tagLearnCardNowLineEdit"/>
@@ -241,6 +570,9 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_7">
+             <property name="topMargin">
+              <number>10</number>
+             </property>
              <item>
               <widget class="QPushButton" name="restoreTagsPushButton">
                <property name="text">
@@ -268,6 +600,12 @@
         </layout>
        </widget>
        <widget class="QWidget" name="preprocess_tab">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <attribute name="title">
          <string>Preprocess</string>
         </attribute>
@@ -333,6 +671,9 @@
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <property name="topMargin">
+            <number>10</number>
+           </property>
            <item>
             <widget class="QPushButton" name="restorePreprocessPushButton">
              <property name="text">
@@ -357,24 +698,42 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="skip_tab">
+       <widget class="QWidget" name="card_handling_tab">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <attribute name="title">
-         <string>Skip</string>
+         <string>Card Handling</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_20">
+        <layout class="QVBoxLayout" name="verticalLayout_36">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_11">
            <item>
+            <widget class="QLabel" name="label_43">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Encountering cards during study sessions:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QCheckBox" name="skipKnownCheckBox">
              <property name="text">
-              <string>Skip cards with only known morphs</string>
+              <string>Skip (bury) cards with only known morphs</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QCheckBox" name="skipAlreadySeenCheckBox">
              <property name="text">
-              <string>Skip cards that have unknown morphs already seen today</string>
+              <string>Skip (bury) cards that have unknown morphs already seen today</string>
              </property>
             </widget>
            </item>
@@ -388,82 +747,28 @@
           </layout>
          </item>
          <item>
-          <spacer name="verticalSpacer_4">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
+          <layout class="QVBoxLayout" name="verticalLayout_20">
+           <property name="topMargin">
+            <number>10</number>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_11">
            <item>
-            <widget class="QPushButton" name="restoreSkipPushButton">
+            <widget class="QLabel" name="label_44">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="text">
-              <string>Restore Default Skip Settings</string>
+              <string>On recalc:</string>
              </property>
             </widget>
            </item>
            <item>
-            <spacer name="horizontalSpacer_12">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+            <widget class="QCheckBox" name="recalcSuspendKnownCheckBox">
+             <property name="text">
+              <string>Suspend new cards with only known morphs</string>
              </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="recalc_tab">
-        <attribute name="title">
-         <string>Recalc</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_18">
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_17">
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout_21">
-             <item>
-              <widget class="QCheckBox" name="recalcBeforeSyncCheckBox">
-               <property name="text">
-                <string>Automatically Recalc before Anki sync</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="recalcReadKnownMorphsFolderCheckBox">
-               <property name="text">
-                <string>Read files in 'known-morphs' folder and register morphs as known</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="recalcSuspendKnownCheckBox">
-               <property name="text">
-                <string>Suspend new cards with only known morphs</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="recalcMoveKnownNewCardsToTheEndCheckBox">
-               <property name="text">
-                <string>Move new cards without unknown morphs to the end of the due queue</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            </widget>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_13">
@@ -518,132 +823,225 @@
             </layout>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_6">
-             <property name="leftMargin">
-              <number>3</number>
+            <widget class="QCheckBox" name="recalcMoveKnownNewCardsToTheEndCheckBox">
+             <property name="text">
+              <string>Move new cards without unknown morphs to the end of the due queue</string>
              </property>
-             <property name="topMargin">
-              <number>10</number>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_11">
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="restoreCardHandlingPushButton">
+             <property name="text">
+              <string>Restore Default Card Handling Settings</string>
              </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label_16">
-               <property name="text">
-                <string>Morphs are considered known when they have a learning interval of</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="recalcIntervalSpinBox"/>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_17">
-               <property name="text">
-                <string>days or more</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_13">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
+            </widget>
            </item>
            <item>
-            <layout class="QVBoxLayout" name="verticalLayout_14">
-             <property name="topMargin">
-              <number>10</number>
-             </property>
-             <item>
-              <widget class="QRadioButton" name="toolbarStatsUseSeenRadioButton">
-               <property name="text">
-                <string>U and A shows seen morphs (reviewed at least once)</string>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">recalcToolbarKnownRadioButtonGroup</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QRadioButton" name="toolbarStatsUseKnownRadioButton">
-               <property name="text">
-                <string>U and A shows known morphs (specified above)</string>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">recalcToolbarKnownRadioButtonGroup</string>
-               </attribute>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout_22">
-             <property name="topMargin">
-              <number>10</number>
-             </property>
-             <item>
-              <widget class="QRadioButton" name="unknownsFieldShowsInflectionsRadioButton">
-               <property name="text">
-                <string>am-unknowns field shows morph inflections</string>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">recalcUnknownFieldRadioButtonGroup</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QRadioButton" name="unknownsFieldShowsLemmasRadioButton">
-               <property name="text">
-                <string>am-unknowns field shows morph lemmas</string>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">recalcUnknownFieldRadioButtonGroup</string>
-               </attribute>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_3">
+            <spacer name="horizontalSpacer_12">
              <property name="orientation">
-              <enum>Qt::Vertical</enum>
+              <enum>Qt::Horizontal</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>17</width>
-               <height>37</height>
+               <width>40</width>
+               <height>20</height>
               </size>
              </property>
             </spacer>
            </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="algorithm_tab">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <attribute name="title">
+         <string>Algorithm</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_31">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_34">
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_9">
+            <widget class="QLabel" name="label_7">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Weights:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_16">
              <item>
-              <widget class="QPushButton" name="restoreRecalcPushButton">
-               <property name="text">
-                <string>Restore Default Recalc Settings</string>
-               </property>
-              </widget>
+              <layout class="QVBoxLayout" name="verticalLayout_28">
+               <item>
+                <widget class="QLabel" name="label_28">
+                 <property name="text">
+                  <string>Total priority of all morphs</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_27">
+                 <property name="text">
+                  <string>Total priority of unknown morphs</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_47">
+                 <property name="text">
+                  <string>Total priority of learning morphs</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_29">
+                 <property name="text">
+                  <string>Target difference of all morphs</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
              <item>
-              <spacer name="horizontalSpacer_8">
+              <layout class="QVBoxLayout" name="verticalLayout_29">
+               <property name="rightMargin">
+                <number>7</number>
+               </property>
+               <item>
+                <widget class="QSpinBox" name="totalPriorityAllMorphsSpinBox">
+                 <property name="maximum">
+                  <number>999</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="totalPriorityUknownMorphsSpinBox">
+                 <property name="maximum">
+                  <number>999</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="totalPriorityLearningMorphsSpinBox">
+                 <property name="maximum">
+                  <number>999</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="targetDifferenceAllMorphsSpinBox">
+                 <property name="maximum">
+                  <number>999</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_32">
+               <item>
+                <widget class="QLabel" name="label_38">
+                 <property name="text">
+                  <string>Average priority of all morphs</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_49">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_48">
+                 <property name="text">
+                  <string>Average priority of learning morphs</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_41">
+                 <property name="text">
+                  <string>Target difference of learning morphs</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_33">
+               <item>
+                <widget class="QSpinBox" name="averagePriorityAllMorphsSpinBox">
+                 <property name="maximum">
+                  <number>999</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_26">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="averagePriorityLearningMorphsSpinBox">
+                 <property name="maximum">
+                  <number>999</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="targetDifferenceLearningMorphsSpinBox">
+                 <property name="maximum">
+                  <number>999</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_19">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>40</width>
+                 <width>878</width>
                  <height>20</height>
                 </size>
                </property>
@@ -653,192 +1051,87 @@
            </item>
           </layout>
          </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="shortcuts_tab">
-        <attribute name="title">
-         <string>Shortcuts</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_25">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_24">
+          <layout class="QVBoxLayout" name="verticalLayout_30">
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_5">
-             <item>
-              <layout class="QVBoxLayout" name="verticalLayout_16">
-               <item>
-                <widget class="QLabel" name="label_14">
-                 <property name="text">
-                  <string>Run recalc</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="label_13">
-                 <property name="text">
-                  <string>Open settings</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="label_10">
-                 <property name="text">
-                  <string>Set card as known and skip</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="label_11">
-                 <property name="text">
-                  <string>Learn card now</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="label_12">
-                 <property name="text">
-                  <string>View card morphemes</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="label_15">
-                 <property name="text">
-                  <string>Open Generators</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="label_18">
-                 <property name="text">
-                  <string>Known Morphs Exporter</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <layout class="QVBoxLayout" name="verticalLayout_15">
-               <item>
-                <widget class="QKeySequenceEdit" name="shortcutRecalcKeySequenceEdit"/>
-               </item>
-               <item>
-                <widget class="QKeySequenceEdit" name="shortcutSettingsKeySequenceEdit"/>
-               </item>
-               <item>
-                <widget class="QKeySequenceEdit" name="shortcutKnownAndSkipKeySequenceEdit"/>
-               </item>
-               <item>
-                <widget class="QKeySequenceEdit" name="shortcutLearnNowKeySequenceEdit"/>
-               </item>
-               <item>
-                <widget class="QKeySequenceEdit" name="shortcutViewMorphsKeySequenceEdit"/>
-               </item>
-               <item>
-                <widget class="QKeySequenceEdit" name="shortcutGeneratorsKeySequenceEdit"/>
-               </item>
-               <item>
-                <widget class="QKeySequenceEdit" name="shortcutKnownMorphsExporterKeySequenceEdit"/>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_6">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
+            <widget class="QLabel" name="label_36">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Morph Targets:</string>
+             </property>
+            </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_12">
-             <property name="topMargin">
-              <number>10</number>
-             </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_21">
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout_19">
+              <layout class="QHBoxLayout" name="horizontalLayout_15">
+               <property name="rightMargin">
+                <number>7</number>
+               </property>
                <item>
-                <widget class="QLabel" name="label_8">
+                <widget class="QLabel" name="label_24">
                  <property name="text">
-                  <string>Browse ready cards with same unknown morph (inflection)</string>
+                  <string>Upper target number of all morphs</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_9">
-                 <property name="text">
-                  <string>Browse all cards with same unknown morph (inflection)</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="label_19">
-                 <property name="text">
-                  <string>Browse ready cards with the same unknown morph (lemma)</string>
-                 </property>
-                </widget>
+                <widget class="QSpinBox" name="upperTargetAllMorphsSpinBox"/>
                </item>
               </layout>
              </item>
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout_23">
-               <item>
-                <widget class="QKeySequenceEdit" name="shortcutBrowseReadyKeySequenceEdit"/>
-               </item>
-               <item>
-                <widget class="QKeySequenceEdit" name="shortcutBrowseAllKeySequenceEdit"/>
-               </item>
-               <item>
-                <widget class="QKeySequenceEdit" name="shortcutBrowseReadyLemmaKeySequenceEdit"/>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_9">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_5">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_10">
-             <item>
-              <widget class="QPushButton" name="restoreShortcutsPushButton">
+              <widget class="QLabel" name="label_25">
                <property name="text">
-                <string>Restore Default Shortcut Settings</string>
+                <string>Coefficients (a, b, c)</string>
                </property>
               </widget>
              </item>
              <item>
-              <spacer name="horizontalSpacer_11">
+              <widget class="QDoubleSpinBox" name="upperTargetAllMorphsCoefficientA">
+               <property name="decimals">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <double>10.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="upperTargetAllMorphsCoefficientB">
+               <property name="decimals">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <double>10.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="upperTargetAllMorphsCoefficientC">
+               <property name="decimals">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <double>10.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_14">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
@@ -851,6 +1144,714 @@
               </spacer>
              </item>
             </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_22">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_14">
+               <property name="rightMargin">
+                <number>7</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_22">
+                 <property name="text">
+                  <string>Lower target number of all morphs</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="lowerTargetAllMorphsSpinBox"/>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_23">
+               <property name="text">
+                <string>Coefficients (a, b, c)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="lowerTargetAllMorphsCoefficientA">
+               <property name="decimals">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <double>10.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="lowerTargetAllMorphsCoefficientB">
+               <property name="decimals">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <double>10.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="lowerTargetAllMorphsCoefficientC">
+               <property name="decimals">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <double>10.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_15">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_26">
+             <property name="topMargin">
+              <number>5</number>
+             </property>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_23">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_18">
+                 <item>
+                  <widget class="QLabel" name="label_30">
+                   <property name="text">
+                    <string>Upper target number of learning morphs</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="upperTargetLearningMorphsSpinBox"/>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_31">
+                 <property name="text">
+                  <string>Coefficients (a, b, c)</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="upperTargetLearningMorphsCoefficientA">
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>10.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.100000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="upperTargetLearningMorphsCoefficientB">
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>10.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.100000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="upperTargetLearningMorphsCoefficientC">
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>10.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.100000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_16">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_24">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_19">
+                 <property name="rightMargin">
+                  <number>7</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_32">
+                   <property name="text">
+                    <string>Lower target number of learning morphs</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="lowerTargetLearningMorphsSpinBox"/>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_33">
+                 <property name="text">
+                  <string>Coefficients (a, b, c)</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="lowerTargetLearningMorphsCoefficientA">
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>10.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.100000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="lowerTargetLearningMorphsCoefficientB">
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>10.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.100000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="lowerTargetLearningMorphsCoefficientC">
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>10.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.100000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_17">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_6">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_17">
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="restoreAlgorithmPushButton">
+             <property name="text">
+              <string>Restore Default Algorithm Settings</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_18">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="toolbar_tab">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <attribute name="title">
+         <string>Toolbar</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_35">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_14">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_37">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>'L' and 'I' displays:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="toolbarStatsUseSeenRadioButton">
+             <property name="text">
+              <string>Seen morphs (reviewed at least once)</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="toolbarStatsUseKnownRadioButton">
+             <property name="text">
+              <string>Known morphs</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_25">
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_45">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Hide</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="hideRecalcCheckBox">
+             <property name="text">
+              <string>Recalc</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="hideLemmaCheckBox">
+             <property name="text">
+              <string>L</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="hideInflectionCheckBox">
+             <property name="text">
+              <string>I</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>124</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_27">
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="restoreToolbarPushButton">
+             <property name="text">
+              <string>Restore Default Toolbar Settings</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_24">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="shortcuts_tab">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <attribute name="title">
+         <string>Shortcuts</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_24">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_16">
+             <item>
+              <widget class="QLabel" name="label_14">
+               <property name="text">
+                <string>Run recalc</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>Open settings</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_10">
+               <property name="text">
+                <string>Set card as known and skip</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_11">
+               <property name="text">
+                <string>Learn card now</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_12">
+               <property name="text">
+                <string>View card morphemes</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_15">
+               <property name="text">
+                <string>Open Generators</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_34">
+               <property name="text">
+                <string>Open Progression</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_18">
+               <property name="text">
+                <string>Known Morphs Exporter</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_15">
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcutRecalcKeySequenceEdit"/>
+             </item>
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcutSettingsKeySequenceEdit"/>
+             </item>
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcutKnownAndSkipKeySequenceEdit"/>
+             </item>
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcutLearnNowKeySequenceEdit"/>
+             </item>
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcutViewMorphsKeySequenceEdit"/>
+             </item>
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcutGeneratorsKeySequenceEdit"/>
+             </item>
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcutProgressionKeySequenceEdit"/>
+             </item>
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcutKnownMorphsExporterKeySequenceEdit"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+             <item>
+              <widget class="QPushButton" name="shortcutRecalcDisablePushButton">
+               <property name="text">
+                <string>Disable</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="shortcutSettingsDisablePushButton">
+               <property name="text">
+                <string>Disable</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="shortcutKnownAndSkipDisablePushButton">
+               <property name="text">
+                <string>Disable</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="shortcutLearnNowDisablePushButton">
+               <property name="text">
+                <string>Disable</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="shortcutViewMorphsDisablePushButton">
+               <property name="text">
+                <string>Disable</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="shortcutGeneratorsDisablePushButton">
+               <property name="text">
+                <string>Disable</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="shortcutProgressionDisablePushButton">
+               <property name="text">
+                <string>Disable</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="shortcutKnownMorphsExporterDisablePushButton">
+               <property name="text">
+                <string>Disable</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_6">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_12">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_19">
+             <item>
+              <widget class="QLabel" name="label_8">
+               <property name="text">
+                <string>Browse ready cards with same unknown morph (inflection)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_9">
+               <property name="text">
+                <string>Browse all cards with same unknown morph (inflection)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_19">
+               <property name="text">
+                <string>Browse ready cards with the same unknown morph (lemma)</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_23">
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcutBrowseReadyKeySequenceEdit"/>
+             </item>
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcutBrowseAllKeySequenceEdit"/>
+             </item>
+             <item>
+              <widget class="QKeySequenceEdit" name="shortcutBrowseReadyLemmaKeySequenceEdit"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_22">
+             <item>
+              <widget class="QPushButton" name="shortcutBrowseReadyDisablePushButton">
+               <property name="text">
+                <string>Disable</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="shortcutBrowseAllDisablePushButton">
+               <property name="text">
+                <string>Disable</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="shortcutBrowseReadyLemmaDisablePushButton">
+               <property name="text">
+                <string>Disable</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_9">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>876</width>
+             <height>10</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_10">
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="restoreShortcutsPushButton">
+             <property name="text">
+              <string>Restore Default Shortcut Settings</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_11">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
           </layout>
          </item>
@@ -901,16 +1902,47 @@
         </spacer>
        </item>
        <item>
+        <widget class="QPushButton" name="applyPushButton">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="cancelPushButton">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string> Cancel</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="savePushButton">
+        <widget class="QPushButton" name="okPushButton">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
-          <string> Save</string>
+          <string>OK</string>
          </property>
         </widget>
        </item>
@@ -923,7 +1955,6 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="recalcToolbarKnownRadioButtonGroup"/>
-  <buttongroup name="recalcUnknownFieldRadioButtonGroup"/>
+  <buttongroup name="buttonGroup"/>
  </buttongroups>
 </ui>

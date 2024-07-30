@@ -8,11 +8,11 @@ AnkiMorphs provides the following three generators:
 - [Readability Report Generator](#readability-report-generator)  
   A report over how well you know the text in the specified files
 
-- [Frequency File Generator](#frequency-file-generator)  
+- [Priority File Generator](#priority-file-generator)  
   A file that lists all the found morphs sorted by their frequency  
 
 - [Study Plan Generator](#study-plan-generator)  
-  A combination of frequency files in the order you specify
+  A combination of priority files in the order you specify
 
 <br>
 
@@ -89,15 +89,20 @@ These options are equivalent to those found in [`Preprocess` settings](../setup/
 
 ## Generator Output
 
-When clicking the `Generate Freuency File` or `Generate Study Plan` buttons you will be presented with these options:
+When clicking the `Generate Priority File` or `Generate Study Plan` buttons you will be presented with these options:
 
 ![generator-output-dialog.png](../../img/generator-output-dialog.png)
 
-The output file is automatically set to be in the [[anki profile folder](../../glossary.md#profile-folder)]`/frequency-files/` folder. Any frequency
+The output file is automatically set to be in the [[anki profile folder](../../glossary.md#profile-folder)]`/priority-files/` folder. Any priority
 files or study plans that are placed in this folder can be selected in the 
 [note filter: morph priority settings](../setup/settings/note-filter.md#morph-priority).
 
 You can name the file whatever you want as long as it has a `.csv` extension, e.g. `ja-freq.csv`.
+
+### File Format
+
+- `Lemma and inflection`: [inflection priority file](../setup/prioritizing.md#custom-inflection-priority-files)
+- `Only lemma`: [lemma priority file](../setup/prioritizing.md#custom-lemma-priority-files)
 
 ### Minimum Occurrence
 
@@ -132,9 +137,9 @@ are sorted based on the value in the `File` column.
 <br>
 <br>
 
-# Frequency File Generator
+# Priority File Generator
 
-The Frequency File Generator creates a frequency file that is described in the [prioritizing section](../setup/prioritizing.md).
+The Priority File Generator creates a priority file that is described in the [prioritizing section](../setup/prioritizing.md).
 
 <br>
 <br>
@@ -146,19 +151,19 @@ The Frequency File Generator creates a frequency file that is described in the [
 Using a study plan is convenient if you want to learn morphs from source materials in a specific sequence,
 e.g., TV show episodes, book series, etc.
 
-A study plan differs from a regular frequency file in the following ways:
+A study plan differs from a regular priority file in the following ways:
 - It is first sorted by input files, then morph frequency.
 - It has extra columns:
     - Learning status
     - File name
 
 The study plan generator basically does this:
-1. Creates a frequency file for each input file
-2. Combines those frequency files
+1. Creates a priority file for each input file
+2. Combines those priority files
 3. Removes duplicate morphs
 
 The resulting file can be used in the [note filter: morph priority settings](../setup/settings/note-filter.md#morph-priority)
-like any other frequency file.
+like any other priority file.
 
 > **Note**: that only the data from the `Morph-lemma`, and `Morph-inflection` columns are read 
 by AnkiMorphs, so you can delete or modify the other columns if you want.

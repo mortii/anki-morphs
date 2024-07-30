@@ -1,6 +1,6 @@
 # Preprocess
 
-![parse-tab.png](../../../img/parse-tab.png)
+![preprocess-tab.png](../../../img/preprocess-tab.png)
 
 Here are some options that can preprocess the text on your cards, potentially removing uninteresting morphs for you.
 

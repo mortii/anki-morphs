@@ -2,6 +2,7 @@
 
 ![extra-fields.png](../../../img/extra-fields.png)
 
+
 The text found in the [note filter: field](../settings/note-filter.md#field) is extracted and analyzed by AnkiMorphs.
 AnkiMorphs can then place
 information about that text into dedicated fields on your cards.
@@ -12,33 +13,77 @@ information about that text into dedicated fields on your cards.
 
 The fields contain the following:
 
-- **am-unknowns**:  
-  A list of the morphs that are still unknown to you that was found in the text
+- **am-all-morphs**:  
+  A list of the morphs.
 
-- **am-unknowns-count**:  
-  The number of unknowns found
+- **am-all-morphs-count**:  
+  The number of morphs.
+- **am-unknown-morphs**:  
+  A list of the morphs that are still unknown to you.
+- **am-unknown-morphs-count**:  
+  The number of morphs that are still unknown to you.
 - **am-highlighted**:  
-  An HTML version of the text that highlights the morphs based on learning status
+  An HTML version of the text that highlights the morphs based on learning status.
 - **am-score**:  
   The [score](../../usage/recalc.md#scoring-algorithm) AnkiMorphs determined the card to have
+- **am-score-terms**:  
+  The individual [score](../../usage/recalc.md#scoring-algorithm) terms
+- **am-study-morphs**:  
+  A list of the morphs that were unknown to you when you first studied the card.
+
+
+The following fields will only update on [new cards](../../glossary.md#new-cards):
+- am-all-morphs
+- am-all-morphs-count
+- am-score
+- am-score-terms
+- am-study-morphs
+
+and these fields will always update, even on [reviewed cards](../../glossary.md#reviewed-cards):
+- am-unknown-morphs
+- am-unknown-morphs-count
+- am-highlighted
+
 
 <br>
-Here is an example where all the extra-fields have been selected:
+Here is an example card where all the extra-fields have been selected:
 
 ![extra_fields_example_output.png](../../../img/extra_fields_example_output.png)
 
-## Using am-unknowns
+<br>
+
+**The extra fields display morphs in this form**:
+
+You can chose to display morphs in their inflected forms:
+   ``` text
+  "walking and talking" -> [walking, and, talking]
+   ```
+
+or their lemma (base) forms:
+  ``` text
+  "walking and talking" -> [walk, and, talk]
+  ```
+
+This effects the following three fields:
+- am-all-morphs
+- am-study-morphs
+- am-unknown-morphs
+
+
+
+## Using am-study-morphs
 
 ![unknown-morphs.png](../../../img/unknown-morphs.png)
 
-Adding this field to your card-template can give you a quick way to see which morphs are unknown to you. The example
-above uses the following card-template:
+Adding this field to your card-template can give you a quick way to see which morphs are/were unknown to you on the first encounter.
+Here is a simplified version of the card template used by the example above:
 
-![unknown-morphs-template.png](../../../img/unknown-morphs-template.png)
+![am-study-morphs-template.png](../../../img/am-study-morphs-template.png)
 
-## Using am-unknowns-count
 
-This is useful if you want to sort your cards in the browser based on how many unknowns they have.
+## Using am-*-morphs-count
+
+This is useful if you want to sort your cards in the browser based on how many total/unknown morphs they have.
 
 ![unknowns-count-search-field.png](../../../img/unknowns-count-search-field.png)
 
@@ -121,7 +166,3 @@ press `Show Answer` on the card. To prevent both playing you can do the followin
 2. Scroll down to the `Audio` section
 3. Activate `Skip question when replaying answer`
 
-## Using am-score
-
-This field is really just for debugging purposes, so I recommend that you **don't** add this field to your card-template
-to make it visible--it would just end up making your cards more cluttered.

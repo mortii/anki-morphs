@@ -1,0 +1,13 @@
+{
+    "man|man": 0,
+    "the|the": 1,
+    "crawl|crawled": 2,
+    "crawl|crawls": 3,
+    "run|ran": 4,
+    "run|runs": 5,
+    "stop|stopped": 6,
+    "stop|stops": 7,
+    "walk|walk": 8,
+    "walk|walked": 9,
+    "walk|walking": 10
+}

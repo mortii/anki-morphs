@@ -6,8 +6,8 @@ from .ankimorphs_db import AnkiMorphsDB
 
 class MorphToolbarStats:
     def __init__(self) -> None:
-        self.unique_morphs = "U: ?"
-        self.all_morphs = "A: ?"
+        self.lemmas = "L: ?"
+        self.inflections = "I: ?"
         self.update_stats()
 
     def update_stats(self) -> None:
@@ -20,29 +20,28 @@ class MorphToolbarStats:
             return
 
         # this is only reached after the profile is loaded
-
         am_db.create_morph_table()
         am_config = AnkiMorphsConfig()
         learning_interval: int = 1  # seen morphs
 
-        if am_config.recalc_toolbar_stats_use_known is True:
-            learning_interval = am_config.recalc_interval_for_known
+        if am_config.toolbar_stats_use_known:
+            learning_interval = am_config.interval_for_known_morphs
 
         try:
-            all_unique_morphs = am_db.con.execute(
+            known_lemmas = am_db.con.execute(
                 """
                 SELECT COUNT(DISTINCT lemma)
                 FROM Morphs
-                WHERE highest_learning_interval >= ?
+                WHERE highest_inflection_learning_interval >= ?
                 """,
                 (learning_interval,),
             ).fetchone()[0]
 
-            all_morphs = am_db.con.execute(
+            known_inflections = am_db.con.execute(
                 """
                 SELECT COUNT(*)
                 FROM Morphs
-                WHERE highest_learning_interval >= ?
+                WHERE highest_inflection_learning_interval >= ?
                 """,
                 (learning_interval,),
             ).fetchone()[0]
@@ -51,5 +50,5 @@ class MorphToolbarStats:
             # database schema has changed
             return
 
-        self.unique_morphs = f"U: {all_unique_morphs}"
-        self.all_morphs = f"A: {all_morphs}"
+        self.lemmas = f"L: {known_lemmas}"
+        self.inflections = f"I: {known_inflections}"

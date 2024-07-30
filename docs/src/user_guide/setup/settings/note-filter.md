@@ -101,7 +101,7 @@ how to add morphemizers.
 
 The calculated [score](../../usage/recalc.md#scoring-algorithm) of the card, and as a result, the sorting of the card, depends on
 the [priority](../prioritizing.md) you give the morphs. You can either set the priorities to be `Collection frequency` (how often the morphs occur in your card collection), or you could use
-a [custom frequency file](../prioritizing.md#custom-frequency-files) that specifies the priorities of the morphs.
+a [custom priority file](../prioritizing.md#custom-priority-files) that specifies the priorities of the morphs.
 
 AnkiMorphs automatically finds .csv files placed
 in [[anki profile folder](../../glossary.md#profile-folder)]`/frequency-files/`.
