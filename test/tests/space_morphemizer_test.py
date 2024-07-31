@@ -22,44 +22,54 @@ def _fake_environment_fixture() -> Iterator[None]:
     ankimorphs.morphemizers.morphemizer.morphemizers = None
 
 
-def test_french(  # pylint:disable=unused-argument
+@pytest.mark.parametrize(
+    "morphemizer_description, sentence, correct_morphs",
+    [
+        (
+            "AnkiMorphs: SSS + Punctuations",
+            "Tu es quelqu'un de bien.",  # french test
+            {
+                Morpheme("tu", "tu"),
+                Morpheme("es", "es"),
+                Morpheme("quelqu'un", "quelqu'un"),
+                Morpheme("de", "de"),
+                Morpheme("bien", "bien"),
+            },
+        ),
+        (
+            "AnkiMorphs: SSS + Punctuations",
+            "My mother-in-law is wonderful",  # english test
+            {
+                Morpheme("my", "my"),
+                Morpheme("mother-in-law", "mother-in-law"),
+                Morpheme("is", "is"),
+                Morpheme("wonderful", "wonderful"),
+            },
+        ),
+        (
+            "AnkiMorphs: Simple Space Splitter",
+            "أنا بصدّقك وإحنا دايماً منقلكم",  # arabic test
+            {
+                Morpheme("منقلكم", "منقلكم"),
+                Morpheme("دايماً", "دايماً"),
+                Morpheme("وإحنا", "وإحنا"),
+                Morpheme("بصدّقك", "بصدّقك"),
+                Morpheme("أنا", "أنا"),
+            },
+        ),
+    ],
+)
+def test_simple_space_splitters(
     _fake_environment_fixture: None,
+    morphemizer_description: str,
+    sentence: str,
+    correct_morphs: set[Morpheme],
 ) -> None:
-    morphemizer = get_morphemizer_by_description("AnkiMorphs: Language w/ Spaces")
+    morphemizer = get_morphemizer_by_description(morphemizer_description)
     assert morphemizer is not None
 
-    sentence = "Tu es quelqu'un de bien."
-    correct_morphs: set[Morpheme] = {
-        Morpheme("tu", "tu"),
-        Morpheme("es", "es"),
-        Morpheme("quelqu'un", "quelqu'un"),
-        Morpheme("de", "de"),
-        Morpheme("bien", "bien"),
-    }
-
     extracted_morphs = morphemizer.get_morphemes_from_expr(sentence)
-    assert len(extracted_morphs) == 5
-
-    for morph in extracted_morphs:
-        assert morph in correct_morphs
-
-
-def test_english(  # pylint:disable=unused-argument
-    _fake_environment_fixture: None,
-) -> None:
-    morphemizer = get_morphemizer_by_description("AnkiMorphs: Language w/ Spaces")
-    assert morphemizer is not None
-
-    sentence = "My mother-in-law is wonderful"
-    correct_morphs: set[Morpheme] = {
-        Morpheme("my", "my"),
-        Morpheme("mother-in-law", "mother-in-law"),
-        Morpheme("is", "is"),
-        Morpheme("wonderful", "wonderful"),
-    }
-
-    extracted_morphs = morphemizer.get_morphemes_from_expr(sentence)
-    assert len(extracted_morphs) == 4
+    assert len(extracted_morphs) == len(correct_morphs)
 
     for morph in extracted_morphs:
         assert morph in correct_morphs

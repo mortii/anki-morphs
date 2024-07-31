@@ -7,7 +7,7 @@ from ..morpheme import Morpheme
 from . import jieba_wrapper, mecab_wrapper, spacy_wrapper
 
 space_char_regex = re.compile(" ")
-
+space_and_punctuation_pattern = re.compile(r"\w+(?:[-']\w+)*", re.UNICODE)
 
 ####################################################################################################
 # Base Class
@@ -53,7 +53,10 @@ def get_all_morphemizers() -> list[Morphemizer]:
     if morphemizers is None:
         # the space morphemizer is just a regex splitter, and is
         # therefore always included since nothing has to be installed
-        morphemizers = [SpaceMorphemizer()]
+        morphemizers = [
+            SimpleSpaceMorphemizer(),
+            SimpleSpaceAndPunctuationMorphemizer(),
+        ]
 
         _mecab = MecabMorphemizer()
         if mecab_wrapper.successful_startup:
@@ -100,20 +103,37 @@ class MecabMorphemizer(Morphemizer):
 
 
 ####################################################################################################
-# Space Morphemizer
+# Simple Space Morphemizer
 ####################################################################################################
 
 
-class SpaceMorphemizer(Morphemizer):
+class SimpleSpaceMorphemizer(Morphemizer):
     """
-    Morphemizer for languages that use spaces (English, German, Spanish, ...). Because it is
-    a general-use-morphemizer, it can't generate the base form from inflection.
+    This morphemizer only splits on whitespaces.
     """
 
     def _get_morphemes_from_expr(self, expression: str) -> list[Morpheme]:
-        # We want the expression: "At 3 o'clock that god-forsaken-man shows up..."
-        # to produce: ['at', '3', "o'clock", 'that', 'god-forsaken-man', 'shows', 'up']
-        #
+        word_list = [word.lower() for word in expression.split()]
+        return [Morpheme(lemma=word, inflection=word) for word in word_list]
+
+    def get_description(self) -> str:
+        return "AnkiMorphs: Simple Space Splitter"
+
+
+####################################################################################################
+# Simple Space and Punctuation Morphemizer
+####################################################################################################
+
+
+class SimpleSpaceAndPunctuationMorphemizer(Morphemizer):
+    """
+    Extension of the SSS morphemizer that targets english and french, and should work
+    on words like:
+        - "mother-in-law"
+        - "quelqu'un"
+    """
+
+    def _get_morphemes_from_expr(self, expression: str) -> list[Morpheme]:
         # Regex:
         # The '\w' character matches alphanumeric and underscore characters
         #
@@ -129,12 +149,12 @@ class SpaceMorphemizer(Morphemizer):
 
         word_list = [
             word.lower()
-            for word in re.findall(r"\w+(?:[-']\w+)*", expression, re.UNICODE)
+            for word in re.findall(space_and_punctuation_pattern, expression)
         ]
         return [Morpheme(lemma=word, inflection=word) for word in word_list]
 
     def get_description(self) -> str:
-        return "AnkiMorphs: Language w/ Spaces"
+        return "AnkiMorphs: SSS + Punctuations"
 
 
 ####################################################################################################

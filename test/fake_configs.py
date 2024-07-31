@@ -18,7 +18,7 @@ default_config_filter = default_config_dict[ConfigKeys.FILTERS][0]
 default_config_filter[FilterKeys.NOTE_TYPE] = "Basic"
 default_config_filter[FilterKeys.FIELD] = "Front"
 default_config_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = (
-    "AnkiMorphs: Language w/ Spaces"
+    "AnkiMorphs: SSS + Punctuations"
 )
 default_config_filter[FilterKeys.EXTRA_ALL_MORPHS] = True
 default_config_filter[FilterKeys.EXTRA_ALL_MORPHS_COUNT] = True
