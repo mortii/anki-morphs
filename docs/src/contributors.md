@@ -17,7 +17,7 @@ Matt Vs Japan, mortii, Vilhelm-Ian, cocowash, xuiqzy, xofm31, zeroeightysix, wol
 Vilhelm-Ian, CodeWithMa, ashprice, aleksejrs, HQYang1979, soliviantar, buster-blue, rymiel, BorisNA, wrinkledeth,
 cocowash, asayake-b5, quietmansoath, MichaelPetre, xofm31, knoebelja, xuiqzy, Jcuhfehl, fuquasteve, pallas42, syfgk,
 jahnke, jsteel44, iwouldrathernotusegithub, tanhoaian01, drkthomp, Kirchheim, zeroeightysix, Gardengul, wolearyc,
-Pedrubik2000, RyanMcEntire, BobvanSchendel, khanguyenwk.
+Pedrubik2000, RyanMcEntire, BobvanSchendel, khanguyenwk, buqamura, Rct567, rwmpelstilzchen.
 
 ### MorphMan (v5.0-qt6-alpha.1)
 

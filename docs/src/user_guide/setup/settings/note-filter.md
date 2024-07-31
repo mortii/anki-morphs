@@ -94,8 +94,23 @@ how to add morphemizers.
 
 ![morphemizer-selection.png](../../../img/morphemizer-selection.png)
 
-> **Note**: `AnkiMorphs: Languages w/ Spaces` is bad, it simply splits all text on whitespace. It's much better to use
-> other morphemizers if you are able to install them.
+
+AnkiMorphs comes bundled with two morphemizers: [Simple Space Splitter](#simple-space-splitter) and
+[SSS + Punctuation](#simple-space-splitter--punctuation). These morphemizers are very basic and do not perform any
+linguistic analysis, meaning they won't provide accurate [lemmas](../../glossary.md#lemma). Therefore, you should only
+use them if no other morphemizers are available for your particular language.
+
+### Simple Space Splitter
+As the name suggests, this morphemizer splits words based on whitespace.
+
+### Simple Space Splitter + Punctuation
+This extends the [Simple Space Splitter](#simple-space-splitter) morphemizer to preserve words containing hyphens
+(-) and apostrophes ('), so words like these are handled correctly:
+- "mother-in-law"
+- "quelqu'un"
+
+> **Note**: This morphemizer will split words incorrectly in some languages, such as Arabic. If you experience this
+> issue, try using the Simple Space Splitter instead.
 
 ## Morph Priority
 
