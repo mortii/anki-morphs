@@ -2,7 +2,7 @@
 
 ![settings-note-filter.png](../../../img/settings-note-filter.png)
 
-AnkiMorphs only analyzes and sorts cards that match at least one `note filter`; if you don't specify any note filters,
+AnkiMorphs only analyzes and sorts cards that match at least one note filter; if you don't specify any note filters,
 then AnkiMorphs won't do anything, so this is a necessary step. This can seem overly complicated and overwhelming, but
 hopefully things will make sense after reading to the end of this page. This is really the heart of the add-on, and it
 has some powerful options (notably [tags](note-filter.md#tags)), so having a good understanding of note filters work
@@ -101,16 +101,16 @@ linguistic analysis, meaning they won't provide accurate [lemmas](../../glossary
 use them if no other morphemizers are available for your particular language.
 
 ### Simple Space Splitter
-As the name suggests, this morphemizer splits words based on whitespace.
+As the name suggests, this morphemizer just splits words based on whitespace.
 
 ### Simple Space Splitter + Punctuation
-This extends the [Simple Space Splitter](#simple-space-splitter) morphemizer to preserve words containing hyphens
-(-) and apostrophes ('), so words like these are handled correctly:
-- "mother-in-law"
-- "quelqu'un"
+This morphemizer extends the [Simple Space Splitter](#simple-space-splitter) to preserve words containing hyphens (-)
+and apostrophes ('), ensuring that words like these are not split apart:
+- `mother-in-law`
+- `quelqu'un`
 
-> **Note**: This morphemizer will split words incorrectly in some languages, such as Arabic. If you experience this
-> issue, try using the Simple Space Splitter instead.
+> **Note**: This morphemizer may not work correctly for some languages, such as Arabic. If you encounter this issue,
+> try using the Simple Space Splitter instead.
 
 ## Morph Priority
 
@@ -119,7 +119,7 @@ the [priority](../prioritizing.md) you give the morphs. You can either set the p
 a [custom priority file](../prioritizing.md#custom-priority-files) that specifies the priorities of the morphs.
 
 AnkiMorphs automatically finds .csv files placed
-in [[anki profile folder](../../glossary.md#profile-folder)]`/frequency-files/`.
+in [[anki profile folder](../../glossary.md#profile-folder)]`/priority-files/`.
 
 > **Note:** using `Collection frequency` is not recommended because it can be volatile; if you make any changes to your
 > cards (delete, suspend, move, etc.), then it can cause a cascade of sorting changes.

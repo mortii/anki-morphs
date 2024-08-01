@@ -43,16 +43,16 @@ Take, for example, the following folders and their files:
 
 ```
 english_texts/
-    - books/
-        - The Wise Man's Fear/
-            - The Wise Man's Fear.epub
-            - The Wise Man's Fear.txt
-    - subs/
-        - Game-of-Thrones/
-            - season-1/
-                - episode_1.srt
-        - Lord_of_the_Rings/
-            - The_Fellowship_of_the_Ring.vtt
+├── books/
+│   └── The Wise Man's Fear/
+│       ├── The Wise Man's Fear.epub
+│       └── The Wise Man's Fear.txt
+└── subs/
+    ├── Game-of-Thrones/
+    │   └── season-1/
+    │       └── episode_1.srt
+    └── Lord_of_the_Rings/
+        └── The_Fellowship_of_the_Ring.vtt
 
 ```
 
@@ -131,8 +131,7 @@ different outputs, one with pure numerical values, and one with percentages.
 ![readability-report-generator-numerical.png](../../img/readability-report-generator-numerical.png)
 ![readability-report-generator-percentages.png](../../img/readability-report-generator-percentages.png)
 
-You can click on the column headers to sort the rows based on those values. In the pictures above the rows
-are sorted based on the value in the `File` column.
+You can click on the column headers to sort the rows based on those values.
 
 <br>
 <br>
@@ -165,7 +164,7 @@ The study plan generator basically does this:
 The resulting file can be used in the [note filter: morph priority settings](../setup/settings/note-filter.md#morph-priority)
 like any other priority file.
 
-> **Note**: that only the data from the `Morph-lemma`, and `Morph-inflection` columns are read 
+> **Note**: that only the data from the `Morph-Lemma`, and `Morph-Lnflection` columns are read 
 by AnkiMorphs, so you can delete or modify the other columns if you want.
 
 

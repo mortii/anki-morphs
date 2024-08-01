@@ -3,7 +3,7 @@
 
 ![algorithm-tab.png](../../../img/algorithm-tab.png)
 
-These options will not make sense without reading the [scoring algorithm](../../../user_guide/usage/recalc.md#scoring-algorithm)
+For these settings to make sense you have to read the [scoring algorithm](../../../user_guide/usage/recalc.md#scoring-algorithm)
 section first.
 
 **Weights**:

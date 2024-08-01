@@ -12,7 +12,7 @@
   determines the [L and I numbers](../../installation/changes-to-anki.md#toolbar).
 
 * **Read files in 'known-morphs' folder and register morphs as known**:  
-  Import known morphs from the known-morphs folder. Read more in [Settings Known Morphs](../setting-known-morphs.md).
+  Import known morphs from the `known-morphs` folder. Read more in [Settings Known Morphs](../setting-known-morphs.md).
 
 * **Automatically Recalc before Anki sync**:  
   Recalc automatically runs before Anki syncs your card collection.

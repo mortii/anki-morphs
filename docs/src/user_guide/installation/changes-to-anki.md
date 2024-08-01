@@ -10,7 +10,7 @@ The toolbar now has three new items:
 
 - [Recalc](../usage/recalc.md)
 - `L`, which stands for `Known Morph Lemmas`
-- `I`, which stands for `All Morph Inflections`
+- `I`, which stands for `Known Morph Inflections`
 
 <details>
   <summary style="display:list-item">English examples of L and I</summary>
@@ -262,5 +262,5 @@ You can find info about the options here:
 * [Recalc](../usage/recalc.md)
 * [Generators](../usage/generators.md)
 * [Progression](../usage/progression.md)
-* [Reset Tags](../usage/reset_tags.md)
 * [Known Morphs Exporter](../usage/known-morphs-exporter.md)
+* [Reset Tags](../usage/reset_tags.md)

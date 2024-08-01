@@ -70,13 +70,12 @@ This effects the following three fields:
 - am-unknown-morphs
 
 
-
 ## Using am-study-morphs
 
 ![unknown-morphs.png](../../../img/unknown-morphs.png)
 
 Adding this field to your card-template can give you a quick way to see which morphs are/were unknown to you on the first encounter.
-Here is a simplified version of the card template used by the example above:
+Here is a simplified version of the card template used in the example above:
 
 ![am-study-morphs-template.png](../../../img/am-study-morphs-template.png)
 

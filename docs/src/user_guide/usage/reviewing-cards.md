@@ -64,15 +64,15 @@ The card will then go to the top of the `new cards`-queue. If you have other due
 
 There are three scenarios where AnkiMorphs will automatically skip a card:
 
-1. **You have selected the "Skip cards with only known morphs"-option in [skip settings](../setup/settings/skip.md)**   
+1. **You have selected the `Skip cards with only known morphs`-option the in the [card-handling settings](../setup/settings/card_handling.md)**:   
    If the next card has one of the ['known' tags](../setup/settings/tags.md), then it will be skipped.
 
-2. **You have selected the "Skip cards that have unknown morphs already seen today"-option
-   in [skip settings](../setup/settings/skip.md)**   
+2. **You have selected the `Skip cards that have unknown morphs already seen today`-option
+   in the [card-handling settings](../setup/settings/card_handling.md)**:   
    Say you have three cards: `card1, card2, card3`, all of which have the same unknown morph. After you have
    answered `card1` then the cards `card2, card3` will be skipped.
 
-3. **You have selected the "ignore names found in names.txt"-option in Preprocess settings**   
+3. **You have selected the `ignore names found in names.txt`-option in [preprocess settings](../setup/settings/preprocess.md)**   
    Let's use the same example of three cards , `card1, card2, card3`. This time they all have the same unknown morph
    `Alexander`. If you use the [Mark as name](../setup/names.md) feature to mark `Alexander` as a name on `card1`,
    then the cards `card2, card3` will be skipped.
@@ -99,16 +99,15 @@ AnkiMorphs adds some additional options to the Anki context menu (right-click):
 * **Mark as Name**:  
   The highlighted text will be added to the [names.txt](../setup/names.md) file, and the card will be skipped.
 
-* **Browse in am-unknowns**:  
+* **Browse in `am-study-morphs`**:  
   This opens up the Anki Browse window with the search term:
   ```
-   "am-unknowns:{highlighted_text}"
+   "am-study-morphs:{highlighted_text}"
   ```
-  This can be useful to find cards you previously studied that had this as an unknown morph.
+  This can be useful for finding cards you previously studied that contained the highlighted text as an unknown morph.
 
-  For example, you might have forgotten the nuances of the word `lucky`, but you recall having studied it before and
-  you wish to refresh your memory. To quickly find the previously studied card(s), you can highlight `lucky`,
-  select this option, and the browse window will open with the search:
+  For example, you might have forgotten the nuances of the word `repulse`, but recall having studied it before, you can
+  then highlight `repulse`, select this option, and the browse window will open with the search term:
   ```
-   "am-unknowns:lucky"
+   "am-study-morphs:repulse"
   ```

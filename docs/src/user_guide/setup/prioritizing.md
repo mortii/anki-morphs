@@ -5,9 +5,9 @@ behind AnkiMorphs--learn a language in the order that will be the most useful.
 
 AnkiMorphs is a general purpose language learning tool, therefore, it has to be told which morphs occur most often. You
 can do this in two ways, either have AnkiMorphs calculate the morph frequencies found in your
-cards (`Collection frequency`), or you can specify a custom .csv file that contains that information.
+cards (`Collection frequency`), or you can specify a custom `.csv` file that contains that information.
 
-Any .csv file located in the folder [[anki profile folder](../glossary.md#profile-folder)]`/priority-files/` is
+Any `.csv` file located in the folder [[anki profile folder](../glossary.md#profile-folder)]`/priority-files/` is
 available for selection in [note filters: morph priority](../setup/settings/note-filter.md#morph-priority).
 
 But before we outline the custom priority files, we have to discuss morph lemmas and inflections.
@@ -20,18 +20,19 @@ There are scenarios where you might not want to give each individual [inflection
 - Korean has an extreme number of inflections, leading to an explosion of priorities, which creates disproportionate penalties.
 - You might feel that you have a good enough grasp of the grammar of inflections, making it unnecessary to prioritize one over another.
 
-If you **_never_** want to give separate priorities to inflections then you should choose a [lemma only priority file](#custom-lemma-priority-files). If
+If you _never_ want to give separate priorities to inflections then you should choose a [lemma only priority file](#custom-lemma-priority-files). If
 you do care about inflection priorities, or if you might want to switch to lemma priorities on the fly, then choose an [inflection priority file](#custom-inflection-priority-files).
 
 
 ## Custom Priority Files
 
 You can use the [Priority File Generator](../usage/generators.md#priority-file-generator) or the
-[Study Plan Generator](../usage/generators.md#study-plan-generator) to create your own custom priority file. 
+[Study Plan Generator](../usage/generators.md#study-plan-generator) to create your own custom priority file, or you can download some pre-made ones at the bottom
+of this page.
 
 > **Note**:
 > - The `Occurrences` column is optional
-> - Any lines after 1 million will be ignored
+> - Any lines after 1 million will be ignored by AnkiMorphs
 
 
 ### Custom Lemma Priority Files
@@ -87,7 +88,7 @@ Unless otherwise stated, these are `inflection` priority files, generated using 
 
 > * <a download href="../../priority_files/catalan/wortschatz/ca-news-priority.csv">ca-news-priority.csv</a>
 >   - Source: `cat_news_2022_300K-sentences.txt` found on [wortschatz - catalan corpora](https://wortschatz.uni-leipzig.de/en/download/Catalan)
->   - Morphemizer: `AnkiMorphs: Chinese`
+>   - Morphemizer: `spaCy: ca-core-news-sm`
 
 </details>
 
@@ -97,7 +98,7 @@ Unless otherwise stated, these are `inflection` priority files, generated using 
 > **Note**: this is a lemma only priority file.
 > * <a download href="../../priority_files/chinese/wortschatz/zh-news-lemma-priority.csv">zh-news-lemma-priority.csv</a>
 >   - Source: `zho_news_2020_300K-sentences.txt` found on [wortschatz - chinese corpora](https://wortschatz.uni-leipzig.de/en/download/Chinese#zho-simp_news_2010)
->   - Morphemizer: `spaCy: zh-core-web-sm`
+>   - Morphemizer: `AnkiMorphs: Chinese`
 
 </details>
 

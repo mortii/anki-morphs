@@ -1,5 +1,8 @@
 # Names
 
+> **Note**: AnkiMorphs loads the entire list of names into memory and compares against it each time you review a card.
+> To avoid slowdowns, keep the list of names as small as possible.
+
 You can have AnkiMorphs automatically filter out specified names found on your cards. This feature is designed so users
 won't have to learn the names of places or individuals, as these words lack
 inherent meaning that can be acquired.
@@ -15,3 +18,4 @@ You can either update this file manually, or during a review you can also add na
 right-clicking it, and choosing `Mark as name` from the dropdown menu.
 
 ![mark-as-name.png](../../img/mark-as-name.png)
+

@@ -17,8 +17,8 @@ your **learning progress** and the **quality of your card collection** with resp
 
 Since progression is measured with respect to [morph priorities](../setup/prioritizing.md), we must first decide how 
 morph priorities should be determined. In an identical manner to [note filters](../setup/settings/note-filter.md#morph-priority), you can either use the morph 
-frequencies of your card collection (`Collection frequency`) or you can designate a custom .csv file that contains this 
-information. Any .csv file located in the folder [anki profile folder](../glossary#profile-folder)`/priority-files/` is available for selection. 
+frequencies of your card collection (`Collection frequency`) or you can designate a custom `.csv` file that contains this 
+information. Any `.csv` file located in the folder [anki profile folder](../glossary#profile-folder)`/priority-files/` is available for selection. 
 
 ### Options
 
@@ -44,7 +44,7 @@ Finally, the user can specify whether morphs should be evaluated according to [l
 ![progression-morph-evaluation-mode.png](../../img/progression-morph-evaluation-mode.png)
 
 This can be freely changed regardless of the mode specified in the [general settings](../setup/settings/general.md). However, if using
-morph priorities from a custom .csv file, one must be sure as always that the .csv file is compatible with the morph evaluation mode, e.g. 
+morph priorities from a custom `.csv` file, one must be sure as always that the file is compatible with the morph evaluation mode, e.g. 
 if you are using a [lemma-only priority file](../setup/prioritizing.md#custom-lemma-priority-files), then you can only evaluate by lemma.
 
 ## Results

@@ -25,8 +25,8 @@ unit of speech. A morpheme can be a whole word, like "book" or "run," or a part 
 ### Lemma
 
 A lemma is the base form of a word. It's the version you would typically find in a dictionary. For example:
-- The lemma for "running," "ran," and "runs" is "run."
-- The lemma for "better" and "best" is "good."
+- The lemma for "running," "ran," and "runs" is "**run**."
+- The lemma for "better" and "best" is "**good**."
 
 ### Inflection
 
@@ -91,7 +91,7 @@ You can tell if a card is in the 'new' state when its `due` value looks like thi
 
 After reviewing a card, you can change its state back to 'new' by using the reset option.
 
-###Reviewed cards
+### Reviewed cards
 
 Once a card has been reviewed once, i.e. answered with either 'Again', 'Hard', 'Good', or 'Easy', it will move
 from the 'new' state into the 'review' state.

@@ -12,7 +12,7 @@ Here you can adjust the look of the [toolbar](../../installation/changes-to-anki
   since it goes up every time you study new cards, but it can also give you a false sense of confidence.
 
 * **Known morphs**:  
-  Only show known morphs, which is determined by the general setting (todo: add link)
+  Only show known morphs, which is determined by `Morphs are considered known when [...]` option in the [general setting](general.md).
 
 **Hide**:  
 * **Recalc**:  
