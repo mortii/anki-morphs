@@ -18,7 +18,7 @@ updates:
           - "patch"
     ignore:
       - dependency-name: "PyQt6"
-      - dependency-name: "PyQt6-Qt"
+      - dependency-name: "PyQt6-Qt6"
       - dependency-name: "PyQt6-WebEngine"
       - dependency-name: "PyQt6-WebEngine-Qt6"
       - dependency-name: "PyQt6_sip"
