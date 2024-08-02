@@ -8,8 +8,8 @@ from aqt.operations import QueryOp
 from aqt.qt import QWidget  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
-from ankimorphs import progress_utils
-from ankimorphs.ankimorphs_config import AnkiMorphsConfig
+from . import progress_utils
+from .ankimorphs_config import AnkiMorphsConfig
 
 
 def update_tags_and_queue_of_new_cards(

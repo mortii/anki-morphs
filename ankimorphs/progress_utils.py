@@ -2,7 +2,7 @@ from functools import partial
 
 from aqt import mw
 
-from ankimorphs.exceptions import CancelledOperationException
+from .exceptions import CancelledOperationException
 
 
 def background_update_progress_potentially_cancel(

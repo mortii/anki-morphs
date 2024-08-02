@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 
-from ankimorphs.settings.data_provider import DataProvider
+from ..settings.data_provider import DataProvider
 
 
 class DataExtractor:
