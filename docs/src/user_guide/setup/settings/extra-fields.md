@@ -7,9 +7,13 @@ The text found in the [note filter: field](../settings/note-filter.md#field) is 
 AnkiMorphs can then place
 information about that text into dedicated fields on your cards.
 
-> **Note**: The first time you select an extra field you have to do a full sync upload to AnkiWeb. If you have _a lot_
-> of cards (500K+), then syncing might become a problem. Read more about it on
+Here’s a streamlined version that improves clarity and readability:
+
+> **Note**: The first time you select an extra field, you will need to perform a full sync upload to AnkiWeb. If you
+> have a large number of cards (500K+), syncing might become an issue. For more details, refer to 
 > the [Anki FAQ](https://faqs.ankiweb.net/are-there-limits-on-file-sizes-on-ankiweb.html).
+
+> **Important**: Extra fields add more data to your collection, so only select the fields that will be useful to you.
 
 The fields contain the following:
 
