@@ -60,6 +60,15 @@ the `AnkiMorphs` menu at the top of the browse window.
 
 The card will then go to the top of the `new cards`-queue. If you have other due cards, then they might show up first.
 
+
+
+### Encountering Suitable 1T Cards
+
+If you come across a new card with only one unknown and it seems reasonable, treat it like any other new Anki card and
+answer it accordingly. For more information on handling new cards,
+refer to the [Anki studying guide](https://docs.ankiweb.net/studying.html#learningrelearning-cards).
+
+
 ### Skipping Cards
 
 There are three scenarios where AnkiMorphs will automatically skip a card:
