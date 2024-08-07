@@ -117,10 +117,18 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self.ui.morphemizerComboBox.addItems(morphemizer_names)
 
     def _setup_checkboxes(self) -> None:
-        self.ui.txtFilesCheckBox.setChecked(True)
-        self.ui.srtFilesCheckBox.setChecked(True)
-        self.ui.vttFilesCheckBox.setChecked(True)
-        self.ui.mdFilesCheckBox.setChecked(True)
+        checkboxes = [
+            self.ui.txtFilesCheckBox,
+            self.ui.srtFilesCheckBox,
+            self.ui.vttFilesCheckBox,
+            self.ui.mdFilesCheckBox,
+        ]
+
+        for checkbox in checkboxes:
+            checkbox.setChecked(True)
+            checkbox.clicked.connect(
+                lambda: self.ui.loadFilesPushButton.setEnabled(True)
+            )
 
     def _on_select_folder_clicked(self) -> None:
         input_dir: str = QFileDialog.getExistingDirectory(
@@ -129,6 +137,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             directory=QDir().homePath(),
         )
         self.ui.inputDirLineEdit.setText(input_dir)
+        self.ui.loadFilesPushButton.setEnabled(True)
 
     def _on_load_files_button_clicked(self) -> None:
         # gather the files in the background since it could
@@ -150,6 +159,9 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self.ui.generateReportPushButton.setEnabled(True)
         self.ui.generatePriorityFilePushButton.setEnabled(True)
         self.ui.generateStudyPlanPushButton.setEnabled(True)
+
+        # give a visual que that reloading is not necessary
+        self.ui.loadFilesPushButton.setEnabled(False)
 
     def _background_gather_files_and_populate_files_column(self) -> None:
         assert mw is not None
