@@ -1,13 +1,249 @@
 from __future__ import annotations
 
 import copy
-import csv
+from enum import Enum
+from functools import partial
 from pathlib import Path
+from typing import Any
 
-from .. import ankimorphs_globals as am_globals
+from aqt import mw
+from aqt.qt import (  # pylint:disable=no-name-in-module
+    QComboBox,
+    QTableWidget,
+    QTableWidgetItem,
+)
+
+from ..ankimorphs_config import AnkiMorphsConfig
 from ..ankimorphs_db import AnkiMorphsDB
-from ..morpheme import MorphOccurrence
+from ..exceptions import CancelledOperationException
+from ..morpheme import Morpheme, MorphOccurrence
+from ..morphemizers import spacy_wrapper
+from ..morphemizers.morphemizer import Morphemizer, SpacyMorphemizer
+from ..ui.generators_window_ui import Ui_GeneratorsWindow
+from . import generators_text_processing
 from .generators_output_dialog import OutputOptions
+from .generators_text_processing import PreprocessOptions
+
+
+class Column(Enum):
+    FILE_NAME = 0
+    UNIQUE_MORPHS = 1
+    UNIQUE_KNOWN = 2
+    UNIQUE_LEARNING = 3
+    UNIQUE_UNKNOWNS = 4
+    TOTAL_MORPHS = 5
+    TOTAL_KNOWN = 6
+    TOTAL_LEARNING = 7
+    TOTAL_UNKNOWNS = 8
+    NUMBER_OF_COLUMNS = len(
+        [
+            FILE_NAME,
+            UNIQUE_MORPHS,
+            UNIQUE_KNOWN,
+            UNIQUE_LEARNING,
+            UNIQUE_UNKNOWNS,
+            TOTAL_MORPHS,
+            TOTAL_KNOWN,
+            TOTAL_LEARNING,
+            TOTAL_UNKNOWNS,
+        ]
+    )
+
+
+class FileMorphsStats:
+    __slots__ = (
+        "unique_morphs",
+        "unique_known",
+        "unique_learning",
+        "unique_unknowns",
+        "total_morphs",
+        "total_known",
+        "total_learning",
+        "total_unknowns",
+    )
+
+    def __init__(
+        self,
+    ) -> None:
+        self.unique_known: set[Morpheme] = set()
+        self.unique_learning: set[Morpheme] = set()
+        self.unique_unknowns: set[Morpheme] = set()
+
+        self.total_known: int = 0
+        self.total_learning: int = 0
+        self.total_unknowns: int = 0
+
+    def __add__(self, other: FileMorphsStats) -> FileMorphsStats:
+        self.unique_known.update(other.unique_known)
+        self.unique_learning.update(other.unique_learning)
+        self.unique_unknowns.update(other.unique_unknowns)
+
+        self.total_known += other.total_known
+        self.total_learning += other.total_learning
+        self.total_unknowns += other.total_unknowns
+
+        return self
+
+
+def get_morph_stats_from_file(
+    am_config: AnkiMorphsConfig,
+    am_db: AnkiMorphsDB,
+    file_morphs: dict[str, MorphOccurrence],
+) -> FileMorphsStats:
+    file_morphs_stats = FileMorphsStats()
+    highest_learning_interval: int | None
+
+    if am_config.evaluate_morph_inflection:
+        for morph_occurrence_object in file_morphs.values():
+            morph = morph_occurrence_object.morph
+            occurrence = morph_occurrence_object.occurrence
+            highest_learning_interval = am_db.get_highest_inflection_learning_interval(
+                morph
+            )
+
+            _update_file_morphs_stats(
+                file_morphs_stats=file_morphs_stats,
+                interval_for_known=am_config.interval_for_known_morphs,
+                morph=morph,
+                occurrence=occurrence,
+                highest_learning_interval=highest_learning_interval,
+            )
+    else:
+        for morph_occurrence_object in file_morphs.values():
+            morph = morph_occurrence_object.morph
+            occurrence = morph_occurrence_object.occurrence
+            highest_learning_interval = am_db.get_highest_lemma_learning_interval(morph)
+
+            _update_file_morphs_stats(
+                file_morphs_stats=file_morphs_stats,
+                interval_for_known=am_config.interval_for_known_morphs,
+                morph=morph,
+                occurrence=occurrence,
+                highest_learning_interval=highest_learning_interval,
+            )
+
+    return file_morphs_stats
+
+
+def _update_file_morphs_stats(
+    file_morphs_stats: FileMorphsStats,
+    interval_for_known: int,
+    morph: Morpheme,
+    occurrence: int,
+    highest_learning_interval: int | None,
+) -> None:
+    if highest_learning_interval is None:
+        file_morphs_stats.total_unknowns += occurrence
+        file_morphs_stats.unique_unknowns.add(morph)
+        return
+
+    if highest_learning_interval == 0:
+        file_morphs_stats.total_unknowns += occurrence
+        file_morphs_stats.unique_unknowns.add(morph)
+    elif highest_learning_interval < interval_for_known:
+        file_morphs_stats.total_learning += occurrence
+        file_morphs_stats.unique_learning.add(morph)
+    else:
+        file_morphs_stats.total_known += occurrence
+        file_morphs_stats.unique_known.add(morph)
+
+
+def generate_morph_occurrences_by_file(
+    ui: Ui_GeneratorsWindow,
+    morphemizers: list[Morphemizer],
+    input_dir_root: Path,
+    input_files: list[Path],
+    sorted_by_table: int = False,
+) -> dict[Path, dict[str, MorphOccurrence]]:
+    """
+    'sorted_by_table=True' is used for study plans where the order matters.
+    """
+    assert mw is not None
+
+    _morphemizer, _nlp = _get_selected_morphemizer_and_nlp(
+        morphemizers=morphemizers, morphemizer_combobox=ui.morphemizerComboBox
+    )
+    preprocess_options = PreprocessOptions(ui)
+    morph_occurrences_by_file: dict[Path, dict[str, MorphOccurrence]] = {}
+
+    sorted_input_files: list[Path]
+
+    if sorted_by_table:
+        sorted_input_files = _get_input_files_table_sorted(
+            ui=ui,
+            input_dir_root=input_dir_root,
+        )
+    else:
+        sorted_input_files = input_files
+
+    for input_file in sorted_input_files:
+        if mw.progress.want_cancel():  # user clicked 'x' button
+            raise CancelledOperationException
+
+        mw.taskman.run_on_main(
+            partial(
+                mw.progress.update,
+                label=f"Processing file:<br>{input_file.relative_to(input_dir_root)}",
+            )
+        )
+
+        with open(input_file, encoding="utf-8") as file:
+            file_morph_occurrences: dict[str, MorphOccurrence] = (
+                generators_text_processing.create_file_morph_occurrences(
+                    preprocess_options=preprocess_options,
+                    file=file,
+                    morphemizer=_morphemizer,
+                    nlp=_nlp,
+                )
+            )
+            morph_occurrences_by_file[input_file] = file_morph_occurrences
+
+    return morph_occurrences_by_file
+
+
+def _get_selected_morphemizer_and_nlp(
+    morphemizers: list[Morphemizer], morphemizer_combobox: QComboBox
+) -> tuple[Morphemizer, Any]:
+    _morphemizer = morphemizers[morphemizer_combobox.currentIndex()]
+    assert _morphemizer is not None
+    _nlp = None  # spacy.Language
+
+    if isinstance(_morphemizer, SpacyMorphemizer):
+        selected_index = morphemizer_combobox.currentIndex()
+        selected_text: str = morphemizer_combobox.itemText(selected_index)
+        spacy_model = selected_text.removeprefix("spaCy: ")
+        _nlp = spacy_wrapper.get_nlp(spacy_model)
+
+    return _morphemizer, _nlp
+
+
+def _get_input_files_table_sorted(
+    ui: Ui_GeneratorsWindow, input_dir_root: Path
+) -> list[Path]:
+    sorted_input_files: list[Path] = []
+    current_table: QTableWidget | None = None
+
+    if ui.tablesTabWidget.currentIndex() == 0:
+        current_table = ui.numericalTableWidget
+    elif ui.tablesTabWidget.currentIndex() == 1:
+        current_table = ui.percentTableWidget
+
+    assert current_table is not None
+
+    for row in range(current_table.rowCount()):
+        file_name_item: QTableWidgetItem | None = current_table.item(
+            row, Column.FILE_NAME.value
+        )
+        assert file_name_item is not None
+        file_name_text: str = file_name_item.text()
+
+        if file_name_text == "Total":
+            continue
+
+        # the root dir is stripped when loading the files, so we have to add it back
+        sorted_input_files.append(Path(input_dir_root, file_name_text))
+
+    return sorted_input_files
 
 
 def get_total_morph_occurrences_dict(
@@ -108,259 +344,3 @@ def get_sorted_lemma_occurrence_dict(
     )
 
     return sorted_lemma_frequency
-
-
-def write_out_priority_file(
-    selected_output_options: OutputOptions,
-    total_morph_occurrences: dict[str, MorphOccurrence],
-) -> None:
-
-    output_file: Path = selected_output_options.output_path
-
-    # make sure the parent dirs exist before creating the file
-    Path(output_file).parent.mkdir(parents=True, exist_ok=True)
-
-    if selected_output_options.store_only_lemma:
-        lemma_only_writer(
-            selected_output_options=selected_output_options,
-            total_morph_occurrences=total_morph_occurrences,
-        )
-    else:
-        lemma_and_inflection_writer(
-            selected_output_options=selected_output_options,
-            total_morph_occurrences=total_morph_occurrences,
-        )
-
-
-def lemma_and_inflection_writer(  # pylint:disable=too-many-locals
-    selected_output_options: OutputOptions,
-    total_morph_occurrences: dict[str, MorphOccurrence],
-) -> None:
-    output_file: Path = selected_output_options.output_path
-
-    headers = [
-        am_globals.LEMMA_HEADER,
-        am_globals.INFLECTION_HEADER,
-        am_globals.LEMMA_PRIORITY_HEADER,
-        am_globals.INFLECTION_PRIORITY_HEADER,
-    ]
-
-    sorted_inflection_occurrences = dict(
-        sorted(
-            total_morph_occurrences.items(),
-            key=lambda item: item[1].occurrence,
-            reverse=True,
-        )
-    )
-
-    sorted_lemma_occurrences: dict[str, MorphOccurrence] = (
-        get_sorted_lemma_occurrence_dict(total_morph_occurrences)
-    )
-    sorted_index_replaced_lemma_dict: dict[str, int] = {
-        morph_lemma: index for index, morph_lemma in enumerate(sorted_lemma_occurrences)
-    }
-
-    if selected_output_options.selected_extra_occurrences_column:
-        headers.append("Occurrence")
-
-    morph_key_cutoff = get_morph_key_cutoff(
-        selected_output_options, sorted_inflection_occurrences
-    )
-
-    with open(output_file, mode="w+", encoding="utf-8", newline="") as csvfile:
-        morph_writer = csv.writer(csvfile)
-        morph_writer.writerow(headers)
-
-        for index, (key, morph_occurrence) in enumerate(
-            sorted_inflection_occurrences.items()
-        ):
-            if key == morph_key_cutoff:
-                break
-
-            morph = morph_occurrence.morph
-            occurrence = morph_occurrence.occurrence
-            row_values: list[str | int] = [morph.lemma]
-
-            if selected_output_options.store_lemma_and_inflection:
-                row_values.append(morph.inflection)
-                row_values.append(sorted_index_replaced_lemma_dict[morph.lemma])
-                row_values.append(index)
-
-            if selected_output_options.selected_extra_occurrences_column:
-                row_values.append(occurrence)
-
-            morph_writer.writerow(row_values)
-
-
-def lemma_only_writer(
-    selected_output_options: OutputOptions,
-    total_morph_occurrences: dict[str, MorphOccurrence],
-) -> None:
-    output_file: Path = selected_output_options.output_path
-    headers = [am_globals.LEMMA_HEADER]
-
-    if selected_output_options.selected_extra_occurrences_column:
-        headers.append(am_globals.OCCURRENCES_HEADER)
-
-    sorted_lemma_occurrences: dict[str, MorphOccurrence] = (
-        get_sorted_lemma_occurrence_dict(total_morph_occurrences)
-    )
-    morph_key_cutoff = get_morph_key_cutoff(
-        selected_output_options, sorted_lemma_occurrences
-    )
-
-    with open(output_file, mode="w+", encoding="utf-8", newline="") as csvfile:
-        morph_writer = csv.writer(csvfile)
-        morph_writer.writerow(headers)
-
-        for key, morph_occurrence in sorted_lemma_occurrences.items():
-            if key == morph_key_cutoff:
-                break
-
-            morph = morph_occurrence.morph
-            occurrence = morph_occurrence.occurrence
-            row_values: list[str | int] = [morph.lemma]
-
-            if selected_output_options.selected_extra_occurrences_column:
-                row_values.append(occurrence)
-
-            morph_writer.writerow(row_values)
-
-
-def write_out_study_plan(  # pylint:disable=too-many-locals
-    input_dir_root: Path,
-    selected_output_options: OutputOptions,
-    morph_occurrences_by_file: dict[Path, dict[str, MorphOccurrence]],
-) -> None:
-    # Note: the study plan cannot have a full-format where one can switch
-    # between evaluating lemmas and inflections like you can with regular
-    # priority files, because the same lemma can span multiple files,
-    # even though the inflections do not, so the priorities do not align
-    # cleanly.
-
-    am_db = AnkiMorphsDB()
-    output_file = selected_output_options.output_path
-
-    # make sure the parent dirs exist before creating the file
-    Path(output_file).parent.mkdir(parents=True, exist_ok=True)
-
-    morph_in_study_plan: dict[str, None] = {}  # we only care about lookup not the value
-    learning_status_of_morph: dict[str, str]
-
-    if selected_output_options.store_lemma_and_inflection:
-        learning_status_of_morph = am_db.get_morph_inflections_learning_statuses()
-    else:
-        learning_status_of_morph = am_db.get_morph_lemmas_learning_statuses()
-
-    with open(output_file, mode="w+", encoding="utf-8", newline="") as csvfile:
-        morph_writer = csv.writer(csvfile)
-        headers = _get_study_plan_headers(selected_output_options)
-        morph_writer.writerow(headers)
-
-        for file_path, file_morph_occurrences in morph_occurrences_by_file.items():
-            # we always include the lemmas
-            sorted_lemma_occurrences: dict[str, MorphOccurrence] = (
-                get_sorted_lemma_occurrence_dict(file_morph_occurrences)
-            )
-            sorted_dict_to_use: dict[str, MorphOccurrence]
-            morph_key_cutoff: str | None
-
-            if selected_output_options.store_lemma_and_inflection:
-                sorted_inflection_occurrences = dict(
-                    sorted(
-                        file_morph_occurrences.items(),
-                        key=lambda item: item[1].occurrence,
-                        reverse=True,
-                    )
-                )
-
-                morph_key_cutoff = get_morph_key_cutoff(
-                    selected_output_options=selected_output_options,
-                    sorted_morph_occurrences=sorted_inflection_occurrences,
-                )
-                sorted_dict_to_use = sorted_inflection_occurrences
-
-            else:
-                morph_key_cutoff = get_morph_key_cutoff(
-                    selected_output_options=selected_output_options,
-                    sorted_morph_occurrences=sorted_lemma_occurrences,
-                )
-                sorted_dict_to_use = sorted_lemma_occurrences
-
-            for key, morph_occurrence in sorted_dict_to_use.items():
-                if key == morph_key_cutoff:
-                    break
-
-                if key in morph_in_study_plan:
-                    continue
-
-                row = _get_study_plan_row(
-                    selected_output_options=selected_output_options,
-                    input_dir_root=input_dir_root,
-                    file_path=file_path,
-                    learning_status_of_morph=learning_status_of_morph,
-                    morph_key=key,
-                    morph_occurrence=morph_occurrence,
-                )
-
-                morph_writer.writerow(row)
-                morph_in_study_plan[key] = None  # inserts the key
-
-
-def _get_study_plan_headers(selected_output_options: OutputOptions) -> list[str]:
-    """
-    A full headers list looks like this:
-        headers = [
-            am_globals.LEMMA_HEADER,
-            am_globals.INFLECTION_HEADER,
-            "Learning-status",
-            "Occurrence",
-            "File",
-        ]
-
-    A minimal headers list looks like this:
-        headers = [
-            am_globals.LEMMA_HEADER,
-            "Learning-status",
-            "File",
-        ]
-    """
-    headers = [
-        am_globals.LEMMA_HEADER,
-    ]
-    if selected_output_options.store_lemma_and_inflection:
-        headers.append(am_globals.INFLECTION_HEADER)
-    headers.append("Learning-status")
-    if selected_output_options.selected_extra_occurrences_column:
-        headers.append("Occurrence")
-    headers.append("File")
-    return headers
-
-
-def _get_study_plan_row(  # pylint:disable=too-many-arguments
-    selected_output_options: OutputOptions,
-    input_dir_root: Path,
-    file_path: Path,
-    learning_status_of_morph: dict[str, str],
-    morph_key: str,
-    morph_occurrence: MorphOccurrence,
-) -> list[str]:
-    learning_status: str
-
-    if morph_key not in learning_status_of_morph:
-        learning_status = "unknown"
-    else:
-        learning_status = learning_status_of_morph[morph_key]
-
-    row = [morph_occurrence.morph.lemma]
-
-    if selected_output_options.store_lemma_and_inflection:
-        row.append(morph_occurrence.morph.inflection)
-
-    row.append(learning_status)
-
-    if selected_output_options.selected_extra_occurrences_column:
-        row.append(str(morph_occurrence.occurrence))
-
-    row.append(str(file_path.relative_to(input_dir_root)))
-    return row

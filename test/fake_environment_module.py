@@ -35,7 +35,13 @@ from ankimorphs import (
     progress_utils,
     reviewing_utils,
 )
-from ankimorphs.generators import generators_utils, generators_window
+from ankimorphs.generators import (
+    generators_utils,
+    generators_window,
+    priority_file_generator,
+    readability_report_generator,
+    study_plan_generator,
+)
 from ankimorphs.morphemizers import spacy_wrapper
 from ankimorphs.progression import progression_utils, progression_window
 from ankimorphs.recalc import anki_data_utils, caching, recalc_main
@@ -79,7 +85,7 @@ class FakeEnvironment:
 
 
 @pytest.fixture(scope="function")
-def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statements
+def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statements, too-many-branches
     request: SubRequest,
 ) -> Iterator[FakeEnvironment | None]:
     # Sending arguments to a fixture requires a somewhat hacky
@@ -148,82 +154,62 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     mock_mw.reviewer = Reviewer(mock_mw)
     mock_mw.reviewer._showQuestion = lambda: None
 
-    patch_recalc_mw = mock.patch.object(recalc_main, "mw", mock_mw)
-    patch_caching_mw = mock.patch.object(caching, "mw", mock_mw)
-    patch_progress_mw = mock.patch.object(progress_utils, "mw", mock_mw)
-    patch_am_db_mw = mock.patch.object(ankimorphs_db, "mw", mock_mw)
-    patch_config_mw = mock.patch.object(ankimorphs_config, "mw", mock_mw)
-    patch_name_file_utils_mw = mock.patch.object(name_file_utils, "mw", mock_mw)
-    patch_anki_data_utils_mw = mock.patch.object(anki_data_utils, "mw", mock_mw)
-    patch_reviewing_mw = mock.patch.object(reviewing_utils, "mw", mock_mw)
-    patch_gw_mw = mock.patch.object(generators_window, "mw", mock_mw)
-    patch_pw_mw = mock.patch.object(progression_window, "mw", mock_mw)
-    patch_morph_priority_mw = mock.patch.object(morph_priority_utils, "mw", mock_mw)
-    patch_morphs_exporter_mw = mock.patch.object(known_morphs_exporter, "mw", mock_mw)
+    mw_patches = [
+        mock.patch.object(recalc_main, "mw", mock_mw),
+        mock.patch.object(caching, "mw", mock_mw),
+        mock.patch.object(progress_utils, "mw", mock_mw),
+        mock.patch.object(ankimorphs_db, "mw", mock_mw),
+        mock.patch.object(ankimorphs_config, "mw", mock_mw),
+        mock.patch.object(name_file_utils, "mw", mock_mw),
+        mock.patch.object(anki_data_utils, "mw", mock_mw),
+        mock.patch.object(reviewing_utils, "mw", mock_mw),
+        mock.patch.object(generators_window, "mw", mock_mw),
+        mock.patch.object(progression_window, "mw", mock_mw),
+        mock.patch.object(readability_report_generator, "mw", mock_mw),
+        mock.patch.object(generators_utils, "mw", mock_mw),
+        mock.patch.object(priority_file_generator, "mw", mock_mw),
+        mock.patch.object(study_plan_generator, "mw", mock_mw),
+        mock.patch.object(morph_priority_utils, "mw", mock_mw),
+        mock.patch.object(known_morphs_exporter, "mw", mock_mw),
+    ]
 
-    patch_recalc_mw.start()
-    patch_caching_mw.start()
-    patch_progress_mw.start()
-    patch_am_db_mw.start()
-    patch_config_mw.start()
-    patch_name_file_utils_mw.start()
-    patch_anki_data_utils_mw.start()
-    patch_reviewing_mw.start()
-    patch_gw_mw.start()
-    patch_pw_mw.start()
-    patch_morph_priority_mw.start()
-    patch_morphs_exporter_mw.start()
+    for mw_patch in mw_patches:
+        mw_patch.start()
 
     # 'mw' has to be patched before we can before we can create a db instance
-    patch_reviewing_am_db = mock.patch.object(reviewing_utils, "AnkiMorphsDB", FakeDB)
-    patch_recalc_am_db = mock.patch.object(recalc_main, "AnkiMorphsDB", FakeDB)
-    patch_caching_am_db = mock.patch.object(caching, "AnkiMorphsDB", FakeDB)
-    patch_generators_window_am_db = mock.patch.object(
-        generators_window, "AnkiMorphsDB", FakeDB
-    )
-    patch_generators_utils_am_db = mock.patch.object(
-        generators_utils, "AnkiMorphsDB", FakeDB
-    )
-    patch_progression_window_am_db = mock.patch.object(
-        progression_window, "AnkiMorphsDB", FakeDB
-    )
-    patch_progression_utils_am_db = mock.patch.object(
-        progression_utils, "AnkiMorphsDB", FakeDB
-    )
-    patch_morphs_exporter_am_db = mock.patch.object(
-        known_morphs_exporter, "AnkiMorphsDB", FakeDB
-    )
+    am_db_patches = [
+        mock.patch.object(reviewing_utils, "AnkiMorphsDB", FakeDB),
+        mock.patch.object(recalc_main, "AnkiMorphsDB", FakeDB),
+        mock.patch.object(caching, "AnkiMorphsDB", FakeDB),
+        mock.patch.object(readability_report_generator, "AnkiMorphsDB", FakeDB),
+        mock.patch.object(study_plan_generator, "AnkiMorphsDB", FakeDB),
+        mock.patch.object(progression_window, "AnkiMorphsDB", FakeDB),
+        mock.patch.object(progression_utils, "AnkiMorphsDB", FakeDB),
+        mock.patch.object(known_morphs_exporter, "AnkiMorphsDB", FakeDB),
+    ]
+
+    for am_db_patch in am_db_patches:
+        am_db_patch.start()
 
     mock_db = FakeDB()
 
     # tooltip tries to do gui stuff which breaks test
     mock_tooltip = mock.Mock(spec=aqt.utils.tooltip)
-    patch_tooltip = mock.patch.object(reviewing_utils, "tooltip", mock_tooltip)
 
-    patch_testing_variable = mock.patch.object(
-        spacy_wrapper, "testing_environment", True
-    )
-    patch_priority_files_dir = mock.patch.object(
-        ankimorphs_globals, "PRIORITY_FILES_DIR_NAME", _priority_files_dir
-    )
-    patch_known_morphs_dir = mock.patch.object(
-        ankimorphs_globals, "KNOWN_MORPHS_DIR_NAME", _known_morphs_dir
-    )
+    misc_patches: list[Any] = [
+        mock.patch.object(reviewing_utils, "tooltip", mock_tooltip),
+        mock.patch.object(spacy_wrapper, "testing_environment", True),
+        mock.patch.object(
+            ankimorphs_globals, "PRIORITY_FILES_DIR_NAME", _priority_files_dir
+        ),
+        mock.patch.object(
+            ankimorphs_globals, "KNOWN_MORPHS_DIR_NAME", _known_morphs_dir
+        ),
+    ]
 
-    patch_reviewing_am_db.start()
-    patch_recalc_am_db.start()
-    patch_caching_am_db.start()
-    patch_generators_window_am_db.start()
-    patch_generators_utils_am_db.start()
-    patch_progression_window_am_db.start()
-    patch_progression_utils_am_db.start()
-    patch_morphs_exporter_am_db.start()
+    for misc_patch in misc_patches:
+        misc_patch.start()
 
-    patch_tooltip.start()
-
-    patch_testing_variable.start()
-    patch_priority_files_dir.start()
-    patch_known_morphs_dir.start()
     sys.path.append(str(fake_morphemizers_path))
 
     try:
@@ -243,32 +229,15 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals, too-many-statem
     mock_mw.col.close()
     mock_db.con.close()
 
-    patch_recalc_mw.stop()
-    patch_caching_mw.stop()
-    patch_progress_mw.stop()
-    patch_am_db_mw.stop()
-    patch_config_mw.stop()
-    patch_name_file_utils_mw.stop()
-    patch_anki_data_utils_mw.stop()
-    patch_reviewing_mw.stop()
-    patch_gw_mw.stop()
-    patch_pw_mw.stop()
-    patch_morph_priority_mw.stop()
-    patch_morphs_exporter_mw.stop()
+    for mw_patch in mw_patches:
+        mw_patch.stop()
 
-    patch_reviewing_am_db.stop()
-    patch_recalc_am_db.stop()
-    patch_caching_am_db.stop()
-    patch_generators_window_am_db.stop()
-    patch_generators_utils_am_db.stop()
-    patch_progression_window_am_db.stop()
-    patch_progression_utils_am_db.stop()
-    patch_morphs_exporter_am_db.stop()
-    patch_tooltip.stop()
+    for am_db_patch in am_db_patches:
+        am_db_patch.stop()
 
-    patch_testing_variable.stop()
-    patch_priority_files_dir.stop()
-    patch_known_morphs_dir.stop()
+    for misc_patch in misc_patches:
+        misc_patch.stop()
+
     sys.path.remove(str(fake_morphemizers_path))
 
     Path.unlink(PATH_DB_COPY, missing_ok=True)

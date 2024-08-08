@@ -22,10 +22,16 @@ from typing import Any
 import pytest
 from aqt.qt import QTableWidgetItem  # pylint:disable=no-name-in-module
 
+from ankimorphs.generators import (
+    priority_file_generator,
+    readability_report_generator,
+    study_plan_generator,
+)
 from ankimorphs.generators.generators_output_dialog import (
     GeneratorOutputDialog,
     OutputOptions,
 )
+from ankimorphs.generators.generators_utils import Column
 from ankimorphs.generators.generators_window import GeneratorWindow
 
 ################################################################
@@ -126,7 +132,13 @@ def test_priority_file_generator(  # pylint:disable=unused-argument, too-many-lo
 
     selected_output_options: OutputOptions = selected_output.get_selected_options()
 
-    gw._background_generate_priority_file(selected_output_options)
+    priority_file_generator.background_generate_priority_file(
+        selected_output_options=selected_output_options,
+        ui=gw.ui,
+        morphemizers=gw._morphemizers,
+        input_dir_root=gw._input_dir_root,
+        input_files=gw._input_files,
+    )
 
     test_utils.assert_csv_files_are_identical(
         correct_output_file=correct_output_file, test_output_file=test_output_file
@@ -191,52 +203,58 @@ def test_readability_report(  # pylint:disable=too-many-arguments, unused-argume
         generator_window=gw, morphemizer_description="AnkiMorphs: Japanese"
     )
 
-    gw._background_generate_report()
+    readability_report_generator.background_generate_report(
+        ui=gw.ui,
+        morphemizers=gw._morphemizers,
+        input_dir_root=gw._input_dir_root,
+        input_files=gw._input_files,
+    )
 
     _row = 1
     _item: QTableWidgetItem | None
 
-    _item = gw.ui.numericalTableWidget.item(_row, gw._file_name_column)
+    _item = gw.ui.numericalTableWidget.item(_row, Column.FILE_NAME.value)
     assert _item is not None
     assert _item.text() == "Black Clover - 002 - The Boys` Promise [shiRo].jp.srt"
 
-    _item = gw.ui.percentTableWidget.item(_row, gw._file_name_column)
+    _item = gw.ui.percentTableWidget.item(_row, Column.FILE_NAME.value)
     assert _item is not None
     assert _item.text() == "Black Clover - 002 - The Boys` Promise [shiRo].jp.srt"
 
-    _item = gw.ui.numericalTableWidget.item(_row, gw._unique_morphs_column)
+    _item = gw.ui.numericalTableWidget.item(_row, Column.UNIQUE_MORPHS.value)
     assert _item is not None
     assert _item.text() == "482"
 
-    _item = gw.ui.percentTableWidget.item(_row, gw._unique_morphs_column)
+    _item = gw.ui.percentTableWidget.item(_row, Column.UNIQUE_MORPHS.value)
     assert _item is not None
     assert _item.text() == "482"
 
-    _item = gw.ui.numericalTableWidget.item(_row, gw._unique_known_column)
+    _item = gw.ui.numericalTableWidget.item(_row, Column.UNIQUE_KNOWN.value)
     assert _item is not None
     assert _item.text() == unique_known_number
 
-    _item = gw.ui.percentTableWidget.item(_row, gw._unique_known_column)
+    _item = gw.ui.percentTableWidget.item(_row, Column.UNIQUE_KNOWN.value)
     assert _item is not None
     assert _item.text() == unique_known_percent
 
-    _item = gw.ui.numericalTableWidget.item(_row, gw._total_morphs_column)
+    _item = gw.ui.numericalTableWidget.item(_row, Column.TOTAL_MORPHS.value)
     assert _item is not None
     assert _item.text() == "1656"
 
-    _item = gw.ui.percentTableWidget.item(_row, gw._total_morphs_column)
+    _item = gw.ui.percentTableWidget.item(_row, Column.TOTAL_MORPHS.value)
     assert _item is not None
     assert _item.text() == "1656"
 
-    _item = gw.ui.numericalTableWidget.item(_row, gw._total_known_column)
+    _item = gw.ui.numericalTableWidget.item(_row, Column.TOTAL_KNOWN.value)
     assert _item is not None
     assert _item.text() == total_known_number
 
-    _item = gw.ui.percentTableWidget.item(_row, gw._total_known_column)
+    _item = gw.ui.percentTableWidget.item(_row, Column.TOTAL_KNOWN.value)
     assert _item is not None
     assert _item.text() == total_known_percent
 
 
+@pytest.mark.debug
 @pytest.mark.parametrize(
     "fake_environment_fixture",
     [case_some_studied_japanese_inflections],
@@ -289,7 +307,13 @@ def test_study_plan_generator(  # pylint:disable=unused-argument, too-many-local
         selected_output_options.store_only_lemma = False
         selected_output_options.store_lemma_and_inflection = True
 
-    gw._background_generate_study_plan(selected_output_options)
+    study_plan_generator.background_generate_study_plan(
+        selected_output_options=selected_output_options,
+        ui=gw.ui,
+        morphemizers=gw._morphemizers,
+        input_dir_root=gw._input_dir_root,
+        input_files=gw._input_files,
+    )
 
     test_utils.assert_csv_files_are_identical(
         correct_output_file=correct_output_file, test_output_file=test_output_file

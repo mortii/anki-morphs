@@ -29,7 +29,6 @@ case_some_studied_japanese_params = FakeEnvironmentParams(
 )
 
 
-@pytest.mark.debug
 @pytest.mark.parametrize(
     "fake_environment_fixture, evaluate_lemmas, priority_mode,"  # inputs
     "cumulative, min_priority, max_priority, bin_size,"  # inputs
