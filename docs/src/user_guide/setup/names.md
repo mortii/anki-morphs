@@ -1,7 +1,11 @@
 # Names
 
-> **Note**: AnkiMorphs loads the entire list of names into memory and compares against it each time you review a card.
-> To avoid slowdowns, keep the list of names as small as possible.
+>**Note**:
+>
+>- **Memory Usage**: AnkiMorphs loads the entire list of names into memory and compares against it each time you review 
+> a card. To avoid slowdowns, keep the list of names as small as possible.
+>- **Loading Changes**: If you manually edit the `names.txt` file, you must restart Anki for the changes to take effect.
+>However, if you use the `Mark as name` feature, no restart is required.
 
 You can have AnkiMorphs automatically filter out specified names found on your cards. This feature is designed so users
 won't have to learn the names of places or individuals, as these words lack
