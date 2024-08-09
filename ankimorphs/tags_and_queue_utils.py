@@ -46,12 +46,12 @@ def update_tags_and_queue_of_new_cards(
         if am_config.tag_fresh in note.tags:
             note.tags.remove(am_config.tag_fresh)
 
-    if am_config.tag_known_manually in note.tags:
-        remove_exclusive_tags(note, mutually_exclusive_tags)
-    elif unknowns == 0:
+    if unknowns == 0:
         if am_config.recalc_suspend_known_new_cards and card.queue != suspended:
             card.queue = suspended
-        if am_config.tag_known_automatically not in note.tags:
+        if am_config.tag_known_manually in note.tags:
+            remove_exclusive_tags(note, mutually_exclusive_tags)
+        elif am_config.tag_known_automatically not in note.tags:
             remove_exclusive_tags(note, mutually_exclusive_tags)
             # if a card has any learning morphs, then we don't want to
             # give it a 'known' tag because that would automatically
