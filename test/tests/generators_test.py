@@ -254,7 +254,6 @@ def test_readability_report(  # pylint:disable=too-many-arguments, unused-argume
     assert _item.text() == total_known_percent
 
 
-@pytest.mark.debug
 @pytest.mark.parametrize(
     "fake_environment_fixture",
     [case_some_studied_japanese_inflections],
