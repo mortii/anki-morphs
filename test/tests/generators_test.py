@@ -165,13 +165,15 @@ def _set_morphemizer(
 # db and the respective morphs evaluation options
 ################################################################
 case_some_studied_japanese_inflections = FakeEnvironmentParams(
-    collection="some_studied_japanese_collection",
+    actual_col="some_studied_japanese_collection",
+    expected_col="some_studied_japanese_collection",
     config=config_inflection_evaluation,
     am_db="some_studied_japanese.db",
 )
 
 case_some_studied_japanese_lemmas = FakeEnvironmentParams(
-    collection="some_studied_japanese_collection",
+    actual_col="some_studied_japanese_collection",
+    expected_col="some_studied_japanese_collection",
     config=config_lemma_evaluation,
     am_db="some_studied_japanese.db",
 )

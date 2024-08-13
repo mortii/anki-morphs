@@ -24,7 +24,8 @@ from ankimorphs.reviewing_utils import SkippedCards
 # cards that have the same lemmas as those studied before
 ################################################################
 case_skip_inflections_params = FakeEnvironmentParams(
-    collection="lemma_evaluation_lemma_extra_fields_collection",
+    actual_col="lemma_evaluation_lemma_extra_fields_collection",
+    expected_col="lemma_evaluation_lemma_extra_fields_collection",
     config=config_lemma_evaluation_lemma_extra_fields,
     am_db="lemma_evaluation_lemma_extra_fields.db",
 )
@@ -39,7 +40,8 @@ case_skip_inflections_expected = [1715776939301, 1718190526053, 1717943898444]
 # studied before
 ################################################################
 case_dont_skip_inflections_params = FakeEnvironmentParams(
-    collection="lemma_evaluation_lemma_extra_fields_collection",
+    actual_col="lemma_evaluation_lemma_extra_fields_collection",
+    expected_col="lemma_evaluation_lemma_extra_fields_collection",
     config=config_inflection_evaluation,
     am_db="lemma_evaluation_lemma_extra_fields.db",
 )

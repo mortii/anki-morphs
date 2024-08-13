@@ -343,7 +343,7 @@ def update_seen_morphs(_overview: Overview) -> None:
     # Overview is NOT the starting screen; it's the screen you see
     # when you click on a deck. This is a good time to run this function,
     # as 'seen morphs' only need to be known before starting a review.
-    # Previously, this function was run on the profile_did_open hook,
+    # Previously, this function ran on the profile_did_open hook,
     # but that sometimes caused interference with the add-on updater
     # since both occurred simultaneously.
 

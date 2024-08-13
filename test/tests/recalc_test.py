@@ -13,6 +13,7 @@ from test.fake_configs import (
     config_max_morph_priority,
     config_offset_inflection_enabled,
     config_offset_lemma_enabled,
+    config_suspend_known,
     config_wrong_field_name,
     config_wrong_morph_priority,
     config_wrong_morphemizer_description,
@@ -46,7 +47,6 @@ from anki.models import (  # isort:skip pylint:disable=wrong-import-order
     NotetypeDict,
 )
 from anki.notes import Note  # isort:skip  pylint:disable=wrong-import-order
-from test.card_data import CardData  # isort:skip  pylint:disable=wrong-import-order
 
 
 ################################################################
@@ -58,7 +58,8 @@ from test.card_data import CardData  # isort:skip  pylint:disable=wrong-import-o
 # Database choice is arbitrary.
 ################################################################
 case_same_lemma_and_inflection_scores_params = FakeEnvironmentParams(
-    collection="lemma_evaluation_lemma_extra_fields_collection",
+    actual_col="lemma_evaluation_lemma_extra_fields_collection",
+    expected_col="lemma_evaluation_lemma_extra_fields_collection",
     config=config_lemma_evaluation_lemma_extra_fields,
 )
 
@@ -74,7 +75,8 @@ case_same_lemma_and_inflection_scores_params = FakeEnvironmentParams(
 # Database choice is arbitrary.
 ################################################################
 case_inflections_are_known_params = FakeEnvironmentParams(
-    collection="some_studied_lemmas_collection",
+    actual_col="some_studied_lemmas_collection",
+    expected_col="some_studied_lemmas_collection",
     config=config_lemma_evaluation_lemma_extra_fields,
 )
 
@@ -87,7 +89,8 @@ case_inflections_are_known_params = FakeEnvironmentParams(
 # the queue.
 ################################################################
 case_offset_new_cards_inflection_params = FakeEnvironmentParams(
-    collection="offset_new_cards_inflection_collection",
+    actual_col="offset_new_cards_inflection_collection",
+    expected_col="offset_new_cards_inflection_collection",
     config=config_offset_inflection_enabled,
 )
 
@@ -99,7 +102,8 @@ case_offset_new_cards_inflection_params = FakeEnvironmentParams(
 # as the basis.
 ################################################################
 case_offset_new_cards_lemma_params = FakeEnvironmentParams(
-    collection="offset_new_cards_lemma_collection",
+    actual_col="offset_new_cards_lemma_collection",
+    expected_col="offset_new_cards_lemma_collection",
     config=config_offset_lemma_enabled,
 )
 
@@ -109,7 +113,8 @@ case_offset_new_cards_lemma_params = FakeEnvironmentParams(
 # Config contains "read_known_morphs_folder": true,
 ################################################################
 case_known_morphs_enabled_params = FakeEnvironmentParams(
-    collection="known_morphs_collection",
+    actual_col="known_morphs_collection",
+    expected_col="known_morphs_collection",
     config=config_known_morphs_enabled,
 )
 
@@ -119,7 +124,8 @@ case_known_morphs_enabled_params = FakeEnvironmentParams(
 # Config contains "preprocess_ignore_names_textfile": true,
 ################################################################
 case_ignore_names_txt_enabled_params = FakeEnvironmentParams(
-    collection="ignore_names_txt_collection",
+    actual_col="ignore_names_txt_collection",
+    expected_col="ignore_names_txt_collection",
     config=config_ignore_names_txt_enabled,
 )
 
@@ -130,7 +136,8 @@ case_ignore_names_txt_enabled_params = FakeEnvironmentParams(
 # edge cases.
 ################################################################
 case_big_japanese_collection_params = FakeEnvironmentParams(
-    collection="big_japanese_collection",
+    actual_col="big_japanese_collection",
+    expected_col="big_japanese_collection",
     config=config_big_japanese_collection,
 )
 
@@ -142,8 +149,20 @@ case_big_japanese_collection_params = FakeEnvironmentParams(
 # are given the max morph priority.
 ################################################################
 case_max_morph_priority_params = FakeEnvironmentParams(
-    collection="max_morph_priority_collection",
+    actual_col="max_morph_priority_collection",
+    expected_col="max_morph_priority_collection",
     config=config_max_morph_priority,
+)
+
+################################################################
+#                   CASE: SUSPEND KNOWN
+################################################################
+# Config contains [ConfigKeys.RECALC_SUSPEND_KNOWN_NEW_CARDS] = True
+################################################################
+config_suspend_known_params = FakeEnvironmentParams(
+    actual_col="suspend_pre_col",
+    expected_col="suspend_post_col",
+    config=config_suspend_known,
 )
 
 
@@ -163,16 +182,20 @@ case_max_morph_priority_params = FakeEnvironmentParams(
         case_ignore_names_txt_enabled_params,
         case_big_japanese_collection_params,
         case_max_morph_priority_params,
+        config_suspend_known_params,
     ],
     indirect=True,
 )
 def test_recalc(  # pylint:disable=too-many-locals
-    fake_environment_fixture: FakeEnvironment,
+    fake_environment_fixture: FakeEnvironment | None,
 ) -> None:
-    modified_collection = fake_environment_fixture.modified_collection
-    original_collection = fake_environment_fixture.original_collection
+    if fake_environment_fixture is None:
+        pytest.xfail()
 
-    model_manager: ModelManager = ModelManager(modified_collection)
+    actual_collection = fake_environment_fixture.mock_mw.col
+    expected_collection = fake_environment_fixture.expected_collection
+
+    model_manager: ModelManager = ModelManager(actual_collection)
     note_type_dict: NotetypeDict | None = model_manager.by_name(
         fake_environment_fixture.config["filters"][0]["note_type"]
     )
@@ -193,20 +216,6 @@ def test_recalc(  # pylint:disable=too-many-locals
         key: field_name_dict[value][0] for key, value in field_indices.items()
     }
 
-    card_due_dict: dict[int, CardData] = {}
-
-    original_collection_cards = original_collection.find_cards("")
-    card_collection_length = len(original_collection_cards)
-    assert card_collection_length > 0
-
-    card: Card
-    note: Note
-
-    for card_id in original_collection_cards:
-        card = original_collection.get_card(card_id)
-        note = card.note()
-        card_due_dict[card_id] = CardData(card, note, field_positions)
-
     read_enabled_config_filters = ankimorphs_config.get_read_enabled_filters()
     modify_enabled_config_filters = ankimorphs_config.get_modify_enabled_filters()
 
@@ -215,20 +224,43 @@ def test_recalc(  # pylint:disable=too-many-locals
         modify_enabled_config_filters=modify_enabled_config_filters,
     )
 
-    mock_collection_cards: Sequence[int] = modified_collection.find_cards("")
-    assert len(mock_collection_cards) == card_collection_length
+    # print("config:")
+    # pprint(fake_environment_fixture.config)
+    # print()
 
-    for card_id in mock_collection_cards:
-        print(f"card_id: {card_id}")
+    expected_collection_cards: Sequence[int] = expected_collection.find_cards("")
+    actual_collection_cards: Sequence[int] = actual_collection.find_cards("")
+    assert len(expected_collection_cards) > 0
+    assert len(expected_collection_cards) == len(actual_collection_cards)
 
-        card = modified_collection.get_card(card_id)
-        note = card.note()
+    for card_id in expected_collection_cards:
+        # print(f"card_id: {card_id}")
 
-        original_card_data = card_due_dict[card_id]
-        new_card_data = CardData(card, note, field_positions)
+        actual_card: Card = actual_collection.get_card(card_id)
+        actual_note: Note = actual_card.note()
 
-        assert card_id == card.id
-        assert original_card_data == new_card_data
+        expected_card: Card = expected_collection.get_card(card_id)
+        expected_note: Note = expected_card.note()
+
+        # for field, pos in field_positions.items():
+        #     print()
+        #     print(f"field: {field}")
+        #     print(f"actual_note: {actual_note.fields[pos]}")
+        #     print(f"expected_note: {expected_note.fields[pos]}")
+        #
+        # print(f"actual_card.due: {actual_card.due}")
+        # print(f"expected_card.due: {expected_card.due}")
+        #
+        # print(f"actual_note.tags: {actual_note.tags}")
+        # print(f"expected_note.tags: {expected_note.tags}")
+
+        assert card_id == actual_card.id
+        assert actual_card.due == expected_card.due
+        assert actual_note.tags == expected_note.tags
+
+        for pos in field_positions.values():
+            # note.fields[pos]: the content of the field
+            assert actual_note.fields[pos] == expected_note.fields[pos]
 
 
 ################################################################

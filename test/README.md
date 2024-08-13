@@ -100,6 +100,11 @@ Current card collections (test/data/card_collections):
   - contains two cards, and uses the priority file `ja_core_news_sm_freq_inflection_min_occurrence.csv`. One card
   has a morph that is found in the priority file, the other card does not, which should give it a max morph priority value.
   - morphemizer: 'spaCy: ja_core_news_sm'
+- `suspend-*-col.anki2`
+  - These collection have two cards, one with the `am-known-manually` tag and the other gets the `am-known-automativally`
+  tag applied on recalc. This collection tests whether the cards get suspended on recalc since the corresponding config
+  has the option `recalc_suspend_known_new_cards` enabled.
+
 
 ## Engineering and adding collections
 

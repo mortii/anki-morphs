@@ -147,7 +147,7 @@ config_big_japanese_collection_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "Ank
 
 
 ################################################################
-#             config_max_morph_priority
+#                 config_max_morph_priority
 ################################################################
 # Matches `max_morph_priority_collection.anki2`
 ################################################################
@@ -156,6 +156,16 @@ config_max_morph_priority = copy.deepcopy(default_config_dict)
 config_max_morph_priority_filter = config_max_morph_priority[ConfigKeys.FILTERS][0]
 config_max_morph_priority_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "spaCy: ja_core_news_sm"
 config_max_morph_priority_filter[FilterKeys.MORPH_PRIORITY_SELECTION] = "ja_core_news_sm_freq_inflection_min_occurrence.csv"
+# fmt: on
+
+################################################################
+#                     config_suspend_known
+################################################################
+# Matches `suspend_*_col.anki2`
+################################################################
+# fmt: off
+config_suspend_known = copy.deepcopy(default_config_dict)
+config_suspend_known[ConfigKeys.RECALC_SUSPEND_KNOWN_NEW_CARDS] = True
 # fmt: on
 
 

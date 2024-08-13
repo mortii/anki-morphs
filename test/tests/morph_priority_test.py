@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 from test.fake_configs import config_inflection_evaluation, config_lemma_evaluation
 from test.fake_environment_module import (  # pylint:disable=unused-import
@@ -53,11 +55,14 @@ default_fake_environment_params = FakeEnvironmentParams()
     indirect=["fake_environment_fixture"],
 )
 def test_morph_priority_with_priority_file(  # pylint:disable=unused-argument
-    fake_environment_fixture: FakeEnvironment,
+    fake_environment_fixture: FakeEnvironment | None,
     csv_file_name: str,
     only_lemma_priorities: bool,
     json_file_name: str,
 ) -> None:
+    if fake_environment_fixture is None:
+        pytest.xfail()
+
     morph_priorities = morph_priority_utils._load_morph_priorities_from_file(
         priority_file_name=csv_file_name, only_lemma_priorities=only_lemma_priorities
     )
@@ -80,13 +85,15 @@ def test_morph_priority_with_priority_file(  # pylint:disable=unused-argument
 # frequencies.
 ################################################################
 case_collection_frequency_lemma_params = FakeEnvironmentParams(
-    collection="lemma_evaluation_lemma_extra_fields_collection",
+    actual_col="lemma_evaluation_lemma_extra_fields_collection",
+    expected_col="lemma_evaluation_lemma_extra_fields_collection",
     config=config_lemma_evaluation,
     am_db="lemma_evaluation_lemma_extra_fields.db",
 )
 
 case_collection_frequency_inflection_params = FakeEnvironmentParams(
-    collection="lemma_evaluation_lemma_extra_fields_collection",
+    actual_col="lemma_evaluation_lemma_extra_fields_collection",
+    expected_col="lemma_evaluation_lemma_extra_fields_collection",
     config=config_inflection_evaluation,
     am_db="lemma_evaluation_lemma_extra_fields.db",
 )
