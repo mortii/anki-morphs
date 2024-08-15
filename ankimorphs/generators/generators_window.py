@@ -19,8 +19,12 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from .. import ankimorphs_globals
-from ..exceptions import CancelledOperationException, EmptyFileSelectionException
+from .. import ankimorphs_globals, message_box_utils
+from ..exceptions import (
+    CancelledOperationException,
+    EmptyFileSelectionException,
+    UnicodeException,
+)
 from ..morphemizers import morphemizer
 from ..morphemizers.morphemizer import Morphemizer
 from ..ui.generators_window_ui import Ui_GeneratorsWindow
@@ -324,7 +328,12 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
 
     def _on_failure(
         self,
-        error: Exception | CancelledOperationException | EmptyFileSelectionException,
+        error: (
+            Exception
+            | CancelledOperationException
+            | EmptyFileSelectionException
+            | UnicodeException
+        ),
     ) -> None:
         # This function runs on the main thread.
         assert mw is not None
@@ -335,5 +344,12 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             tooltip("Cancelled generator", parent=self)
         elif isinstance(error, EmptyFileSelectionException):
             tooltip("No input files", parent=self)
+        elif isinstance(error, UnicodeException):
+            title = "Decoding Error"
+            text = (
+                f"Error: All files must be UTF-8 encoded.\n\n"
+                f"The file at path '{error.path}' does not have UTF-8 encoding.\n\n"
+            )
+            message_box_utils.show_error_box(title=title, body=text, parent=self)
         else:
             raise error

@@ -62,3 +62,10 @@ class KnownMorphsFileMalformedException(Exception):
 
     def __init__(self, path: Path):
         self.path: str = path.name
+
+
+class UnicodeException(Exception):
+    """File does not have UTF-8 encoding"""
+
+    def __init__(self, path: Path):
+        self.path: str = str(path)

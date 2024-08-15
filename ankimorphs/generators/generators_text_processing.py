@@ -5,9 +5,11 @@
 # should be kept separate.
 
 import re
+from pathlib import Path
 from typing import Any, TextIO
 
 from .. import text_preprocessing
+from ..exceptions import UnicodeException
 from ..morpheme import Morpheme, MorphOccurrence
 from ..morphemizers.morphemizer import Morphemizer
 from ..text_preprocessing import (
@@ -31,7 +33,8 @@ class PreprocessOptions:
 
 def create_file_morph_occurrences(
     preprocess_options: PreprocessOptions,
-    file: TextIO,
+    file_path: Path,
+    file_io: TextIO,
     morphemizer: Morphemizer,
     nlp: Any,
 ) -> dict[str, MorphOccurrence]:
@@ -40,10 +43,13 @@ def create_file_morph_occurrences(
     all_lines: list[str] = []
     morph_occurrences: dict[str, MorphOccurrence]
 
-    for line in file:
-        # lower-case to avoid proper noun false-positives
-        filtered_lines = filter_line(preprocess_options, line=line.lower())
-        all_lines.append(filtered_lines)
+    try:
+        for line in file_io:
+            # lower-case to avoid proper noun false-positives
+            filtered_lines = filter_line(preprocess_options, line=line.lower())
+            all_lines.append(filtered_lines)
+    except UnicodeDecodeError as exc:
+        raise UnicodeException(path=file_path) from exc
 
     if nlp is not None:
         morph_occurrences = get_morph_occurrences_by_spacy(
