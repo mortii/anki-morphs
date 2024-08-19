@@ -90,7 +90,7 @@ def main() -> None:
 
     gui_hooks.state_did_undo.append(rebuild_seen_morphs)
 
-    gui_hooks.profile_will_close.append(clean_profile_session)
+    gui_hooks.profile_will_close.append(cleanup_profile_session)
 
 
 def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
@@ -158,9 +158,8 @@ def load_am_profile_configs() -> None:
 
 
 def init_db() -> None:
-    am_db = AnkiMorphsDB()
-    am_db.create_all_tables()
-    am_db.con.close()
+    with AnkiMorphsDB() as am_db:
+        am_db.create_all_tables()
 
 
 def create_am_directories_and_files() -> None:
@@ -331,9 +330,8 @@ def insert_seen_morphs(
     """
     The '_reviewer' and '_ease' arguments are unused
     """
-    am_db = AnkiMorphsDB()
-    am_db.update_seen_morphs_today_single_card(card.id)
-    am_db.con.close()
+    with AnkiMorphsDB() as am_db:
+        am_db.update_seen_morphs_today_single_card(card.id)
 
 
 def update_seen_morphs(_overview: Overview) -> None:
@@ -397,13 +395,12 @@ def rebuild_seen_morphs(_changes: OpChangesAfterUndo) -> None:
     AnkiMorphsDB.rebuild_seen_morphs_today()
 
     if ankimorphs_globals.DEV_MODE:
-        print("Seen_Morphs:")
-        am_db = AnkiMorphsDB()
-        am_db.print_table("Seen_Morphs")
-        am_db.con.close()
+        with AnkiMorphsDB() as am_db:
+            print("Seen_Morphs:")
+            am_db.print_table("Seen_Morphs")
 
 
-def clean_profile_session() -> None:
+def cleanup_profile_session() -> None:
     global _updated_seen_morphs_for_profile
     _updated_seen_morphs_for_profile = False
     AnkiMorphsDB.drop_seen_morphs_table()
@@ -604,10 +601,12 @@ def test_function() -> None:
     assert mw is not None
     assert mw.col.db is not None
 
-    am_db = AnkiMorphsDB()
-
-    # print("Morphs:")
-    # am_db.print_table("Morphs")
+    # with AnkiMorphsDB() as am_db:
+    #     print("Seen_Morphs:")
+    #     am_db.print_table("Seen_Morphs")
+    #
+    #     print("Morphs:")
+    #     am_db.print_table("Morphs")
 
     # print(f"card: {Card}")
     # mid: NotetypeId = card.note().mid
@@ -626,8 +625,6 @@ def test_function() -> None:
     # card = mw.col.get_card(card_id)
     # card.ivl += 30
     # mw.col.update_card(card)
-
-    am_db.con.close()
 
 
 main()

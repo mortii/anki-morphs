@@ -5,6 +5,7 @@ import sqlite3
 from collections import Counter
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 from anki.collection import SearchNode
 from anki.models import NotetypeId
@@ -33,6 +34,27 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             db_path = Path(mw.pm.profileFolder(), "ankimorphs.db")
 
         self.con: sqlite3.Connection = sqlite3.connect(db_path)
+
+    def __enter__(self) -> AnkiMorphsDB:
+        """
+        Creates a context manager
+        """
+        return self
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
+        """
+        Closes the database connection when exiting the context.
+        Commits if no exception occurred, rolls back if one did.
+        """
+        if self.con:
+            if exc_type is None:
+                self.con.commit()
+            else:
+                print(f"exc_type: {exc_type}")
+                print(f"exc_value: {exc_value}")
+                print(f"traceback: {traceback}")
+                self.con.rollback()
+            self.con.close()
 
     def create_all_tables(self) -> None:
         self.create_morph_table()
