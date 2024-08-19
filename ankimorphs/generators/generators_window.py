@@ -57,6 +57,10 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self._setup_table(self.ui.percentTableWidget)
         self._setup_buttons()
 
+        self.ui.inputDirLineEdit.textEdited.connect(
+            lambda: self.ui.loadFilesPushButton.setEnabled(True)
+        )
+
         self.show()
 
     def _setup_table(self, table: QTableWidget) -> None:
@@ -159,6 +163,9 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         input_dir = self.ui.inputDirLineEdit.text()
         self._input_dir_root = Path(input_dir)
         extensions = self._get_checked_extensions()
+
+        if not Path(input_dir).exists():
+            raise NotADirectoryError
 
         # os.walk goes through all the sub-dirs recursively
         for dir_path, _, file_names in os.walk(input_dir):
@@ -333,6 +340,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             | CancelledOperationException
             | EmptyFileSelectionException
             | UnicodeException
+            | NotADirectoryError
         ),
     ) -> None:
         # This function runs on the main thread.
@@ -351,5 +359,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
                 f"The file at path '{error.path}' does not have UTF-8 encoding.\n\n"
             )
             message_box_utils.show_error_box(title=title, body=text, parent=self)
+        elif isinstance(error, NotADirectoryError):
+            tooltip("Input folder does not exist", parent=self)
         else:
             raise error
