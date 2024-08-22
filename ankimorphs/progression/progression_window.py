@@ -24,6 +24,8 @@ from ..exceptions import (
     InvalidBinsException,
     PriorityFileMalformedException,
 )
+from ..extra_settings import extra_settings_keys
+from ..extra_settings.ankimorphs_extra_settings import AnkiMorphsExtraSettings
 from ..table_utils import QTableWidgetIntegerItem, QTableWidgetPercentItem
 from ..ui.progression_window_ui import Ui_ProgressionWindow
 from .progression_utils import (
@@ -43,6 +45,11 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
 
         self.ui = Ui_ProgressionWindow()
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
+
+        self.am_extra_settings = AnkiMorphsExtraSettings()
+        self.am_extra_settings.beginGroup(
+            extra_settings_keys.Dialogs.PROGRESSION_WINDOW
+        )
 
         self._columns = {}
         # For all tables
@@ -65,8 +72,11 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         self._setup_numerical_percent_table(self.ui.percentTableWidget)
         self._setup_morph_table(self.ui.morphTableWidget)
         self._setup_buttons()
+        self._setup_spin_boxes()
         self._setup_morph_priority_cbox()
+        self._setup_geometry()
 
+        self.am_extra_settings.endGroup()
         self.show()
 
     def _setup_numerical_percent_table(self, table: QTableWidget) -> None:
@@ -111,15 +121,55 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         )
 
         am_config = AnkiMorphsConfig()
-        if am_config.evaluate_morph_lemma:
-            self.ui.lemmaRadioButton.setChecked(True)
-            self.ui.inflectionRadioButton.setChecked(False)
-        else:
-            self.ui.lemmaRadioButton.setChecked(False)
-            self.ui.inflectionRadioButton.setChecked(True)
 
-        self.ui.normalRadioButton.setChecked(True)
-        self.ui.cumulativeRadioButton.setChecked(False)
+        stored_lemma_selected: bool = self.am_extra_settings.value(
+            extra_settings_keys.ProgressionWindowKeys.LEMMA_EVALUATION,
+            defaultValue=am_config.evaluate_morph_lemma,
+            type=bool,
+        )
+        stored_inflection_selected: bool = self.am_extra_settings.value(
+            extra_settings_keys.ProgressionWindowKeys.INFLECTION_EVALUATION,
+            defaultValue=not am_config.evaluate_morph_lemma,
+            type=bool,
+        )
+
+        stored_normal_bin_type: bool = self.am_extra_settings.value(
+            extra_settings_keys.ProgressionWindowKeys.BIN_TYPE_NORMAL,
+            defaultValue=True,
+            type=bool,
+        )
+        stored_cumulative_bin_type: bool = self.am_extra_settings.value(
+            extra_settings_keys.ProgressionWindowKeys.BIN_TYPE_CUMULATIVE,
+            defaultValue=False,
+            type=bool,
+        )
+
+        self.ui.lemmaRadioButton.setChecked(stored_lemma_selected)
+        self.ui.inflectionRadioButton.setChecked(stored_inflection_selected)
+
+        self.ui.normalRadioButton.setChecked(stored_normal_bin_type)
+        self.ui.cumulativeRadioButton.setChecked(stored_cumulative_bin_type)
+
+    def _setup_spin_boxes(self) -> None:
+        stored_range_start: int = self.am_extra_settings.value(
+            extra_settings_keys.ProgressionWindowKeys.PRIORITY_RANGE_START,
+            defaultValue=self.ui.minPrioritySpinBox.minimum(),
+            type=int,
+        )
+        stored_range_end: int = self.am_extra_settings.value(
+            extra_settings_keys.ProgressionWindowKeys.PRIORITY_RANGE_END,
+            defaultValue=self.ui.maxPrioritySpinBox.value(),
+            type=int,
+        )
+        stored_bin_size: int = self.am_extra_settings.value(
+            extra_settings_keys.ProgressionWindowKeys.BIN_SIZE,
+            defaultValue=self.ui.binSizeSpinBox.value(),
+            type=int,
+        )
+
+        self.ui.minPrioritySpinBox.setValue(stored_range_start)
+        self.ui.maxPrioritySpinBox.setValue(stored_range_end)
+        self.ui.binSizeSpinBox.setValue(stored_bin_size)
 
     def _setup_morph_priority_cbox(self) -> None:
         priority_files: list[str] = [
@@ -127,6 +177,22 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         ]
         priority_files += morph_priority_utils.get_priority_files()
         self.ui.morphPriorityCBox.addItems(priority_files)
+
+        stored_priority_file: str = self.am_extra_settings.value(
+            extra_settings_keys.ProgressionWindowKeys.PRIORITY_FILE, type=str
+        )
+
+        for index, file in enumerate(priority_files):
+            if file == stored_priority_file:
+                self.ui.morphPriorityCBox.setCurrentIndex(index)
+                break
+
+    def _setup_geometry(self) -> None:
+        stored_geometry = self.am_extra_settings.value(
+            extra_settings_keys.ProgressionWindowKeys.WINDOW_GEOMETRY
+        )
+        if stored_geometry is not None:
+            self.restoreGeometry(stored_geometry)
 
     def _on_calculate_progress_button_clicked(self) -> None:
         # calculate progress stats and populate table in the background,
@@ -349,6 +415,9 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         self, callback: Callable[[], None]
     ) -> None:
         # This is used by the Anki dialog manager
+        self.am_extra_settings.save_progression_window_settings(
+            ui=self.ui, geometry=self.saveGeometry()
+        )
         self.close()
         dialog_name = ankimorphs_globals.PROGRESSION_DIALOG_NAME
         aqt.dialogs.markClosed(dialog_name)

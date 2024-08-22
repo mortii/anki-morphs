@@ -48,29 +48,74 @@ case_big_japanese_collection_params = FakeEnvironmentParams(
 )
 
 
-# when stacking 'parametrize' we run the function with all permutations
 @pytest.mark.parametrize(
-    "fake_environment_fixture",
-    [case_big_japanese_collection_params],
-    indirect=True,
+    "fake_environment_fixture, morphemizer_description, only_store_lemma, comprehension_cutoff, expected_output_file",
+    [
+        (
+            case_big_japanese_collection_params,
+            "spaCy: ja_core_news_sm",
+            True,
+            True,
+            "ja_core_news_sm_freq_lemma_comprehension.csv",
+        ),
+        (
+            case_big_japanese_collection_params,
+            "spaCy: ja_core_news_sm",
+            True,
+            False,
+            "ja_core_news_sm_freq_lemma_min_occurrence.csv",
+        ),
+        (
+            case_big_japanese_collection_params,
+            "spaCy: ja_core_news_sm",
+            False,
+            True,
+            "ja_core_news_sm_freq_inflection_comprehension.csv",
+        ),
+        (
+            case_big_japanese_collection_params,
+            "spaCy: ja_core_news_sm",
+            False,
+            False,
+            "ja_core_news_sm_freq_inflection_min_occurrence.csv",
+        ),
+        (
+            case_big_japanese_collection_params,
+            "AnkiMorphs: Japanese",
+            True,
+            True,
+            "mecab_freq_lemma_comprehension.csv",
+        ),
+        (
+            case_big_japanese_collection_params,
+            "AnkiMorphs: Japanese",
+            True,
+            False,
+            "mecab_freq_lemma_min_occurrence.csv",
+        ),
+        (
+            case_big_japanese_collection_params,
+            "AnkiMorphs: Japanese",
+            False,
+            True,
+            "mecab_freq_inflection_comprehension.csv",
+        ),
+        (
+            case_big_japanese_collection_params,
+            "AnkiMorphs: Japanese",
+            False,
+            False,
+            "mecab_freq_inflection_min_occurrence.csv",
+        ),
+    ],
+    indirect=["fake_environment_fixture"],
 )
-@pytest.mark.parametrize(
-    "morphemizer_description",
-    ["spaCy: ja_core_news_sm", "AnkiMorphs: Japanese"],
-)
-@pytest.mark.parametrize(
-    "only_store_lemma",
-    [True, False],
-)
-@pytest.mark.parametrize(
-    "comprehension_cutoff",
-    [True, False],
-)
-def test_priority_file_generator(  # pylint:disable=unused-argument, too-many-locals, too-many-branches
+def test_priority_file_generator(  # pylint:disable=unused-argument, too-many-arguments
     fake_environment_fixture: FakeEnvironment,
     morphemizer_description: str,
     only_store_lemma: bool,
     comprehension_cutoff: bool,
+    expected_output_file: str,
     qtbot: Any,
 ) -> None:
     """
@@ -82,35 +127,12 @@ def test_priority_file_generator(  # pylint:disable=unused-argument, too-many-lo
     input_folder = Path(PATH_TESTS_DATA, "ja_subs")
     test_output_file = Path(PATH_TESTS_DATA_TESTS_OUTPUTS, "test_output_file.csv")
 
-    if morphemizer_description == "AnkiMorphs: Japanese":
-        if only_store_lemma:
-            if comprehension_cutoff:
-                _file_name = "mecab_freq_lemma_comprehension.csv"
-            else:
-                _file_name = "mecab_freq_lemma_min_occurrence.csv"
-        else:
-            if comprehension_cutoff:
-                _file_name = "mecab_freq_inflection_comprehension.csv"
-            else:
-                _file_name = "mecab_freq_inflection_min_occurrence.csv"
-    else:
-        if only_store_lemma:
-            if comprehension_cutoff:
-                _file_name = "ja_core_news_sm_freq_lemma_comprehension.csv"
-            else:
-                _file_name = "ja_core_news_sm_freq_lemma_min_occurrence.csv"
-        else:
-            if comprehension_cutoff:
-                _file_name = "ja_core_news_sm_freq_inflection_comprehension.csv"
-            else:
-                _file_name = "ja_core_news_sm_freq_inflection_min_occurrence.csv"
-
-    correct_output_file = Path(
+    expected_output_file_path = Path(
         PATH_TESTS_DATA_CORRECT_OUTPUTS,
-        _file_name,
+        expected_output_file,
     )
 
-    print(f"loaded file: {correct_output_file}")
+    print(f"loaded file: {expected_output_file_path}")
 
     gw.ui.inputDirLineEdit.setText(str(input_folder))
     gw._background_gather_files_and_populate_files_column()
@@ -119,8 +141,8 @@ def test_priority_file_generator(  # pylint:disable=unused-argument, too-many-lo
         generator_window=gw, morphemizer_description=morphemizer_description
     )
 
-    _default_output_file = test_output_file
-    selected_output = GeneratorOutputDialog(_default_output_file)
+    selected_output = GeneratorOutputDialog(priority_file_mode=True)
+    selected_output.ui.outputLineEdit.setText(str(test_output_file))
     selected_output.ui.addOccurrencesColumnCheckBox.setChecked(True)
 
     if only_store_lemma:
@@ -141,7 +163,7 @@ def test_priority_file_generator(  # pylint:disable=unused-argument, too-many-lo
     )
 
     test_utils.assert_csv_files_are_identical(
-        correct_output_file=correct_output_file, test_output_file=test_output_file
+        correct_output_file=expected_output_file_path, test_output_file=test_output_file
     )
 
 
@@ -257,16 +279,23 @@ def test_readability_report(  # pylint:disable=too-many-arguments, unused-argume
 
 
 @pytest.mark.parametrize(
-    "fake_environment_fixture",
-    [case_some_studied_japanese_inflections],
-    indirect=True,
+    "fake_environment_fixture, only_store_lemma, expected_output_file",
+    [
+        (case_some_studied_japanese_inflections, True, "mecab_study_plan_lemma.csv"),
+        (
+            case_some_studied_japanese_inflections,
+            False,
+            "mecab_study_plan_inflection.csv",
+        ),
+    ],
+    indirect=["fake_environment_fixture"],
 )
-@pytest.mark.parametrize(
-    "only_store_lemma",
-    [True, False],
-)
+@pytest.mark.debug
 def test_study_plan_generator(  # pylint:disable=unused-argument, too-many-locals
-    fake_environment_fixture: FakeEnvironment, only_store_lemma: bool, qtbot: Any
+    fake_environment_fixture: FakeEnvironment,
+    only_store_lemma: bool,
+    expected_output_file: str,
+    qtbot: Any,
 ) -> None:
     gw = GeneratorWindow()
 
@@ -274,16 +303,11 @@ def test_study_plan_generator(  # pylint:disable=unused-argument, too-many-local
     test_output_file = Path(
         PATH_TESTS_DATA_TESTS_OUTPUTS, "mecab_study_plan_test_output.csv"
     )
-    if only_store_lemma:
-        correct_output_file = Path(
-            PATH_TESTS_DATA_CORRECT_OUTPUTS,
-            "mecab_study_plan_lemma.csv",
-        )
-    else:
-        correct_output_file = Path(
-            PATH_TESTS_DATA_CORRECT_OUTPUTS,
-            "mecab_study_plan_inflection.csv",
-        )
+
+    expected_output_file_path = Path(
+        PATH_TESTS_DATA_CORRECT_OUTPUTS,
+        expected_output_file,
+    )
 
     gw.ui.inputDirLineEdit.setText(str(input_folder))
     gw._background_gather_files_and_populate_files_column()
@@ -293,7 +317,8 @@ def test_study_plan_generator(  # pylint:disable=unused-argument, too-many-local
     )
 
     _default_output_file = Path(test_output_file)
-    selected_output = GeneratorOutputDialog(_default_output_file)
+    selected_output = GeneratorOutputDialog(study_plan_mode=True)
+    selected_output.ui.outputLineEdit.setText(str(test_output_file))
     selected_output_options: OutputOptions = selected_output.get_selected_options()
     selected_output_options.selected_extra_occurrences_column = True
 
@@ -317,5 +342,5 @@ def test_study_plan_generator(  # pylint:disable=unused-argument, too-many-local
     )
 
     test_utils.assert_csv_files_are_identical(
-        correct_output_file=correct_output_file, test_output_file=test_output_file
+        correct_output_file=expected_output_file_path, test_output_file=test_output_file
     )

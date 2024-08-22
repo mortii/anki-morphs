@@ -9,13 +9,15 @@ from typing import Callable
 import aqt
 from aqt import mw
 from aqt.operations import QueryOp
-from aqt.qt import QDialog, QDir, QFileDialog  # pylint:disable=no-name-in-module
+from aqt.qt import QDialog, QFileDialog  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
 from . import ankimorphs_globals as am_globals
 from .ankimorphs_config import AnkiMorphsConfig
 from .ankimorphs_db import AnkiMorphsDB
 from .exceptions import CancelledOperationException, EmptyFileSelectionException
+from .extra_settings import extra_settings_keys
+from .extra_settings.ankimorphs_extra_settings import AnkiMorphsExtraSettings
 from .ui.known_morphs_exporter_dialog_ui import Ui_KnownMorphsExporterDialog
 
 
@@ -23,27 +25,41 @@ class KnownMorphsExporterDialog(QDialog):
     def __init__(
         self,
     ) -> None:
+        assert mw is not None
+
         super().__init__(parent=None)  # no parent makes the dialog modeless
         self.ui = Ui_KnownMorphsExporterDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
         self.am_config = AnkiMorphsConfig()
 
-        self.ui.knownIntervalSpinBox.setValue(self.am_config.interval_for_known_morphs)
+        self.am_extra_settings = AnkiMorphsExtraSettings()
+        self.am_extra_settings.beginGroup(
+            extra_settings_keys.Dialogs.KNOWN_MORPHS_EXPORTER
+        )
+
+        self._default_output_dir = os.path.join(
+            mw.pm.profileFolder(), am_globals.KNOWN_MORPHS_DIR_NAME
+        )
 
         self._setup_output_path()
         self._setup_buttons()
+        self._setup_spinbox()
+        self._setup_checkboxes()
+        self._setup_geometry()
 
+        self.am_extra_settings.endGroup()
         self.show()
 
     def _setup_output_path(self) -> None:
-        assert mw is not None
-
-        _output_dir = os.path.join(
-            mw.pm.profileFolder(), am_globals.KNOWN_MORPHS_DIR_NAME
+        stored_output_dir: str = self.am_extra_settings.value(
+            extra_settings_keys.KnownMorphsExporterKeys.OUTPUT_DIR,
+            defaultValue=self._default_output_dir,
+            type=str,
         )
+
         # create the parent directories if they don't exist
-        Path(_output_dir).parent.mkdir(parents=True, exist_ok=True)
-        self.ui.outputLineEdit.setText(_output_dir)
+        Path(stored_output_dir).parent.mkdir(parents=True, exist_ok=True)
+        self.ui.outputLineEdit.setText(stored_output_dir)
 
     def _setup_buttons(self) -> None:
         self.ui.selectOutputPushButton.setAutoDefault(False)
@@ -52,18 +68,52 @@ class KnownMorphsExporterDialog(QDialog):
         self.ui.selectOutputPushButton.clicked.connect(self._on_output_button_clicked)
         self.ui.exportKnownMorphsPushButton.clicked.connect(self._export_known_morphs)
 
-        if self.am_config.evaluate_morph_lemma:
-            self.ui.storeOnlyMorphLemmaRadioButton.setChecked(True)
-            self.ui.storeMorphLemmaAndInflectionRadioButton.setChecked(False)
-        else:
-            self.ui.storeOnlyMorphLemmaRadioButton.setChecked(False)
-            self.ui.storeMorphLemmaAndInflectionRadioButton.setChecked(True)
+        stored_lemma_selected: bool = self.am_extra_settings.value(
+            extra_settings_keys.KnownMorphsExporterKeys.LEMMA,
+            defaultValue=self.am_config.evaluate_morph_lemma,
+            type=bool,
+        )
+        stored_inflection_selected: bool = self.am_extra_settings.value(
+            extra_settings_keys.KnownMorphsExporterKeys.INFLECTION,
+            defaultValue=not self.am_config.evaluate_morph_lemma,
+            type=bool,
+        )
+
+        self.ui.storeOnlyMorphLemmaRadioButton.setChecked(stored_lemma_selected)
+        self.ui.storeMorphLemmaAndInflectionRadioButton.setChecked(
+            stored_inflection_selected
+        )
+
+    def _setup_spinbox(self) -> None:
+        stored_interval: int = self.am_extra_settings.value(
+            extra_settings_keys.KnownMorphsExporterKeys.INTERVAL,
+            defaultValue=self.am_config.interval_for_known_morphs,
+            type=int,
+        )
+        self.ui.knownIntervalSpinBox.setValue(stored_interval)
+
+    def _setup_checkboxes(self) -> None:
+        stored_occurrences_selection: bool = self.am_extra_settings.value(
+            extra_settings_keys.KnownMorphsExporterKeys.OCCURRENCES,
+            defaultValue=False,
+            type=bool,
+        )
+        self.ui.addOccurrencesColumnCheckBox.setChecked(stored_occurrences_selection)
+
+    def _setup_geometry(self) -> None:
+        stored_geometry = self.am_extra_settings.value(
+            extra_settings_keys.KnownMorphsExporterKeys.WINDOW_GEOMETRY
+        )
+        if stored_geometry is not None:
+            self.restoreGeometry(stored_geometry)
 
     def _on_output_button_clicked(self) -> None:
         output_dir: str = QFileDialog.getExistingDirectory(
-            caption="Directory to place file",
-            directory=QDir().homePath(),
+            directory=self.ui.outputLineEdit.text(),
         )
+        if output_dir == "":
+            output_dir = self._default_output_dir
+
         self.ui.outputLineEdit.setText(output_dir)
 
     def _export_known_morphs(self) -> None:
@@ -166,6 +216,9 @@ class KnownMorphsExporterDialog(QDialog):
         self, callback: Callable[[], None]
     ) -> None:
         # This is used by the Anki dialog manager
+        self.am_extra_settings.save_known_morphs_exporter_settings(
+            ui=self.ui, geometry=self.saveGeometry()
+        )
         self.close()
         aqt.dialogs.markClosed(am_globals.KNOWN_MORPHS_EXPORTER_DIALOG_NAME)
         callback()

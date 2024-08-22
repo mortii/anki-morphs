@@ -20,9 +20,9 @@
       <number>15</number>
      </property>
      <item>
-      <widget class="QPushButton" name="selectFolderPushButton">
+      <widget class="QPushButton" name="selectFilePushButton">
        <property name="text">
-        <string>Select folder</string>
+        <string>Select File</string>
        </property>
       </widget>
      </item>

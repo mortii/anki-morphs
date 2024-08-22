@@ -35,10 +35,11 @@ from aqt.toolbar import Toolbar
 from aqt.utils import tooltip
 from aqt.webview import AnkiWebView
 
+from . import ankimorphs_config
+from . import ankimorphs_globals as am_globals
 from . import (
-    ankimorphs_config,
-    ankimorphs_globals,
     browser_utils,
+    debugging_utils,
     message_box_utils,
     name_file_utils,
     reviewing_utils,
@@ -47,6 +48,7 @@ from . import (
 )
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
+from .extra_settings import ankimorphs_extra_settings, extra_settings_keys
 from .generators.generators_window import GeneratorWindow
 from .known_morphs_exporter import KnownMorphsExporterDialog
 from .progression.progression_window import ProgressionWindow
@@ -141,7 +143,7 @@ def load_am_profile_configs() -> None:
     assert mw is not None
 
     profile_settings_path = Path(
-        mw.pm.profileFolder(), ankimorphs_globals.PROFILE_SETTINGS_FILE_NAME
+        mw.pm.profileFolder(), am_globals.PROFILE_SETTINGS_FILE_NAME
     )
     try:
         with open(profile_settings_path, encoding="utf-8") as file:
@@ -165,20 +167,16 @@ def init_db() -> None:
 def create_am_directories_and_files() -> None:
     assert mw is not None
 
-    names_file_path: Path = Path(
-        mw.pm.profileFolder(), ankimorphs_globals.NAMES_TXT_FILE_NAME
-    )
+    names_file_path: Path = Path(mw.pm.profileFolder(), am_globals.NAMES_TXT_FILE_NAME)
     known_morphs_dir_path: Path = Path(
-        mw.pm.profileFolder(), ankimorphs_globals.KNOWN_MORPHS_DIR_NAME
+        mw.pm.profileFolder(), am_globals.KNOWN_MORPHS_DIR_NAME
     )
     priority_files_dir_path: Path = Path(
-        mw.pm.profileFolder(), ankimorphs_globals.PRIORITY_FILES_DIR_NAME
+        mw.pm.profileFolder(), am_globals.PRIORITY_FILES_DIR_NAME
     )
 
-    if not names_file_path.is_file():
-        with open(names_file_path, mode="w", encoding="utf-8"):
-            # just opening the file creates it
-            pass
+    # Create the file if it doesn't exist
+    names_file_path.touch(exist_ok=True)
 
     if not known_morphs_dir_path.exists():
         Path(known_morphs_dir_path).mkdir()
@@ -191,18 +189,18 @@ def register_addon_dialogs() -> None:
     # We use the Anki dialog manager to handle our dialogs
 
     aqt.dialogs.register_dialog(
-        name=ankimorphs_globals.SETTINGS_DIALOG_NAME, creator=SettingsDialog
+        name=am_globals.SETTINGS_DIALOG_NAME, creator=SettingsDialog
     )
     aqt.dialogs.register_dialog(
-        name=ankimorphs_globals.GENERATOR_DIALOG_NAME,
+        name=am_globals.GENERATOR_DIALOG_NAME,
         creator=GeneratorWindow,
     )
     aqt.dialogs.register_dialog(
-        name=ankimorphs_globals.PROGRESSION_DIALOG_NAME,
+        name=am_globals.PROGRESSION_DIALOG_NAME,
         creator=ProgressionWindow,
     )
     aqt.dialogs.register_dialog(
-        name=ankimorphs_globals.KNOWN_MORPHS_EXPORTER_DIALOG_NAME,
+        name=am_globals.KNOWN_MORPHS_EXPORTER_DIALOG_NAME,
         creator=KnownMorphsExporterDialog,
     )
 
@@ -242,7 +240,7 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
 
-    if ankimorphs_globals.DEV_MODE:
+    if am_globals.DEV_MODE:
         test_action = create_test_action()
         am_tool_menu.addAction(test_action)
 
@@ -394,7 +392,7 @@ def rebuild_seen_morphs(_changes: OpChangesAfterUndo) -> None:
     ################################################################
     AnkiMorphsDB.rebuild_seen_morphs_today()
 
-    if ankimorphs_globals.DEV_MODE:
+    if am_globals.DEV_MODE:
         with AnkiMorphsDB() as am_db:
             print("Seen_Morphs:")
             am_db.print_table("Seen_Morphs")
@@ -444,7 +442,7 @@ def create_settings_action(am_config: AnkiMorphsConfig) -> QAction:
     action = QAction("&Settings", mw)
     action.setShortcut(am_config.shortcut_settings)
     action.triggered.connect(
-        partial(aqt.dialogs.open, name=ankimorphs_globals.SETTINGS_DIALOG_NAME)
+        partial(aqt.dialogs.open, name=am_globals.SETTINGS_DIALOG_NAME)
     )
     return action
 
@@ -542,7 +540,7 @@ def browse_study_morphs_for_text_action(web_view: AnkiWebView, menu: QMenu) -> N
     selected_text = web_view.selectedText()
     if selected_text == "":
         return
-    action = QAction(f"Browse in {ankimorphs_globals.EXTRA_FIELD_STUDY_MORPHS}", menu)
+    action = QAction(f"Browse in {am_globals.EXTRA_FIELD_STUDY_MORPHS}", menu)
     action.triggered.connect(
         lambda: browser_utils.browse_study_morphs_for_highlighted_morph(selected_text)
     )
@@ -555,7 +553,7 @@ def create_generators_dialog_action(am_config: AnkiMorphsConfig) -> QAction:
     action.triggered.connect(
         partial(
             aqt.dialogs.open,
-            name=ankimorphs_globals.GENERATOR_DIALOG_NAME,
+            name=am_globals.GENERATOR_DIALOG_NAME,
         )
     )
     return action
@@ -567,7 +565,7 @@ def create_progression_dialog_action(am_config: AnkiMorphsConfig) -> QAction:
     action.triggered.connect(
         partial(
             aqt.dialogs.open,
-            name=ankimorphs_globals.PROGRESSION_DIALOG_NAME,
+            name=am_globals.PROGRESSION_DIALOG_NAME,
         )
     )
     return action
@@ -579,7 +577,7 @@ def create_known_morphs_exporter_action(am_config: AnkiMorphsConfig) -> QAction:
     action.triggered.connect(
         partial(
             aqt.dialogs.open,
-            name=ankimorphs_globals.KNOWN_MORPHS_EXPORTER_DIALOG_NAME,
+            name=am_globals.KNOWN_MORPHS_EXPORTER_DIALOG_NAME,
         )
     )
     return action

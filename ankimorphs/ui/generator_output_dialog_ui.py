@@ -18,9 +18,9 @@ class Ui_GeneratorOutputDialog(object):
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setContentsMargins(-1, -1, -1, 15)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.selectFolderPushButton = QtWidgets.QPushButton(parent=GeneratorOutputDialog)
-        self.selectFolderPushButton.setObjectName("selectFolderPushButton")
-        self.horizontalLayout.addWidget(self.selectFolderPushButton)
+        self.selectFilePushButton = QtWidgets.QPushButton(parent=GeneratorOutputDialog)
+        self.selectFilePushButton.setObjectName("selectFilePushButton")
+        self.horizontalLayout.addWidget(self.selectFilePushButton)
         self.outputLineEdit = QtWidgets.QLineEdit(parent=GeneratorOutputDialog)
         self.outputLineEdit.setObjectName("outputLineEdit")
         self.horizontalLayout.addWidget(self.outputLineEdit)
@@ -124,7 +124,7 @@ class Ui_GeneratorOutputDialog(object):
     def retranslateUi(self, GeneratorOutputDialog):
         _translate = QtCore.QCoreApplication.translate
         GeneratorOutputDialog.setWindowTitle(_translate("GeneratorOutputDialog", "Generator Output"))
-        self.selectFolderPushButton.setText(_translate("GeneratorOutputDialog", "Select folder"))
+        self.selectFilePushButton.setText(_translate("GeneratorOutputDialog", "Select File"))
         self.label_3.setText(_translate("GeneratorOutputDialog", "File format"))
         self.storeMorphLemmaAndInflectionRadioButton.setText(_translate("GeneratorOutputDialog", "Lemma and inflection"))
         self.storeOnlyMorphLemmaRadioButton.setText(_translate("GeneratorOutputDialog", "Only lemma"))

@@ -37,7 +37,9 @@ from ankimorphs import (
     progress_utils,
     reviewing_utils,
 )
+from ankimorphs.extra_settings import ankimorphs_extra_settings
 from ankimorphs.generators import (
+    generators_output_dialog,
     generators_utils,
     generators_window,
     priority_file_generator,
@@ -208,6 +210,8 @@ def create_mw_patches(mock_mw: AnkiQt) -> list[Any]:
         mock.patch.object(study_plan_generator, "mw", mock_mw),
         mock.patch.object(morph_priority_utils, "mw", mock_mw),
         mock.patch.object(known_morphs_exporter, "mw", mock_mw),
+        mock.patch.object(ankimorphs_extra_settings, "mw", mock_mw),
+        mock.patch.object(generators_output_dialog, "mw", mock_mw),
     ]
 
 

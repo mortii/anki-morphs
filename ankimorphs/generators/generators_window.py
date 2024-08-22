@@ -19,12 +19,15 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 from aqt.utils import tooltip
 
-from .. import ankimorphs_globals, message_box_utils
+from .. import ankimorphs_globals as am_globals
+from .. import message_box_utils
 from ..exceptions import (
     CancelledOperationException,
     EmptyFileSelectionException,
     UnicodeException,
 )
+from ..extra_settings import extra_settings_keys
+from ..extra_settings.ankimorphs_extra_settings import AnkiMorphsExtraSettings
 from ..morphemizers import morphemizer
 from ..morphemizers.morphemizer import Morphemizer
 from ..ui.generators_window_ui import Ui_GeneratorsWindow
@@ -47,21 +50,35 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self.ui = Ui_GeneratorsWindow()
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
 
+        self.am_extra_settings = AnkiMorphsExtraSettings()
+        self.am_extra_settings.beginGroup(extra_settings_keys.Dialogs.GENERATORS_WINDOW)
+
         self._input_files: list[Path] = []
         self._morphemizers: list[Morphemizer] = morphemizer.get_all_morphemizers()
-        self._populate_morphemizers()
+        self._setup_morphemizers()
         self._setup_checkboxes()
         self._input_dir_root: Path
 
         self._setup_table(self.ui.numericalTableWidget)
         self._setup_table(self.ui.percentTableWidget)
         self._setup_buttons()
+        self._setup_input_field()
+        self._setup_geometry()
 
-        self.ui.inputDirLineEdit.textEdited.connect(
-            lambda: self.ui.loadFilesPushButton.setEnabled(True)
+        self.am_extra_settings.endGroup()
+        self.show()
+
+    def _setup_morphemizers(self) -> None:
+        self._populate_morphemizers()
+
+        stored_morphemizer: str = self.am_extra_settings.value(
+            extra_settings_keys.GeneratorsWindowKeys.MORPHEMIZER, type=str
         )
 
-        self.show()
+        for index, mizer in enumerate(self._morphemizers):
+            if mizer.get_description() == stored_morphemizer:
+                self.ui.morphemizerComboBox.setCurrentIndex(index)
+                break
 
     def _setup_table(self, table: QTableWidget) -> None:
         table.setAlternatingRowColors(True)
@@ -102,11 +119,33 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self.ui.generatePriorityFilePushButton.setDisabled(True)
         self.ui.generateStudyPlanPushButton.setDisabled(True)
 
+    def _setup_input_field(self) -> None:
+        stored_input_dir: str = self.am_extra_settings.value(
+            extra_settings_keys.GeneratorsWindowKeys.INPUT_DIR, type=str
+        )
+        if stored_input_dir is not None:
+            self.ui.inputDirLineEdit.setText(stored_input_dir)
+
+        self.ui.inputDirLineEdit.textEdited.connect(
+            lambda: self.ui.loadFilesPushButton.setEnabled(True)
+        )
+
+    def _setup_geometry(self) -> None:
+        stored_geometry = self.am_extra_settings.value(
+            extra_settings_keys.GeneratorsWindowKeys.WINDOW_GEOMETRY
+        )
+        if stored_geometry is not None:
+            self.restoreGeometry(stored_geometry)
+
     def _populate_morphemizers(self) -> None:
         morphemizer_names = [mizer.get_description() for mizer in self._morphemizers]
         self.ui.morphemizerComboBox.addItems(morphemizer_names)
 
     def _setup_checkboxes(self) -> None:
+        self._setup_file_extension_checkboxes()
+        self._setup_preprocess_checkboxes()
+
+    def _setup_file_extension_checkboxes(self) -> None:
         checkboxes = [
             self.ui.txtFilesCheckBox,
             self.ui.srtFilesCheckBox,
@@ -114,11 +153,67 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             self.ui.mdFilesCheckBox,
         ]
 
+        self.am_extra_settings.beginGroup(
+            extra_settings_keys.GeneratorsWindowKeys.FILE_FORMATS
+        )
+
+        stored_txt_checkbox: bool = self.am_extra_settings.value(
+            extra_settings_keys.FileFormatsKeys.TXT, defaultValue=True, type=bool
+        )
+        stored_srt_checkbox: bool = self.am_extra_settings.value(
+            extra_settings_keys.FileFormatsKeys.SRT, defaultValue=True, type=bool
+        )
+        stored_vtt_checkbox: bool = self.am_extra_settings.value(
+            extra_settings_keys.FileFormatsKeys.VTT, defaultValue=True, type=bool
+        )
+        stored_md_checkbox: bool = self.am_extra_settings.value(
+            extra_settings_keys.FileFormatsKeys.MD, defaultValue=True, type=bool
+        )
+
+        self.am_extra_settings.endGroup()
+
+        self.ui.txtFilesCheckBox.setChecked(stored_txt_checkbox)
+        self.ui.srtFilesCheckBox.setChecked(stored_srt_checkbox)
+        self.ui.vttFilesCheckBox.setChecked(stored_vtt_checkbox)
+        self.ui.mdFilesCheckBox.setChecked(stored_md_checkbox)
+
         for checkbox in checkboxes:
-            checkbox.setChecked(True)
             checkbox.clicked.connect(
                 lambda: self.ui.loadFilesPushButton.setEnabled(True)
             )
+
+    def _setup_preprocess_checkboxes(self) -> None:
+        self.am_extra_settings.beginGroup(
+            extra_settings_keys.GeneratorsWindowKeys.PREPROCESS
+        )
+
+        stored_ignore_square_brackets: bool = self.am_extra_settings.value(
+            extra_settings_keys.PreprocessKeys.IGNORE_SQUARE_BRACKETS, type=bool
+        )
+        stored_ignore_round_brackets: bool = self.am_extra_settings.value(
+            extra_settings_keys.PreprocessKeys.IGNORE_ROUND_BRACKETS, type=bool
+        )
+        stored_ignore_slim_round_brackets: bool = self.am_extra_settings.value(
+            extra_settings_keys.PreprocessKeys.IGNORE_SLIM_ROUND_BRACKETS, type=bool
+        )
+        stored_ignore_names_morphemizer: bool = self.am_extra_settings.value(
+            extra_settings_keys.PreprocessKeys.IGNORE_NAMES_MORPHEMIZER, type=bool
+        )
+        stored_ignore_names_in_file: bool = self.am_extra_settings.value(
+            extra_settings_keys.PreprocessKeys.IGNORE_NAMES_IN_FILE, type=bool
+        )
+        stored_ignore_numbers: bool = self.am_extra_settings.value(
+            extra_settings_keys.PreprocessKeys.IGNORE_NUMBERS, type=bool
+        )
+
+        self.am_extra_settings.endGroup()
+
+        self.ui.squareBracketsCheckBox.setChecked(stored_ignore_square_brackets)
+        self.ui.roundBracketsCheckBox.setChecked(stored_ignore_round_brackets)
+        self.ui.slimRoundBracketsCheckBox.setChecked(stored_ignore_slim_round_brackets)
+        self.ui.namesMorphemizerCheckBox.setChecked(stored_ignore_names_morphemizer)
+        self.ui.namesFileCheckBox.setChecked(stored_ignore_names_in_file)
+        self.ui.numbersCheckBox.setChecked(stored_ignore_numbers)
 
     def _on_select_folder_clicked(self) -> None:
         input_dir: str = QFileDialog.getExistingDirectory(
@@ -247,13 +342,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             self._on_failure(error=EmptyFileSelectionException())
             return
 
-        default_output_file = Path(
-            mw.pm.profileFolder(),
-            ankimorphs_globals.PRIORITY_FILES_DIR_NAME,
-            "priority-file.csv",
-        )
-
-        selected_output = GeneratorOutputDialog(default_output_file)
+        selected_output = GeneratorOutputDialog(priority_file_mode=True)
         result_code: int = selected_output.exec()
 
         if result_code != QDialog.DialogCode.Accepted:
@@ -283,13 +372,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             self._on_failure(error=EmptyFileSelectionException())
             return
 
-        default_output_file = Path(
-            mw.pm.profileFolder(),
-            ankimorphs_globals.PRIORITY_FILES_DIR_NAME,
-            "study-plan-frequency-file.csv",
-        )
-
-        selected_output = GeneratorOutputDialog(default_output_file)
+        selected_output = GeneratorOutputDialog(study_plan_mode=True)
         result_code: int = selected_output.exec()
 
         if result_code != QDialog.DialogCode.Accepted:
@@ -316,8 +399,11 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self, callback: Callable[[], None]
     ) -> None:
         # This is used by the Anki dialog manager
+        self.am_extra_settings.save_generators_window_settings(
+            ui=self.ui, geometry=self.saveGeometry()
+        )
         self.close()
-        dialog_name = ankimorphs_globals.GENERATOR_DIALOG_NAME
+        dialog_name = am_globals.GENERATOR_DIALOG_NAME
         aqt.dialogs.markClosed(dialog_name)
         callback()
 
