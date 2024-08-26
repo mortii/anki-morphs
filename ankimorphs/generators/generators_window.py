@@ -119,6 +119,8 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self.ui.generatePriorityFilePushButton.setDisabled(True)
         self.ui.generateStudyPlanPushButton.setDisabled(True)
 
+        self.ui.loadFilesPushButton.setFocus()  # quality of life
+
     def _setup_input_field(self) -> None:
         stored_input_dir: str = self.am_extra_settings.value(
             extra_settings_keys.GeneratorsWindowKeys.INPUT_DIR, type=str
@@ -259,7 +261,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self._input_dir_root = Path(input_dir)
         extensions = self._get_checked_extensions()
 
-        if not Path(input_dir).exists():
+        if not Path(input_dir).exists() or input_dir == "":
             raise NotADirectoryError
 
         # os.walk goes through all the sub-dirs recursively
