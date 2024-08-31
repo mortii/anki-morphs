@@ -6,7 +6,7 @@ know, and I'll add you ;)
 
 ### Code contribution
 
-mortii, Vilhelm-Ian, xofm31, Jcuhfehl, schiozzone, Tartee, wolearyc.
+mortii, Vilhelm-Ian, xofm31, Jcuhfehl, schiozzone, Tartee, wolearyc, mdraves91.
 
 ### Docs contribution
 

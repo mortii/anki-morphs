@@ -77,7 +77,7 @@ def _load_morph_priorities_from_file(
         priority_file_name,
     )
     try:
-        with open(priority_file_path, mode="r+", encoding="utf-8") as csvfile:
+        with open(priority_file_path, encoding="utf-8") as csvfile:
             morph_reader = csv.reader(csvfile, delimiter=",")
             headers: list[str] | None = next(morph_reader, None)
             priority_file: PriorityFile = _get_file_type_and_format(
