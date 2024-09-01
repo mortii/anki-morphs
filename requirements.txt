@@ -1,6 +1,6 @@
 anki==24.06.3
 aqt==24.06.3
-black==24.4.2
+black==24.8.0
 ca_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ca_core_news_sm-3.7.0/ca_core_news_sm-3.7.0-py3-none-any.whl
 csv-diff==1.1
 da_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/da_core_news_sm-3.7.0/da_core_news_sm-3.7.0-py3-none-any.whl
@@ -22,7 +22,7 @@ nl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/nl
 pl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pl_core_news_sm-3.7.0/pl_core_news_sm-3.7.0-py3-none-any.whl
 pre-commit==3.8.0
 pt_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.7.0/pt_core_news_sm-3.7.0-py3-none-any.whl
-pylint==3.2.6
+pylint==3.2.7
 PyQt6==6.6.1  # used by anki, newer versions can cause crashes in prod
 PyQt6-Qt6==6.6.1  # used by anki, newer versions can cause crashes in prod
 PyQt6-WebEngine==6.6.0  # used by anki, newer versions can cause crashes in prod
@@ -39,7 +39,7 @@ ro_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ro
 ru_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ru_core_news_sm-3.7.0/ru_core_news_sm-3.7.0-py3-none-any.whl
 six==1.16.0  # some spacy package is missing this from their requirements
 sl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/sl_core_news_sm-3.7.0/sl_core_news_sm-3.7.0-py3-none-any.whl
-spacy==3.7.5
+spacy==3.7.6
 sv_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/sv_core_news_sm-3.7.0/sv_core_news_sm-3.7.0-py3-none-any.whl
 uk_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/uk_core_news_sm-3.7.0/uk_core_news_sm-3.7.0-py3-none-any.whl
 zh_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/zh_core_web_sm-3.7.0/zh_core_web_sm-3.7.0-py3-none-any.whl
