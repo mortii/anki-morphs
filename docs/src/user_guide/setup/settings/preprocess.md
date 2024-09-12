@@ -24,3 +24,7 @@ Here are some options that can preprocess the text on your cards, potentially re
   are probably better off only using the [names.txt](../names.md) feature.
 * **Ignore names found in names.txt**:  
   Ignore names that are placed in [names.txt](../names.md)
+* **Ignore custom characters**:  
+  Any characters you specify (e.g., `,.?@`) will be ignored. This is especially useful when working with basic
+  morphemizers like the `Simple Space Splitter`.
+

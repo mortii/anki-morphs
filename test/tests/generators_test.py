@@ -290,7 +290,6 @@ def test_readability_report(  # pylint:disable=too-many-arguments, unused-argume
     ],
     indirect=["fake_environment_fixture"],
 )
-@pytest.mark.debug
 def test_study_plan_generator(  # pylint:disable=unused-argument, too-many-locals
     fake_environment_fixture: FakeEnvironment,
     only_store_lemma: bool,

@@ -11,6 +11,39 @@ round_brackets_regex = re.compile(r"（[^）]*）")
 slim_round_brackets_regexp = re.compile(r"\([^)]*\)")
 non_alpha_regexp = re.compile(r"[-'\w]")
 
+translation_table: dict[int, Any] = {}
+
+
+def update_translation_table() -> None:
+    """
+    The translation table is a dict of which characters to we want
+    to remove from the text when preprocessing.
+
+    Note: this function is executed on startup and when settings are saved
+    """
+    global translation_table
+    translation_table = str.maketrans(
+        "", "", AnkiMorphsConfig().preprocess_custom_characters_to_ignore
+    )
+
+
+def get_processed_text(am_config: AnkiMorphsConfig, text: str) -> str:
+    if am_config.preprocess_ignore_bracket_contents:
+        text = square_brackets_regex.sub("", text)
+
+    if am_config.preprocess_ignore_round_bracket_contents:
+        text = round_brackets_regex.sub("", text)
+
+    if am_config.preprocess_ignore_slim_round_bracket_contents:
+        text = slim_round_brackets_regexp.sub("", text)
+
+    if am_config.preprocess_ignore_custom_characters:
+        # str.translate() removes characters in a single pass, which is
+        # much more efficient than str.replace()
+        text = text.translate(translation_table)
+
+    return text
+
 
 def get_processed_spacy_morphs(am_config: AnkiMorphsConfig, doc: Any) -> list[Morpheme]:
     # doc: spacy.tokens.Doc
@@ -39,9 +72,9 @@ def get_processed_spacy_morphs(am_config: AnkiMorphsConfig, doc: Any) -> list[Mo
 
 
 def get_processed_morphemizer_morphs(
-    morphemizer: Morphemizer, expression: str, am_config: AnkiMorphsConfig
+    morphemizer: Morphemizer, text: str, am_config: AnkiMorphsConfig
 ) -> list[Morpheme]:
-    morphs: list[Morpheme] = morphemizer.get_morphemes_from_expr(expression)
+    morphs: list[Morpheme] = morphemizer.get_morphemes_from_expr(text)
 
     if am_config.preprocess_ignore_names_morphemizer:
         morphs = remove_names_morphemizer(morphs)
@@ -50,22 +83,6 @@ def get_processed_morphemizer_morphs(
         morphs = remove_names_textfile(morphs)
 
     return morphs
-
-
-def get_processed_expression(am_config: AnkiMorphsConfig, expression: str) -> str:
-    if am_config.preprocess_ignore_bracket_contents:
-        if square_brackets_regex.search(expression):
-            expression = square_brackets_regex.sub("", expression)
-
-    if am_config.preprocess_ignore_round_bracket_contents:
-        if round_brackets_regex.search(expression):
-            expression = round_brackets_regex.sub("", expression)
-
-    if am_config.preprocess_ignore_slim_round_bracket_contents:
-        if slim_round_brackets_regexp.search(expression):
-            expression = slim_round_brackets_regexp.sub("", expression)
-
-    return expression
 
 
 def remove_names_morphemizer(morphs: list[Morpheme]) -> list[Morpheme]:

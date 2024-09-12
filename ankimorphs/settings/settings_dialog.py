@@ -7,7 +7,12 @@ from aqt import mw
 from aqt.qt import QDialog, QSizePolicy, QWidget  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
-from .. import ankimorphs_config, ankimorphs_globals, message_box_utils
+from .. import (
+    ankimorphs_config,
+    ankimorphs_globals,
+    message_box_utils,
+    text_preprocessing,
+)
 from ..ankimorphs_config import AnkiMorphsConfig
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_algorithm_tab import AlgorithmTab
@@ -174,6 +179,7 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
     def _save(self, close_window: bool = False, tooltip_mw: bool = False) -> None:
         show_tooltip = bool(self._tabs_have_unsaved_changes())
         self._update_config(show_tooltip=show_tooltip, tooltip_mw=tooltip_mw)
+        text_preprocessing.update_translation_table()
         if close_window:
             self.close()
 

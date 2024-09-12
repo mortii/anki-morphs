@@ -15,9 +15,9 @@ from ..morphemizers import morphemizer as morphemizer_module
 from ..morphemizers import spacy_wrapper
 from ..morphemizers.morphemizer import SpacyMorphemizer
 from ..text_preprocessing import (
-    get_processed_expression,
     get_processed_morphemizer_morphs,
     get_processed_spacy_morphs,
+    get_processed_text,
 )
 from . import anki_data_utils
 from .anki_data_utils import AnkiCardData
@@ -71,9 +71,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
             # This in turn makes some models not label proper nouns correctly,
             # but this is preferable because we also have the 'Mark as Name'
             # feature that can be used in that case.
-            expression = get_processed_expression(
-                am_config, _card_data.expression.lower()
-            )
+            expression = get_processed_text(am_config, _card_data.expression.lower())
             all_text.append(expression)
             all_keys.append(key)
 

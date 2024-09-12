@@ -253,3 +253,14 @@ config_default_morphemizer = copy.deepcopy(default_config_dict)
 config_default_morphemizer[ConfigKeys.FILTERS][0][
     FilterKeys.MORPHEMIZER_DESCRIPTION
 ] = ankimorphs_globals.NONE_OPTION
+
+################################################################
+#             config_ignoring_custom_characters
+################################################################
+# Works with any arbitrary collection and db
+################################################################
+config_ignoring_custom_characters = copy.deepcopy(default_config_dict)
+config_ignoring_custom_characters[ConfigKeys.PREPROCESS_IGNORE_CUSTOM_CHARACTERS] = True
+config_ignoring_custom_characters[ConfigKeys.PREPROCESS_CUSTOM_CHARACTERS_TO_IGNORE] = (
+    ",.?"
+)

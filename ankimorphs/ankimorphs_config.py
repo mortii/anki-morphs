@@ -91,6 +91,8 @@ class RawConfigKeys:
     PREPROCESS_IGNORE_SUSPENDED_CARDS_CONTENT = (
         "preprocess_ignore_suspended_cards_content"
     )
+    PREPROCESS_IGNORE_CUSTOM_CHARACTERS = "preprocess_ignore_custom_characters"
+    PREPROCESS_CUSTOM_CHARACTERS_TO_IGNORE = "preprocess_custom_characters_to_ignore"
     INTERVAL_FOR_KNOWN_MORPHS = "interval_for_known_morphs"
     RECALC_ON_SYNC = "recalc_on_sync"
     RECALC_SUSPEND_KNOWN_NEW_CARDS = "recalc_suspend_known_new_cards"
@@ -366,6 +368,16 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many
                     expected_type=bool,
                     use_default=is_default,
                 )
+            )
+            self.preprocess_ignore_custom_characters: bool = self._get_config_item(
+                key=RawConfigKeys.PREPROCESS_IGNORE_CUSTOM_CHARACTERS,
+                expected_type=bool,
+                use_default=is_default,
+            )
+            self.preprocess_custom_characters_to_ignore: str = self._get_config_item(
+                key=RawConfigKeys.PREPROCESS_CUSTOM_CHARACTERS_TO_IGNORE,
+                expected_type=str,
+                use_default=is_default,
             )
             self.interval_for_known_morphs: int = self._get_config_item(
                 key=RawConfigKeys.INTERVAL_FOR_KNOWN_MORPHS,

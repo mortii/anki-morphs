@@ -44,6 +44,7 @@ from . import (
     name_file_utils,
     reviewing_utils,
     tags_and_queue_utils,
+    text_preprocessing,
     toolbar_stats,
 )
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
@@ -81,6 +82,7 @@ def main() -> None:
     gui_hooks.profile_did_open.append(init_tool_menu_and_actions)
     gui_hooks.profile_did_open.append(init_browser_menus_and_actions)
     gui_hooks.profile_did_open.append(replace_reviewer_functions)
+    gui_hooks.profile_did_open.append(text_preprocessing.update_translation_table)
 
     gui_hooks.sync_will_start.append(recalc_on_sync)
 
@@ -112,7 +114,7 @@ def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
                 cmd="recalc_toolbar",
                 label="Recalc",
                 func=recalc_main.recalc,
-                tip="AnkiMorphs Recalc",
+                tip=f"Shortcut: {am_config.shortcut_recalc.toString()}",
                 id="recalc_toolbar",
             )
         )
