@@ -148,7 +148,7 @@ def load_am_profile_configs() -> None:
     try:
         with open(profile_settings_path, encoding="utf-8") as file:
             profile_settings = json.load(file)
-            ankimorphs_config.update_configs(profile_settings)
+            ankimorphs_config.load_stored_am_configs(profile_settings)
     except FileNotFoundError:
         # This is reached when we load a new anki profile that hasn't saved
         # any ankimorphs settings yet. It's important that we don't carry over

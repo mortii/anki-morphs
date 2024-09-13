@@ -726,27 +726,60 @@ def get_all_defaults_config_dict() -> dict[str, Any]:
     return default_config_dict
 
 
+def load_stored_am_configs(
+    stored_config: dict[str, str | int | float | bool | object]
+) -> None:
+    """
+    This function loads the stored dict found in 'ankimorphs_profile_settings.json' and
+    then merges any new entries found in the default config.
+    """
+    assert mw is not None
+
+    merged_configs = get_all_defaults_config_dict()
+    assert merged_configs is not None
+
+    try:
+        for key, value in stored_config.items():
+            merged_configs[key] = value
+    except KeyError:
+        # this happens when backwards compatibility has been broken
+        # and keys no longer exists in the default config
+        pass
+
+    # write the merged configs to 'meta.json', i.e. the config Anki uses.
+    mw.addonManager.writeConfig(__name__, merged_configs)
+
+
 def update_configs(new_configs: dict[str, str | int | float | bool | object]) -> None:
     assert mw is not None
     config = mw.addonManager.getConfig(__name__)
     assert config is not None
+
     for key, value in new_configs.items():
         config[key] = value
 
     mw.addonManager.writeConfig(__name__, config)
+    save_config_to_am_file(config)
 
-    # also write to the profile settings file
+
+def save_config_to_am_file(
+    configs: dict[str, str | int | float | bool | object]
+) -> None:
+    assert mw is not None
     profile_settings_path = Path(
         mw.pm.profileFolder(), ankimorphs_globals.PROFILE_SETTINGS_FILE_NAME
     )
     with open(profile_settings_path, mode="w", encoding="utf-8") as file:
-        json.dump(config, file)
+        json.dump(configs, file, sort_keys=True)
 
 
 def reset_all_configs() -> None:
+    assert mw is not None
     default_configs = get_all_defaults_config_dict()
+    mw.addonManager.writeConfig(__name__, default_configs)  # updates 'meta.json'
+
     assert default_configs is not None
-    update_configs(default_configs)
+    save_config_to_am_file(default_configs)
 
 
 def get_read_enabled_filters() -> list[AnkiMorphsConfigFilter]:
