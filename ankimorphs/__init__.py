@@ -49,6 +49,7 @@ from . import (
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
 from .extra_settings import ankimorphs_extra_settings, extra_settings_keys
+from .extra_settings.ankimorphs_extra_settings import AnkiMorphsExtraSettings
 from .generators.generators_window import GeneratorWindow
 from .known_morphs_exporter import KnownMorphsExporterDialog
 from .progression.progression_window import ProgressionWindow
@@ -402,6 +403,7 @@ def cleanup_profile_session() -> None:
     global _updated_seen_morphs_for_profile
     _updated_seen_morphs_for_profile = False
     AnkiMorphsDB.drop_seen_morphs_table()
+    AnkiMorphsExtraSettings().save_current_ankimorphs_version()
 
 
 def reset_am_tags() -> None:

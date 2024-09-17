@@ -1,3 +1,7 @@
+class General:
+    ANKIMORPHS_VERSION = "ankimorphs_version"
+
+
 class Dialogs:
     GENERATORS_WINDOW = "generators_window"
     KNOWN_MORPHS_EXPORTER = "known_morphs_exporter"

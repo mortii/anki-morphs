@@ -3,6 +3,7 @@ from pathlib import Path
 from aqt import mw
 from aqt.qt import QByteArray, QSettings  # pylint:disable=no-name-in-module
 
+from .. import ankimorphs_globals
 from ..ui.generator_output_dialog_ui import Ui_GeneratorOutputDialog
 from ..ui.generators_window_ui import Ui_GeneratorsWindow
 from ..ui.known_morphs_exporter_dialog_ui import Ui_KnownMorphsExporterDialog
@@ -25,6 +26,9 @@ class AnkiMorphsExtraSettings(QSettings):
             mw.pm.profileFolder(), "ankimorphs_extra_settings.ini"
         )
         super().__init__(str(extra_settings_path), QSettings.Format.IniFormat)
+
+    def save_current_ankimorphs_version(self) -> None:
+        self.setValue(keys.General.ANKIMORPHS_VERSION, ankimorphs_globals.__version__)
 
     def save_generators_window_settings(
         self, ui: Ui_GeneratorsWindow, geometry: QByteArray
