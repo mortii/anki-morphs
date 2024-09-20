@@ -660,7 +660,7 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many
             ankimorphs_globals.new_config_found
             and not ankimorphs_globals.shown_config_warning
         ):
-            show_warning_new_config_items()
+            # show_warning_new_config_items()  # temporarily disabled
             ankimorphs_globals.shown_config_warning = True
 
     def update(self) -> None:
@@ -860,23 +860,23 @@ def show_critical_config_error() -> None:
     critical_box.exec()
 
 
-def show_warning_new_config_items() -> None:
-    critical_box = QMessageBox(mw)
-    critical_box.setWindowTitle("AnkiMorphs Warning")
-    critical_box.setIcon(QMessageBox.Icon.Warning)
-    body: str = (
-        "**New AnkiMorphs settings detected!**"
-        "<br/><br/>"
-        "New settings have been added "
-        "(<a href='https://github.com/mortii/anki-morphs/releases'>changelog</a>), "
-        "which may affect how AnkiMorphs performs."
-        "<br/><br/>"
-        "To ensure optimal performance, please follow these steps:<br/>"
-        "1. Open the AnkiMorphs settings menu.<br/>"
-        "2. Review and adjust the settings as needed.<br/>"
-        "3. Apply the settings.<br/>"
-        "4. Recalc"
-    )
-    critical_box.setTextFormat(Qt.TextFormat.MarkdownText)
-    critical_box.setText(body)
-    critical_box.exec()
+# def show_warning_new_config_items() -> None:
+#     critical_box = QMessageBox(mw)
+#     critical_box.setWindowTitle("AnkiMorphs Warning")
+#     critical_box.setIcon(QMessageBox.Icon.Warning)
+#     body: str = (
+#         "**New AnkiMorphs settings detected!**"
+#         "<br/><br/>"
+#         "New settings have been added "
+#         "(<a href='https://github.com/mortii/anki-morphs/releases'>changelog</a>), "
+#         "which may affect how AnkiMorphs performs."
+#         "<br/><br/>"
+#         "To ensure optimal performance, please follow these steps:<br/>"
+#         "1. Open the AnkiMorphs settings menu.<br/>"
+#         "2. Review and adjust the settings as needed.<br/>"
+#         "3. Apply the settings.<br/>"
+#         "4. Recalc"
+#     )
+#     critical_box.setTextFormat(Qt.TextFormat.MarkdownText)
+#     critical_box.setText(body)
+#     critical_box.exec()
