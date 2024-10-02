@@ -125,7 +125,7 @@ def fake_environment_fixture() -> Iterator[None]:
                 SpacyMorph(lemma="--", inflection="«", part_of_speech="PUNCT"),
                 SpacyMorph(lemma="Harry", inflection="harry", part_of_speech="PROPN"),
                 SpacyMorph(
-                    lemma="schüttelen", inflection="schüttelte", part_of_speech="VERB"
+                    lemma="schütteln", inflection="schüttelte", part_of_speech="VERB"
                 ),
                 SpacyMorph(lemma="der", inflection="den", part_of_speech="DET"),
                 SpacyMorph(lemma="Kopf", inflection="kopf", part_of_speech="NOUN"),
@@ -137,7 +137,7 @@ def fake_environment_fixture() -> Iterator[None]:
                 Morpheme(lemma="was", inflection="was"),
                 Morpheme(lemma="sein", inflection="ist"),
                 Morpheme(lemma="los", inflection="los"),
-                Morpheme(lemma="schüttelen", inflection="schüttelte"),
+                Morpheme(lemma="schütteln", inflection="schüttelte"),
                 Morpheme(lemma="der", inflection="den"),
                 Morpheme(lemma="Kopf", inflection="kopf"),
                 Morpheme(lemma="und", inflection="und"),
@@ -185,7 +185,7 @@ def fake_environment_fixture() -> Iterator[None]:
             "Ça m’est égal?",
             [
                 SpacyMorph(lemma="cela", inflection="ça", part_of_speech="PRON"),
-                SpacyMorph(lemma="m’est", inflection="m’est", part_of_speech="NOUN"),
+                SpacyMorph(lemma="m’est", inflection="m’est", part_of_speech="VERB"),
                 SpacyMorph(lemma="égal", inflection="égal", part_of_speech="ADJ"),
                 SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
             ],
@@ -228,10 +228,12 @@ def fake_environment_fixture() -> Iterator[None]:
         ),
         (
             "nl_core_news_sm",  # Dutch
-            "Is Lucas weggelopen?",
+            "Is Alexander weggelopen?",
             [
                 SpacyMorph(lemma="zijn", inflection="is", part_of_speech="AUX"),
-                SpacyMorph(lemma="lucas", inflection="lucas", part_of_speech="PROPN"),
+                SpacyMorph(
+                    lemma="Alexander", inflection="alexander", part_of_speech="PROPN"
+                ),
                 SpacyMorph(
                     lemma="weggelopen", inflection="weggelopen", part_of_speech="VERB"
                 ),
@@ -249,7 +251,7 @@ def fake_environment_fixture() -> Iterator[None]:
                 SpacyMorph(lemma="biti", inflection="je", part_of_speech="AUX"),
                 SpacyMorph(lemma="li", inflection="li", part_of_speech="PART"),
                 SpacyMorph(
-                    lemma="krunoslav", inflection="krunoslav", part_of_speech="NOUN"
+                    lemma="krunoslav", inflection="krunoslav", part_of_speech="PROPN"
                 ),
                 SpacyMorph(lemma="otići", inflection="otišao", part_of_speech="VERB"),
                 SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
@@ -257,7 +259,6 @@ def fake_environment_fixture() -> Iterator[None]:
             [
                 Morpheme(lemma="biti", inflection="je"),
                 Morpheme(lemma="li", inflection="li"),
-                Morpheme(lemma="krunoslav", inflection="krunoslav"),
                 Morpheme(lemma="otići", inflection="otišao"),
             ],
         ),
@@ -490,6 +491,12 @@ def test_spacy(  # pylint:disable=unused-argument
 
     # print(f"processes morphs: {len(processed_morphs)}")
     # for _morph in processed_morphs:
+    #     print(f"base: {_morph.lemma}")
+    #     print(f"inflected: {_morph.inflection}")
+    #     print("")
+    #
+    # print(f"expected_am_morphs: {len(expected_am_morphs)}")
+    # for _morph in expected_am_morphs:
     #     print(f"base: {_morph.lemma}")
     #     print(f"inflected: {_morph.inflection}")
     #     print("")

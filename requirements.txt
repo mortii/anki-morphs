@@ -1,45 +1,45 @@
 anki==24.06.3
 aqt==24.06.3
 black==24.8.0
-ca_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ca_core_news_sm-3.7.0/ca_core_news_sm-3.7.0-py3-none-any.whl
-csv-diff==1.1
-da_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/da_core_news_sm-3.7.0/da_core_news_sm-3.7.0-py3-none-any.whl
-de_core_news_md @ https://github.com/explosion/spacy-models/releases/download/de_core_news_md-3.7.0/de_core_news_md-3.7.0-py3-none-any.whl
-el_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/el_core_news_sm-3.7.0/el_core_news_sm-3.7.0-py3-none-any.whl
-en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
-es_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.7.0/es_core_news_sm-3.7.0-py3-none-any.whl
-fi_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/fi_core_news_sm-3.7.0/fi_core_news_sm-3.7.0-py3-none-any.whl
-fr_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-3.7.0/fr_core_news_sm-3.7.0-py3-none-any.whl
-hr_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/hr_core_news_sm-3.7.0/hr_core_news_sm-3.7.0-py3-none-any.whl
-it_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/it_core_news_sm-3.7.0/it_core_news_sm-3.7.0-py3-none-any.whl
-ja_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ja_core_news_sm-3.7.0/ja_core_news_sm-3.7.0-py3-none-any.whl
-ko_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ko_core_news_sm-3.7.0/ko_core_news_sm-3.7.0-py3-none-any.whl
-lt_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/lt_core_news_sm-3.7.0/lt_core_news_sm-3.7.0-py3-none-any.whl
-mk_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/mk_core_news_sm-3.7.0/mk_core_news_sm-3.7.0-py3-none-any.whl
+ca_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ca_core_news_sm-3.8.0/ca_core_news_sm-3.8.0-py3-none-any.whl
+csv-diff==1.2
+da_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/da_core_news_sm-3.8.0/da_core_news_sm-3.8.0-py3-none-any.whl
+de_core_news_md @ https://github.com/explosion/spacy-models/releases/download/de_core_news_md-3.8.0/de_core_news_md-3.8.0-py3-none-any.whl
+el_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/el_core_news_sm-3.8.0/el_core_news_sm-3.8.0-py3-none-any.whl
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
+es_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.8.0/es_core_news_sm-3.8.0-py3-none-any.whl
+fi_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/fi_core_news_sm-3.8.0/fi_core_news_sm-3.8.0-py3-none-any.whl
+fr_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-3.8.0/fr_core_news_sm-3.8.0-py3-none-any.whl
+hr_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/hr_core_news_sm-3.8.0/hr_core_news_sm-3.8.0-py3-none-any.whl
+it_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/it_core_news_sm-3.8.0/it_core_news_sm-3.8.0-py3-none-any.whl
+ja_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ja_core_news_sm-3.8.0/ja_core_news_sm-3.8.0-py3-none-any.whl
+ko_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ko_core_news_sm-3.8.0/ko_core_news_sm-3.8.0-py3-none-any.whl
+lt_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/lt_core_news_sm-3.8.0/lt_core_news_sm-3.8.0-py3-none-any.whl
+mk_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/mk_core_news_sm-3.8.0/mk_core_news_sm-3.8.0-py3-none-any.whl
 mypy==1.10.1
-nb_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/nb_core_news_sm-3.7.0/nb_core_news_sm-3.7.0-py3-none-any.whl
-nl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/nl_core_news_sm-3.7.0/nl_core_news_sm-3.7.0-py3-none-any.whl
-pl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pl_core_news_sm-3.7.0/pl_core_news_sm-3.7.0-py3-none-any.whl
+nb_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/nb_core_news_sm-3.8.0/nb_core_news_sm-3.8.0-py3-none-any.whl
+nl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/nl_core_news_sm-3.8.0/nl_core_news_sm-3.8.0-py3-none-any.whl
+pl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pl_core_news_sm-3.8.0/pl_core_news_sm-3.8.0-py3-none-any.whl
 pre-commit==3.8.0
-pt_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.7.0/pt_core_news_sm-3.7.0-py3-none-any.whl
-pylint==3.2.7
+pt_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.8.0/pt_core_news_sm-3.8.0-py3-none-any.whl
+pylint==3.3.1
 PyQt6==6.6.1  # used by anki, newer versions can cause crashes in prod
 PyQt6-Qt6==6.6.1  # used by anki, newer versions can cause crashes in prod
 PyQt6-WebEngine==6.6.0  # used by anki, newer versions can cause crashes in prod
 PyQt6-WebEngine-Qt6==6.6.0  # used by anki, newer versions can cause crashes in prod
 PyQt6_sip==13.6.0  # used by anki, newer versions can cause crashes in prod
-pytest==8.3.2
+pytest==8.3.3
 pytest-cov==5.0.0
 pytest-expect==1.1.0
 pytest-qt==4.4.0
 pytest-randomly==3.15.0
 pytest-sugar==1.0.0
 pytest-xvfb==3.0.0
-ro_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ro_core_news_sm-3.7.0/ro_core_news_sm-3.7.0-py3-none-any.whl
-ru_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ru_core_news_sm-3.7.0/ru_core_news_sm-3.7.0-py3-none-any.whl
+ro_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ro_core_news_sm-3.8.0/ro_core_news_sm-3.8.0-py3-none-any.whl
+ru_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ru_core_news_sm-3.8.0/ru_core_news_sm-3.8.0-py3-none-any.whl
 six==1.16.0  # some spacy package is missing this from their requirements
-sl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/sl_core_news_sm-3.7.0/sl_core_news_sm-3.7.0-py3-none-any.whl
-spacy==3.7.6
-sv_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/sv_core_news_sm-3.7.0/sv_core_news_sm-3.7.0-py3-none-any.whl
-uk_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/uk_core_news_sm-3.7.0/uk_core_news_sm-3.7.0-py3-none-any.whl
-zh_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/zh_core_web_sm-3.7.0/zh_core_web_sm-3.7.0-py3-none-any.whl
+sl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/sl_core_news_sm-3.8.0/sl_core_news_sm-3.8.0-py3-none-any.whl
+spacy==3.8.2
+sv_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/sv_core_news_sm-3.8.0/sv_core_news_sm-3.8.0-py3-none-any.whl
+uk_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/uk_core_news_sm-3.8.0/uk_core_news_sm-3.8.0-py3-none-any.whl
+zh_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/zh_core_web_sm-3.8.0/zh_core_web_sm-3.8.0-py3-none-any.whl

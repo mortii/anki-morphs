@@ -25,6 +25,7 @@ disable = """
     fixme,
     global-statement,
     relative-beyond-top-level,
+    too-many-positional-arguments,
 """
 
 [tool.pylint.similarities]
