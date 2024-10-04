@@ -622,10 +622,9 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         where_query_string = ""
         if len(cards_studied_today) > 0:
-            where_query_string = "WHERE" + "".join(
-                [f" card_id = {card_id} OR" for card_id in cards_studied_today]
+            where_query_string = (
+                "WHERE card_id IN (" + ",".join(map(str, cards_studied_today)) + ")"
             )
-            where_query_string = where_query_string[:-3]  # removes the last " OR"
 
         am_db.drop_seen_morphs_table()
         am_db.create_seen_morph_table()
