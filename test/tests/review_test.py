@@ -64,6 +64,8 @@ def test_custom_review(
     am_config = AnkiMorphsConfig()
     skipped_cards = SkippedCards()
 
+    reviewing_utils.init_undo_targets()
+
     mock_mw.reviewer.nextCard = partial(
         reviewing_utils._get_next_card_background,
         am_config=am_config,

@@ -81,7 +81,7 @@ def main() -> None:
     gui_hooks.profile_did_open.append(redraw_toolbar)
     gui_hooks.profile_did_open.append(init_tool_menu_and_actions)
     gui_hooks.profile_did_open.append(init_browser_menus_and_actions)
-    gui_hooks.profile_did_open.append(replace_reviewer_functions)
+    gui_hooks.profile_did_open.append(replace_card_reviewer)
     gui_hooks.profile_did_open.append(text_preprocessing.update_translation_table)
 
     gui_hooks.sync_will_start.append(recalc_on_sync)
@@ -313,11 +313,12 @@ def recalc_on_sync() -> None:
             recalc_main.recalc()
 
 
-def replace_reviewer_functions() -> None:
+def replace_card_reviewer() -> None:
     assert mw is not None
 
-    mw.reviewer.nextCard = reviewing_utils.am_next_card
+    reviewing_utils.init_undo_targets()
 
+    mw.reviewer.nextCard = reviewing_utils.am_next_card
     mw.reviewer._shortcutKeys = partial(
         reviewing_utils.am_reviewer_shortcut_keys,
         self=mw.reviewer,

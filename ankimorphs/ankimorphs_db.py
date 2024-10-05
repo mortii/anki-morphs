@@ -649,7 +649,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         # SearchNode handles escaping characters for us (e.g. 'am_known' -> 'am\_known')
         # it is also more robust to api changes than hardcoded strings.
         # An example of the resulting total_search_string is:
-        #   "(introduced:1 note:ankimorphs\_sub2srs OR introduced:1 note:Basic) OR is:buried tag:am-known"
+        #   "(introduced:1 note:ankimorphs\_sub2srs OR introduced:1 note:Basic) OR is:buried tag:am-known-manually"
         assert mw is not None
 
         am_config = AnkiMorphsConfig()

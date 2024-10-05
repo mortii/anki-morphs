@@ -21,15 +21,26 @@ from .exceptions import CancelledOperationException, CardQueueEmptyException
 
 SET_KNOWN_AND_SKIP_UNDO = "Set known and skip"
 ANKIMORPHS_UNDO = "AnkiMorphs custom undo"
-VALID_UNDO_MERGE_TARGETS: set[str] = {  # a set has faster lookup than a list
-    "Answer Card",
-    "Bury",
-    "Suspend",
-    "Forget Card",
-    "Set Due Date",
-    "Delete Note",
-}
+valid_undo_merge_targets: set[str] = {""}
 set_known_and_skip_undo: UndoStatus | None = None
+
+
+def init_undo_targets() -> None:
+    """
+    The targets are just strings determined by the Anki interface language.
+    Translation functions are found in anki/_fluent.py
+    """
+    assert mw is not None
+    global valid_undo_merge_targets
+
+    valid_undo_merge_targets = {
+        mw.col.tr.actions_answer_card(),
+        mw.col.tr.actions_forget_card(),
+        mw.col.tr.actions_set_due_date(),
+        mw.col.tr.studying_bury(),
+        mw.col.tr.studying_suspend(),
+        mw.col.tr.studying_delete_note(),
+    }
 
 
 def am_next_card() -> None:
@@ -154,7 +165,7 @@ def _get_valid_undo_status() -> UndoStatus:
         # See comment in set_card_as_known_and_skip for more info
         assert set_known_and_skip_undo is not None
         undo_status = set_known_and_skip_undo
-    elif undo_status.undo not in VALID_UNDO_MERGE_TARGETS:
+    elif undo_status.undo not in valid_undo_merge_targets:
         # We have to create a custom undo_targets that can be merged into.
         mw.col.add_custom_undo_entry(ANKIMORPHS_UNDO)
         undo_status = mw.col.undo_status()
