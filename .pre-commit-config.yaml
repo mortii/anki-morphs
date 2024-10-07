@@ -11,7 +11,7 @@ exclude: |
   )$
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-yaml
       - id: check-added-large-files
@@ -80,7 +80,7 @@ repos:
         name: isort (python)
         files: 'ankimorphs/|^test/'
   - repo: https://github.com/jendrikseipp/vulture
-    rev: v2.12
+    rev: v2.13
     hooks:
       - id: vulture
   - repo: local
