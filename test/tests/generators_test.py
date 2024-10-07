@@ -2,11 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from test import test_utils
-from test.fake_configs import (
-    config_big_japanese_collection,
-    config_inflection_evaluation,
-    config_lemma_evaluation,
-)
+from test.fake_configs import config_inflection_evaluation, config_lemma_evaluation
 from test.fake_environment_module import (  # pylint:disable=unused-import
     FakeEnvironment,
     FakeEnvironmentParams,
@@ -17,6 +13,7 @@ from test.test_globals import (
     PATH_TESTS_DATA_CORRECT_OUTPUTS,
     PATH_TESTS_DATA_TESTS_OUTPUTS,
 )
+from test.tests.morph_priority_test import default_fake_environment_params
 from typing import Any
 
 import pytest
@@ -34,84 +31,121 @@ from ankimorphs.generators.generators_output_dialog import (
 from ankimorphs.generators.generators_utils import Column
 from ankimorphs.generators.generators_window import GeneratorWindow
 
-################################################################
-#            CASE: BIG JAPANESE COLLECTION
-################################################################
-# Checks the priority files generated with using the am_db from
-# the `big_japanese_collection.anki2`.
-# The collection is arbitrary since the generators only use the
-# found db.
-################################################################
-case_big_japanese_collection_params = FakeEnvironmentParams(
-    config=config_big_japanese_collection,
-    am_db="big_japanese_collection.db",
-)
-
 
 @pytest.mark.parametrize(
-    "fake_environment_fixture, morphemizer_description, only_store_lemma, comprehension_cutoff, expected_output_file",
+    "fake_environment_fixture, input_dir, morphemizer_description, only_store_lemma, comprehension_cutoff, expected_output_file",
     [
         (
-            case_big_japanese_collection_params,
+            default_fake_environment_params,
+            "ja_subs",
             "spaCy: ja_core_news_sm",
             True,
             True,
             "ja_core_news_sm_freq_lemma_comprehension.csv",
         ),
         (
-            case_big_japanese_collection_params,
+            default_fake_environment_params,
+            "ja_subs",
             "spaCy: ja_core_news_sm",
             True,
             False,
             "ja_core_news_sm_freq_lemma_min_occurrence.csv",
         ),
         (
-            case_big_japanese_collection_params,
+            default_fake_environment_params,
+            "ja_subs",
             "spaCy: ja_core_news_sm",
             False,
             True,
             "ja_core_news_sm_freq_inflection_comprehension.csv",
         ),
         (
-            case_big_japanese_collection_params,
+            default_fake_environment_params,
+            "ja_subs",
             "spaCy: ja_core_news_sm",
             False,
             False,
             "ja_core_news_sm_freq_inflection_min_occurrence.csv",
         ),
         (
-            case_big_japanese_collection_params,
+            default_fake_environment_params,
+            "ja_subs",
             "AnkiMorphs: Japanese",
             True,
             True,
             "mecab_freq_lemma_comprehension.csv",
         ),
         (
-            case_big_japanese_collection_params,
+            default_fake_environment_params,
+            "ja_subs",
             "AnkiMorphs: Japanese",
             True,
             False,
             "mecab_freq_lemma_min_occurrence.csv",
         ),
         (
-            case_big_japanese_collection_params,
+            default_fake_environment_params,
+            "ja_subs",
             "AnkiMorphs: Japanese",
             False,
             True,
             "mecab_freq_inflection_comprehension.csv",
         ),
         (
-            case_big_japanese_collection_params,
+            default_fake_environment_params,
+            "ja_subs",
             "AnkiMorphs: Japanese",
             False,
             False,
             "mecab_freq_inflection_min_occurrence.csv",
+        ),
+        (
+            default_fake_environment_params,
+            "html_files",
+            "spaCy: en_core_web_sm",
+            False,
+            False,
+            "html_inflection_min_occurrence.csv",
+        ),
+        # This test is disabled because the parsing is inconsistent across operating systems
+        # (
+        #     default_fake_environment_params,
+        #     "epub_files",
+        #     "spaCy: en_core_web_sm",
+        #     False,
+        #     False,
+        #     "epub_inflection_min_occurrence.csv",
+        # ),
+        (
+            default_fake_environment_params,
+            "txt_files",
+            "spaCy: en_core_web_sm",
+            False,
+            False,
+            "txt_inflection_min_occurrence.csv",
+        ),
+        (
+            default_fake_environment_params,
+            "ass_files",
+            "AnkiMorphs: Japanese",
+            False,
+            False,
+            "ass_inflection_min_occurrence.csv",
+        ),
+        (
+            default_fake_environment_params,
+            "vtt_files",
+            "spaCy: en_core_web_sm",
+            False,
+            False,
+            "vtt_inflection_min_occurrence.csv",
         ),
     ],
     indirect=["fake_environment_fixture"],
 )
 def test_priority_file_generator(  # pylint:disable=unused-argument, too-many-arguments
     fake_environment_fixture: FakeEnvironment,
+    input_dir: str,
     morphemizer_description: str,
     only_store_lemma: bool,
     comprehension_cutoff: bool,
@@ -124,7 +158,8 @@ def test_priority_file_generator(  # pylint:disable=unused-argument, too-many-ar
     """
     gw = GeneratorWindow()
 
-    input_folder = Path(PATH_TESTS_DATA, "ja_subs")
+    # input_folder = Path(PATH_TESTS_DATA, "ja_subs")
+    input_folder = Path(PATH_TESTS_DATA, input_dir)
     test_output_file = Path(PATH_TESTS_DATA_TESTS_OUTPUTS, "test_output_file.csv")
 
     expected_output_file_path = Path(
@@ -247,11 +282,11 @@ def test_readability_report(  # pylint:disable=too-many-arguments, unused-argume
 
     _item = gw.ui.numericalTableWidget.item(_row, Column.UNIQUE_MORPHS.value)
     assert _item is not None
-    assert _item.text() == "482"
+    assert _item.text() == "484"
 
     _item = gw.ui.percentTableWidget.item(_row, Column.UNIQUE_MORPHS.value)
     assert _item is not None
-    assert _item.text() == "482"
+    assert _item.text() == "484"
 
     _item = gw.ui.numericalTableWidget.item(_row, Column.UNIQUE_KNOWN.value)
     assert _item is not None
@@ -263,11 +298,11 @@ def test_readability_report(  # pylint:disable=too-many-arguments, unused-argume
 
     _item = gw.ui.numericalTableWidget.item(_row, Column.TOTAL_MORPHS.value)
     assert _item is not None
-    assert _item.text() == "1656"
+    assert _item.text() == "1654"
 
     _item = gw.ui.percentTableWidget.item(_row, Column.TOTAL_MORPHS.value)
     assert _item is not None
-    assert _item.text() == "1656"
+    assert _item.text() == "1654"
 
     _item = gw.ui.numericalTableWidget.item(_row, Column.TOTAL_KNOWN.value)
     assert _item is not None

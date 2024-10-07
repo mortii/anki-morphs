@@ -60,6 +60,11 @@ def test_morph_priority_with_priority_file(  # pylint:disable=unused-argument
     only_lemma_priorities: bool,
     json_file_name: str,
 ) -> None:
+    """
+    Checks if morph priorities are loaded correctly from the priority files.
+    Creating json files can be done with 'save_to_json_file' from 'debugging_utils.py'
+    """
+
     if fake_environment_fixture is None:
         pytest.xfail()
 
@@ -72,6 +77,8 @@ def test_morph_priority_with_priority_file(  # pylint:disable=unused-argument
         fake_environment_fixture.priority_files_dir,
         json_file_name,
     )
+
+    # debugging_utils.save_to_json_file(json_file_path, morph_priorities)
 
     correct_morphs_priorities = debugging_utils.load_dict_from_json_file(json_file_path)
     assert len(correct_morphs_priorities) > 0

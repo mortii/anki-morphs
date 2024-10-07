@@ -55,9 +55,30 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout">
             <item>
-             <widget class="QCheckBox" name="txtFilesCheckBox">
+             <widget class="QCheckBox" name="assFilesCheckBox">
               <property name="text">
-               <string>.txt</string>
+               <string>.ass</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="epubFilesCheckBox">
+              <property name="text">
+               <string>.epub</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="htmlFilesCheckBox">
+              <property name="text">
+               <string>.html</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="mdFilesCheckBox">
+              <property name="text">
+               <string>.md</string>
               </property>
              </widget>
             </item>
@@ -69,16 +90,16 @@
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="vttFilesCheckBox">
+             <widget class="QCheckBox" name="txtFilesCheckBox">
               <property name="text">
-               <string>.vtt</string>
+               <string>.txt</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="mdFilesCheckBox">
+             <widget class="QCheckBox" name="vttFilesCheckBox">
               <property name="text">
-               <string>.md</string>
+               <string>.vtt</string>
               </property>
              </widget>
             </item>

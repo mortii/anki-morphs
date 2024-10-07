@@ -23,15 +23,12 @@ def print_thread_name() -> None:
 
 
 def save_to_json_file(file_path: Path, _dict: dict[tuple[str, str], int]) -> None:
-    """Changes the file extension to .json and outputs to that location"""
-    json_file: Path = file_path.with_suffix(".json")
-
     # the json module only does not support dict with tuple keys,
     # so we have to convert the keys to single strings and then
     # reverse the process when loading them later
     dict_with_str_keys = {f"{k[0]}|{k[1]}": v for k, v in _dict.items()}
 
-    with json_file.open("w", encoding="utf-8") as file:
+    with file_path.open("w", encoding="utf-8") as file:
         json.dump(dict_with_str_keys, file, ensure_ascii=False, indent=4)
 
 

@@ -23,7 +23,8 @@ def background_generate_study_plan(
     input_files: list[Path],
 ) -> None:
     assert mw is not None
-    assert mw.progress is not None
+
+    mw.progress.start(label="Generating study plan")
 
     morph_occurrences_by_file: dict[Path, dict[str, MorphOccurrence]] = (
         generators_utils.generate_morph_occurrences_by_file(

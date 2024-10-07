@@ -74,7 +74,7 @@ class GeneratorOutputDialog(QDialog):
         )
         if stored_output_file_path == "":
             self.ui.outputLineEdit.setText(
-                self._default_output_dir + self._default_output_file
+                os.path.join(self._default_output_dir, self._default_output_file)
             )
         else:
             self.ui.outputLineEdit.setText(stored_output_file_path)

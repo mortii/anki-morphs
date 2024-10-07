@@ -40,10 +40,13 @@ class AnkiMorphsExtraSettings(QSettings):
         self.setValue(GeneratorsWindowKeys.INPUT_DIR, ui.inputDirLineEdit.text())
 
         self.beginGroup(GeneratorsWindowKeys.FILE_FORMATS)
-        self.setValue(FileFormatsKeys.TXT, ui.txtFilesCheckBox.isChecked())
-        self.setValue(FileFormatsKeys.SRT, ui.srtFilesCheckBox.isChecked())
-        self.setValue(FileFormatsKeys.VTT, ui.vttFilesCheckBox.isChecked())
+        self.setValue(FileFormatsKeys.ASS, ui.assFilesCheckBox.isChecked())
+        self.setValue(FileFormatsKeys.EPUB, ui.epubFilesCheckBox.isChecked())
+        self.setValue(FileFormatsKeys.HTML, ui.htmlFilesCheckBox.isChecked())
         self.setValue(FileFormatsKeys.MD, ui.mdFilesCheckBox.isChecked())
+        self.setValue(FileFormatsKeys.SRT, ui.srtFilesCheckBox.isChecked())
+        self.setValue(FileFormatsKeys.TXT, ui.txtFilesCheckBox.isChecked())
+        self.setValue(FileFormatsKeys.VTT, ui.vttFilesCheckBox.isChecked())
         self.endGroup()  # file format group
 
         self.beginGroup(GeneratorsWindowKeys.PREPROCESS)

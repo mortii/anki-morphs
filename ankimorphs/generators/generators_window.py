@@ -149,35 +149,50 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
 
     def _setup_file_extension_checkboxes(self) -> None:
         checkboxes = [
-            self.ui.txtFilesCheckBox,
-            self.ui.srtFilesCheckBox,
-            self.ui.vttFilesCheckBox,
+            self.ui.assFilesCheckBox,
+            self.ui.epubFilesCheckBox,
+            self.ui.htmlFilesCheckBox,
             self.ui.mdFilesCheckBox,
+            self.ui.srtFilesCheckBox,
+            self.ui.txtFilesCheckBox,
+            self.ui.vttFilesCheckBox,
         ]
 
         self.am_extra_settings.beginGroup(
             extra_settings_keys.GeneratorsWindowKeys.FILE_FORMATS
         )
 
-        stored_txt_checkbox: bool = self.am_extra_settings.value(
-            extra_settings_keys.FileFormatsKeys.TXT, defaultValue=True, type=bool
+        stored_ass_checkbox: bool = self.am_extra_settings.value(
+            extra_settings_keys.FileFormatsKeys.ASS, defaultValue=True, type=bool
         )
-        stored_srt_checkbox: bool = self.am_extra_settings.value(
-            extra_settings_keys.FileFormatsKeys.SRT, defaultValue=True, type=bool
+        stored_epub_checkbox: bool = self.am_extra_settings.value(
+            extra_settings_keys.FileFormatsKeys.EPUB, defaultValue=True, type=bool
         )
-        stored_vtt_checkbox: bool = self.am_extra_settings.value(
-            extra_settings_keys.FileFormatsKeys.VTT, defaultValue=True, type=bool
+        stored_html_checkbox: bool = self.am_extra_settings.value(
+            extra_settings_keys.FileFormatsKeys.HTML, defaultValue=True, type=bool
         )
         stored_md_checkbox: bool = self.am_extra_settings.value(
             extra_settings_keys.FileFormatsKeys.MD, defaultValue=True, type=bool
         )
+        stored_srt_checkbox: bool = self.am_extra_settings.value(
+            extra_settings_keys.FileFormatsKeys.SRT, defaultValue=True, type=bool
+        )
+        stored_txt_checkbox: bool = self.am_extra_settings.value(
+            extra_settings_keys.FileFormatsKeys.TXT, defaultValue=True, type=bool
+        )
+        stored_vtt_checkbox: bool = self.am_extra_settings.value(
+            extra_settings_keys.FileFormatsKeys.VTT, defaultValue=True, type=bool
+        )
 
         self.am_extra_settings.endGroup()
 
-        self.ui.txtFilesCheckBox.setChecked(stored_txt_checkbox)
-        self.ui.srtFilesCheckBox.setChecked(stored_srt_checkbox)
-        self.ui.vttFilesCheckBox.setChecked(stored_vtt_checkbox)
+        self.ui.assFilesCheckBox.setChecked(stored_ass_checkbox)
+        self.ui.epubFilesCheckBox.setChecked(stored_epub_checkbox)
+        self.ui.htmlFilesCheckBox.setChecked(stored_html_checkbox)
         self.ui.mdFilesCheckBox.setChecked(stored_md_checkbox)
+        self.ui.srtFilesCheckBox.setChecked(stored_srt_checkbox)
+        self.ui.txtFilesCheckBox.setChecked(stored_txt_checkbox)
+        self.ui.vttFilesCheckBox.setChecked(stored_vtt_checkbox)
 
         for checkbox in checkboxes:
             checkbox.clicked.connect(
@@ -308,14 +323,20 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
     def _get_checked_extensions(self) -> tuple[str, ...]:
         extensions = []
 
-        if self.ui.txtFilesCheckBox.isChecked():
-            extensions.append(".txt")
-        if self.ui.srtFilesCheckBox.isChecked():
-            extensions.append(".srt")
-        if self.ui.vttFilesCheckBox.isChecked():
-            extensions.append(".vtt")
+        if self.ui.assFilesCheckBox.isChecked():
+            extensions.append(".ass")
+        if self.ui.epubFilesCheckBox.isChecked():
+            extensions.append(".epub")
+        if self.ui.htmlFilesCheckBox.isChecked():
+            extensions.append(".html")
         if self.ui.mdFilesCheckBox.isChecked():
             extensions.append(".md")
+        if self.ui.srtFilesCheckBox.isChecked():
+            extensions.append(".srt")
+        if self.ui.txtFilesCheckBox.isChecked():
+            extensions.append(".txt")
+        if self.ui.vttFilesCheckBox.isChecked():
+            extensions.append(".vtt")
 
         # we return a tuple to make it compatible with .endswith()
         return tuple(extensions)
@@ -323,7 +344,6 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
     def _generate_readability_report(self) -> None:
         assert mw is not None
 
-        mw.progress.start(label="Generating readability report")
         operation = QueryOp(
             parent=self,
             op=lambda _: readability_report_generator.background_generate_report(
@@ -352,7 +372,6 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
 
         selected_output_options: OutputOptions = selected_output.get_selected_options()
 
-        mw.progress.start(label="Generating priority file")
         operation = QueryOp(
             parent=self,
             op=lambda _: priority_file_generator.background_generate_priority_file(
@@ -382,7 +401,6 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
 
         selected_output_options: OutputOptions = selected_output.get_selected_options()
 
-        mw.progress.start(label="Generating study plan")
         operation = QueryOp(
             parent=self,
             op=lambda _: study_plan_generator.background_generate_study_plan(
