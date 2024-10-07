@@ -19,10 +19,13 @@ class GeneratorsWindowKeys:
 
 
 class FileFormatsKeys:
-    TXT = "txt"
-    SRT = "srt"
-    VTT = "vtt"
+    ASS = "ass"
+    EPUB = "epub"
+    HTML = "html"
     MD = "md"
+    SRT = "srt"
+    TXT = "txt"
+    VTT = "vtt"
 
 
 class PreprocessKeys:

@@ -3,10 +3,11 @@
 # abstractions to combine the two, but this would be a classic mistake of
 # over-abstraction--the uses cases are sufficiently different that they
 # should be kept separate.
+from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any, TextIO
+from typing import Any, Callable
 
 from .. import text_preprocessing
 from ..exceptions import UnicodeException
@@ -19,6 +20,14 @@ from ..text_preprocessing import (
     square_brackets_regex,
 )
 from ..ui.generators_window_ui import Ui_GeneratorsWindow
+from .text_extractors import (
+    extract_ass_text,
+    extract_basic_text,
+    extract_epub_text,
+    extract_html_text,
+    extract_srt_text,
+    extract_vtt_text,
+)
 
 
 class PreprocessOptions:
@@ -31,40 +40,57 @@ class PreprocessOptions:
         self.filter_names_from_file: bool = ui.namesFileCheckBox.isChecked()
 
 
+extractors: dict[str, Callable[[Path], list[str]]] = {
+    ".ass": extract_ass_text,
+    ".epub": extract_epub_text,
+    ".html": extract_html_text,
+    ".srt": extract_srt_text,
+    ".vtt": extract_vtt_text,
+    ".md": extract_basic_text,
+    ".txt": extract_basic_text,
+}
+
+
 def create_file_morph_occurrences(
     preprocess_options: PreprocessOptions,
     file_path: Path,
-    file_io: TextIO,
     morphemizer: Morphemizer,
-    nlp: Any,
+    nlp: Any,  # nlp: spacy.Language
 ) -> dict[str, MorphOccurrence]:
-    # nlp: spacy.Language
 
-    all_lines: list[str] = []
     morph_occurrences: dict[str, MorphOccurrence]
+    raw_lines: list[str]
+    filtered_lines: list[str] = []
+    extension = file_path.suffix
+
+    if extension in extractors:
+        raw_lines = extractors[extension](file_path)
+    else:
+        raise ValueError(f"Unsupported file format: {extension}")
 
     try:
-        for line in file_io:
+        for line in raw_lines:
             # lower-case to avoid proper noun false-positives
-            filtered_lines = filter_line(preprocess_options, line=line.lower())
-            all_lines.append(filtered_lines)
+            filtered_line = filter_line(preprocess_options, line=line.strip().lower())
+            if filtered_line:
+                filtered_lines.append(filtered_line)
+
     except UnicodeDecodeError as exc:
         raise UnicodeException(path=file_path) from exc
 
     if nlp is not None:
         morph_occurrences = get_morph_occurrences_by_spacy(
-            preprocess_options, nlp, all_lines
+            preprocess_options, nlp, filtered_lines
         )
     else:
         morph_occurrences = get_morph_occurrences_by_morphemizer(
-            preprocess_options, morphemizer, all_lines
+            preprocess_options, morphemizer, filtered_lines
         )
 
     return morph_occurrences
 
 
 def filter_line(preprocess: PreprocessOptions, line: str) -> str:
-
     if preprocess.filter_square_brackets:
         if square_brackets_regex.search(line):
             line = square_brackets_regex.sub("", line)

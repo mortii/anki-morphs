@@ -187,17 +187,15 @@ def generate_morph_occurrences_by_file(
             )
         )
 
-        with open(input_file, encoding="utf-8") as file_io:
-            file_morph_occurrences: dict[str, MorphOccurrence] = (
-                generators_text_processing.create_file_morph_occurrences(
-                    preprocess_options=preprocess_options,
-                    file_path=input_file,
-                    file_io=file_io,
-                    morphemizer=_morphemizer,
-                    nlp=_nlp,
-                )
+        file_morph_occurrences: dict[str, MorphOccurrence] = (
+            generators_text_processing.create_file_morph_occurrences(
+                preprocess_options=preprocess_options,
+                file_path=input_file,
+                morphemizer=_morphemizer,
+                nlp=_nlp,
             )
-            morph_occurrences_by_file[input_file] = file_morph_occurrences
+        )
+        morph_occurrences_by_file[input_file] = file_morph_occurrences
 
     return morph_occurrences_by_file
 

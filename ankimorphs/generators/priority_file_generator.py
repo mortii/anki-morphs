@@ -22,7 +22,8 @@ def background_generate_priority_file(
     input_files: list[Path],
 ) -> None:
     assert mw is not None
-    assert mw.progress is not None
+
+    mw.progress.start(label="Generating priority file")
 
     # pylint: disable=duplicate-code
     morph_occurrences_by_file: dict[Path, dict[str, MorphOccurrence]] = (

@@ -30,7 +30,9 @@ To use the generators you have to follow these three steps:
 These are the files that the generators are (mostly) able to read. Any files that don't have these extensions will be
 ignored.
 
-Please note that the files must be encoded in `UTF-8`. Using other encodings may lead to parsing errors or crashes.
+> **Note**:
+> - Files must be encoded in `UTF-8`. Using other encodings may lead to parsing errors or crashes.
+> - EPUB files may be parsed _slightly_ differently across operating systems due to system-specific quirks.
 
 ### Selecting Root Folder
 
@@ -45,7 +47,7 @@ Take, for example, the following folders and their files:
 english_texts/
 ├── books/
 │   └── The Wise Man's Fear/
-│       ├── The Wise Man's Fear.epub
+│       ├── The Wise Man's Fear.pdf
 │       └── The Wise Man's Fear.txt
 └── subs/
     ├── Game-of-Thrones/

@@ -13,5 +13,3 @@ ground up with a focus on simplicity, performance, and a codebase with minimal t
 Download: https://ankiweb.net/shared/info/472573498
 
 Guide and docs: https://mortii.github.io/anki-morphs/
-
-Project roadmap: https://github.com/users/mortii/projects/1/views/1

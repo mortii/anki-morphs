@@ -24,7 +24,8 @@ def background_generate_report(
     input_files: list[Path],
 ) -> None:
     assert mw is not None
-    assert mw.progress is not None
+
+    mw.progress.start(label="Generating readability report")
 
     if len(input_files) == 0:
         raise EmptyFileSelectionException
