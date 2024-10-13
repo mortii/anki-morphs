@@ -128,3 +128,21 @@
 >![names_incorrectly_highlighted.png](../img/names_incorrectly_highlighted.png)
 
 </details>
+
+<details>
+  <summary style="display:list-item">Readability report freezes indefinitely when input is too long</summary>
+
+> When using the `AnkiMorphs: Japanese` morphemizer, excessively long lines of text can cause the morphemizer's buffer
+> to overflow, causing the progress bar to freeze indefinitely. To avoid this, try splitting the long lines into
+> shorter segments.
+
+</details>
+
+<details>
+  <summary style="display:list-item">Anki crashing when opening AnkiMorphs settings</summary>
+
+> The `AnkiMorphs: Japanese` morphemizer doesn't handle paths with diacritical marks very well, so paths like this:
+> `C:\Users\héroïne` can cause crashes. If you can't change the path name that is causing the crash, try using spaCy
+> morphemizers instead.
+
+</details>
