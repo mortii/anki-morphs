@@ -10,12 +10,9 @@ updates:
     schedule:
       interval: "monthly"
     groups:
-      compatible-dependencies:
+      all-dependencies:
         patterns:
           - "*"
-        update-types:
-          - "minor"
-          - "patch"
     ignore:
       - dependency-name: "PyQt6"
       - dependency-name: "PyQt6-Qt6"
