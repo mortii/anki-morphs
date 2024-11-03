@@ -322,7 +322,7 @@ def replace_card_reviewer() -> None:
     mw.reviewer._shortcutKeys = partial(
         reviewing_utils.am_reviewer_shortcut_keys,
         self=mw.reviewer,
-        _old=Reviewer._shortcutKeys,
+        _old=Reviewer._shortcutKeys,  # type: ignore[arg-type]
     )
 
 

@@ -75,7 +75,7 @@ def test_custom_review(
     mock_mw.reviewer._shortcutKeys = partial(
         reviewing_utils.am_reviewer_shortcut_keys,
         self=mock_mw.reviewer,
-        _old=Reviewer._shortcutKeys,
+        _old=Reviewer._shortcutKeys,  # type: ignore[arg-type]
     )
 
     first_card = expected_results[0]
