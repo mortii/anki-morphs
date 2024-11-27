@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from anki.template import TemplateRenderContext
 
 from ..ankimorphs_config import (
@@ -50,7 +52,7 @@ def am_highlight_morphs(
         and am_config_filter.field == field_name
         and EXTRA_FIELD_HIGHLIGHTED in " ".join(note.keys())
     ):
-        return note[EXTRA_FIELD_HIGHLIGHTED]
+        return rubify(note[EXTRA_FIELD_HIGHLIGHTED])
 
     morphemizer: Morphemizer | None = (
         get_morphemizer_by_description(am_config_filter.morphemizer_description)
@@ -71,7 +73,13 @@ def am_highlight_morphs(
     if not card_morphs:
         return field_text
 
-    return get_highlighted_text(am_config, card_morphs, field_text)
+    field_text = get_highlighted_text(am_config, card_morphs, field_text)
+
+    return (
+        field_text
+        if not am_config.preprocess_ignore_bracket_contents
+        else rubify(field_text)
+    )
 
 
 def get_morphemes(
@@ -101,3 +109,10 @@ def get_morphemes(
         )
 
     return morphs
+
+
+def rubify(field_text: str) -> str:
+    ruby_shorthand_regex = r" ?(?P<kanji>[^ >]+?)\[(?P<kana>.+?)\]"
+    ruby_longhand = r"<ruby><rb>\g<kanji></rb><rt>\g<kana></rt></ruby>"
+
+    return re.sub(ruby_shorthand_regex, ruby_longhand, field_text, re.MULTILINE)
