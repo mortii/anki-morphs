@@ -57,7 +57,7 @@ def am_highlight_morphs(
     # If we were piped in after the `furigana` built-in filter, we
     # need to do some unpacking.
     #
-    derubified_field_text = derubify(field_text)
+    derubified_field_text = dehtml(field_text)
 
     card_morphs: list[Morpheme] = get_morphemes(
         morphemizer, am_config, am_db, derubified_field_text
@@ -66,7 +66,7 @@ def am_highlight_morphs(
     if not card_morphs:
         return field_text
 
-    field_text = get_highlighted_text(am_config, card_morphs, derubified_field_text)
+    field_text = get_highlighted_text(am_config, card_morphs, field_text)
 
     return (
         field_text
@@ -108,16 +108,17 @@ def get_morphemes(
 
 
 def rubify(field_text: str) -> str:
-    ruby_shorthand = r" ?(?P<kanji>[^ >]+)\[(?P<kana>.+?)\]"
+    ruby_shorthand = r" (?P<kanji>[^ ]+)\[(?P<kana>.+?)\]"
     ruby_longhand = r"<ruby><rb>\g<kanji></rb><rt>\g<kana></rt></ruby>"
 
     return re.sub(ruby_shorthand, ruby_longhand, field_text, re.MULTILINE)
 
 
-def derubify(field_text: str) -> str:
-    ruby_longhand = (
-        r"<ruby.*?>\s*<rb.*?>(?P<kanji>.+?)</rb>\s*<rt.*?>(?P<kana>.+?)</rt>\s*</ruby>"
-    )
-    ruby_shorthand = r"\g<kanji>[\g<kana>]"
+def dehtml(field_text: str) -> str:
+    ruby_longhand = r"<rt.*?>(?P<kana>.+?)</rt>"
+    ruby_shorthand = r"[\g<kana>]"
 
-    return re.sub(ruby_longhand, ruby_shorthand, field_text, re.MULTILINE)
+    wrap_kana = re.sub(ruby_longhand, ruby_shorthand, field_text, re.MULTILINE)
+
+    all_html_tags = r"<[^>]*>"
+    return re.sub(all_html_tags, "", wrap_kana, re.MULTILINE)
