@@ -151,7 +151,12 @@ template, e.g:
 {{furigana:am-highlighted}}
 ```
 
-You also have to have the `Ignore content in square brackets` [preprocess setting](preprocess.md) activated.
+If you would like to have highlighting, but would prefer to not add this extra field, explore the 
+[am-highlight-morphs filter](../../usage/filters.md#am-highlight-morphs) that can highlight just-in-time, with some 
+tradeoffs.
+
+For either of these options you also have to have the 
+`Ignore content in square brackets` [preprocess setting](preprocess.md) activated.
 
 > **Note**: This does not always work flawlessly. The [known problems](../../known-problems.md) section has more
 details on how to fix ruby character highlighting problems.
