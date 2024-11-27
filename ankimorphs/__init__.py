@@ -51,6 +51,7 @@ from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
 from .extra_settings import ankimorphs_extra_settings, extra_settings_keys
 from .extra_settings.ankimorphs_extra_settings import AnkiMorphsExtraSettings
+from .filters import register_filters
 from .generators.generators_window import GeneratorWindow
 from .known_morphs_exporter import KnownMorphsExporterDialog
 from .progression.progression_window import ProgressionWindow

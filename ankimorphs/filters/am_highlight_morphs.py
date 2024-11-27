@@ -1,0 +1,103 @@
+from __future__ import annotations
+
+from anki.template import TemplateRenderContext
+
+from ..ankimorphs_config import (
+    AnkiMorphsConfig,
+    AnkiMorphsConfigFilter,
+    get_matching_read_filter,
+)
+from ..ankimorphs_db import AnkiMorphsDB
+from ..ankimorphs_globals import EXTRA_FIELD_HIGHLIGHTED
+from ..morpheme import Morpheme
+from ..morphemizers import spacy_wrapper
+from ..morphemizers.morphemizer import (
+    Morphemizer,
+    SpacyMorphemizer,
+    get_all_morphemizers,
+    get_morphemizer_by_description,
+)
+from ..text_highlighting import get_highlighted_text
+from ..text_preprocessing import (
+    get_processed_morphemizer_morphs,
+    get_processed_spacy_morphs,
+)
+
+
+def am_highlight_morphs(
+    field_text: str,
+    field_name: str,
+    filter_name: str,
+    context: TemplateRenderContext,
+) -> str:
+    """Use morph learning progress to decorate the morphemes in the supplied text.
+    Adds css classes to the output that can be styled in the card."""
+
+    if filter_name != "am-highlight-morphs":
+        return field_text
+
+    morphemizers: list[Morphemizer] = get_all_morphemizers()
+
+    if morphemizers is None:
+        return field_text
+
+    note = context.note()
+
+    am_config_filter: AnkiMorphsConfigFilter | None = get_matching_read_filter(note)
+
+    if (
+        am_config_filter
+        and am_config_filter.field == field_name
+        and EXTRA_FIELD_HIGHLIGHTED in " ".join(note.keys())
+    ):
+        return note[EXTRA_FIELD_HIGHLIGHTED]
+
+    morphemizer: Morphemizer | None = (
+        get_morphemizer_by_description(am_config_filter.morphemizer_description)
+        if am_config_filter is not None
+        else morphemizers[-1]
+    )
+
+    if not morphemizer:
+        return field_text
+
+    am_config = AnkiMorphsConfig()
+    am_db = AnkiMorphsDB()
+
+    card_morphs: list[Morpheme] = get_morphemes(
+        morphemizer, am_config, am_db, field_text
+    )
+
+    if not card_morphs:
+        return field_text
+
+    return get_highlighted_text(am_config, card_morphs, field_text)
+
+
+def get_morphemes(
+    morphemizer: Morphemizer,
+    am_config: AnkiMorphsConfig,
+    am_db: AnkiMorphsDB,
+    field_text: str,
+) -> list[Morpheme]:
+    if isinstance(morphemizer, SpacyMorphemizer):
+        nlp = spacy_wrapper.get_nlp(
+            morphemizer.get_description().removeprefix("spaCy: ")
+        )
+        morphs = list(
+            set(get_processed_spacy_morphs(am_config, list(nlp.pipe([field_text]))[0]))
+        )
+    else:
+        morphs = list(
+            set(get_processed_morphemizer_morphs(morphemizer, field_text, am_config))
+        )
+
+    for morph in morphs:
+        morph.highest_inflection_learning_interval = (
+            am_db.get_highest_inflection_learning_interval(morph) or 0
+        )
+        morph.highest_lemma_learning_interval = (
+            am_db.get_highest_lemma_learning_interval(morph) or 0
+        )
+
+    return morphs
