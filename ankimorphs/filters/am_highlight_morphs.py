@@ -7,7 +7,7 @@ from anki.template import TemplateRenderContext
 from ..ankimorphs_config import (
     AnkiMorphsConfig,
     AnkiMorphsConfigFilter,
-    get_matching_read_filter,
+    get_matching_filter,
 )
 from ..ankimorphs_db import AnkiMorphsDB
 from ..ankimorphs_globals import EXTRA_FIELD_HIGHLIGHTED
@@ -37,7 +37,7 @@ def am_highlight_morphs(
     if filter_name != "am-highlight-morphs" or field_name == EXTRA_FIELD_HIGHLIGHTED:
         return field_text
 
-    am_config_filter: AnkiMorphsConfigFilter | None = get_matching_read_filter(
+    am_config_filter: AnkiMorphsConfigFilter | None = get_matching_filter(
         context.note()
     )
 

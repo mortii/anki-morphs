@@ -11,8 +11,9 @@ card template filter. It is intended to result in the same highlight capability 
 `am-highlighted` extra field. It does however incur a small overhead for the just-in-time processing. It is not
 available on mobile.
 
-To use the filter, you will need to register [a 'read' note filter](note-filter.md#read--modify) for each note type
-that you would like to use the `am-highlight-morphs` filter on. With this setup step done, you can start adding the
+To use the filter, you will need to register [a note filter](note-filter.md#read--modify) for each note type
+that you would like to use the `am-highlight-morphs` filter on. If you do not want this card to be considered for
+your learning progress, you can disable read and modify flags. With this setup step done, you can start adding the
 filter to cards for that note type.
 
 as with
