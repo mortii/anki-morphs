@@ -16,7 +16,6 @@ from ..morphemizers import spacy_wrapper
 from ..morphemizers.morphemizer import (
     Morphemizer,
     SpacyMorphemizer,
-    get_all_morphemizers,
     get_morphemizer_by_description,
 )
 from ..text_highlighting import get_highlighted_text
@@ -35,29 +34,18 @@ def am_highlight_morphs(
     """Use morph learning progress to decorate the morphemes in the supplied text.
     Adds css classes to the output that can be styled in the card."""
 
-    if filter_name != "am-highlight-morphs":
+    if filter_name != "am-highlight-morphs" or field_name == EXTRA_FIELD_HIGHLIGHTED:
         return field_text
 
-    morphemizers: list[Morphemizer] = get_all_morphemizers()
+    am_config_filter: AnkiMorphsConfigFilter | None = get_matching_read_filter(
+        context.note()
+    )
 
-    if morphemizers is None:
+    if am_config_filter is None:
         return field_text
 
-    note = context.note()
-
-    am_config_filter: AnkiMorphsConfigFilter | None = get_matching_read_filter(note)
-
-    if (
-        am_config_filter
-        and am_config_filter.field == field_name
-        and EXTRA_FIELD_HIGHLIGHTED in " ".join(note.keys())
-    ):
-        return rubify(note[EXTRA_FIELD_HIGHLIGHTED])
-
-    morphemizer: Morphemizer | None = (
-        get_morphemizer_by_description(am_config_filter.morphemizer_description)
-        if am_config_filter is not None
-        else morphemizers[-1]
+    morphemizer: Morphemizer | None = get_morphemizer_by_description(
+        am_config_filter.morphemizer_description
     )
 
     if not morphemizer:
@@ -66,14 +54,19 @@ def am_highlight_morphs(
     am_config = AnkiMorphsConfig()
     am_db = AnkiMorphsDB()
 
+    # If we were piped in after the `furigana` built-in filter, we
+    # need to do some unpacking.
+    #
+    derubified_field_text = derubify(field_text)
+
     card_morphs: list[Morpheme] = get_morphemes(
-        morphemizer, am_config, am_db, field_text
+        morphemizer, am_config, am_db, derubified_field_text
     )
 
     if not card_morphs:
         return field_text
 
-    field_text = get_highlighted_text(am_config, card_morphs, field_text)
+    field_text = get_highlighted_text(am_config, card_morphs, derubified_field_text)
 
     return (
         field_text
@@ -92,8 +85,9 @@ def get_morphemes(
         nlp = spacy_wrapper.get_nlp(
             morphemizer.get_description().removeprefix("spaCy: ")
         )
+
         morphs = list(
-            set(get_processed_spacy_morphs(am_config, list(nlp.pipe([field_text]))[0]))
+            set(get_processed_spacy_morphs(am_config, next(nlp.pipe([field_text]))))
         )
     else:
         morphs = list(
@@ -101,18 +95,29 @@ def get_morphemes(
         )
 
     for morph in morphs:
-        morph.highest_inflection_learning_interval = (
-            am_db.get_highest_inflection_learning_interval(morph) or 0
-        )
-        morph.highest_lemma_learning_interval = (
-            am_db.get_highest_lemma_learning_interval(morph) or 0
-        )
+        if am_config.evaluate_morph_inflection:
+            morph.highest_inflection_learning_interval = (
+                am_db.get_highest_inflection_learning_interval(morph) or 0
+            )
+        else:
+            morph.highest_lemma_learning_interval = (
+                am_db.get_highest_lemma_learning_interval(morph) or 0
+            )
 
     return morphs
 
 
 def rubify(field_text: str) -> str:
-    ruby_shorthand_regex = r" ?(?P<kanji>[^ >]+?)\[(?P<kana>.+?)\]"
+    ruby_shorthand = r" ?(?P<kanji>[^ >]+)\[(?P<kana>.+?)\]"
     ruby_longhand = r"<ruby><rb>\g<kanji></rb><rt>\g<kana></rt></ruby>"
 
-    return re.sub(ruby_shorthand_regex, ruby_longhand, field_text, re.MULTILINE)
+    return re.sub(ruby_shorthand, ruby_longhand, field_text, re.MULTILINE)
+
+
+def derubify(field_text: str) -> str:
+    ruby_longhand = (
+        r"<ruby.*?>\s*<rb.*?>(?P<kanji>.+?)</rb>\s*<rt.*?>(?P<kana>.+?)</rt>\s*</ruby>"
+    )
+    ruby_shorthand = r"\g<kanji>[\g<kana>]"
+
+    return re.sub(ruby_longhand, ruby_shorthand, field_text, re.MULTILINE)
