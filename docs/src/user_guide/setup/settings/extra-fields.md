@@ -152,7 +152,7 @@ template, e.g:
 ```
 
 If you would like to have highlighting, but would prefer to not add this extra field, explore the 
-[am-highlight-morphs filter](../../usage/filters.md#am-highlight-morphs) that can highlight just-in-time, with some 
+[am-highlight filter](../../usage/template-filters.md#am-highlight) that can highlight just-in-time, with some 
 tradeoffs.
 
 For either of these options you also have to have the 
