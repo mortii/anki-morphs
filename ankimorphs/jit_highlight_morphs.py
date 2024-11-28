@@ -116,8 +116,9 @@ def dehtml(field_text: str) -> str:
     """
 
     # Capture html ruby kana. Find <rt> tags and capture all text between them in a capture group
-    # (kana), allow for any attributes or other decorations on the <rt> tag by non-eagerly
-    # capturing all chars up to '>'. non eagerly capture one or more characters into kana.
+    # called kana, allow for any attributes or other decorations on the <rt> tag by non-eagerly
+    # capturing all chars up to '>', so that the whole element can just be dropped. non-eagerly
+    # capture one or more characters into the capture group named kana.
     #
     ruby_longhand = r"<rt[^>]*>(?P<kana>.+?)</rt>"
 
@@ -133,5 +134,5 @@ def dehtml(field_text: str) -> str:
 
     # Remove all angle bracketed characters. This effectively removes all html and leaves a
     # clean(er) string to pass to the morphemizer.
-
+    #
     return re.sub(all_html_tags, "", wrap_kana, re.MULTILINE)
