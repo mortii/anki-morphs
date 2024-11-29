@@ -144,10 +144,11 @@ def dehtml(text: str) -> str:
 
 
 def correct_ruby_learning_status(field_text: str) -> str:
-    """If rubies exist and there are morph-statuses, they're in the wrong place.
+    """If html rubies exist and there are morph-statuses, they're in the wrong place.
     We need to update the html to move them into the correct location."""
 
-    # Find ruby tags, with or without attributes.
+    # Find ruby tags, with or without attributes where at least one sub element
+    # has a morph-status.
     #
     rubies_with_status = r"<ruby[^>]*>.*?morph-status.*?</ruby>"
     matches = list(re.finditer(rubies_with_status, field_text))
@@ -163,17 +164,23 @@ def correct_ruby_learning_status(field_text: str) -> str:
 
 
 def rubifiy_morph_status(text: str) -> str:
+    # Find all morph-statuses in the ruby (excluding in the <rt> translations);
+    #
+    stripped_text = re.sub("<rt.*?</rt>", "", text)
+    morph_status_attr = r'morph-status="(.*?)"'
+    matches = list(set(re.findall(morph_status_attr, stripped_text)))
+
+    return (
+        unify_ruby_morph_status(text, matches[0])
+        if len(matches) == 1
+        else strip_rt_morph_status(text)
+    )
+
+
+def unify_ruby_morph_status(text: str, morph_status: str) -> str:
     """For a ruby tag, shuffle the morph-status attribute into the right place."""
 
-    # Find the first morph-status in the ruby
-    #
     morph_status_attr = r"\s+morph-status=\"[^\"]*\""
-    match = re.search(morph_status_attr, text)
-
-    morph_status: str | None = match.group() if match else None
-
-    if not morph_status:
-        return text
 
     # Remove all morph statuses in this ruby
     #
@@ -182,6 +189,20 @@ def rubifiy_morph_status(text: str) -> str:
     # Add the found morph status to the ruby.
     #
     ruby_tag = r"(?P<ruby_tag><ruby[^>]*)>"
-    ruby_replace = r"\g<ruby_tag>" + f"{morph_status}>"
+    ruby_replace = r"\g<ruby_tag>" + f' morph-status="{morph_status}">'
 
     return re.sub(ruby_tag, ruby_replace, text)
+
+
+def strip_rt_morph_status(text: str) -> str:
+    rt_with_status = r"<rt[^>]*>.*?morph-status.*?</rt>"
+    rt = re.search(rt_with_status, text)
+    if not rt:
+        return text
+
+    morph_status = 'morph-status=".*?"'
+    morph_status_replacement = 'morph-status="multiple"'
+
+    new_rt = re.sub(morph_status, morph_status_replacement, rt.group())
+
+    return re.sub(rt_with_status, new_rt, text)
