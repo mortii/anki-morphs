@@ -55,7 +55,15 @@ def highlight_morphs_jit(
     if not card_morphs:
         return field_text
 
-    return text_highlighting.get_highlighted_text(am_config, card_morphs, field_text)
+    field_text = text_highlighting.get_highlighted_text(
+        am_config, card_morphs, field_text
+    )
+
+    return (
+        correct_ruby_learning_status(field_text)
+        if am_config.preprocess_ignore_bracket_contents
+        else field_text
+    )
 
 
 def get_morphemes(
@@ -68,7 +76,7 @@ def get_morphemes(
     # If we were piped in after the `furigana` built-in filter, or if there is html in the source
     # data, we need to do some unpacking.
     #
-    clean_field_text = dehtml(field_text)
+    clean_text = dehtml(field_text)
 
     if isinstance(morphemizer, SpacyMorphemizer):
         nlp = spacy_wrapper.get_nlp(
@@ -76,11 +84,11 @@ def get_morphemes(
         )
 
         all_morphs = text_preprocessing.get_processed_spacy_morphs(
-            am_config, next(nlp.pipe([clean_field_text]))
+            am_config, next(nlp.pipe([clean_text]))
         )
     else:
         all_morphs = text_preprocessing.get_processed_morphemizer_morphs(
-            morphemizer, clean_field_text, am_config
+            morphemizer, clean_text, am_config
         )
 
     return (
@@ -106,7 +114,7 @@ def update_morph_intervals(
     return morphs
 
 
-def dehtml(field_text: str) -> str:
+def dehtml(text: str) -> str:
     """Prepare a string to be passed to a morphemizer. Specially process <ruby><rt> tags to extract
     kana to reconstruct kanji/kana shorthand. Remove all html tags from an input string.
     """
@@ -126,10 +134,54 @@ def dehtml(field_text: str) -> str:
     #
     ruby_longhand = r"<rt[^>]*>(?P<kana>.+?)</rt>"
 
-    # Emit the captured kana into square brackets.
+    # Emit the captured kana into square brackets, thus reconstructing the ruby shorthand "X[yz]".
     #
     ruby_shorthand = r"[\g<kana>]"
 
-    return anki.utils.strip_html(
-        re.sub(ruby_longhand, ruby_shorthand, field_text, re.MULTILINE)
-    )
+    # Remove all other html tags, we do not want to forward these to the morphemizer.
+    #
+    return anki.utils.strip_html(re.sub(ruby_longhand, ruby_shorthand, text))
+
+
+def correct_ruby_learning_status(field_text: str) -> str:
+    """If rubies exist and there are morph-statuses, they're in the wrong place.
+    We need to update the html to move them into the correct location."""
+
+    # Find ruby tags, with or without attributes.
+    #
+    rubies_with_status = r"<ruby[^>]*>.*?morph-status.*?</ruby>"
+    matches = list(re.finditer(rubies_with_status, field_text))
+
+    # Iterate in reverse order to avoid index issues after replacements.
+    #
+    for match in reversed(matches):
+        start, end = match.span()
+        replacement = rubifiy_morph_status(match.group(0))
+        field_text = field_text[:start] + replacement + field_text[end:]
+
+    return field_text
+
+
+def rubifiy_morph_status(text: str) -> str:
+    """For a ruby tag, shuffle the morph-status attribute into the right place."""
+
+    # Find the first morph-status in the ruby
+    #
+    morph_status_attr = r"\s+morph-status=\"[^\"]*\""
+    match = re.search(morph_status_attr, text)
+
+    morph_status: str | None = match.group() if match else None
+
+    if not morph_status:
+        return text
+
+    # Remove all morph statuses in this ruby
+    #
+    text = re.sub(morph_status_attr, "", text)
+
+    # Add the found morph status to the ruby.
+    #
+    ruby_tag = r"(?P<ruby_tag><ruby[^>]*)>"
+    ruby_replace = r"\g<ruby_tag>" + f"{morph_status}>"
+
+    return re.sub(ruby_tag, ruby_replace, text)
