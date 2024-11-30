@@ -28,6 +28,9 @@ def highlight_morphs_jit(
     """Use morph learning progress to decorate the morphemes in the supplied text.
     Adds css classes to the output that can be styled in the card."""
 
+    # Perf: Bail early if the user attempts to use this template filter on the already
+    # formatted data.
+    #
     if (
         filter_name != "am-highlight"
         or field_name == ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED
@@ -59,8 +62,13 @@ def highlight_morphs_jit(
         am_config, card_morphs, field_text
     )
 
+    # If the user has specified to preprocess_ignore_bracket_contents, and in the case where we are
+    # run after the anki built in furigana filter, it's likely that we have false positive matches
+    # in the kana part of the html rubies. If they're not preprocess_ignore_bracket_contents, then
+    # it's likely that they WANT the inflections to be highlighted differently than the kanji.
+    #
     return (
-        correct_ruby_learning_status(field_text)
+        post_process_learning_status(field_text)
         if am_config.preprocess_ignore_bracket_contents
         else field_text
     )
@@ -74,9 +82,9 @@ def get_morphemes(
     """Take in a string and gather the morphemes from it."""
 
     # If we were piped in after the `furigana` built-in filter, or if there is html in the source
-    # data, we need to do some unpacking.
+    # data, we need to do some cleansing.
     #
-    clean_text = dehtml(field_text)
+    clean_text = dehtml(field_text, am_config.preprocess_ignore_bracket_contents)
 
     if isinstance(morphemizer, SpacyMorphemizer):
         nlp = spacy_wrapper.get_nlp(
@@ -99,6 +107,7 @@ def get_morphemes(
 def update_morph_intervals(
     morphs: list[Morpheme], am_config: ankimorphs_config.AnkiMorphsConfig
 ) -> list[Morpheme]:
+    """Fetch just the data about the morphemes that are needed for the get_highlighted_text call."""
 
     with AnkiMorphsDB() as am_db:
         for morph in morphs:
@@ -114,17 +123,17 @@ def update_morph_intervals(
     return morphs
 
 
-def dehtml(text: str) -> str:
+def dehtml(text: str, preprocess_ignore_bracket_contents: bool) -> str:
     """Prepare a string to be passed to a morphemizer. Specially process <ruby><rt> tags to extract
-    kana to reconstruct kanji/kana shorthand. Remove all html tags from an input string.
+    kana to reconstruct kanji/kana ruby shorthand. Remove all html from the input string.
     """
 
     # Capture html ruby kana. The built in furigana filter will turn X[yz] into
-    # <ruby><rb>X</rb><rt>yz</rt></ruby>, and if we strip out all html we will loose information
-    # on the kana Find <rt> tags and capture all text between them in a capture group
-    # called kana, allow for any attributes or other decorations on the <rt> tag by non-eagerly
-    # capturing all chars up to '>', so that the whole element can just be dropped. non-eagerly
-    # capture one or more characters into the capture group named kana.
+    # <ruby><rb>X</rb><rt>yz</rt></ruby>, and if we blindly strip out all html we will loose
+    # information on the kana Find <rt> tags and capture all text between them in a capture
+    # group called kana, allow for any attributes or other decorations on the <rt> tag by
+    # non-eagerly capturing all chars up to '>', so that the whole element can just be dropped.
+    # non-eagerly capture one or more characters into the capture group named kana.
     #
     # Samples:
     # <ruby><rb>X</rb><rt>yz</rt></ruby> = <ruby><rb>X</rb>[yz]</ruby>
@@ -138,17 +147,30 @@ def dehtml(text: str) -> str:
     #
     ruby_shorthand = r"[\g<kana>]"
 
-    # Remove all other html tags, we do not want to forward these to the morphemizer.
+    # Remove all other html tags. We do not want to forward these to the morphemizer.
     #
-    return anki.utils.strip_html(re.sub(ruby_longhand, ruby_shorthand, text))
+    text = anki.utils.strip_html(re.sub(ruby_longhand, ruby_shorthand, text))
+
+    # Remove brackets if user specified not to process them.
+    #
+    if preprocess_ignore_bracket_contents:
+        text = re.sub(r"\[.*?\]", "", text)
+
+    return text
 
 
-def correct_ruby_learning_status(field_text: str) -> str:
-    """If html rubies exist and there are morph-statuses, they're in the wrong place.
-    We need to update the html to move them into the correct location."""
+def post_process_learning_status(field_text: str) -> str:
+    """If html rubies exist and there are morph-statuses, it's likely they're in the
+    wrong place. We need to update the html to move them into a better location.
+    If it feels like this is a lot of text gymnastics, that's because it is."""
 
     # Find ruby tags, with or without attributes where at least one sub element
     # has a morph-status.
+    #
+    # Samples
+    # hi there <ruby><rb>X</rb><rt>yz</rt></ruby> <p>testing tag</p> = will not match (no morph-status prop)
+    # hi there <ruby><rb><span morph-status="unknown">X</rb><rt>yz</rt></ruby> <p>testing tag</p> = will match from <ruby> to </ruby>
+    # <span morph-status="unknown">X</rb><rt>yz</rt> = will not match, no ruby tags.
     #
     rubies_with_status = r"<ruby[^>]*>.*?morph-status.*?</ruby>"
     matches = list(re.finditer(rubies_with_status, field_text))
@@ -164,21 +186,28 @@ def correct_ruby_learning_status(field_text: str) -> str:
 
 
 def rubifiy_morph_status(text: str) -> str:
+    """If there is only one learning status across all <rb>'s then consolidate and promote. If
+    there are multiple learning statuses for a given ruby, it's not fair to pick one for
+    highlighting and we create a new status "multiple"."""
+
     # Find all morph-statuses in the ruby (excluding in the <rt> translations);
     #
     stripped_text = re.sub("<rt.*?</rt>", "", text)
     morph_status_attr = r'morph-status="(.*?)"'
     matches = list(set(re.findall(morph_status_attr, stripped_text)))
 
-    return (
-        unify_ruby_morph_status(text, matches[0])
-        if len(matches) == 1
-        else strip_rt_morph_status(text)
-    )
+    if len(matches) == 0:
+        text = unify_ruby_morph_status(text, "unknown")
+    elif len(matches) == 1:
+        text = unify_ruby_morph_status(text, matches[0])
+    else:
+        text = strip_rt_morph_status(text)
+
+    return text
 
 
 def unify_ruby_morph_status(text: str, morph_status: str) -> str:
-    """For a ruby tag, shuffle the morph-status attribute into the right place."""
+    """Move the learning status to the ruby tag for clarity."""
 
     morph_status_attr = r"\s+morph-status=\"[^\"]*\""
 
@@ -195,6 +224,8 @@ def unify_ruby_morph_status(text: str, morph_status: str) -> str:
 
 
 def strip_rt_morph_status(text: str) -> str:
+    """Remove all morph statuses from translations and replace with unknown."""
+
     rt_with_status = r"<rt[^>]*>.*?morph-status.*?</rt>"
     rt = re.search(rt_with_status, text)
     if not rt:
