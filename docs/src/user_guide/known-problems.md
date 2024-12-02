@@ -92,7 +92,7 @@
 
 
 <details>
-  <summary style="display:list-item">Ruby characters (furigana, etc.) are displayed wrong in am-highlighted and am-highlight</summary>
+  <summary style="display:list-item">Ruby characters (furigana, etc.) are displayed wrong in am-highlighted</summary>
 
 > When morphs are not recognized in the same way that the ruby characters intended, then we can get ugly things like this:
 >
