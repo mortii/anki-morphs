@@ -48,42 +48,61 @@ def highlight_morphs_jit(
 
     am_config = AnkiMorphsConfig()
 
-    card_morphs: list[Morpheme] = get_morphemes(morphemizer, am_config, field_text)
+    card_morphs: list[Morpheme] = get_morphemes(morphemizer, field_text, am_config)
 
     if not card_morphs:
         return field_text
 
-    return rubify_with_status(dehtml(field_text, False), card_morphs, am_config)
+    return rubify_with_status(
+        am_config,
+        card_morphs,
+        dehtml(field_text),
+    )
 
 
 def get_morphemes(
     morphemizer: Morphemizer,
-    am_config: AnkiMorphsConfig,
     field_text: str,
+    am_config: AnkiMorphsConfig,
 ) -> list[Morpheme]:
     """Take in a string and gather the morphemes from it."""
 
     # If we were piped in after the `furigana` built-in filter, or if there is html in the source
     # data, we need to do some cleansing.
     #
-    clean_text = dehtml(field_text, am_config.preprocess_ignore_bracket_contents)
+    clean_text = dehtml(
+        field_text,
+        am_config.preprocess_ignore_bracket_contents,
+        am_config.preprocess_ignore_round_bracket_contents,
+        am_config.preprocess_ignore_slim_round_bracket_contents,
+        True,
+    )
 
     if isinstance(morphemizer, SpacyMorphemizer):
         nlp = spacy_wrapper.get_nlp(
             morphemizer.get_description().removeprefix("spaCy: ")
         )
 
-        all_morphs = text_preprocessing.get_processed_spacy_morphs(
+        morphs = text_preprocessing.get_processed_spacy_morphs(
             am_config, next(nlp.pipe([clean_text]))
         )
     else:
-        all_morphs = text_preprocessing.get_processed_morphemizer_morphs(
+        morphs = text_preprocessing.get_processed_morphemizer_morphs(
             morphemizer, clean_text, am_config
         )
 
-    return (
-        update_morph_intervals(list(set(all_morphs)), am_config) if all_morphs else []
-    )
+    morphs = list(set(morphs))
+
+    if not morphs:
+        return []
+
+    if am_config.preprocess_ignore_names_morphemizer:
+        morphs = text_preprocessing.remove_names_morphemizer(morphs)
+
+    if am_config.preprocess_ignore_names_textfile:
+        morphs = text_preprocessing.remove_names_textfile(morphs)
+
+    return update_morph_intervals(morphs, am_config)
 
 
 def update_morph_intervals(
@@ -105,7 +124,13 @@ def update_morph_intervals(
     return morphs
 
 
-def dehtml(text: str, preprocess_ignore_bracket_contents: bool) -> str:
+def dehtml(
+    text: str,
+    preprocess_ignore_bracket_contents: bool = False,
+    preprocess_ignore_round_bracket_contents: bool = False,
+    preprocess_ignore_slim_round_bracket_contents: bool = False,
+    clean_html: bool = False,
+) -> str:
     """Prepare a string to be passed to a morphemizer. Specially process <ruby><rt> tags to extract
     kana to reconstruct kanji/kana ruby shorthand. Remove all html from the input string.
     """
@@ -124,115 +149,34 @@ def dehtml(text: str, preprocess_ignore_bracket_contents: bool) -> str:
     # <ruby>X<rt >>234</rt> = " <ruby>X[>234]
     # <ruby>X<rt></rt> = will not match
     #
-    ruby_longhand = r"(?P<ruby><ruby>)(?P<kanji>.*?)<rt[^>]*>(?P<kana>.+?)</rt>"
+    # ruby_longhand = r"(?P<ruby><ruby>)(?P<kanji>.*?)<rt[^>]*>(?P<kana>.+?)</rt>"
+    ruby_longhand = r"(?:<ruby[^<]*>)(?:<rb>|.{0})(?P<kanji>.*?)(?:</rb>|.{0})<rt[^>]*>(?P<kana>.+?)</rt>(?P<after>.*?)(?:</ruby>)"
 
     # Emit the captured kana into square brackets, thus reconstructing the ruby shorthand "X[yz]".
     # Pad with a space so that we can retain the kanji/kana relationship
     #
-    ruby_shorthand = r" \g<ruby>\g<kanji>[\g<kana>]"
+    ruby_shorthand = r" \g<kanji>[\g<kana>]\g<after>"
 
-    # Remove all other html tags. We do not want to forward these to the morphemizer.
-    #
-    text = anki.utils.strip_html(re.sub(ruby_longhand, ruby_shorthand, text))
+    text = re.sub(ruby_longhand, ruby_shorthand, text, flags=re.IGNORECASE)
 
-    # Remove brackets if user specified not to process them.
+    if clean_html:
+        # Remove all other html tags. We do not want to forward these to the morphemizer.
+        #
+        text = anki.utils.strip_html(text)
+
+    # Remove bracketed text if user specified not to process them.
     #
-    if preprocess_ignore_bracket_contents:
-        text = re.sub(r"\[.*?\]", "", text)
+    skip_brackets = r"\[[^[]*\]|" if preprocess_ignore_bracket_contents else ""
+    skip_parens = r"（[^（]*）|" if preprocess_ignore_round_bracket_contents else ""
+    skip_slim_parens = (
+        r"\([^(]*\)|" if preprocess_ignore_slim_round_bracket_contents else ""
+    )
+
+    pattern = f"{skip_brackets}{skip_parens}{skip_slim_parens}"
+    if pattern:
+        text = re.sub(pattern, "", text, flags=re.IGNORECASE)
 
     return text
-
-
-def get_morph_status(
-    morpheme: Morpheme, evaluate_morph_inflection: bool, interval_for_known_morphs: int
-) -> str:
-    """Get the morpheme's text status. Use the relevant interval based on the user's config."""
-
-    learning_interval = (
-        getattr(morpheme, "highest_inflection_learning_interval")
-        if evaluate_morph_inflection
-        else getattr(morpheme, "highest_lemma_learning_interval")
-    )
-
-    if learning_interval == 0:
-        return "unknown"
-
-    if learning_interval < interval_for_known_morphs:
-        return "learning"
-
-    return "known"
-
-
-def sort_by_morph_len(
-    morphemes: list[Morpheme], evaluate_morph_inflection: bool
-) -> list[Morpheme]:
-    """Sort morphemes by their length, descending. We do this so that we do not find shorter morphs
-    inside larger ones. Use the configuration to see how the user wants to sort (by lemma or inflection).
-    """
-
-    return sorted(
-        morphemes,
-        key=lambda _morph: len(
-            _morph.inflection if evaluate_morph_inflection else _morph.lemma
-        ),
-        reverse=True,
-    )
-
-
-def make_morph_regex(morph: str) -> str:
-    """Construct the regex for finding morphemes. Each morpheme gets a custom regex that
-    interpolates the possibility of a ruby between each character."""
-
-    # furigana_regex is a subpattern used to deal with rubies inside the target string.
-    # 1 `(?![^\[]*\])`: A negative lookahead that ensures the pattern does not match inside square
-    # brackets, preventing accidental matches inside rubies.
-    # 2 `(?:\[.*?\]|.{0})`: A non-capturing group that matches:
-    #     a Ruby inside square brackets (`\[.*?\]`)
-    #     OR
-    #     b An empty string (`.{0}`), effectively allowing for matches with no rubies present.
-    #
-    # So, furigana_regex matches either a ruby enclosed in square brackets or allows for zero
-    # characters to match (empty match).
-
-    # Then we create a new string by inserting the furigana_regex pattern between each character of
-    # the morph string. For example, if morph is "abc", this would generate:
-    #
-    # a(?![^\[]*\])(?:\[.*?\]|.{0})b(?![^\[]*\])(?:\[.*?\]|.{0})c
-    #
-    # This ensures that each character is tested for, with the optional possibility that there is
-    # a ruby in the middle (or on the end) of it.
-
-    # Finally, we surround the whole thing in lookaheads and lookbehinds. This will prevent us
-    # from finding already processed morphs from prior iterations.
-    #
-    # f"(?<![^/span]>)(XXX)(?!<span>)"
-    # The full regex pattern is wrapped in lookahead and lookbehind assertions where XXX is
-    # described above.
-    #
-    # (?<![^/span]>): This is a negative lookbehind, ensuring that the matched morpheme is not
-    # preceded by any sequence starting with /span>.
-    #
-    # (XXX): This is an unnamed capture group, which captures the matched morpheme pattern above.
-    #
-    # (?!<span>): This is a negative lookahead, which ensures that the morpheme is not followed
-    # by the string <span>. This further ensures that we're not inside a <span></span> pair, and
-    # covers off some edge cases.
-
-    # Matching Examples
-    # "abc"
-    # "a[kana]bc"
-    # "ab[kana]c"
-    # "abc[kana]"
-
-    # Non-Matching Examples
-    # "<span>abc</span>"
-    # "<span>abc[kana]</span>"
-    # "a<span>b</span>c"
-    # "a[[kana]]b"
-    # "[kana]abc"
-
-    furigana_regex = r"(?![^\[]*\])(?:\[.*?\]|.{0})"
-    return f"(?<![^/span]>)({furigana_regex.join(morph) + furigana_regex})(?!<span>)"
 
 
 def make_unprocessed_regex() -> str:
@@ -277,14 +221,127 @@ def make_unprocessed_regex() -> str:
     # <span>abc</span>
     # abc[kana]
 
-    furigana_regex = r"(?![^\[]*\])(?:\[.*?\]|.{0})"
-    return f"(?<=/span>|<ruby>)([^>]+{furigana_regex})(?=<span|</ruby)"
+    return r"<span.*?</span>|<rt.*?</rt>|<[^<]*>|([^<]*)"
+
+
+class MorphemeMeta:
+    def __init__(self, morpheme: Morpheme, am_config: AnkiMorphsConfig):
+        self.string = (
+            morpheme.inflection
+            if am_config.evaluate_morph_inflection
+            else morpheme.lemma
+        )
+        self.status = MorphemeMeta.get_morph_status(
+            morpheme,
+            am_config.evaluate_morph_inflection,
+            am_config.interval_for_known_morphs,
+        )
+        self.regex = MorphemeMeta.make_morph_regex(
+            self.string,
+            am_config.preprocess_ignore_bracket_contents,
+            am_config.preprocess_ignore_round_bracket_contents,
+            am_config.preprocess_ignore_slim_round_bracket_contents,
+        )
+
+    @classmethod
+    def get_morph_status(
+        cls,
+        morpheme: Morpheme,
+        evaluate_morph_inflection: bool,
+        interval_for_known_morphs: int,
+    ) -> str:
+        """Get the morpheme's text status. Use the relevant interval based on the user's config."""
+
+        learning_interval = (
+            getattr(morpheme, "highest_inflection_learning_interval")
+            if evaluate_morph_inflection
+            else getattr(morpheme, "highest_lemma_learning_interval")
+        )
+
+        if learning_interval == 0:
+            return "unknown"
+
+        if learning_interval < interval_for_known_morphs:
+            return "learning"
+
+        return "known"
+
+    @classmethod
+    def make_morph_regex(
+        cls,
+        morph: str,
+        preprocess_ignore_bracket_contents: bool,
+        preprocess_ignore_round_bracket_contents: bool,
+        preprocess_ignore_slim_round_bracket_contents: bool,
+    ) -> str:
+        """Construct the regex for finding morphemes. Each morpheme gets a custom regex that
+        interpolates the possibility of a ruby between each character."""
+
+        # furigana_regex is a subpattern used to deal with rubies inside the target string.
+        # 1 `(?![^\[]*\])`: A negative lookahead that ensures the pattern does not match inside square
+        # brackets, preventing accidental matches inside rubies.
+        # 2 `(?:\[.*?\]|.{0})`: A non-capturing group that matches:
+        #     a Ruby inside square brackets (`\[.*?\]`)
+        #     OR
+        #     b An empty string (`.{0}`), effectively allowing for matches with no rubies present.
+        #
+        # So, furigana_regex matches either a ruby enclosed in square brackets or allows for zero
+        # characters to match (empty match).
+
+        # Then we create a new string by inserting the furigana_regex pattern between each character of
+        # the morph string. For example, if morph is "abc", this would generate:
+        #
+        # a(?![^\[]*\])(?:\[.*?\]|.{0})b(?![^\[]*\])(?:\[.*?\]|.{0})c
+        #
+        # This ensures that each character is tested for, with the optional possibility that there is
+        # a ruby in the middle (or on the end) of it.
+
+        # Finally, we surround the whole thing in lookaheads and lookbehinds. This will prevent us
+        # from finding already processed morphs from prior iterations.
+        #
+        # f"(?<![^/span]>)(XXX)(?!<span>)"
+        # The full regex pattern is wrapped in lookahead and lookbehind assertions where XXX is
+        # described above.
+        #
+        # (?<![^/span]>): This is a negative lookbehind, ensuring that the matched morpheme is not
+        # preceded by any sequence starting with /span>.
+        #
+        # (XXX): This is an unnamed capture group, which captures the matched morpheme pattern above.
+        #
+        # (?!<span>): This is a negative lookahead, which ensures that the morpheme is not followed
+        # by the string <span>. This further ensures that we're not inside a <span></span> pair, and
+        # covers off some edge cases.
+
+        # Matching Examples
+        # "abc"
+        # "a[kana]bc"
+        # "ab[kana]c"
+        # "abc[kana]"
+
+        # Non-Matching Examples
+        # "<span>abc</span>"
+        # "<span>abc[kana]</span>"
+        # "a<span>b</span>c"
+        # "a[[kana]]b"
+        # "[kana]abc"
+
+        furigana_regex = r"(?![^\[]*\])(?:\[.*?\]|.{0})"
+        skip_brackets = r"<rt.*?</rt>|" if preprocess_ignore_bracket_contents else ""
+        skip_parens = r"（[^（]*）|" if preprocess_ignore_round_bracket_contents else ""
+        skip_slim_parens = (
+            r"\([^(]*\)|" if preprocess_ignore_slim_round_bracket_contents else ""
+        )
+        morph_regex = (
+            furigana_regex.join([re.escape(morph_char) for morph_char in morph])
+            + furigana_regex
+        )
+        return rf"<span.*?</span>|{skip_brackets}{skip_parens}{skip_slim_parens}({morph_regex})"
 
 
 def rubify_with_status(
-    text: str,
-    morphemes: list[Morpheme],
     am_config: AnkiMorphsConfig,
+    morphemes: list[Morpheme],
+    text: str,
 ) -> str:
     """Split the incoming string into parts to be processed, after processing, join them back
     together with newlines. Each split part will become an html ruby. This allows the complex
@@ -292,12 +349,16 @@ def rubify_with_status(
     each of the found parts to the function that will do the work.
     """
 
+    morph_metas: list[MorphemeMeta] = [
+        MorphemeMeta(morpheme, am_config) for morpheme in morphemes
+    ]
+
+    # Sort morphemes by their length, descending. We do this so that we do not find shorter morphs
+    # inside larger ones. Use the configuration to see how the user wants to sort (by lemma or inflection).
+    morph_metas = sorted(morph_metas, key=lambda meta: len(meta.string), reverse=True)
+
     return "\n".join(
-        [
-            rubify_part_with_status(part, morphemes, am_config)
-            for part in text.split(" ")
-            if part
-        ]
+        [rubify_part_with_status(part, morph_metas) for part in text.split(" ") if part]
     )
 
 
@@ -322,75 +383,64 @@ def make_morph_ruby(match_text: str, status: str) -> str:
         furigana,
         status_span_close + ruby + status_span_open,
         match_text,
+        flags=re.IGNORECASE,
     )
 
     # Always wrap this piece in a status span.
     #
-    # If we made no otherchanges, then return the original match_text, else we'll have left over
+    # If we made no other changes, then return the original match_text, else we'll have left over
     # cruft (in the form of span tags) we dont need from our regex attempt.
     #
     return (
-        status_span_open
-        + (morph_ruby if match_count > 0 else match_text)
-        + status_span_close
+        (
+            status_span_open
+            + (morph_ruby if match_count > 0 else match_text)
+            + status_span_close
+        )
+        .removeprefix(f"{status_span_open}{status_span_close}")
+        .removesuffix(f"{status_span_open}{status_span_close}")
     )
 
 
-def rubify_part_with_status(
-    text: str,
-    morphemes: list[Morpheme],
-    am_config: AnkiMorphsConfig,
-) -> str:
+def rubify_part_with_status(text: str, morph_metas: list[MorphemeMeta]) -> str:
     """Take in a part for processing, find all morphemes in this part and format them. Wrap the
     entire part in a ruby. Post-process to tag all pieces that do not have a morpheme.
     """
 
-    # Sort descending so we dont overmatch short morphs.
-    #
-    for morpheme in sort_by_morph_len(morphemes, am_config.evaluate_morph_inflection):
-        morph_status = get_morph_status(
-            morpheme,
-            am_config.evaluate_morph_inflection,
-            am_config.interval_for_known_morphs,
-        )
-
-        # Also reverse sort the matches so we can replace safely.
+    for morph_meta in morph_metas:
+        # Reverse sort the matches so we can replace safely.
         #
         # Make a specially crafted regex for this morpheme and test for it.
         #
         for match in reversed(
-            list(
-                re.finditer(
-                    make_morph_regex(
-                        morpheme.inflection
-                        if am_config.evaluate_morph_inflection
-                        else morpheme.lemma
-                    ),
-                    text,
-                )
-            )
+            list(re.finditer(morph_meta.regex, text, flags=re.IGNORECASE))
         ):
-            # If found, format it, and splice it back into the source string.
-            #
+
+            if match.group(1):
+                # If found, format it, and splice it back into the source string.
+                #
+                text = (
+                    text[: match.start()]
+                    + make_morph_ruby(match.group(1), morph_meta.status)
+                    + text[match.end() :]
+                )
+
+    # Final pass, find all unprocessed pieces in the part, and tag them, in case our user wants
+    # to style them. This typically includes punctuation and proper nouns.
+    #
+    for match in reversed(
+        list(re.finditer(make_unprocessed_regex(), text, flags=re.IGNORECASE))
+    ):
+        if match.group(1):
             text = (
                 text[: match.start()]
-                + make_morph_ruby(match.group(0), morph_status)
+                + make_morph_ruby(match.group(1), "unprocessed")
                 + text[match.end() :]
             )
 
     # Wrap the whole part in a ruby tag. This is the magic that lets rubies and morphemes play
     # nice.
     #
-    text = "<ruby>" + text + "</ruby>\n"
-
-    # Final pass, find all unprocessed pieces in the part, and tag them, in case our user wants
-    # to style them. This typically includes punctuation and proper nouns.
-    #
-    for match in reversed(list(re.finditer(make_unprocessed_regex(), text))):
-        text = (
-            text[: match.start()]
-            + make_morph_ruby(match.group(0), "unprocessed")
-            + text[match.end() :]
-        )
+    text = "<ruby>" + text + "</ruby>"
 
     return text
