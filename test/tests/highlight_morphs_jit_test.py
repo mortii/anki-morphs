@@ -13,7 +13,7 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 import pytest
 
 from ankimorphs.ankimorphs_config import AnkiMorphsConfig
-from ankimorphs.highlight_morphs_jit import highlight_text_jit
+from ankimorphs.highlight_morphs_jit import get_highlighted_text
 from ankimorphs.morpheme import Morpheme
 
 ##############################################################################################
@@ -281,5 +281,5 @@ def test_highlight_text_jit(  # pylint:disable=unused-argument
     correct_output: str,
 ) -> None:
     am_config = AnkiMorphsConfig()
-    highlighted_text: str = highlight_text_jit(am_config, card_morphs, input_text)
+    highlighted_text: str = get_highlighted_text(am_config, card_morphs, input_text)
     assert highlighted_text == correct_output

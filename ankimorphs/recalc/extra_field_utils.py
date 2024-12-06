@@ -171,7 +171,7 @@ def update_highlighted_field(
     expression_field_index: int = field_name_dict[config_filter.field][0]
     text_to_highlight = note.fields[expression_field_index]
 
-    highlighted_text = highlight_morphs_jit.highlight_text_jit(
+    highlighted_text = highlight_morphs_jit.get_highlighted_text(
         am_config,
         card_morphs,
         text_to_highlight,
