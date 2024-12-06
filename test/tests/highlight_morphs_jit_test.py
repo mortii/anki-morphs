@@ -13,7 +13,7 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 import pytest
 
 from ankimorphs.ankimorphs_config import AnkiMorphsConfig
-from ankimorphs.highlight_morphs_jit import rubify_with_status
+from ankimorphs.highlight_morphs_jit import highlight_text_jit
 from ankimorphs.morpheme import Morpheme
 
 ##############################################################################################
@@ -26,9 +26,7 @@ from ankimorphs.morpheme import Morpheme
 # Collection choice is arbitrary.
 # Database choice is arbitrary.
 ##############################################################################################
-case_japanese_one_params = FakeEnvironmentParams(
-    config=config_big_japanese_collection,
-)
+case_japanese_one_params = FakeEnvironmentParams(config=config_big_japanese_collection)
 
 CASE_JAPANESE_ONE_INPUT_TEXT: str = (
     "（ 刑事[けいじ]） （刑事） 珍[めずら]しく 時間[じかん]が 空[あ]いたので　お 前[まえ]たちの 顔[かお]を　 お前[まえ]たちの 見[み]に 様方[さまかた]が な[b]"
@@ -184,20 +182,20 @@ case_german_card_morphs = [
 case_regex_escape_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
-CASE_REGEX_ESCAPE_INPUT_TEXT = "몇...?<div><br></div><div>몇...</div> also 1 > 2, [i think that 2<1] don't forget; (sometimes i do)!"
+CASE_REGEX_ESCAPE_INPUT_TEXT = "몇...?<div><br></div><div>몇...</div> also 1 > 2, [I think that 2<1] don't forget; (sometimes I do)!"
 CASE_REGEX_ESCAPE_CORRECT_OUTPUT = """<ruby><span morph-status="unknown">몇</span><span morph-status="unprocessed">...?</span><div><br></div><div><span morph-status="unknown">몇</span><span morph-status="unprocessed">...</span></div></ruby>
 <ruby><span morph-status="unprocessed">also</span></ruby>
 <ruby><span morph-status="unprocessed">1</span></ruby>
 <ruby><span morph-status="unprocessed">></span></ruby>
 <ruby><span morph-status="unprocessed">2,</span></ruby>
-<ruby><span morph-status="unprocessed">[i</span></ruby>
+<ruby><span morph-status="unprocessed">[I</span></ruby>
 <ruby><span morph-status="unprocessed">think</span></ruby>
 <ruby><span morph-status="unprocessed">that</span></ruby>
 <ruby><span morph-status="unprocessed">2</span><<span morph-status="unprocessed">1]</span></ruby>
 <ruby><span morph-status="unprocessed">don't</span></ruby>
 <ruby><span morph-status="unprocessed">forget;</span></ruby>
 <ruby><span morph-status="unprocessed">(sometimes</span></ruby>
-<ruby><span morph-status="unprocessed">i</span></ruby>
+<ruby><span morph-status="unprocessed">I</span></ruby>
 <ruby><span morph-status="unprocessed">do)!</span></ruby>"""
 case_regex_escape_card_morphs = [
     Morpheme(lemma="?몇", inflection="?몇", highest_inflection_learning_interval=0),
@@ -234,51 +232,54 @@ case_highlight_based_on_lemma_morphs = [
 ]
 
 
+one_test_set = [
+    (
+        case_japanese_one_params,
+        CASE_JAPANESE_ONE_INPUT_TEXT,
+        case_japanese_one_card_morphs,
+        CASE_JAPANESE_ONE_CORRECT_OUTPUT,
+    ),
+    (
+        case_japanese_two_params,
+        CASE_JAPANESE_TWO_INPUT_TEXT,
+        case_japanese_two_card_morphs,
+        CASE_JAPANESE_TWO_CORRECT_OUTPUT,
+    ),
+    (
+        case_german_params,
+        CASE_GERMAN_INPUT_TEXT,
+        case_german_card_morphs,
+        CASE_GERMAN_CORRECT_OUTPUT,
+    ),
+    (
+        case_regex_escape_params,
+        CASE_REGEX_ESCAPE_INPUT_TEXT,
+        case_regex_escape_card_morphs,
+        CASE_REGEX_ESCAPE_CORRECT_OUTPUT,
+    ),
+    (
+        case_highlight_based_on_lemma_params,
+        CASE_HIGHLIGHT_BASED_ON_LEMMA_INPUT_TEXT,
+        case_highlight_based_on_lemma_morphs,
+        CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT,
+    ),
+]
+
+
 # Note: the collection isn't actually used, so it is an arbitrary choice,
 # but the config needs to have the option "preprocess_ignore_bracket_contents"
 # activated
 @pytest.mark.parametrize(
     "fake_environment_fixture, input_text, card_morphs, correct_output",
-    [
-        (
-            case_japanese_one_params,
-            CASE_JAPANESE_ONE_INPUT_TEXT,
-            case_japanese_one_card_morphs,
-            CASE_JAPANESE_ONE_CORRECT_OUTPUT,
-        ),
-        (
-            case_japanese_two_params,
-            CASE_JAPANESE_TWO_INPUT_TEXT,
-            case_japanese_two_card_morphs,
-            CASE_JAPANESE_TWO_CORRECT_OUTPUT,
-        ),
-        (
-            case_german_params,
-            CASE_GERMAN_INPUT_TEXT,
-            case_german_card_morphs,
-            CASE_GERMAN_CORRECT_OUTPUT,
-        ),
-        (
-            case_regex_escape_params,
-            CASE_REGEX_ESCAPE_INPUT_TEXT,
-            case_regex_escape_card_morphs,
-            CASE_REGEX_ESCAPE_CORRECT_OUTPUT,
-        ),
-        (
-            case_highlight_based_on_lemma_params,
-            CASE_HIGHLIGHT_BASED_ON_LEMMA_INPUT_TEXT,
-            case_highlight_based_on_lemma_morphs,
-            CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT,
-        ),
-    ],
+    one_test_set * 1,
     indirect=["fake_environment_fixture"],
 )
-def test_highlighting(  # pylint:disable=unused-argument
+def test_highlight_text_jit(  # pylint:disable=unused-argument
     fake_environment_fixture: FakeEnvironment,
     input_text: str,
     card_morphs: list[Morpheme],
     correct_output: str,
 ) -> None:
     am_config = AnkiMorphsConfig()
-    highlighted_text: str = rubify_with_status(am_config, card_morphs, input_text)
+    highlighted_text: str = highlight_text_jit(am_config, card_morphs, input_text)
     assert highlighted_text == correct_output
