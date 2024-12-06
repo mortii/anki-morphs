@@ -6,7 +6,7 @@ from aqt import mw
 
 from .. import ankimorphs_config
 from .. import ankimorphs_globals as am_globals
-from .. import highlight_morphs_jit
+from .. import text_highlighting
 from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from ..morpheme import Morpheme
 
@@ -171,7 +171,7 @@ def update_highlighted_field(
     expression_field_index: int = field_name_dict[config_filter.field][0]
     text_to_highlight = note.fields[expression_field_index]
 
-    highlighted_text = highlight_morphs_jit.get_highlighted_text(
+    highlighted_text = text_highlighting.get_highlighted_text(
         am_config,
         card_morphs,
         text_to_highlight,

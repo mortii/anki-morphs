@@ -297,7 +297,7 @@ def _rubify_part_with_status(
     #
     unprocessed_regex = r"<span.*?</span>|<rt.*?</rt>|<[^<]*>|([^<]*)"
 
-    # Final pass, find all unprocessed pieces in the part, and tag them, in case our user wants
+    # Find all unprocessed pieces in the part, and tag them, in case our user wants
     # to style them. This typically includes punctuation and proper nouns.
     #
     for match in reversed(
@@ -310,9 +310,15 @@ def _rubify_part_with_status(
                 + text[match.end() :]
             )
 
-    # Wrap the whole part in a ruby tag. This is the magic that lets rubies and morphemes play
+    # Wrap the morphs we matched ruby tags. This is the magic that lets rubies and morphemes play
     # nice.
     #
-    text = "<ruby>" + text + "</ruby>"
-
-    return text
+    # Look for anything not processed already. That'll be html. Make sure it's outside our ruby
+    # tags. Bit of a hack to remove </ruby><ruby>, but to do that just in regex would be
+    # incredibly opaque.
+    #
+    return re.sub(
+        r"(<span morph-status.*?</span>(?!<span)|<rt.*?</rt>(?!<rt))",
+        r"<ruby>\1</ruby>",
+        text,
+    ).replace("</ruby><ruby>", "")

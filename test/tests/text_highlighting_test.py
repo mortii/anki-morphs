@@ -13,8 +13,8 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 import pytest
 
 from ankimorphs.ankimorphs_config import AnkiMorphsConfig
-from ankimorphs.highlight_morphs_jit import get_highlighted_text
 from ankimorphs.morpheme import Morpheme
+from ankimorphs.text_highlighting import get_highlighted_text
 
 ##############################################################################################
 #                                    CASE: JAPANESE ONE
@@ -183,7 +183,7 @@ case_regex_escape_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
 CASE_REGEX_ESCAPE_INPUT_TEXT = "몇...?<div><br></div><div>몇...</div> also 1 > 2, [I think that 2<1] don't forget; (sometimes I do)!"
-CASE_REGEX_ESCAPE_CORRECT_OUTPUT = """<ruby><span morph-status="unknown">몇</span><span morph-status="unprocessed">...?</span><div><br></div><div><span morph-status="unknown">몇</span><span morph-status="unprocessed">...</span></div></ruby>
+CASE_REGEX_ESCAPE_CORRECT_OUTPUT = """<ruby><span morph-status="unknown">몇</span><span morph-status="unprocessed">...?</span></ruby><div><br></div><div><ruby><span morph-status="unknown">몇</span><span morph-status="unprocessed">...</span></ruby></div>
 <ruby><span morph-status="unprocessed">also</span></ruby>
 <ruby><span morph-status="unprocessed">1</span></ruby>
 <ruby><span morph-status="unprocessed">></span></ruby>
@@ -191,7 +191,7 @@ CASE_REGEX_ESCAPE_CORRECT_OUTPUT = """<ruby><span morph-status="unknown">몇</sp
 <ruby><span morph-status="unprocessed">[I</span></ruby>
 <ruby><span morph-status="unprocessed">think</span></ruby>
 <ruby><span morph-status="unprocessed">that</span></ruby>
-<ruby><span morph-status="unprocessed">2</span><<span morph-status="unprocessed">1]</span></ruby>
+<ruby><span morph-status="unprocessed">2</span></ruby><<ruby><span morph-status="unprocessed">1]</span></ruby>
 <ruby><span morph-status="unprocessed">don't</span></ruby>
 <ruby><span morph-status="unprocessed">forget;</span></ruby>
 <ruby><span morph-status="unprocessed">(sometimes</span></ruby>

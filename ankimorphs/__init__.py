@@ -41,11 +41,11 @@ from . import ankimorphs_globals as am_globals
 from . import (
     browser_utils,
     debugging_utils,
-    highlight_morphs_jit,
     message_box_utils,
     name_file_utils,
     reviewing_utils,
     tags_and_queue_utils,
+    text_highlighting,
     text_preprocessing,
     toolbar_stats,
 )
@@ -99,7 +99,7 @@ def main() -> None:
 
     gui_hooks.profile_will_close.append(cleanup_profile_session)
 
-    hooks.field_filter.append(highlight_morphs_jit.highlight_morphs_jit)
+    hooks.field_filter.append(text_highlighting.highlight_morphs_jit)
 
 
 def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:
