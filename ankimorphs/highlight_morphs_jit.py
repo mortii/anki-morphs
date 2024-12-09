@@ -48,19 +48,21 @@ def highlight_morphs_jit(
 
     am_config = AnkiMorphsConfig()
 
-    card_morphs: list[Morpheme] = get_morphemes(morphemizer, field_text, am_config)
+    card_morphs: list[Morpheme] = _get_morph_meta_for_text(
+        morphemizer, field_text, am_config
+    )
 
     if not card_morphs:
         return field_text
 
-    return rubify_with_status(
+    return _rubify_with_status(
         am_config,
         card_morphs,
-        dehtml(field_text),
+        _dehtml(field_text),
     )
 
 
-def get_morphemes(
+def _get_morph_meta_for_text(
     morphemizer: Morphemizer,
     field_text: str,
     am_config: AnkiMorphsConfig,
@@ -70,13 +72,7 @@ def get_morphemes(
     # If we were piped in after the `furigana` built-in filter, or if there is html in the source
     # data, we need to do some cleansing.
     #
-    clean_text = dehtml(
-        field_text,
-        am_config.preprocess_ignore_bracket_contents,
-        am_config.preprocess_ignore_round_bracket_contents,
-        am_config.preprocess_ignore_slim_round_bracket_contents,
-        True,
-    )
+    clean_text = _dehtml(field_text, am_config, True)
 
     if isinstance(morphemizer, SpacyMorphemizer):
         nlp = spacy_wrapper.get_nlp(
@@ -96,20 +92,6 @@ def get_morphemes(
     if not morphs:
         return []
 
-    if am_config.preprocess_ignore_names_morphemizer:
-        morphs = text_preprocessing.remove_names_morphemizer(morphs)
-
-    if am_config.preprocess_ignore_names_textfile:
-        morphs = text_preprocessing.remove_names_textfile(morphs)
-
-    return update_morph_intervals(morphs, am_config)
-
-
-def update_morph_intervals(
-    morphs: list[Morpheme], am_config: ankimorphs_config.AnkiMorphsConfig
-) -> list[Morpheme]:
-    """Fetch just the data about the morphemes that are needed for the get_highlighted_text call."""
-
     with AnkiMorphsDB() as am_db:
         for morph in morphs:
             if am_config.evaluate_morph_inflection:
@@ -124,11 +106,9 @@ def update_morph_intervals(
     return morphs
 
 
-def dehtml(
+def _dehtml(
     text: str,
-    preprocess_ignore_bracket_contents: bool = False,
-    preprocess_ignore_round_bracket_contents: bool = False,
-    preprocess_ignore_slim_round_bracket_contents: bool = False,
+    am_config: AnkiMorphsConfig | None = None,
     clean_html: bool = False,
 ) -> str:
     """Prepare a string to be passed to a morphemizer. Specially process <ruby><rt> tags to extract
@@ -160,26 +140,12 @@ def dehtml(
     text = re.sub(ruby_longhand, ruby_shorthand, text, flags=re.IGNORECASE)
 
     if clean_html:
-        # Remove all other html tags. We do not want to forward these to the morphemizer.
-        #
         text = anki.utils.strip_html(text)
 
-    # Remove bracketed text if user specified not to process them.
-    #
-    skip_brackets = r"\[[^[]*\]|" if preprocess_ignore_bracket_contents else ""
-    skip_parens = r"（[^（]*）|" if preprocess_ignore_round_bracket_contents else ""
-    skip_slim_parens = (
-        r"\([^(]*\)|" if preprocess_ignore_slim_round_bracket_contents else ""
-    )
-
-    pattern = f"{skip_brackets}{skip_parens}{skip_slim_parens}"
-    if pattern:
-        text = re.sub(pattern, "", text, flags=re.IGNORECASE)
-
-    return text
+    return text_preprocessing.get_processed_text(am_config, text) if am_config else text
 
 
-def make_unprocessed_regex() -> str:
+def _make_unprocessed_regex() -> str:
     """Construct the regex for finding left over pieces of a part. Because this is run late in the
     process, the driver regex is different than the one in `make_morph_regex`."""
 
@@ -338,7 +304,7 @@ class MorphemeMeta:
         return rf"<span.*?</span>|{skip_brackets}{skip_parens}{skip_slim_parens}({morph_regex})"
 
 
-def rubify_with_status(
+def _rubify_with_status(
     am_config: AnkiMorphsConfig,
     morphemes: list[Morpheme],
     text: str,
@@ -358,11 +324,15 @@ def rubify_with_status(
     morph_metas = sorted(morph_metas, key=lambda meta: len(meta.string), reverse=True)
 
     return "\n".join(
-        [rubify_part_with_status(part, morph_metas) for part in text.split(" ") if part]
+        [
+            _rubify_part_with_status(part, morph_metas)
+            for part in text.split(" ")
+            if part
+        ]
     )
 
 
-def make_morph_ruby(match_text: str, status: str) -> str:
+def _make_morph_ruby(match_text: str, status: str) -> str:
     """Format match text with a morph status. Wrap it in a span to indicate the morph-status. If
     a ruby is present, escape out of the new span for the ruby, then start a new one for the rest
     of the contents."""
@@ -402,7 +372,7 @@ def make_morph_ruby(match_text: str, status: str) -> str:
     )
 
 
-def rubify_part_with_status(text: str, morph_metas: list[MorphemeMeta]) -> str:
+def _rubify_part_with_status(text: str, morph_metas: list[MorphemeMeta]) -> str:
     """Take in a part for processing, find all morphemes in this part and format them. Wrap the
     entire part in a ruby. Post-process to tag all pieces that do not have a morpheme.
     """
@@ -421,7 +391,7 @@ def rubify_part_with_status(text: str, morph_metas: list[MorphemeMeta]) -> str:
                 #
                 text = (
                     text[: match.start()]
-                    + make_morph_ruby(match.group(1), morph_meta.status)
+                    + _make_morph_ruby(match.group(1), morph_meta.status)
                     + text[match.end() :]
                 )
 
@@ -429,18 +399,24 @@ def rubify_part_with_status(text: str, morph_metas: list[MorphemeMeta]) -> str:
     # to style them. This typically includes punctuation and proper nouns.
     #
     for match in reversed(
-        list(re.finditer(make_unprocessed_regex(), text, flags=re.IGNORECASE))
+        list(re.finditer(_make_unprocessed_regex(), text, flags=re.IGNORECASE))
     ):
         if match.group(1):
             text = (
                 text[: match.start()]
-                + make_morph_ruby(match.group(1), "unprocessed")
+                + _make_morph_ruby(match.group(1), "unprocessed")
                 + text[match.end() :]
             )
 
-    # Wrap the whole part in a ruby tag. This is the magic that lets rubies and morphemes play
+    # Wrap the morphs we matched ruby tags. This is the magic that lets rubies and morphemes play
     # nice.
     #
-    text = "<ruby>" + text + "</ruby>"
-
-    return text
+    # Look for anything not processed already. That'll be html. Make sure it's outside our ruby
+    # tags. Bit of a hack to remove </ruby><ruby>, but to do that just in regex would be
+    # incredibly opaque.
+    #
+    return re.sub(
+        r"(<span morph-status.*?</span>(?!<span)|<rt.*?</rt>(?!<rt))",
+        r"<ruby>\1</ruby>",
+        text,
+    ).replace("</ruby><ruby>", "")

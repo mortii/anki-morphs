@@ -13,7 +13,7 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 import pytest
 
 from ankimorphs.ankimorphs_config import AnkiMorphsConfig
-from ankimorphs.highlight_morphs_jit import rubify_with_status
+from ankimorphs.highlight_morphs_jit import _rubify_with_status
 from ankimorphs.morpheme import Morpheme
 
 ##############################################################################################
@@ -184,20 +184,20 @@ case_german_card_morphs = [
 case_regex_escape_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
-CASE_REGEX_ESCAPE_INPUT_TEXT = "몇...?<div><br></div><div>몇...</div> also 1 > 2, [i think that 2<1] don't forget; (sometimes i do)!"
-CASE_REGEX_ESCAPE_CORRECT_OUTPUT = """<ruby><span morph-status="unknown">몇</span><span morph-status="unprocessed">...?</span><div><br></div><div><span morph-status="unknown">몇</span><span morph-status="unprocessed">...</span></div></ruby>
+CASE_REGEX_ESCAPE_INPUT_TEXT = "몇...?<div><br></div><div>몇...</div> also 1 > 2, [I think that 2<1] don't forget; (sometimes I do)!"
+CASE_REGEX_ESCAPE_CORRECT_OUTPUT = """<ruby><span morph-status="unknown">몇</span><span morph-status="unprocessed">...?</span></ruby><div><br></div><div><ruby><span morph-status="unknown">몇</span><span morph-status="unprocessed">...</span></ruby></div>
 <ruby><span morph-status="unprocessed">also</span></ruby>
 <ruby><span morph-status="unprocessed">1</span></ruby>
 <ruby><span morph-status="unprocessed">></span></ruby>
 <ruby><span morph-status="unprocessed">2,</span></ruby>
-<ruby><span morph-status="unprocessed">[i</span></ruby>
+<ruby><span morph-status="unprocessed">[I</span></ruby>
 <ruby><span morph-status="unprocessed">think</span></ruby>
 <ruby><span morph-status="unprocessed">that</span></ruby>
-<ruby><span morph-status="unprocessed">2</span><<span morph-status="unprocessed">1]</span></ruby>
+<ruby><span morph-status="unprocessed">2</span></ruby><<ruby><span morph-status="unprocessed">1]</span></ruby>
 <ruby><span morph-status="unprocessed">don't</span></ruby>
 <ruby><span morph-status="unprocessed">forget;</span></ruby>
 <ruby><span morph-status="unprocessed">(sometimes</span></ruby>
-<ruby><span morph-status="unprocessed">i</span></ruby>
+<ruby><span morph-status="unprocessed">I</span></ruby>
 <ruby><span morph-status="unprocessed">do)!</span></ruby>"""
 case_regex_escape_card_morphs = [
     Morpheme(lemma="?몇", inflection="?몇", highest_inflection_learning_interval=0),
@@ -280,5 +280,7 @@ def test_highlighting(  # pylint:disable=unused-argument
     correct_output: str,
 ) -> None:
     am_config = AnkiMorphsConfig()
-    highlighted_text: str = rubify_with_status(am_config, card_morphs, input_text)
+    highlighted_text: str = _rubify_with_status(am_config, card_morphs, input_text)
+    print(highlighted_text)
+    print(correct_output)
     assert highlighted_text == correct_output
