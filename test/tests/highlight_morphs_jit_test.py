@@ -106,7 +106,7 @@ case_morph_and_ruby = FakeEnvironmentParams(
 CASE_MORPH_AND_RUBY_INPUT_TEXT = "12345  09876[def]  12345[abc]  1234[abc]5 12 34[abc]5  1[abc]23 45  0123[abc]450  12[abc] 34[abc]5"
 CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = '<span morph-status="unknown">12345</span><ruby>09876<rt>def</rt></ruby><ruby><span morph-status="unknown">12345</span><rt>abc</rt></ruby><span morph-status="unknown"><ruby>1234</span><rt>abc</rt>5</span></ruby><ruby><span morph-status="unknown">1234</span><rt>abc</rt><span morph-status="unknown">5</span></ruby><ruby>0<span morph-status="unknown">123</span><rt>abc</rt><span morph-status="unknown">45</span>0</ruby>'
 
-CASE_MORPH_AND_RUBY_INPUT_TEXT = "12345  09876[def]  12345[abc]  12[abc] 34[abc]5  09876[def] 1 23[abc]45  012345[abc]  1234512345[abc]  0123[abc]45"
+CASE_MORPH_AND_RUBY_INPUT_TEXT = "12345  09876[def]  12345[abc]  12[abc] 34[abc]5  09876[def] 1 23[abc]45  012345[abc]  1234512345[abc]  0123[abc]45 1 23456[abc]  12345777[zyzzzzz]"
 CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = (
     ""
     + '<span morph-status="unknown">12345</span>'
@@ -126,12 +126,21 @@ CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = (
     + '<ruby><span morph-status="unknown">12345</span><span morph-status="unknown">12345</span><rt>abc</rt></ruby>'
     + " "
     + '<ruby>0<span morph-status="unknown">123</span><rt>abc</rt></ruby><span morph-status="unknown">45</span>'
+    + " "
+    + '<span morph-status="unknown">1</span><ruby><span morph-status="unknown">2345</span>6<rt>abc</rt></ruby>'
+    + " "
+    + '<ruby><span morph-status="unknown">12345</span><span morph-status="unknown">777</span><rt>zyzzzzz</rt></ruby>'
 )
 
 case_morph_and_ruby_card_morphs = [
     Morpheme(
         lemma="12345",
         inflection="12345",
+        highest_inflection_learning_interval=0,
+    ),
+    Morpheme(
+        lemma="777",
+        inflection="777",
         highest_inflection_learning_interval=0,
     ),
 ]
@@ -242,6 +251,59 @@ case_highlight_based_on_lemma_morphs = [
 ]
 
 
+case_highlight_based_on_ds_params = FakeEnvironmentParams(
+    config=config_lemma_evaluation_ignore_brackets,
+)
+CASE_HIGHLIGHT_BASED_ON_DS_INPUT_TEXT = "雪[ゆき]が"
+CASE_HIGHLIGHT_BASED_ON_DS_OUTPUT = '<span morph-status="known"><ruby>雪<rt>ゆき</rt></ruby></span><span morph-status="learning">が</span>'
+case_highlight_based_on_ds_morphs = [
+    Morpheme(
+        lemma="雪",
+        inflection="雪",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=30,
+    ),
+    Morpheme(
+        lemma="が",
+        inflection="が",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+]
+
+case_highlight_based_on_ds2_params = FakeEnvironmentParams(
+    config=config_lemma_evaluation_ignore_brackets,
+)
+CASE_HIGHLIGHT_BASED_ON_DS2_INPUT_TEXT = "お 留守番[るすばん]"
+CASE_HIGHLIGHT_BASED_ON_DS2_OUTPUT = '<span morph-status="learning">お</span><ruby><span morph-status="known">留守</span><span morph-status="learning">番</span><rt>るすばん</rt></ruby>'
+case_highlight_based_on_ds2_morphs = [
+    Morpheme(
+        lemma="留守",
+        inflection="留守",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=30,
+    ),
+    Morpheme(
+        lemma="番",
+        inflection="番",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+    Morpheme(
+        lemma="お",
+        inflection="お",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+    Morpheme(
+        lemma="だ",
+        inflection="だ",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+]
+
+
 # Note: the collection isn't actually used, so it is an arbitrary choice,
 # but the config needs to have the option "preprocess_ignore_bracket_contents"
 # activated
@@ -283,6 +345,18 @@ case_highlight_based_on_lemma_morphs = [
             CASE_HIGHLIGHT_BASED_ON_LEMMA_INPUT_TEXT,
             case_highlight_based_on_lemma_morphs,
             CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT,
+        ),
+        (
+            case_highlight_based_on_ds_params,
+            CASE_HIGHLIGHT_BASED_ON_DS_INPUT_TEXT,
+            case_highlight_based_on_ds_morphs,
+            CASE_HIGHLIGHT_BASED_ON_DS_OUTPUT,
+        ),
+        (
+            case_highlight_based_on_ds2_params,
+            CASE_HIGHLIGHT_BASED_ON_DS2_INPUT_TEXT,
+            case_highlight_based_on_ds2_morphs,
+            CASE_HIGHLIGHT_BASED_ON_DS2_OUTPUT,
         ),
     ],
     indirect=["fake_environment_fixture"],

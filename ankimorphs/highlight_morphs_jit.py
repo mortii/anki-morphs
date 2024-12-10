@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from collections import deque
 
 import anki
 from anki.template import TemplateRenderContext
@@ -347,7 +346,7 @@ class Whole:
 
             # If there is no overlap between ruby and status, process the latest one.
             #
-            if ruby.end < stat.start or ruby.start > stat.end:
+            if ruby.end <= stat.start or ruby.start >= stat.end:
                 print("There is no overlap between ruby and status.")
                 if ruby.start > stat.start:
                     print("Ruby is later.")
@@ -405,7 +404,7 @@ class Whole:
                 # Pull and process rubies until the next ruby is outside of this status.
                 #
                 while self.rubies:
-                    if self.rubies[-1].end < stat.start:
+                    if self.rubies[-1].end <= stat.start:
                         stat = None
                         break
                     else:
@@ -417,6 +416,7 @@ class Whole:
                             + str(ruby)
                             + self._highlighted[ruby.end :]
                         )
+                stat = None
                 ruby = None
                 continue
 
@@ -424,13 +424,13 @@ class Whole:
             #
             if ruby.start <= stat.start and ruby.end >= stat.end:
                 print("The status is completely inside the ruby.")
-                stat.start += ruby.prefix_len()
-                stat.end += ruby.prefix_len()
                 self._highlighted = (
                     self._highlighted[: ruby.start]
                     + str(ruby)
                     + self._highlighted[ruby.end :]
                 )
+                stat.start += ruby.prefix_len()
+                stat.end += ruby.prefix_len()
                 self._highlighted = (
                     self._highlighted[: stat.start]
                     + stat.open()
@@ -438,14 +438,18 @@ class Whole:
                     + stat.close()
                     + self._highlighted[stat.end :]
                 )
+                stat = None
 
                 # Pull and process statuses until the next status is outside of this ruby.
                 #
                 while self.statuses:
-                    if self.statuses[-1].end < ruby.start:
+                    print("next")
+                    if self.statuses[-1].end <= ruby.start:
+                        print("out")
                         ruby = None
                         break
                     else:
+                        print("in")
                         stat = self.statuses.pop()
                         stat.start += ruby.prefix_len()
                         stat.end += ruby.prefix_len()
@@ -456,7 +460,7 @@ class Whole:
                             + stat.close()
                             + self._highlighted[stat.end :]
                         )
-
+                ruby = None
                 stat = None
                 continue
 
@@ -464,7 +468,13 @@ class Whole:
             #
             if ruby.start < stat.start and ruby.end < stat.end:
                 print("The ruby starts then status starts, ruby ends, status ends.")
-
+                print(self._highlighted)
+                print(ruby)
+                print(stat)
+                print(ruby.start)
+                print(stat.start)
+                print(ruby.end)
+                print(stat.end)
                 self._highlighted = (
                     self._highlighted[: ruby.start]
                     + ruby.open()
@@ -487,12 +497,21 @@ class Whole:
             # If the status starts then ruby starts, status ends, ruby ends
             #
             if ruby.start > stat.start and ruby.end > stat.end:
-                print("ha rly?")
-                print(ruby.start)
-                print(stat.start)
-                print(ruby.end)
-                print(stat.end)
-                print("ha rly?")
+                print("The status starts then ruby starts, status ends, ruby ends.")
+                self._highlighted = (
+                    self._highlighted[: stat.start]
+                    + stat.open()
+                    + self._highlighted[stat.start : ruby.start]
+                    + stat.close()
+                    + ruby.open()
+                    + stat.open()
+                    + self._highlighted[ruby.start : ruby.start + ruby.rt_offset()]
+                    + stat.close()
+                    + self._highlighted[stat.end : ruby.end]
+                    + ruby.rt()
+                    + ruby.close()
+                    + self._highlighted[ruby.end :]
+                )
                 ruby = None
                 stat = None
                 continue
