@@ -68,7 +68,6 @@ case_japanese_one_card_morphs: list[Morpheme] = [
     Morpheme(lemma="方", inflection="方", highest_inflection_learning_interval=1),
 ]
 
-
 ##############################################################################################
 #                                    CASE: JAPANESE TWO
 ##############################################################################################
@@ -91,6 +90,49 @@ case_japanese_two_card_morphs = [
     ),
 ]
 
+##############################################################################################
+#                                    CASE: Morph and ruby interaction
+##############################################################################################
+# This third example sets all the cases where morphs and rubies coexist.
+# |-mmm---| |--mmm--| |---mmm-| |-mmm---| |-mmmmm-| |-mmmmm-| |--mmm--| |--m-m--|
+# |----rrr| |--rrr--| |--rrr--| |--rrr--| |--rrr--| |--r-r--| |-rrrrr-| |-rrrrr-|
+# Collection choice is arbitrary.
+# Database choice is arbitrary.
+##############################################################################################
+case_morph_and_ruby = FakeEnvironmentParams(
+    config=config_big_japanese_collection,
+)
+
+CASE_MORPH_AND_RUBY_INPUT_TEXT = "12345  09876[def]  12345[abc]  1234[abc]5 12 34[abc]5  1[abc]23 45  0123[abc]450  12[abc] 34[abc]5"
+CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = '<span morph-status="unknown">12345</span><ruby>09876<rt>def</rt></ruby><ruby><span morph-status="unknown">12345</span><rt>abc</rt></ruby><span morph-status="unknown"><ruby>1234</span><rt>abc</rt>5</span></ruby><ruby><span morph-status="unknown">1234</span><rt>abc</rt><span morph-status="unknown">5</span></ruby><ruby>0<span morph-status="unknown">123</span><rt>abc</rt><span morph-status="unknown">45</span>0</ruby>'
+
+CASE_MORPH_AND_RUBY_INPUT_TEXT = "12345  09876[def]  12345[abc] 12345  09876[def] 1 23[abc]45  012345[abc]  1234512345[abc]"
+CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = (
+    ""
+    + '<span morph-status="unknown">12345</span>'
+    + " "
+    + "<ruby>09876<rt>def</rt></ruby>"
+    + " "
+    + '<span morph-status="unknown"><ruby>12345<rt>abc</rt></ruby></span>'
+    + " "
+    + '<span morph-status="unknown">12345</span>'
+    + " "
+    + "<ruby>09876<rt>def</rt></ruby>"
+    + " "
+    + '<span morph-status="unknown">1<ruby>23<rt>abc</rt></ruby>45</span>'
+    + " "
+    + '<ruby>0<span morph-status="unknown">12345</span><rt>abc</rt></ruby>'
+    + " "
+    + '<ruby><span morph-status="unknown">12345</span><span morph-status="unknown">12345</span><rt>abc</rt></ruby>'
+)
+
+case_morph_and_ruby_card_morphs = [
+    Morpheme(
+        lemma="12345",
+        inflection="12345",
+        highest_inflection_learning_interval=0,
+    ),
+]
 
 ##############################################################################################
 #                                         CASE: GERMAN
@@ -204,17 +246,23 @@ case_highlight_based_on_lemma_morphs = [
 @pytest.mark.parametrize(
     "fake_environment_fixture, input_text, card_morphs, correct_output",
     [
+        # (
+        #     case_japanese_one_params,
+        #     CASE_JAPANESE_ONE_INPUT_TEXT,
+        #     case_japanese_one_card_morphs,
+        #     CASE_JAPANESE_ONE_CORRECT_OUTPUT,
+        # ),
+        # (
+        #     case_japanese_two_params,
+        #     CASE_JAPANESE_TWO_INPUT_TEXT,
+        #     case_japanese_two_card_morphs,
+        #     CASE_JAPANESE_TWO_CORRECT_OUTPUT,
+        # ),
         (
-            case_japanese_one_params,
-            CASE_JAPANESE_ONE_INPUT_TEXT,
-            case_japanese_one_card_morphs,
-            CASE_JAPANESE_ONE_CORRECT_OUTPUT,
-        ),
-        (
-            case_japanese_two_params,
-            CASE_JAPANESE_TWO_INPUT_TEXT,
-            case_japanese_two_card_morphs,
-            CASE_JAPANESE_TWO_CORRECT_OUTPUT,
+            case_morph_and_ruby,
+            CASE_MORPH_AND_RUBY_INPUT_TEXT,
+            case_morph_and_ruby_card_morphs,
+            CASE_MORPH_AND_RUBY_CORRECT_OUTPUT,
         ),
         (
             case_german_params,

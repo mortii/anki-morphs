@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from collections import deque
 
 import anki
 from anki.template import TemplateRenderContext
@@ -55,7 +56,7 @@ def highlight_morphs_jit(
     if not card_morphs:
         return field_text
 
-    return _rubify_with_status(
+    return _rubify_with_status_fast(
         am_config,
         card_morphs,
         _dehtml(field_text),
@@ -191,41 +192,59 @@ def _make_unprocessed_regex() -> str:
 
 
 class Range:
-    def __init__(self, start: int, end: str):
+    def __init__(self, start: int, end: int):
         self.start = start
         self.end = end
 
 
 class RubyRange(Range):
-    def __init__(self, start: int, end: str, kanji: str, kana: str):
+    def __init__(self, start: int, end: int, kanji: str, kana: str):
         super().__init__(start, end)
         self.kanji = kanji
         self.kana = kana
 
+    def prefix_len(self) -> int:
+        return len("<ruby>")
+
     def __str__(self) -> str:
+        return f"<ruby>{self.kanji}<rt>{self.kana}</rt></ruby>"
+
+    def __repr__(self) -> str:
         return f"Range: {self.start}-{self.end} => {self.kanji}[{self.kana}]."
 
 
 class StatusRange(Range):
-    def __init__(self, start: int, end: str, status: str):
+    def __init__(self, start: int, end: int, status: str):
         super().__init__(start, end)
         self.status = status
 
-    def __str__(self) -> str:
+    def span(self) -> str:
+        return f'<span morph-status="{self.status}">'
+
+    def close(self) -> str:
+        return "</span>"
+
+    def __repr__(self) -> str:
         return f"Range: {self.start}-{self.end}. Status: {self.status}."
 
 
 class Whole:
-    def __init__(self, string: str):
-        self.raw = string
-        self.no_rubies = self.raw
-        self.status_matcher = self.raw
-        self.rubies = []
-        self.statuses = []
+    def __init__(self, string: str, morph_metas: list[MorphemeMeta]):
+        self._highlighted: str | None = None
+        self.no_rubies: str = string
+        self.rubies: list[RubyRange] = []
+        self.statuses: list[StatusRange] = []
 
-        for match in reversed(
-            list(re.finditer(r" ?([^ >]+?)\[(.+?)\]", self.raw, re.IGNORECASE))
-        ):
+        self._tag_rubies()
+        self._tag_morphemes(self.no_rubies.lower(), morph_metas)
+
+    def _tag_rubies(self) -> None:
+        while True:
+            match = re.search(text_preprocessing.ruby_regex, self.no_rubies)
+
+            if not match:
+                break
+
             self.rubies.append(
                 RubyRange(
                     match.start(),
@@ -240,14 +259,14 @@ class Whole:
                 + self.no_rubies[match.end() :]
             )
 
-        self.status_matcher = self.no_rubies.lower()
-
-    def tag_morphemes(self, morph_metas: list[MorphemeMeta]):
+    def _tag_morphemes(
+        self, status_matcher: str, morph_metas: list[MorphemeMeta]
+    ) -> None:
         for morph_meta in sorted(
             morph_metas, key=lambda meta: len(meta.string), reverse=True
         ):
             while True:
-                start = self.status_matcher.find(morph_meta.string)
+                start = status_matcher.find(morph_meta.string)
 
                 if start == -1:
                     break
@@ -255,34 +274,185 @@ class Whole:
                 end = start + len(morph_meta.string)
 
                 self.statuses.append(StatusRange(start, end, morph_meta.status))
-                self.status_matcher = (
-                    self.status_matcher[:start]
+                status_matcher = (
+                    status_matcher[:start]
                     + (" " * (end - start))
-                    + self.status_matcher[end:]
+                    + status_matcher[end:]
                 )
 
-    def highlighted(self) -> str:
-        ranges: list[Range] = self._resolve_overlaps()
+            self.statuses = sorted(self.statuses, key=lambda range: range.start)
 
-        highlighted = self.no_rubies
+    def highlighted(self) -> str | None:
+        if self._highlighted:
+            return self._highlighted
 
-        for rng in ranges:
-            new = (
-                f'<span morph-status="{rng.status}">{self.no_rubies[rng.start:rng.end]}</span>'
-                if isinstance(rng, StatusRange)
-                else f"<ruby>{rng.kanji}<rt>{rng.kana}</rt></ruby>"
-            )
-            highlighted = highlighted[: rng.start] + new + highlighted[rng.end :]
+        self._highlighted = self.no_rubies
 
-        return highlighted
+        if self.rubies or self.statuses:
+            self._process()
 
-    def _resolve_overlaps(self) -> list[Range]:
+        return self._highlighted
 
-        return sorted(
-            [*self.rubies, *self.statuses] if self.rubies else self.statuses,
-            key=lambda range: range.start,
-            reverse=True,
-        )
+    def _process(self) -> None:
+        ruby: RubyRange | None = None
+        stat: StatusRange | None = None
+
+        while self._highlighted is not None:
+            if ruby is None and self.rubies:
+                ruby = self.rubies.pop()
+
+            if stat is None and self.statuses:
+                stat = self.statuses.pop()
+
+            if ruby is None and stat is None:
+                break
+
+            # If there are only statuses.
+            #
+            if ruby is None:
+                print("There are only statuses.")
+                self._highlighted = (
+                    self._highlighted[: stat.start]
+                    + stat.span()
+                    + self.no_rubies[stat.start : stat.end]
+                    + stat.close()
+                    + self._highlighted[stat.end :]
+                )
+                stat = None
+                continue
+
+            # If there are only rubies.
+            #
+            if stat is None:
+                print("There are only rubies.")
+                self._highlighted = (
+                    self._highlighted[: ruby.start]
+                    + str(ruby)
+                    + self._highlighted[ruby.end :]
+                )
+                ruby = None
+                continue
+
+            # If there is no overlap between ruby and status, process the latest one.
+            #
+            if ruby.end < stat.start or ruby.start > stat.end:
+                print("There is no overlap between ruby and status.")
+                if ruby.start > stat.start:
+                    print("Ruby is later.")
+                    self._highlighted = (
+                        self._highlighted[: ruby.start]
+                        + str(ruby)
+                        + self._highlighted[ruby.end :]
+                    )
+                    ruby = None
+                else:
+                    print("Status is later.")
+                    self._highlighted = (
+                        self._highlighted[: stat.start]
+                        + stat.span()
+                        + self.no_rubies[stat.start : stat.end]
+                        + stat.close()
+                        + self._highlighted[stat.end :]
+                    )
+                    stat = None
+                continue
+
+            # If the status is the same as the ruby
+            #
+            if ruby.start == stat.start and ruby.end == stat.end:
+                print("The status is the same as the ruby.")
+
+                self._highlighted = (
+                    self._highlighted[: stat.start]
+                    + stat.span()
+                    + str(ruby)
+                    + stat.close()
+                    + self._highlighted[stat.end :]
+                )
+                ruby = None
+                stat = None
+                continue
+
+            # If the ruby is completely inside the status
+            #
+            if ruby.start >= stat.start and ruby.end <= stat.end:
+                print("The ruby is completely inside the status.")
+                self._highlighted = (
+                    self._highlighted[: stat.start]
+                    + stat.span()
+                    + self._highlighted[
+                        stat.start : stat.start + ruby.start - stat.start
+                    ]
+                    + str(ruby)
+                    + self._highlighted[ruby.end : stat.end]
+                    + stat.close()
+                    + self._highlighted[stat.end :]
+                )
+                ruby = None
+
+                # If the next ruby is outside of this status, we're also done with the status
+                if self.rubies and self.rubies[-1].end < stat.start:
+                    stat = None
+
+                continue
+
+            # If the status is completely inside the ruby
+            #
+            if ruby.start <= stat.start and ruby.end >= stat.end:
+                stat.start += ruby.prefix_len()
+                stat.end += ruby.prefix_len()
+                self._highlighted = (
+                    self._highlighted[: ruby.start]
+                    + str(ruby)
+                    + self._highlighted[ruby.end :]
+                )
+                self._highlighted = (
+                    self._highlighted[: stat.start]
+                    + stat.span()
+                    + self._highlighted[stat.start : stat.end]
+                    + stat.close()
+                    + self._highlighted[stat.end :]
+                )
+
+                # If the next status is outside of this ruby, we're also done with the ruby
+                while self.statuses:
+                    if self.statuses[-1].end < ruby.start:
+                        ruby = None
+                        break
+                    else:
+                        stat = self.statuses.pop()
+                        stat.start += ruby.prefix_len()
+                        stat.end += ruby.prefix_len()
+                        self._highlighted = (
+                            self._highlighted[: stat.start]
+                            + stat.span()
+                            + self._highlighted[stat.start : stat.end]
+                            + stat.close()
+                            + self._highlighted[stat.end :]
+                        )
+
+                stat = None
+                continue
+
+            # If the ruby starts then status starts, ruby ends, status ends
+            #
+            if ruby.start < stat.start and ruby.end < stat.end:
+                # process ruby first, then wrap in span
+                print("sh rly!")
+                ruby = None
+                stat = None
+                continue
+
+            # If the status starts then ruby starts, status ends, ruby ends
+            #
+            if ruby.start > stat.start and ruby.end > stat.end:
+                # process ruby first, then wrap in span
+                print("ha rly?")
+                ruby = None
+                stat = None
+                continue
+
+            print("errrr what the what?")
 
 
 class MorphemeMeta:
@@ -324,15 +494,11 @@ def _rubify_with_status_fast(
     text: str,
 ) -> str:
 
-    whole = Whole(text)
-
     morph_metas: list[MorphemeMeta] = [
         MorphemeMeta(morpheme, am_config) for morpheme in morphemes
     ]
 
-    whole.tag_morphemes(morph_metas)
-
-    return whole.highlighted()
+    return Whole(text, morph_metas).highlighted()
 
 
 def _rubify_with_status(
