@@ -82,8 +82,7 @@ case_japanese_two_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
 CASE_JAPANESE_TWO_INPUT_TEXT = "そうです ね"
-CASE_JAPANESE_TWO_CORRECT_OUTPUT = """<ruby><span morph-status="unprocessed">そうです</span></ruby>
-<ruby><span morph-status="unprocessed">ね</span></ruby>"""
+CASE_JAPANESE_TWO_CORRECT_OUTPUT = "そうです ね"
 case_japanese_two_card_morphs = [
     Morpheme(
         lemma="そうですね",
@@ -105,30 +104,7 @@ case_german_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
 CASE_GERMAN_INPUT_TEXT = "Das sind doch die Schädel von den Flüchtlingen, die wir gefunden hatten! Keine Sorge, dein Kopf wird auch schon bald in meiner Sammlung sein."
-CASE_GERMAN_CORRECT_OUTPUT = """<span morph-status="unknown">Das</span>
-<span morph-status="unknown">sind</span>
-<span morph-status="unknown">doch</span>
-<span morph-status="unknown">die</span>
-<span morph-status="unknown">Schädel</span>
-<span morph-status="unknown">von</span>
-<span morph-status="unknown">den</span>
-<span morph-status="unknown">Flüchtlingen</span><span morph-status="unprocessed">,</span>
-<span morph-status="unknown">die</span>
-<span morph-status="unknown">wir</span>
-<span morph-status="unknown">gefunden</span>
-<span morph-status="unknown">hatten</span><span morph-status="unprocessed">!</span>
-<span morph-status="unknown">Keine</span>
-<span morph-status="unknown">Sorge</span><span morph-status="unprocessed">,</span>
-<span morph-status="unknown">dein</span>
-<span morph-status="unknown">Kopf</span>
-<span morph-status="unknown">wird</span>
-<span morph-status="unknown">auch</span>
-<span morph-status="unknown">schon</span>
-<span morph-status="unknown">bald</span>
-<span morph-status="unknown">in</span>
-<span morph-status="unknown">meiner</span>
-<span morph-status="unknown">Sammlung</span>
-<span morph-status="unknown">sein</span><span morph-status="unprocessed">.</span>"""
+CASE_GERMAN_CORRECT_OUTPUT = '<span morph-status="unknown">Das</span> <span morph-status="unknown">sind</span> <span morph-status="unknown">doch</span> <span morph-status="unknown">die</span> <span morph-status="unknown">Schädel</span> <span morph-status="unknown">von</span> <span morph-status="unknown">den</span> <span morph-status="unknown">Flüchtlingen</span>, <span morph-status="unknown">die</span> <span morph-status="unknown">wir</span> <span morph-status="unknown">gefunden</span> <span morph-status="unknown">hatten</span>! <span morph-status="unknown">Keine</span> <span morph-status="unknown">Sorge</span>, <span morph-status="unknown">dein</span> <span morph-status="unknown">Kopf</span> <span morph-status="unknown">wird</span> <span morph-status="unknown">auch</span> <span morph-status="unknown">schon</span> <span morph-status="unknown">bald</span> <span morph-status="unknown">in</span> <span morph-status="unknown">meiner</span> <span morph-status="unknown">Sammlung</span> <span morph-status="unknown">sein</span>.'
 case_german_card_morphs = [
     Morpheme(
         lemma="Flüchtling",
@@ -185,20 +161,7 @@ case_regex_escape_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
 CASE_REGEX_ESCAPE_INPUT_TEXT = "몇...?<div><br></div><div>몇...</div> also 1 > 2, [I think that 2<1] don't forget; (sometimes I do)!"
-CASE_REGEX_ESCAPE_CORRECT_OUTPUT = """<ruby><span morph-status="unknown">몇</span><span morph-status="unprocessed">...?</span></ruby><div><br></div><div><ruby><span morph-status="unknown">몇</span><span morph-status="unprocessed">...</span></ruby></div>
-<ruby><span morph-status="unprocessed">also</span></ruby>
-<ruby><span morph-status="unprocessed">1</span></ruby>
-<ruby><span morph-status="unprocessed">></span></ruby>
-<ruby><span morph-status="unprocessed">2,</span></ruby>
-<ruby><span morph-status="unprocessed">[I</span></ruby>
-<ruby><span morph-status="unprocessed">think</span></ruby>
-<ruby><span morph-status="unprocessed">that</span></ruby>
-<ruby><span morph-status="unprocessed">2</span></ruby><<ruby><span morph-status="unprocessed">1]</span></ruby>
-<ruby><span morph-status="unprocessed">don't</span></ruby>
-<ruby><span morph-status="unprocessed">forget;</span></ruby>
-<ruby><span morph-status="unprocessed">(sometimes</span></ruby>
-<ruby><span morph-status="unprocessed">I</span></ruby>
-<ruby><span morph-status="unprocessed">do)!</span></ruby>"""
+CASE_REGEX_ESCAPE_CORRECT_OUTPUT = """<span morph-status="unknown">몇</span>...?<div><br></div><div><span morph-status="unknown">몇</span>...</div> also 1 > 2, [I think that 2<1] don't forget; (sometimes I do)!"""
 case_regex_escape_card_morphs = [
     Morpheme(lemma="?몇", inflection="?몇", highest_inflection_learning_interval=0),
     Morpheme(lemma="몇", inflection="몇", highest_inflection_learning_interval=0),
@@ -216,8 +179,9 @@ case_highlight_based_on_lemma_params = FakeEnvironmentParams(
     config=config_lemma_evaluation_ignore_brackets,
 )
 CASE_HIGHLIGHT_BASED_ON_LEMMA_INPUT_TEXT = "hello world"
-CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT = """<span morph-status="known">hello</span>
-<span morph-status="learning">world</span>"""
+CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT = (
+    '<span morph-status="known">hello</span> <span morph-status="learning">world</span>'
+)
 case_highlight_based_on_lemma_morphs = [
     Morpheme(
         lemma="hello",

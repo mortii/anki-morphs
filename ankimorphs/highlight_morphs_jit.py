@@ -240,28 +240,30 @@ class Whole:
                 + self.no_rubies[match.end() :]
             )
 
-        self.status_matcher = self.no_rubies
+        self.status_matcher = self.no_rubies.lower()
 
     def tag_morphemes(self, morph_metas: list[MorphemeMeta]):
         for morph_meta in sorted(
             morph_metas, key=lambda meta: len(meta.string), reverse=True
         ):
-            for match in re.finditer(
-                re.escape(morph_meta.string), self.status_matcher, re.IGNORECASE
-            ):
-                self.statuses.append(
-                    StatusRange(match.start(), match.end(), morph_meta.status)
-                )
+            while True:
+                start = self.status_matcher.find(morph_meta.string)
+
+                if start == -1:
+                    break
+
+                end = start + len(morph_meta.string)
+
+                self.statuses.append(StatusRange(start, end, morph_meta.status))
                 self.status_matcher = (
-                    self.status_matcher[: match.start()]
-                    + (" " * (match.end() - match.start()))
-                    + self.status_matcher[match.end() :]
+                    self.status_matcher[:start]
+                    + (" " * (end - start))
+                    + self.status_matcher[end:]
                 )
 
     def highlighted(self) -> str:
         ranges: list[Range] = self._resolve_overlaps()
 
-        print([str(rng) for rng in ranges])
         highlighted = self.no_rubies
 
         for rng in ranges:
@@ -275,6 +277,7 @@ class Whole:
         return highlighted
 
     def _resolve_overlaps(self) -> list[Range]:
+
         return sorted(
             [*self.rubies, *self.statuses] if self.rubies else self.statuses,
             key=lambda range: range.start,
@@ -288,27 +291,23 @@ class MorphemeMeta:
             morpheme.inflection
             if am_config.evaluate_morph_inflection
             else morpheme.lemma
-        )
+        ).lower()
         self.status = MorphemeMeta.get_morph_status(
-            morpheme,
-            am_config.evaluate_morph_inflection,
+            (
+                getattr(morpheme, "highest_inflection_learning_interval", 0)
+                if am_config.evaluate_morph_inflection
+                else getattr(morpheme, "highest_lemma_learning_interval", 0)
+            ),
             am_config.interval_for_known_morphs,
         )
         self.regex = re.escape(self.string)
 
     @staticmethod
     def get_morph_status(
-        morpheme: Morpheme,
-        evaluate_morph_inflection: bool,
+        learning_interval: int,
         interval_for_known_morphs: int,
     ) -> str:
         """Get the morpheme's text status. Use the relevant interval based on the user's config."""
-
-        learning_interval = (
-            getattr(morpheme, "highest_inflection_learning_interval")
-            if evaluate_morph_inflection
-            else getattr(morpheme, "highest_lemma_learning_interval")
-        )
 
         if learning_interval == 0:
             return "unknown"
@@ -332,9 +331,6 @@ def _rubify_with_status_fast(
     ]
 
     whole.tag_morphemes(morph_metas)
-
-    print(whole.raw)
-    print(whole.no_rubies)
 
     return whole.highlighted()
 
