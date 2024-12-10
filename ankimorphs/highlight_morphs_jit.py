@@ -321,7 +321,7 @@ class Whole:
             # If there are only statuses.
             #
             if ruby is None:
-                print("There are only statuses.")
+                # print("There are only statuses.")
                 self._highlighted = (
                     self._highlighted[: stat.start]
                     + stat.open()
@@ -335,7 +335,7 @@ class Whole:
             # If there are only rubies.
             #
             if stat is None:
-                print("There are only rubies.")
+                # print("There are only rubies.")
                 self._highlighted = (
                     self._highlighted[: ruby.start]
                     + str(ruby)
@@ -347,9 +347,9 @@ class Whole:
             # If there is no overlap between ruby and status, process the latest one.
             #
             if ruby.end <= stat.start or ruby.start >= stat.end:
-                print("There is no overlap between ruby and status.")
+                # print("There is no overlap between ruby and status.")
                 if ruby.start > stat.start:
-                    print("Ruby is later.")
+                    # print("Ruby is later.")
                     self._highlighted = (
                         self._highlighted[: ruby.start]
                         + str(ruby)
@@ -357,7 +357,7 @@ class Whole:
                     )
                     ruby = None
                 else:
-                    print("Status is later.")
+                    # print("Status is later.")
                     self._highlighted = (
                         self._highlighted[: stat.start]
                         + stat.open()
@@ -371,7 +371,7 @@ class Whole:
             # If the status is the same as the ruby
             #
             if ruby.start == stat.start and ruby.end == stat.end:
-                print("The status is the same as the ruby.")
+                # print("The status is the same as the ruby.")
 
                 self._highlighted = (
                     self._highlighted[: stat.start]
@@ -387,7 +387,7 @@ class Whole:
             # If the ruby is completely inside the status
             #
             if ruby.start >= stat.start and ruby.end <= stat.end:
-                print("The ruby is completely inside the status.")
+                # print("The ruby is completely inside the status.")
                 self._highlighted = (
                     self._highlighted[: stat.start]
                     + stat.open()
@@ -423,7 +423,7 @@ class Whole:
             # If the status is completely inside the ruby
             #
             if ruby.start <= stat.start and ruby.end >= stat.end:
-                print("The status is completely inside the ruby.")
+                # print("The status is completely inside the ruby.")
                 self._highlighted = (
                     self._highlighted[: ruby.start]
                     + str(ruby)
@@ -443,13 +443,10 @@ class Whole:
                 # Pull and process statuses until the next status is outside of this ruby.
                 #
                 while self.statuses:
-                    print("next")
                     if self.statuses[-1].end <= ruby.start:
-                        print("out")
                         ruby = None
                         break
                     else:
-                        print("in")
                         stat = self.statuses.pop()
                         stat.start += ruby.prefix_len()
                         stat.end += ruby.prefix_len()
@@ -467,14 +464,7 @@ class Whole:
             # If the ruby starts then status starts, ruby ends, status ends
             #
             if ruby.start < stat.start and ruby.end < stat.end:
-                print("The ruby starts then status starts, ruby ends, status ends.")
-                print(self._highlighted)
-                print(ruby)
-                print(stat)
-                print(ruby.start)
-                print(stat.start)
-                print(ruby.end)
-                print(stat.end)
+                # print("The ruby starts then status starts, ruby ends, status ends.")
                 self._highlighted = (
                     self._highlighted[: ruby.start]
                     + ruby.open()
@@ -497,7 +487,7 @@ class Whole:
             # If the status starts then ruby starts, status ends, ruby ends
             #
             if ruby.start > stat.start and ruby.end > stat.end:
-                print("The status starts then ruby starts, status ends, ruby ends.")
+                # print("The status starts then ruby starts, status ends, ruby ends.")
                 self._highlighted = (
                     self._highlighted[: stat.start]
                     + stat.open()
@@ -516,7 +506,7 @@ class Whole:
                 stat = None
                 continue
 
-            print("errrr what the what?")
+            # print("errrr what the what?")
 
 
 class MorphemeMeta:

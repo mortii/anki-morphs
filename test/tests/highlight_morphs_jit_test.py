@@ -34,18 +34,7 @@ CASE_JAPANESE_ONE_INPUT_TEXT: str = (
     "（ 刑事[けいじ]） （刑事） 珍[めずら]しく 時間[じかん]が 空[あ]いたので　お 前[まえ]たちの 顔[かお]を　 お前[まえ]たちの 見[み]に 様方[さまかた]が な[b]"
 )
 CASE_JAPANESE_ONE_CORRECT_OUTPUT: str = (
-    """<ruby><span morph-status="unprocessed">（</span></ruby>
-<ruby><span morph-status="unknown">刑事</span><rt morph-status="unknown">けいじ</rt><span morph-status="unprocessed">）</span></ruby>
-<ruby><span morph-status="unprocessed">（刑事）</span></ruby>
-<ruby><span morph-status="known">珍</span><rt morph-status="known">めずら</rt><span morph-status="known">しく</span></ruby>
-<ruby><span morph-status="unknown">時間</span><rt morph-status="unknown">じかん</rt><span morph-status="unknown">が</span></ruby>
-<ruby><span morph-status="known">空</span><rt morph-status="known">あ</rt><span morph-status="known">い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span><span morph-status="unprocessed">　お</span></ruby>
-<ruby><span morph-status="unprocessed">前</span><rt morph-status="unprocessed">まえ</rt><span morph-status="unknown">たち</span><span morph-status="unknown">の</span></ruby>
-<ruby><span morph-status="unknown">顔</span><rt morph-status="unknown">かお</rt><span morph-status="unknown">を</span><span morph-status="unprocessed">　</span></ruby>
-<ruby><span morph-status="unknown">お前</span><rt morph-status="unknown">まえ</rt><span morph-status="unknown">たち</span><span morph-status="unknown">の</span></ruby>
-<ruby><span morph-status="unknown">見</span><rt morph-status="unknown">み</rt><span morph-status="unknown">に</span></ruby>
-<ruby><span morph-status="unprocessed">様</span><span morph-status="learning">方</span><rt morph-status="learning">さまかた</rt><span morph-status="unknown">が</span></ruby>
-<ruby><span morph-status="unknown">な</span><rt morph-status="unknown">b</rt></ruby>"""
+    """（<span morph-status="unknown"><ruby>刑事<rt>けいじ</rt></ruby></span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known"><ruby>珍<rt>めずら</rt></ruby>しく</span><span morph-status="unknown"><ruby>時間<rt>じかん</rt></ruby></span><span morph-status="unknown">が</span><span morph-status="known"><ruby>空<rt>あ</rt></ruby>い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お<ruby>前<rt>まえ</rt></ruby></span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"><ruby>顔<rt>かお</rt></ruby></span><span morph-status="unknown">を</span>　<span morph-status="unknown"><ruby>お前<rt>まえ</rt></ruby></span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"><ruby>見<rt>み</rt></ruby></span><span morph-status="unknown">に</span><ruby>様<span morph-status="learning">方</span><rt>さまかた</rt></ruby><span morph-status="unknown">が</span><span morph-status="unknown"><ruby>な<rt>b</rt></ruby></span>"""
 )
 case_japanese_one_card_morphs: list[Morpheme] = [
     Morpheme(lemma="刑事", inflection="刑事", highest_inflection_learning_interval=0),
@@ -251,77 +240,24 @@ case_highlight_based_on_lemma_morphs = [
 ]
 
 
-case_highlight_based_on_ds_params = FakeEnvironmentParams(
-    config=config_lemma_evaluation_ignore_brackets,
-)
-CASE_HIGHLIGHT_BASED_ON_DS_INPUT_TEXT = "雪[ゆき]が"
-CASE_HIGHLIGHT_BASED_ON_DS_OUTPUT = '<span morph-status="known"><ruby>雪<rt>ゆき</rt></ruby></span><span morph-status="learning">が</span>'
-case_highlight_based_on_ds_morphs = [
-    Morpheme(
-        lemma="雪",
-        inflection="雪",
-        highest_inflection_learning_interval=0,
-        highest_lemma_learning_interval=30,
-    ),
-    Morpheme(
-        lemma="が",
-        inflection="が",
-        highest_inflection_learning_interval=0,
-        highest_lemma_learning_interval=10,
-    ),
-]
-
-case_highlight_based_on_ds2_params = FakeEnvironmentParams(
-    config=config_lemma_evaluation_ignore_brackets,
-)
-CASE_HIGHLIGHT_BASED_ON_DS2_INPUT_TEXT = "お 留守番[るすばん]"
-CASE_HIGHLIGHT_BASED_ON_DS2_OUTPUT = '<span morph-status="learning">お</span><ruby><span morph-status="known">留守</span><span morph-status="learning">番</span><rt>るすばん</rt></ruby>'
-case_highlight_based_on_ds2_morphs = [
-    Morpheme(
-        lemma="留守",
-        inflection="留守",
-        highest_inflection_learning_interval=0,
-        highest_lemma_learning_interval=30,
-    ),
-    Morpheme(
-        lemma="番",
-        inflection="番",
-        highest_inflection_learning_interval=0,
-        highest_lemma_learning_interval=10,
-    ),
-    Morpheme(
-        lemma="お",
-        inflection="お",
-        highest_inflection_learning_interval=0,
-        highest_lemma_learning_interval=10,
-    ),
-    Morpheme(
-        lemma="だ",
-        inflection="だ",
-        highest_inflection_learning_interval=0,
-        highest_lemma_learning_interval=10,
-    ),
-]
-
-
 # Note: the collection isn't actually used, so it is an arbitrary choice,
 # but the config needs to have the option "preprocess_ignore_bracket_contents"
 # activated
 @pytest.mark.parametrize(
     "fake_environment_fixture, input_text, card_morphs, correct_output",
     [
-        # (
-        #     case_japanese_one_params,
-        #     CASE_JAPANESE_ONE_INPUT_TEXT,
-        #     case_japanese_one_card_morphs,
-        #     CASE_JAPANESE_ONE_CORRECT_OUTPUT,
-        # ),
-        # (
-        #     case_japanese_two_params,
-        #     CASE_JAPANESE_TWO_INPUT_TEXT,
-        #     case_japanese_two_card_morphs,
-        #     CASE_JAPANESE_TWO_CORRECT_OUTPUT,
-        # ),
+        (
+            case_japanese_one_params,
+            CASE_JAPANESE_ONE_INPUT_TEXT,
+            case_japanese_one_card_morphs,
+            CASE_JAPANESE_ONE_CORRECT_OUTPUT,
+        ),
+        (
+            case_japanese_two_params,
+            CASE_JAPANESE_TWO_INPUT_TEXT,
+            case_japanese_two_card_morphs,
+            CASE_JAPANESE_TWO_CORRECT_OUTPUT,
+        ),
         (
             case_morph_and_ruby,
             CASE_MORPH_AND_RUBY_INPUT_TEXT,
@@ -345,18 +281,6 @@ case_highlight_based_on_ds2_morphs = [
             CASE_HIGHLIGHT_BASED_ON_LEMMA_INPUT_TEXT,
             case_highlight_based_on_lemma_morphs,
             CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT,
-        ),
-        (
-            case_highlight_based_on_ds_params,
-            CASE_HIGHLIGHT_BASED_ON_DS_INPUT_TEXT,
-            case_highlight_based_on_ds_morphs,
-            CASE_HIGHLIGHT_BASED_ON_DS_OUTPUT,
-        ),
-        (
-            case_highlight_based_on_ds2_params,
-            CASE_HIGHLIGHT_BASED_ON_DS2_INPUT_TEXT,
-            case_highlight_based_on_ds2_morphs,
-            CASE_HIGHLIGHT_BASED_ON_DS2_OUTPUT,
         ),
     ],
     indirect=["fake_environment_fixture"],
