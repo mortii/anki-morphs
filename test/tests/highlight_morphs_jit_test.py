@@ -106,7 +106,7 @@ case_morph_and_ruby = FakeEnvironmentParams(
 CASE_MORPH_AND_RUBY_INPUT_TEXT = "12345  09876[def]  12345[abc]  1234[abc]5 12 34[abc]5  1[abc]23 45  0123[abc]450  12[abc] 34[abc]5"
 CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = '<span morph-status="unknown">12345</span><ruby>09876<rt>def</rt></ruby><ruby><span morph-status="unknown">12345</span><rt>abc</rt></ruby><span morph-status="unknown"><ruby>1234</span><rt>abc</rt>5</span></ruby><ruby><span morph-status="unknown">1234</span><rt>abc</rt><span morph-status="unknown">5</span></ruby><ruby>0<span morph-status="unknown">123</span><rt>abc</rt><span morph-status="unknown">45</span>0</ruby>'
 
-CASE_MORPH_AND_RUBY_INPUT_TEXT = "12345  09876[def]  12345[abc] 12345  09876[def] 1 23[abc]45  012345[abc]  1234512345[abc]"
+CASE_MORPH_AND_RUBY_INPUT_TEXT = "12345  09876[def]  12345[abc]  12[abc] 34[abc]5  09876[def] 1 23[abc]45  012345[abc]  1234512345[abc]  0123[abc]45"
 CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = (
     ""
     + '<span morph-status="unknown">12345</span>'
@@ -115,7 +115,7 @@ CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = (
     + " "
     + '<span morph-status="unknown"><ruby>12345<rt>abc</rt></ruby></span>'
     + " "
-    + '<span morph-status="unknown">12345</span>'
+    + '<span morph-status="unknown"><ruby>12<rt>abc</rt></ruby><ruby>34<rt>abc</rt></ruby>5</span>'
     + " "
     + "<ruby>09876<rt>def</rt></ruby>"
     + " "
@@ -124,6 +124,8 @@ CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = (
     + '<ruby>0<span morph-status="unknown">12345</span><rt>abc</rt></ruby>'
     + " "
     + '<ruby><span morph-status="unknown">12345</span><span morph-status="unknown">12345</span><rt>abc</rt></ruby>'
+    + " "
+    + '<ruby>0<span morph-status="unknown">123</span><rt>abc</rt></ruby><span morph-status="unknown">45</span>'
 )
 
 case_morph_and_ruby_card_morphs = [
