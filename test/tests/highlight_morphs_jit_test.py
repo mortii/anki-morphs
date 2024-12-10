@@ -13,7 +13,7 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 import pytest
 
 from ankimorphs.ankimorphs_config import AnkiMorphsConfig
-from ankimorphs.highlight_morphs_jit import _rubify_with_status
+from ankimorphs.highlight_morphs_jit import _rubify_with_status_fast
 from ankimorphs.morpheme import Morpheme
 
 ##############################################################################################
@@ -105,30 +105,30 @@ case_german_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
 CASE_GERMAN_INPUT_TEXT = "Das sind doch die Schädel von den Flüchtlingen, die wir gefunden hatten! Keine Sorge, dein Kopf wird auch schon bald in meiner Sammlung sein."
-CASE_GERMAN_CORRECT_OUTPUT = """<ruby><span morph-status="unknown">Das</span></ruby>
-<ruby><span morph-status="unknown">sind</span></ruby>
-<ruby><span morph-status="unknown">doch</span></ruby>
-<ruby><span morph-status="unknown">die</span></ruby>
-<ruby><span morph-status="unknown">Schädel</span></ruby>
-<ruby><span morph-status="unknown">von</span></ruby>
-<ruby><span morph-status="unknown">den</span></ruby>
-<ruby><span morph-status="unknown">Flüchtlingen</span><span morph-status="unprocessed">,</span></ruby>
-<ruby><span morph-status="unknown">die</span></ruby>
-<ruby><span morph-status="unknown">wir</span></ruby>
-<ruby><span morph-status="unknown">gefunden</span></ruby>
-<ruby><span morph-status="unknown">hatten</span><span morph-status="unprocessed">!</span></ruby>
-<ruby><span morph-status="unknown">Keine</span></ruby>
-<ruby><span morph-status="unknown">Sorge</span><span morph-status="unprocessed">,</span></ruby>
-<ruby><span morph-status="unknown">dein</span></ruby>
-<ruby><span morph-status="unknown">Kopf</span></ruby>
-<ruby><span morph-status="unknown">wird</span></ruby>
-<ruby><span morph-status="unknown">auch</span></ruby>
-<ruby><span morph-status="unknown">schon</span></ruby>
-<ruby><span morph-status="unknown">bald</span></ruby>
-<ruby><span morph-status="unknown">in</span></ruby>
-<ruby><span morph-status="unknown">meiner</span></ruby>
-<ruby><span morph-status="unknown">Sammlung</span></ruby>
-<ruby><span morph-status="unknown">sein</span><span morph-status="unprocessed">.</span></ruby>"""
+CASE_GERMAN_CORRECT_OUTPUT = """<span morph-status="unknown">Das</span>
+<span morph-status="unknown">sind</span>
+<span morph-status="unknown">doch</span>
+<span morph-status="unknown">die</span>
+<span morph-status="unknown">Schädel</span>
+<span morph-status="unknown">von</span>
+<span morph-status="unknown">den</span>
+<span morph-status="unknown">Flüchtlingen</span><span morph-status="unprocessed">,</span>
+<span morph-status="unknown">die</span>
+<span morph-status="unknown">wir</span>
+<span morph-status="unknown">gefunden</span>
+<span morph-status="unknown">hatten</span><span morph-status="unprocessed">!</span>
+<span morph-status="unknown">Keine</span>
+<span morph-status="unknown">Sorge</span><span morph-status="unprocessed">,</span>
+<span morph-status="unknown">dein</span>
+<span morph-status="unknown">Kopf</span>
+<span morph-status="unknown">wird</span>
+<span morph-status="unknown">auch</span>
+<span morph-status="unknown">schon</span>
+<span morph-status="unknown">bald</span>
+<span morph-status="unknown">in</span>
+<span morph-status="unknown">meiner</span>
+<span morph-status="unknown">Sammlung</span>
+<span morph-status="unknown">sein</span><span morph-status="unprocessed">.</span>"""
 case_german_card_morphs = [
     Morpheme(
         lemma="Flüchtling",
@@ -216,8 +216,8 @@ case_highlight_based_on_lemma_params = FakeEnvironmentParams(
     config=config_lemma_evaluation_ignore_brackets,
 )
 CASE_HIGHLIGHT_BASED_ON_LEMMA_INPUT_TEXT = "hello world"
-CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT = """<ruby><span morph-status="known">hello</span></ruby>
-<ruby><span morph-status="learning">world</span></ruby>"""
+CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT = """<span morph-status="known">hello</span>
+<span morph-status="learning">world</span>"""
 case_highlight_based_on_lemma_morphs = [
     Morpheme(
         lemma="hello",
@@ -280,7 +280,7 @@ def test_highlighting(  # pylint:disable=unused-argument
     correct_output: str,
 ) -> None:
     am_config = AnkiMorphsConfig()
-    highlighted_text: str = _rubify_with_status(am_config, card_morphs, input_text)
+    highlighted_text: str = _rubify_with_status_fast(am_config, card_morphs, input_text)
     print(highlighted_text)
     print(correct_output)
     assert highlighted_text == correct_output

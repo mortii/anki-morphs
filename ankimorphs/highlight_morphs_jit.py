@@ -190,6 +190,98 @@ def _make_unprocessed_regex() -> str:
     return r"<span.*?</span>|<rt.*?</rt>|<[^<]*>|([^<]*)"
 
 
+class Range:
+    def __init__(self, start: int, end: str):
+        self.start = start
+        self.end = end
+
+
+class RubyRange(Range):
+    def __init__(self, start: int, end: str, kanji: str, kana: str):
+        super().__init__(start, end)
+        self.kanji = kanji
+        self.kana = kana
+
+    def __str__(self) -> str:
+        return f"Range: {self.start}-{self.end} => {self.kanji}[{self.kana}]."
+
+
+class StatusRange(Range):
+    def __init__(self, start: int, end: str, status: str):
+        super().__init__(start, end)
+        self.status = status
+
+    def __str__(self) -> str:
+        return f"Range: {self.start}-{self.end}. Status: {self.status}."
+
+
+class Whole:
+    def __init__(self, string: str):
+        self.raw = string
+        self.no_rubies = self.raw
+        self.status_matcher = self.raw
+        self.rubies = []
+        self.statuses = []
+
+        for match in reversed(
+            list(re.finditer(r" ?([^ >]+?)\[(.+?)\]", self.raw, re.IGNORECASE))
+        ):
+            self.rubies.append(
+                RubyRange(
+                    match.start(),
+                    match.start() + len(match.group(1)),
+                    match.group(1),
+                    match.group(2),
+                )
+            )
+            self.no_rubies = (
+                self.no_rubies[: match.start()]
+                + match.group(1)
+                + self.no_rubies[match.end() :]
+            )
+
+        self.status_matcher = self.no_rubies
+
+    def tag_morphemes(self, morph_metas: list[MorphemeMeta]):
+        for morph_meta in sorted(
+            morph_metas, key=lambda meta: len(meta.string), reverse=True
+        ):
+            for match in re.finditer(
+                re.escape(morph_meta.string), self.status_matcher, re.IGNORECASE
+            ):
+                self.statuses.append(
+                    StatusRange(match.start(), match.end(), morph_meta.status)
+                )
+                self.status_matcher = (
+                    self.status_matcher[: match.start()]
+                    + (" " * (match.end() - match.start()))
+                    + self.status_matcher[match.end() :]
+                )
+
+    def highlighted(self) -> str:
+        ranges: list[Range] = self._resolve_overlaps()
+
+        print([str(rng) for rng in ranges])
+        highlighted = self.no_rubies
+
+        for rng in ranges:
+            new = (
+                f'<span morph-status="{rng.status}">{self.no_rubies[rng.start:rng.end]}</span>'
+                if isinstance(rng, StatusRange)
+                else f"<ruby>{rng.kanji}<rt>{rng.kana}</rt></ruby>"
+            )
+            highlighted = highlighted[: rng.start] + new + highlighted[rng.end :]
+
+        return highlighted
+
+    def _resolve_overlaps(self) -> list[Range]:
+        return sorted(
+            [*self.rubies, *self.statuses] if self.rubies else self.statuses,
+            key=lambda range: range.start,
+            reverse=True,
+        )
+
+
 class MorphemeMeta:
     def __init__(self, morpheme: Morpheme, am_config: AnkiMorphsConfig):
         self.string = (
@@ -202,16 +294,10 @@ class MorphemeMeta:
             am_config.evaluate_morph_inflection,
             am_config.interval_for_known_morphs,
         )
-        self.regex = MorphemeMeta.make_morph_regex(
-            self.string,
-            am_config.preprocess_ignore_bracket_contents,
-            am_config.preprocess_ignore_round_bracket_contents,
-            am_config.preprocess_ignore_slim_round_bracket_contents,
-        )
+        self.regex = re.escape(self.string)
 
-    @classmethod
+    @staticmethod
     def get_morph_status(
-        cls,
         morpheme: Morpheme,
         evaluate_morph_inflection: bool,
         interval_for_known_morphs: int,
@@ -232,76 +318,25 @@ class MorphemeMeta:
 
         return "known"
 
-    @classmethod
-    def make_morph_regex(
-        cls,
-        morph: str,
-        preprocess_ignore_bracket_contents: bool,
-        preprocess_ignore_round_bracket_contents: bool,
-        preprocess_ignore_slim_round_bracket_contents: bool,
-    ) -> str:
-        """Construct the regex for finding morphemes. Each morpheme gets a custom regex that
-        interpolates the possibility of a ruby between each character."""
 
-        # furigana_regex is a subpattern used to deal with rubies inside the target string.
-        # 1 `(?![^\[]*\])`: A negative lookahead that ensures the pattern does not match inside square
-        # brackets, preventing accidental matches inside rubies.
-        # 2 `(?:\[.*?\]|.{0})`: A non-capturing group that matches:
-        #     a Ruby inside square brackets (`\[.*?\]`)
-        #     OR
-        #     b An empty string (`.{0}`), effectively allowing for matches with no rubies present.
-        #
-        # So, furigana_regex matches either a ruby enclosed in square brackets or allows for zero
-        # characters to match (empty match).
+def _rubify_with_status_fast(
+    am_config: AnkiMorphsConfig,
+    morphemes: list[Morpheme],
+    text: str,
+) -> str:
 
-        # Then we create a new string by inserting the furigana_regex pattern between each character of
-        # the morph string. For example, if morph is "abc", this would generate:
-        #
-        # a(?![^\[]*\])(?:\[.*?\]|.{0})b(?![^\[]*\])(?:\[.*?\]|.{0})c
-        #
-        # This ensures that each character is tested for, with the optional possibility that there is
-        # a ruby in the middle (or on the end) of it.
+    whole = Whole(text)
 
-        # Finally, we surround the whole thing in lookaheads and lookbehinds. This will prevent us
-        # from finding already processed morphs from prior iterations.
-        #
-        # f"(?<![^/span]>)(XXX)(?!<span>)"
-        # The full regex pattern is wrapped in lookahead and lookbehind assertions where XXX is
-        # described above.
-        #
-        # (?<![^/span]>): This is a negative lookbehind, ensuring that the matched morpheme is not
-        # preceded by any sequence starting with /span>.
-        #
-        # (XXX): This is an unnamed capture group, which captures the matched morpheme pattern above.
-        #
-        # (?!<span>): This is a negative lookahead, which ensures that the morpheme is not followed
-        # by the string <span>. This further ensures that we're not inside a <span></span> pair, and
-        # covers off some edge cases.
+    morph_metas: list[MorphemeMeta] = [
+        MorphemeMeta(morpheme, am_config) for morpheme in morphemes
+    ]
 
-        # Matching Examples
-        # "abc"
-        # "a[kana]bc"
-        # "ab[kana]c"
-        # "abc[kana]"
+    whole.tag_morphemes(morph_metas)
 
-        # Non-Matching Examples
-        # "<span>abc</span>"
-        # "<span>abc[kana]</span>"
-        # "a<span>b</span>c"
-        # "a[[kana]]b"
-        # "[kana]abc"
+    print(whole.raw)
+    print(whole.no_rubies)
 
-        furigana_regex = r"(?![^\[]*\])(?:\[.*?\]|.{0})"
-        skip_brackets = r"<rt.*?</rt>|" if preprocess_ignore_bracket_contents else ""
-        skip_parens = r"（[^（]*）|" if preprocess_ignore_round_bracket_contents else ""
-        skip_slim_parens = (
-            r"\([^(]*\)|" if preprocess_ignore_slim_round_bracket_contents else ""
-        )
-        morph_regex = (
-            furigana_regex.join([re.escape(morph_char) for morph_char in morph])
-            + furigana_regex
-        )
-        return rf"<span.*?</span>|{skip_brackets}{skip_parens}{skip_slim_parens}({morph_regex})"
+    return whole.highlighted()
 
 
 def _rubify_with_status(
