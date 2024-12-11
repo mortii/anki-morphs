@@ -31,15 +31,16 @@ case_japanese_one_params = FakeEnvironmentParams(
 )
 
 CASE_JAPANESE_ONE_INPUT_TEXT: str = (
-    "珍[めずら]しく 時間[じかん]が 空[あ]いたので　お 前[まえ]たちの 顔[かお]を 見[み]に な[b]"
+    "（ 刑事[けいじ]） （刑事） 珍[めずら]しく 時間[じかん]が 空[あ]いたので　お 前[まえ]たちの 顔[かお]を　 お前[まえ]たちの 見[み]に 様方[さまかた]が な[b]  思い出[おもいだ]してくれ"
 )
 CASE_JAPANESE_ONE_CORRECT_OUTPUT: str = (
-    '<span morph-status="unknown">珍[めずら]しく</span> <span morph-status="unknown">時間[じかん]</span><span morph-status="unknown">が</span> <span morph-status="unknown">空[あ]い</span><span morph-status="unknown">た</span><span morph-status="unknown">ので</span>　お 前[まえ]<span morph-status="unknown">たち</span><span morph-status="unknown">の</span> <span morph-status="unknown">顔[かお]</span><span morph-status="unknown">を</span> <span morph-status="unknown">見[み]</span><span morph-status="unknown">に</span> <span morph-status="unknown">な[b]</span>'
+    """（<span morph-status="unknown"><ruby>刑事<rt>けいじ</rt></ruby></span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known"><ruby>珍<rt>めずら</rt></ruby>しく</span><span morph-status="unknown"><ruby>時間<rt>じかん</rt></ruby></span><span morph-status="unknown">が</span><span morph-status="known"><ruby>空<rt>あ</rt></ruby>い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お<ruby>前<rt>まえ</rt></ruby></span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"><ruby>顔<rt>かお</rt></ruby></span><span morph-status="unknown">を</span>　<span morph-status="unknown"><ruby>お前<rt>まえ</rt></ruby></span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"><ruby>見<rt>み</rt></ruby></span><span morph-status="unknown">に</span><ruby>様<span morph-status="learning">方</span><rt>さまかた</rt></ruby><span morph-status="unknown">が</span><span morph-status="unknown"><ruby>な<rt>b</rt></ruby></span> <ruby><span morph-status="unknown">思い</span><span morph-status="learning">出</span><rt>おもいだ</rt></ruby><span morph-status="learning">し</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
 )
 case_japanese_one_card_morphs: list[Morpheme] = [
+    Morpheme(lemma="刑事", inflection="刑事", highest_inflection_learning_interval=0),
     Morpheme(lemma="お前", inflection="お前", highest_inflection_learning_interval=0),
     Morpheme(lemma="が", inflection="が", highest_inflection_learning_interval=0),
-    Morpheme(lemma="た", inflection="た", highest_inflection_learning_interval=0),
+    Morpheme(lemma="た", inflection="た", highest_inflection_learning_interval=30),
     Morpheme(lemma="たち", inflection="たち", highest_inflection_learning_interval=0),
     Morpheme(lemma="な", inflection="な", highest_inflection_learning_interval=0),
     Morpheme(lemma="に", inflection="に", highest_inflection_learning_interval=0),
@@ -48,13 +49,17 @@ case_japanese_one_card_morphs: list[Morpheme] = [
     Morpheme(lemma="を", inflection="を", highest_inflection_learning_interval=0),
     Morpheme(lemma="時間", inflection="時間", highest_inflection_learning_interval=0),
     Morpheme(
-        lemma="珍しい", inflection="珍しく", highest_inflection_learning_interval=0
+        lemma="珍しい", inflection="珍しく", highest_inflection_learning_interval=30
     ),
-    Morpheme(lemma="空く", inflection="空い", highest_inflection_learning_interval=0),
+    Morpheme(lemma="空く", inflection="空い", highest_inflection_learning_interval=30),
     Morpheme(lemma="見る", inflection="見", highest_inflection_learning_interval=0),
     Morpheme(lemma="顔", inflection="顔", highest_inflection_learning_interval=0),
+    Morpheme(lemma="方", inflection="方", highest_inflection_learning_interval=1),
+    Morpheme(lemma="思い", inflection="思い", highest_inflection_learning_interval=0),
+    Morpheme(lemma="出し", inflection="出し", highest_inflection_learning_interval=10),
+    Morpheme(lemma="て", inflection="て", highest_inflection_learning_interval=10),
+    Morpheme(lemma="くれ", inflection="くれ", highest_inflection_learning_interval=10),
 ]
-
 
 ##############################################################################################
 #                                    CASE: JAPANESE TWO
@@ -78,6 +83,90 @@ case_japanese_two_card_morphs = [
     ),
 ]
 
+##############################################################################################
+#                                CASE: Several cases that uncovered bugs in new impl
+##############################################################################################
+case_japanese_three_params = FakeEnvironmentParams(
+    config=config_big_japanese_collection,
+)
+CASE_JAPANESE_THREE_INPUT_TEXT = "雪[ゆき]が お 留守番[るすばん]  相変[あいか]わらずの"
+CASE_JAPANESE_THREE_CORRECT_OUTPUT = (
+    '<span morph-status="known"><ruby>雪<rt>ゆき</rt></ruby></span><span morph-status="learning">が</span>'
+    + " "
+    + '<span morph-status="learning">お</span><ruby><span morph-status="known">留守</span><span morph-status="learning">番</span><rt>るすばん</rt></ruby>'
+    + " "
+    + '<ruby><span morph-status="learning">相</span><span morph-status="learning">変</span><rt>あいか</rt></ruby><span morph-status="learning">わら</span><span morph-status="learning">ず</span>の'
+)
+
+case_japanese_three_card_morphs = [
+    Morpheme(lemma="雪", inflection="雪", highest_inflection_learning_interval=30),
+    Morpheme(lemma="が", inflection="が", highest_inflection_learning_interval=10),
+    Morpheme(lemma="留守", inflection="留守", highest_inflection_learning_interval=30),
+    Morpheme(lemma="番", inflection="番", highest_inflection_learning_interval=10),
+    Morpheme(lemma="お", inflection="お", highest_inflection_learning_interval=10),
+    Morpheme(lemma="見事", inflection="見事", highest_inflection_learning_interval=30),
+    Morpheme(lemma="腕", inflection="腕", highest_inflection_learning_interval=10),
+    Morpheme(
+        lemma="変わら", inflection="変わら", highest_inflection_learning_interval=10
+    ),
+    Morpheme(lemma="だ", inflection="だ", highest_inflection_learning_interval=10),
+    Morpheme(lemma="だっ", inflection="だっ", highest_inflection_learning_interval=10),
+    Morpheme(lemma="ああ", inflection="ああ", highest_inflection_learning_interval=10),
+    Morpheme(lemma="ず", inflection="ず", highest_inflection_learning_interval=10),
+    Morpheme(lemma="た", inflection="た", highest_inflection_learning_interval=10),
+    Morpheme(lemma="相", inflection="相", highest_inflection_learning_interval=10),
+]
+
+##############################################################################################
+#                                    CASE: Morph and ruby interaction
+##############################################################################################
+# This third example sets all the cases where morphs and rubies coexist.
+# |-mmm---| |--mmm--| |---mmm-| |-mmm---| |-mmmmm-| |-mmmmm-| |--mmm--| |--m-m--|
+# |----rrr| |--rrr--| |--rrr--| |--rrr--| |--rrr--| |--r-r--| |-rrrrr-| |-rrrrr-|
+# Collection choice is arbitrary.
+# Database choice is arbitrary.
+##############################################################################################
+case_morph_and_ruby = FakeEnvironmentParams(
+    config=config_big_japanese_collection,
+)
+CASE_MORPH_AND_RUBY_INPUT_TEXT = "12345  09876[def]  12345[abc]  12[abc] 34[abc]5  09876[def] 1 23[abc]45  012345[abc]  1234512345[abc]  0123[abc]45 1 23456[abc]  12345777[zyzzzzz]"
+CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = (
+    ""
+    + '<span morph-status="unknown">12345</span>'
+    + " "
+    + "<ruby>09876<rt>def</rt></ruby>"
+    + " "
+    + '<span morph-status="unknown"><ruby>12345<rt>abc</rt></ruby></span>'
+    + " "
+    + '<span morph-status="unknown"><ruby>12<rt>abc</rt></ruby><ruby>34<rt>abc</rt></ruby>5</span>'
+    + " "
+    + "<ruby>09876<rt>def</rt></ruby>"
+    + " "
+    + '<span morph-status="unknown">1<ruby>23<rt>abc</rt></ruby>45</span>'
+    + " "
+    + '<ruby>0<span morph-status="unknown">12345</span><rt>abc</rt></ruby>'
+    + " "
+    + '<ruby><span morph-status="unknown">12345</span><span morph-status="unknown">12345</span><rt>abc</rt></ruby>'
+    + " "
+    + '<ruby>0<span morph-status="unknown">123</span><rt>abc</rt></ruby><span morph-status="unknown">45</span>'
+    + " "
+    + '<span morph-status="unknown">1</span><ruby><span morph-status="unknown">2345</span>6<rt>abc</rt></ruby>'
+    + " "
+    + '<ruby><span morph-status="unknown">12345</span><span morph-status="unknown">777</span><rt>zyzzzzz</rt></ruby>'
+)
+
+case_morph_and_ruby_card_morphs = [
+    Morpheme(
+        lemma="12345",
+        inflection="12345",
+        highest_inflection_learning_interval=0,
+    ),
+    Morpheme(
+        lemma="777",
+        inflection="777",
+        highest_inflection_learning_interval=0,
+    ),
+]
 
 ##############################################################################################
 #                                         CASE: GERMAN
@@ -147,8 +236,8 @@ case_german_card_morphs = [
 case_regex_escape_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
-CASE_REGEX_ESCAPE_INPUT_TEXT = "몇...?<div><br></div><div>몇...</div>"
-CASE_REGEX_ESCAPE_CORRECT_OUTPUT = '<span morph-status="unknown">몇</span>...?<div><br></div><div><span morph-status="unknown">몇</span>...</div>'
+CASE_REGEX_ESCAPE_INPUT_TEXT = "몇...?<div><br></div><div>몇...</div> also 1 > 2, [I think that 2<1] don't forget; (sometimes I do)!"
+CASE_REGEX_ESCAPE_CORRECT_OUTPUT = """<span morph-status="unknown">몇</span>...?<div><br></div><div><span morph-status="unknown">몇</span>...</div> also 1 > 2, [I think that 2<1] don't forget; (sometimes I do)!"""
 case_regex_escape_card_morphs = [
     Morpheme(lemma="?몇", inflection="?몇", highest_inflection_learning_interval=0),
     Morpheme(lemma="몇", inflection="몇", highest_inflection_learning_interval=0),
@@ -202,6 +291,18 @@ case_highlight_based_on_lemma_morphs = [
             CASE_JAPANESE_TWO_INPUT_TEXT,
             case_japanese_two_card_morphs,
             CASE_JAPANESE_TWO_CORRECT_OUTPUT,
+        ),
+        (
+            case_japanese_three_params,
+            CASE_JAPANESE_THREE_INPUT_TEXT,
+            case_japanese_three_card_morphs,
+            CASE_JAPANESE_THREE_CORRECT_OUTPUT,
+        ),
+        (
+            case_morph_and_ruby,
+            CASE_MORPH_AND_RUBY_INPUT_TEXT,
+            case_morph_and_ruby_card_morphs,
+            CASE_MORPH_AND_RUBY_CORRECT_OUTPUT,
         ),
         (
             case_german_params,

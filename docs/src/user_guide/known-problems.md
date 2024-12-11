@@ -29,7 +29,6 @@
 </details>
 
 
-
 <details>
   <summary style="display:list-item">Freezing when reviewing</summary>
 
@@ -43,7 +42,6 @@
 > <img src="../img/skipping-freeze.png" alt="image" width="40%" height="auto">
 >
 > When this happens you have to restart Anki.
-
 </details>
 
 
@@ -86,37 +84,6 @@
 >${1} <br>
 >```
 >The `${1}` part re-inserts the `(\S)` character that was found earlier.
-
-
-</details>
-
-
-<details>
-  <summary style="display:list-item">Ruby characters (furigana, etc.) are displayed wrong in am-highlighted</summary>
-
-> When morphs are not recognized in the same way that the ruby characters intended, then we can get ugly things like this:
->
-> <img src="../img/furigana-bug.png" alt="image" width="70%" height="auto">
->
-> This is because `錬金術師` gets split into -> `[錬金術, 師]` and the ruby characters are after the second morph, so
-> they only attach to that one. Fixing this programmatically is not possible, unfortunately. 
-> 
->If you _really_ wanted to
-> fix this particular card then you would have to do some manual editing to the ruby characters in the original field,
-> e.g. splitting it into two different parts:
-> ``` 
-> original:
-> 錬金術師[れんきんじゅつし]
-> 
-> split:
-> 錬金術[れんきんじゅ]師[つし]
-> ```
-> then `am-highlighted` will produce this instead:
-> 
-> <img src="../img/furigana-bug-fixed.png" alt="image" width="60%" height="auto">
-
-</details>
-
 </details>
 
 
@@ -126,8 +93,8 @@
 > When names are ignored, either by the morphemizer or those found in the `names.txt`, then the highlighting
 > is prone to false-positives where other morphs also found in the text can mistakenly get highlighted in the names:
 >![names_incorrectly_highlighted.png](../img/names_incorrectly_highlighted.png)
-
 </details>
+
 
 <details>
   <summary style="display:list-item">Readability report freezes indefinitely when input is too long</summary>
@@ -135,8 +102,8 @@
 > When using the `AnkiMorphs: Japanese` morphemizer, excessively long lines of text can cause the morphemizer's buffer
 > to overflow, causing the progress bar to freeze indefinitely. To avoid this, try splitting the long lines into
 > shorter segments.
-
 </details>
+
 
 <details>
   <summary style="display:list-item">Anki crashing when opening AnkiMorphs settings</summary>
@@ -144,5 +111,4 @@
 > The `AnkiMorphs: Japanese` morphemizer doesn't handle paths with diacritical marks very well, so paths like this:
 > `C:\Users\héroïne` can cause crashes. If you can't change the path name that is causing the crash, try using spaCy
 > morphemizers instead.
-
 </details>
