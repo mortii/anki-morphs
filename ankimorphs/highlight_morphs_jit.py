@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from collections import deque
 
 import anki
 from anki.template import TemplateRenderContext
@@ -137,7 +138,7 @@ def _dehtml(
     #
     ruby_shorthand = r" \g<kanji>[\g<kana>]\g<after>"
 
-    text = re.sub(ruby_longhand, ruby_shorthand, text, flags=re.IGNORECASE)
+    text = re.sub(ruby_longhand, ruby_shorthand, text, flags=re.IGNORECASE).strip()
 
     if clean_html:
         text = anki.utils.strip_html(text)
@@ -206,7 +207,7 @@ class RubyRange(Range):
         return len("<ruby>")
 
     def open(self) -> str:
-        return f"<ruby>"
+        return "<ruby>"
 
     def close(self) -> str:
         return "</ruby>"
@@ -216,6 +217,9 @@ class RubyRange(Range):
 
     def rt_offset(self) -> int:
         return len(self.kanji) - 1
+
+    def inject(self, text: str) -> str:
+        return text[: self.start] + str(self) + text[self.end :]
 
     def __str__(self) -> str:
         return f"<ruby>{self.kanji}<rt>{self.kana}</rt></ruby>"
@@ -229,22 +233,34 @@ class StatusRange(Range):
         super().__init__(start, end)
         self.status = status
 
+    def open_len(self) -> int:
+        return len(self.open())
+
     def open(self) -> str:
         return f'<span morph-status="{self.status}">'
 
     def close(self) -> str:
         return "</span>"
 
+    def inject(self, text: str) -> str:
+        return (
+            text[: self.start]
+            + self.open()
+            + text[self.start : self.end]
+            + self.close()
+            + text[self.end :]
+        )
+
     def __repr__(self) -> str:
         return f"Range: {self.start}-{self.end}. Status: {self.status}."
 
 
-class Whole:
-    def __init__(self, string: str, morph_metas: list[MorphemeMeta]):
+class Expression:
+    def __init__(self, text: str, morph_metas: list[MorphemeMeta]):
         self._highlighted: str | None = None
-        self.no_rubies: str = string
-        self.rubies: list[RubyRange] = []
-        self.statuses: list[StatusRange] = []
+        self.no_rubies: str = text
+        self.rubies: deque[RubyRange] = deque()
+        self.statuses: deque[StatusRange] = deque()
 
         self._tag_rubies()
         self._tag_morphemes(self.no_rubies.lower(), morph_metas)
@@ -270,41 +286,35 @@ class Whole:
                 + self.no_rubies[match.end() :]
             )
 
-    def _tag_morphemes(
-        self, status_matcher: str, morph_metas: list[MorphemeMeta]
-    ) -> None:
+    def _tag_morphemes(self, haystack: str, morph_metas: list[MorphemeMeta]) -> None:
         for morph_meta in sorted(
-            morph_metas, key=lambda meta: len(meta.string), reverse=True
+            morph_metas, key=lambda meta: len(meta.text), reverse=True
         ):
             while True:
-                start = status_matcher.find(morph_meta.string)
+                start = haystack.find(morph_meta.text)
 
                 if start == -1:
                     break
 
-                end = start + len(morph_meta.string)
+                end = start + len(morph_meta.text)
 
                 self.statuses.append(StatusRange(start, end, morph_meta.status))
-                status_matcher = (
-                    status_matcher[:start]
-                    + (" " * (end - start))
-                    + status_matcher[end:]
-                )
+                haystack = haystack[:start] + (" " * (end - start)) + haystack[end:]
 
-            self.statuses = sorted(self.statuses, key=lambda range: range.start)
+        self.statuses = deque(sorted(self.statuses, key=lambda range: range.start))
 
-    def highlighted(self) -> str | None:
+    def highlighted(self) -> str:
         if self._highlighted:
             return self._highlighted
 
-        self._highlighted = self.no_rubies
+        self._highlighted = self.no_rubies or ""
 
-        if self.rubies or self.statuses:
+        if self._highlighted and (self.rubies or self.statuses):
             self._process()
 
         return self._highlighted
 
-    def _process(self) -> None:
+    def _process(self) -> None:  # pylint:disable=too-many-branches, too-many-statements
         ruby: RubyRange | None = None
         stat: StatusRange | None = None
 
@@ -322,13 +332,7 @@ class Whole:
             #
             if ruby is None:
                 # print("There are only statuses.")
-                self._highlighted = (
-                    self._highlighted[: stat.start]
-                    + stat.open()
-                    + self.no_rubies[stat.start : stat.end]
-                    + stat.close()
-                    + self._highlighted[stat.end :]
-                )
+                self._highlighted = stat.inject(self._highlighted)  # type: ignore[union-attr]
                 stat = None
                 continue
 
@@ -336,11 +340,7 @@ class Whole:
             #
             if stat is None:
                 # print("There are only rubies.")
-                self._highlighted = (
-                    self._highlighted[: ruby.start]
-                    + str(ruby)
-                    + self._highlighted[ruby.end :]
-                )
+                self._highlighted = ruby.inject(self._highlighted)
                 ruby = None
                 continue
 
@@ -349,22 +349,10 @@ class Whole:
             if ruby.end <= stat.start or ruby.start >= stat.end:
                 # print("There is no overlap between ruby and status.")
                 if ruby.start > stat.start:
-                    # print("Ruby is later.")
-                    self._highlighted = (
-                        self._highlighted[: ruby.start]
-                        + str(ruby)
-                        + self._highlighted[ruby.end :]
-                    )
+                    self._highlighted = ruby.inject(self._highlighted)
                     ruby = None
                 else:
-                    # print("Status is later.")
-                    self._highlighted = (
-                        self._highlighted[: stat.start]
-                        + stat.open()
-                        + self.no_rubies[stat.start : stat.end]
-                        + stat.close()
-                        + self._highlighted[stat.end :]
-                    )
+                    self._highlighted = stat.inject(self._highlighted)
                     stat = None
                 continue
 
@@ -372,7 +360,6 @@ class Whole:
             #
             if ruby.start == stat.start and ruby.end == stat.end:
                 # print("The status is the same as the ruby.")
-
                 self._highlighted = (
                     self._highlighted[: stat.start]
                     + stat.open()
@@ -405,58 +392,39 @@ class Whole:
                 #
                 while self.rubies:
                     if self.rubies[-1].end <= stat.start:
-                        stat = None
                         break
-                    else:
-                        ruby = self.rubies.pop()
-                        ruby.start += len(stat.open())
-                        ruby.end += len(stat.open())
-                        self._highlighted = (
-                            self._highlighted[: ruby.start]
-                            + str(ruby)
-                            + self._highlighted[ruby.end :]
-                        )
+
+                    ruby = self.rubies.pop()
+                    ruby.start += stat.open_len()
+                    ruby.end += stat.open_len()
+                    self._highlighted = ruby.inject(self._highlighted)
+
                 stat = None
                 ruby = None
+
                 continue
 
             # If the status is completely inside the ruby
             #
             if ruby.start <= stat.start and ruby.end >= stat.end:
                 # print("The status is completely inside the ruby.")
-                self._highlighted = (
-                    self._highlighted[: ruby.start]
-                    + str(ruby)
-                    + self._highlighted[ruby.end :]
-                )
+                self._highlighted = ruby.inject(self._highlighted)
                 stat.start += ruby.prefix_len()
                 stat.end += ruby.prefix_len()
-                self._highlighted = (
-                    self._highlighted[: stat.start]
-                    + stat.open()
-                    + self._highlighted[stat.start : stat.end]
-                    + stat.close()
-                    + self._highlighted[stat.end :]
-                )
+                self._highlighted = stat.inject(self._highlighted)
                 stat = None
 
                 # Pull and process statuses until the next status is outside of this ruby.
                 #
                 while self.statuses:
                     if self.statuses[-1].end <= ruby.start:
-                        ruby = None
                         break
-                    else:
-                        stat = self.statuses.pop()
-                        stat.start += ruby.prefix_len()
-                        stat.end += ruby.prefix_len()
-                        self._highlighted = (
-                            self._highlighted[: stat.start]
-                            + stat.open()
-                            + self._highlighted[stat.start : stat.end]
-                            + stat.close()
-                            + self._highlighted[stat.end :]
-                        )
+
+                    stat = self.statuses.pop()
+                    stat.start += ruby.prefix_len()
+                    stat.end += ruby.prefix_len()
+                    self._highlighted = stat.inject(self._highlighted)
+
                 ruby = None
                 stat = None
                 continue
@@ -470,7 +438,11 @@ class Whole:
                     + ruby.open()
                     + self._highlighted[ruby.start : stat.start]
                     + stat.open()
-                    + self._highlighted[stat.start : stat.start + ruby.rt_offset()]
+                    + self._highlighted[
+                        stat.start : stat.start
+                        + (stat.end - stat.start)
+                        - (stat.end - ruby.end)
+                    ]
                     + stat.close()
                     + ruby.rt()
                     + ruby.close()
@@ -479,6 +451,19 @@ class Whole:
                     + stat.close()
                     + self._highlighted[stat.end :]
                 )
+
+                stat = None
+
+                # Pull and process statuses until the next status is outside of this ruby.
+                #
+                while self.statuses:
+                    if self.statuses[-1].end <= ruby.start:
+                        break
+
+                    stat = self.statuses.pop()
+                    stat.start += ruby.prefix_len()
+                    stat.end += ruby.prefix_len()
+                    self._highlighted = stat.inject(self._highlighted)
 
                 ruby = None
                 stat = None
@@ -511,7 +496,7 @@ class Whole:
 
 class MorphemeMeta:
     def __init__(self, morpheme: Morpheme, am_config: AnkiMorphsConfig):
-        self.string = (
+        self.text = (
             morpheme.inflection
             if am_config.evaluate_morph_inflection
             else morpheme.lemma
@@ -524,7 +509,7 @@ class MorphemeMeta:
             ),
             am_config.interval_for_known_morphs,
         )
-        self.regex = re.escape(self.string)
+        self.regex = re.escape(self.text)
 
     @staticmethod
     def get_morph_status(
@@ -552,7 +537,7 @@ def _rubify_with_status_fast(
         MorphemeMeta(morpheme, am_config) for morpheme in morphemes
     ]
 
-    return Whole(text, morph_metas).highlighted()
+    return Expression(text, morph_metas).highlighted()
 
 
 def _rubify_with_status(
@@ -572,7 +557,7 @@ def _rubify_with_status(
 
     # Sort morphemes by their length, descending. We do this so that we do not find shorter morphs
     # inside larger ones. Use the configuration to see how the user wants to sort (by lemma or inflection).
-    morph_metas = sorted(morph_metas, key=lambda meta: len(meta.string), reverse=True)
+    morph_metas = sorted(morph_metas, key=lambda meta: len(meta.text), reverse=True)
 
     return "\n".join(
         [

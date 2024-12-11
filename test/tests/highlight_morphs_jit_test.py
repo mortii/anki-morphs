@@ -31,10 +31,10 @@ case_japanese_one_params = FakeEnvironmentParams(
 )
 
 CASE_JAPANESE_ONE_INPUT_TEXT: str = (
-    "（ 刑事[けいじ]） （刑事） 珍[めずら]しく 時間[じかん]が 空[あ]いたので　お 前[まえ]たちの 顔[かお]を　 お前[まえ]たちの 見[み]に 様方[さまかた]が な[b]"
+    "（ 刑事[けいじ]） （刑事） 珍[めずら]しく 時間[じかん]が 空[あ]いたので　お 前[まえ]たちの 顔[かお]を　 お前[まえ]たちの 見[み]に 様方[さまかた]が な[b]  思い出[おもいだ]してくれ"
 )
 CASE_JAPANESE_ONE_CORRECT_OUTPUT: str = (
-    """（<span morph-status="unknown"><ruby>刑事<rt>けいじ</rt></ruby></span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known"><ruby>珍<rt>めずら</rt></ruby>しく</span><span morph-status="unknown"><ruby>時間<rt>じかん</rt></ruby></span><span morph-status="unknown">が</span><span morph-status="known"><ruby>空<rt>あ</rt></ruby>い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お<ruby>前<rt>まえ</rt></ruby></span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"><ruby>顔<rt>かお</rt></ruby></span><span morph-status="unknown">を</span>　<span morph-status="unknown"><ruby>お前<rt>まえ</rt></ruby></span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"><ruby>見<rt>み</rt></ruby></span><span morph-status="unknown">に</span><ruby>様<span morph-status="learning">方</span><rt>さまかた</rt></ruby><span morph-status="unknown">が</span><span morph-status="unknown"><ruby>な<rt>b</rt></ruby></span>"""
+    """（<span morph-status="unknown"><ruby>刑事<rt>けいじ</rt></ruby></span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known"><ruby>珍<rt>めずら</rt></ruby>しく</span><span morph-status="unknown"><ruby>時間<rt>じかん</rt></ruby></span><span morph-status="unknown">が</span><span morph-status="known"><ruby>空<rt>あ</rt></ruby>い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お<ruby>前<rt>まえ</rt></ruby></span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"><ruby>顔<rt>かお</rt></ruby></span><span morph-status="unknown">を</span>　<span morph-status="unknown"><ruby>お前<rt>まえ</rt></ruby></span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"><ruby>見<rt>み</rt></ruby></span><span morph-status="unknown">に</span><ruby>様<span morph-status="learning">方</span><rt>さまかた</rt></ruby><span morph-status="unknown">が</span><span morph-status="unknown"><ruby>な<rt>b</rt></ruby></span> <ruby><span morph-status="unknown">思い</span><span morph-status="learning">出</span><rt>おもいだ</rt></ruby><span morph-status="learning">し</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
 )
 case_japanese_one_card_morphs: list[Morpheme] = [
     Morpheme(lemma="刑事", inflection="刑事", highest_inflection_learning_interval=0),
@@ -55,6 +55,10 @@ case_japanese_one_card_morphs: list[Morpheme] = [
     Morpheme(lemma="見る", inflection="見", highest_inflection_learning_interval=0),
     Morpheme(lemma="顔", inflection="顔", highest_inflection_learning_interval=0),
     Morpheme(lemma="方", inflection="方", highest_inflection_learning_interval=1),
+    Morpheme(lemma="思い", inflection="思い", highest_inflection_learning_interval=0),
+    Morpheme(lemma="出し", inflection="出し", highest_inflection_learning_interval=10),
+    Morpheme(lemma="て", inflection="て", highest_inflection_learning_interval=10),
+    Morpheme(lemma="くれ", inflection="くれ", highest_inflection_learning_interval=10),
 ]
 
 ##############################################################################################
@@ -240,6 +244,121 @@ case_highlight_based_on_lemma_morphs = [
 ]
 
 
+case_highlight_based_on_ds_params = FakeEnvironmentParams(
+    config=config_lemma_evaluation_ignore_brackets,
+)
+CASE_HIGHLIGHT_BASED_ON_DS_INPUT_TEXT = "雪[ゆき]が"
+CASE_HIGHLIGHT_BASED_ON_DS_OUTPUT = '<span morph-status="known"><ruby>雪<rt>ゆき</rt></ruby></span><span morph-status="learning">が</span>'
+case_highlight_based_on_ds_morphs = [
+    Morpheme(
+        lemma="雪",
+        inflection="雪",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=30,
+    ),
+    Morpheme(
+        lemma="が",
+        inflection="が",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+]
+
+case_highlight_based_on_ds2_params = FakeEnvironmentParams(
+    config=config_lemma_evaluation_ignore_brackets,
+)
+CASE_HIGHLIGHT_BASED_ON_DS2_INPUT_TEXT = "お 留守番[るすばん]"
+CASE_HIGHLIGHT_BASED_ON_DS2_OUTPUT = '<span morph-status="learning">お</span><ruby><span morph-status="known">留守</span><span morph-status="learning">番</span><rt>るすばん</rt></ruby>'
+case_highlight_based_on_ds2_morphs = [
+    Morpheme(
+        lemma="留守",
+        inflection="留守",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=30,
+    ),
+    Morpheme(
+        lemma="番",
+        inflection="番",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+    Morpheme(
+        lemma="お",
+        inflection="お",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+    Morpheme(
+        lemma="だ",
+        inflection="だ",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+]
+
+case_highlight_based_on_ds3_params = FakeEnvironmentParams(
+    config=config_lemma_evaluation_ignore_brackets,
+)
+CASE_HIGHLIGHT_BASED_ON_DS3_INPUT_TEXT = " 相変[あいか]わらずの"
+CASE_HIGHLIGHT_BASED_ON_DS3_OUTPUT = '<ruby><span morph-status="learning">相</span><span morph-status="learning">変</span><rt>あいか</rt></ruby><span morph-status="learning">わら</span><span morph-status="learning">ず</span>の'
+case_highlight_based_on_ds3_morphs = [
+    Morpheme(
+        lemma="見事",
+        inflection="見事",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=30,
+    ),
+    Morpheme(
+        lemma="腕",
+        inflection="腕",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+    Morpheme(
+        lemma="変わら",
+        inflection="変わら",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+    Morpheme(
+        lemma="だ",
+        inflection="だ",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+    Morpheme(
+        lemma="だっ",
+        inflection="だっ",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+    Morpheme(
+        lemma="ああ",
+        inflection="ああ",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+    Morpheme(
+        lemma="ず",
+        inflection="ず",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+    Morpheme(
+        lemma="た",
+        inflection="た",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+    Morpheme(
+        lemma="相",
+        inflection="相",
+        highest_inflection_learning_interval=0,
+        highest_lemma_learning_interval=10,
+    ),
+]
+
+
 # Note: the collection isn't actually used, so it is an arbitrary choice,
 # but the config needs to have the option "preprocess_ignore_bracket_contents"
 # activated
@@ -282,6 +401,24 @@ case_highlight_based_on_lemma_morphs = [
             case_highlight_based_on_lemma_morphs,
             CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT,
         ),
+        (
+            case_highlight_based_on_ds_params,
+            CASE_HIGHLIGHT_BASED_ON_DS_INPUT_TEXT,
+            case_highlight_based_on_ds_morphs,
+            CASE_HIGHLIGHT_BASED_ON_DS_OUTPUT,
+        ),
+        (
+            case_highlight_based_on_ds2_params,
+            CASE_HIGHLIGHT_BASED_ON_DS2_INPUT_TEXT,
+            case_highlight_based_on_ds2_morphs,
+            CASE_HIGHLIGHT_BASED_ON_DS2_OUTPUT,
+        ),
+        (
+            case_highlight_based_on_ds3_params,
+            CASE_HIGHLIGHT_BASED_ON_DS3_INPUT_TEXT,
+            case_highlight_based_on_ds3_morphs,
+            CASE_HIGHLIGHT_BASED_ON_DS3_OUTPUT,
+        ),
     ],
     indirect=["fake_environment_fixture"],
 )
@@ -293,6 +430,4 @@ def test_highlighting(  # pylint:disable=unused-argument
 ) -> None:
     am_config = AnkiMorphsConfig()
     highlighted_text: str = _rubify_with_status_fast(am_config, card_morphs, input_text)
-    print(highlighted_text)
-    print(correct_output)
     assert highlighted_text == correct_output
