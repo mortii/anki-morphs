@@ -313,7 +313,9 @@ class StatusRange(Range):
 
 
 class Expression:
-    """Represents an expression to highlight."""
+        """Represents an expression to highlight. Tracks 2 sets of data, one for rubies the other 
+        for morph status. all the magic happens in _process() where we merge them together on top 
+        of the base string."""
 
     def __init__(self, text: str, morph_metas: list[MorphemeMeta]):
         self._highlighted: str | None = None
