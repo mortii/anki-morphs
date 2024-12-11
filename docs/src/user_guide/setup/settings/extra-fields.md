@@ -158,9 +158,6 @@ tradeoffs.
 For either of these options you also have to have the 
 `Ignore content in square brackets` [preprocess setting](preprocess.md) activated.
 
-> **Note**: This does not always work flawlessly. The [known problems](../../known-problems.md) section has more
-details on how to fix ruby character highlighting problems.
-
 ### Duplicate Audio Problem
 
 ![duplicate-audio.png](../../../img/duplicate-audio.png)

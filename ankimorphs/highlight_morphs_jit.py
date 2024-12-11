@@ -60,7 +60,7 @@ def highlight_morphs_jit(
     if not card_morphs:
         return field_text
 
-    return text_highlighting.alt_get_highlighted_text(
+    return text_highlighting.get_highlighted_text(
         am_config,
         card_morphs,
         _dehtml(field_text),
