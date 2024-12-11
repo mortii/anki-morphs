@@ -91,7 +91,6 @@ case_japanese_two_card_morphs = [
 ##############################################################################################
 #                                CASE: Several cases that uncovered bugs in new impl
 ##############################################################################################
-
 case_japanese_three_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
@@ -135,8 +134,6 @@ case_japanese_three_card_morphs = [
 case_morph_and_ruby = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
-
-
 CASE_MORPH_AND_RUBY_INPUT_TEXT = "12345  09876[def]  12345[abc]  12[abc] 34[abc]5  09876[def] 1 23[abc]45  012345[abc]  1234512345[abc]  0123[abc]45 1 23456[abc]  12345777[zyzzzzz]"
 CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = (
     ""
