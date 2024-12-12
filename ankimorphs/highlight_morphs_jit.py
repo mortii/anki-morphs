@@ -30,7 +30,6 @@ def highlight_morphs_jit(
 
     # Perf: Bail early if the user attempts to use this template filter on the already
     # formatted data.
-    #
     if (
         filter_name != "am-highlight"
         or field_name == ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED
@@ -76,7 +75,6 @@ def _get_morph_meta_for_text(
 
     # If we were piped in after the `furigana` built-in filter, or if there is html in the source
     # data, we need to do some cleansing.
-    #
     clean_text = _dehtml(field_text, am_config, True)
 
     if isinstance(morphemizer, SpacyMorphemizer):
@@ -117,29 +115,26 @@ def _dehtml(
     clean_html: bool = False,
 ) -> str:
     """Prepare a string to be passed to a morphemizer. Specially process <ruby><rt> tags to extract
-    kana to reconstruct kanji/kana ruby shorthand. Remove all html from the input string.
+    ruby to reconstruct base/ruby ruby shorthand. Remove all html from the input string.
     """
 
-    # Capture html ruby kana. The built in furigana filter will turn X[yz] into
+    # Capture html ruby ruby. The built in furigana filter will turn X[yz] into
     # <ruby><rb>X</rb><rt>yz</rt></ruby>, and if we blindly strip out all html we will loose
-    # information on the kana. Find <rt> tags and capture all text between them in a capture
-    # group called kana, allow for any attributes or other decorations on the <rt> tag by
+    # information on the ruby. Find <rt> tags and capture all text between them in a capture
+    # group called ruby, allow for any attributes or other decorations on the <rt> tag by
     # non-eagerly capturing all chars up to '>', so that the whole element can just be dropped.
-    # non-eagerly capture one or more characters into the capture group named kana.
-    #
+    # non-eagerly capture one or more characters into the capture group named ruby.
     # Samples:
     # <ruby><rb>X</rb><rt>yz</rt></ruby> = ` X[yz]`
     # <ruby>X<rt>yz</rt></ruby> = ` X[yz]`
     # <ruby>X<rt class='foo'>234</rt>sdf</ruby> = ` X[234]sdf`
     # <ruby>X<rt >>234</rt>sdf</ruby> = ` X[>234]sdf`
     # <ruby>X<rt></rt></ruby> = Will not match
-    #
-    ruby_longhand = r"(?:<ruby[^<]*>)(?:<rb[^>]*>|.{0})(?P<kanji>.*?)(?:</rb>|.{0})<rt[^>]*>(?P<kana>.+?)</rt>(?P<after>.*?)(?:</ruby>)"
+    ruby_longhand = r"(?:<ruby[^<]*>)(?:<rb[^>]*>|.{0})(?P<base>.*?)(?:</rb>|.{0})<rt[^>]*>(?P<ruby>.+?)</rt>(?P<after>.*?)(?:</ruby>)"
 
-    # Emit the captured kana into square brackets, thus reconstructing the ruby shorthand "X[yz]".
-    # Pad with a leading space so that we can retain the kanji/kana relationship
-    #
-    ruby_shorthand = r" \g<kanji>[\g<kana>]\g<after>"
+    # Emit the captured ruby into square brackets, thus reconstructing the ruby shorthand "X[yz]".
+    # Pad with a leading space so that we can retain the base/ruby relationship
+    ruby_shorthand = r" \g<base>[\g<ruby>]\g<after>"
 
     text = re.sub(ruby_longhand, ruby_shorthand, text, flags=re.IGNORECASE).strip()
 

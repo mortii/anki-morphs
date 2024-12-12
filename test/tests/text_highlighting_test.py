@@ -130,30 +130,7 @@ case_morph_and_ruby = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
 CASE_MORPH_AND_RUBY_INPUT_TEXT = "12345  09876[def]  12345[abc]  12[abc] 34[abc]5  09876[def] 1 23[abc]45  012345[abc]  1234512345[abc]  0123[abc]45 1 23456[abc]  12345777[zyzzzzz]"
-CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = (
-    ""
-    + '<span morph-status="unknown">12345</span>'
-    + " "
-    + "<ruby>09876<rt>def</rt></ruby>"
-    + " "
-    + '<span morph-status="unknown"><ruby>12345<rt>abc</rt></ruby></span>'
-    + " "
-    + '<span morph-status="unknown"><ruby>12<rt>abc</rt></ruby><ruby>34<rt>abc</rt></ruby>5</span>'
-    + " "
-    + "<ruby>09876<rt>def</rt></ruby>"
-    + " "
-    + '<span morph-status="unknown">1<ruby>23<rt>abc</rt></ruby>45</span>'
-    + " "
-    + '<ruby>0<span morph-status="unknown">12345</span><rt>abc</rt></ruby>'
-    + " "
-    + '<ruby><span morph-status="unknown">12345</span><span morph-status="unknown">12345</span><rt>abc</rt></ruby>'
-    + " "
-    + '<ruby>0<span morph-status="unknown">123</span><rt>abc</rt></ruby><span morph-status="unknown">45</span>'
-    + " "
-    + '<span morph-status="unknown">1</span><ruby><span morph-status="unknown">2345</span>6<rt>abc</rt></ruby>'
-    + " "
-    + '<ruby><span morph-status="unknown">12345</span><span morph-status="unknown">777</span><rt>zyzzzzz</rt></ruby>'
-)
+CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = '<span morph-status="unknown">12345</span> <ruby>09876<rt>def</rt></ruby> <span morph-status="unknown"><ruby>12345<rt>abc</rt></ruby></span> <span morph-status="unknown"><ruby>12<rt>abc</rt></ruby><ruby>34<rt>abc</rt></ruby>5</span> <ruby>09876<rt>def</rt></ruby> <span morph-status="unknown">1<ruby>23<rt>abc</rt></ruby>45</span> <ruby>0<span morph-status="unknown">12345</span><rt>abc</rt></ruby> <ruby><span morph-status="unknown">12345</span><span morph-status="unknown">12345</span><rt>abc</rt></ruby> <ruby>0<span morph-status="unknown">123</span><rt>abc</rt></ruby><span morph-status="unknown">45</span> <span morph-status="unknown">1</span><ruby><span morph-status="unknown">2345</span>6<rt>abc</rt></ruby> <ruby><span morph-status="unknown">12345</span><span morph-status="unknown">777</span><rt>zyzzzzz</rt></ruby>'
 
 case_morph_and_ruby_card_morphs = [
     Morpheme(
