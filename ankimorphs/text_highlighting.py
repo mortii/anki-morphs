@@ -19,10 +19,10 @@ class Range:
 class RubyRange(Range):
     """Represents a ruby and its range in parent string."""
 
-    def __init__(self, start: int, end: int, kanji: str, kana: str):
+    def __init__(self, start: int, end: int, base: str, ruby: str):
         super().__init__(start, end)
-        self.kanji = kanji
-        self.kana = kana
+        self.base = base
+        self.ruby = ruby
 
     def prefix_len(self) -> int:
         return len("<ruby>")
@@ -34,19 +34,19 @@ class RubyRange(Range):
         return "</ruby>"
 
     def rt(self) -> str:
-        return f"<rt>{self.kana}</rt>"
+        return f"<rt>{self.ruby}</rt>"
 
     def rt_offset(self) -> int:
-        return len(self.kanji) - 1
+        return len(self.base) - 1
 
     def inject(self, text: str) -> str:
         return text[: self.start] + str(self) + text[self.end :]
 
     def __str__(self) -> str:
-        return f"<ruby>{self.kanji}<rt>{self.kana}</rt></ruby>"
+        return f"<ruby>{self.base}<rt>{self.ruby}</rt></ruby>"
 
     def __repr__(self) -> str:
-        return f"Range: {self.start}-{self.end}. Value: {self.kanji}[{self.kana}]."
+        return f"Range: {self.start}-{self.end}. Value: {self.base}[{self.ruby}]."
 
 
 class StatusRange(Range):
@@ -88,18 +88,18 @@ class Expression:
 
     def __init__(self, text: str, morph_metas: list[MorphemeMeta]):
         self._highlighted: str | None = None
-        self.no_rubies: str = text
+        self.expression: str = text
         self.rubies: deque[RubyRange] = deque()
         self.statuses: deque[StatusRange] = deque()
 
         self._tag_rubies()
-        self._tag_morphemes(self.no_rubies.lower(), morph_metas)
+        self._tag_morphemes(self.expression.lower(), morph_metas)
 
     def _tag_rubies(self) -> None:
         """Populate internal deque of found ruby locations."""
 
         while True:
-            match = re.search(text_preprocessing.ruby_regex, self.no_rubies)
+            match = re.search(text_preprocessing.ruby_regex, self.expression)
 
             if not match:
                 break
@@ -112,10 +112,10 @@ class Expression:
                     match.group(2),
                 )
             )
-            self.no_rubies = (
-                self.no_rubies[: match.start()]
+            self.expression = (
+                self.expression[: match.start()]
                 + match.group(1)
-                + self.no_rubies[match.end() :]
+                + self.expression[match.end() :]
             )
 
     def _tag_morphemes(self, haystack: str, morph_metas: list[MorphemeMeta]) -> None:
@@ -141,7 +141,7 @@ class Expression:
         """Get the highlighted string. Pull from cache if present."""
 
         if not self._highlighted:
-            self._highlighted = self.no_rubies or ""
+            self._highlighted = self.expression or ""
 
             if self._highlighted and (self.rubies or self.statuses):
                 self._process()
@@ -165,7 +165,6 @@ class Expression:
                 break
 
             # If there are only statuses.
-            #
             if ruby is None:
                 # print("There are only statuses.")
                 self._highlighted = stat.inject(self._highlighted)  # type: ignore[union-attr]
@@ -173,7 +172,6 @@ class Expression:
                 continue
 
             # If there are only rubies.
-            #
             if stat is None:
                 # print("There are only rubies.")
                 self._highlighted = ruby.inject(self._highlighted)
@@ -181,7 +179,6 @@ class Expression:
                 continue
 
             # If there is no overlap between ruby and status, process the latest one.
-            #
             if ruby.end <= stat.start or ruby.start >= stat.end:
                 # print("There is no overlap between ruby and status.")
                 if ruby.start > stat.start:
@@ -193,7 +190,6 @@ class Expression:
                 continue
 
             # If the status is the same as the ruby
-            #
             if ruby.start == stat.start and ruby.end == stat.end:
                 # print("The status is the same as the ruby.")
                 self._highlighted = (
@@ -208,7 +204,6 @@ class Expression:
                 continue
 
             # If the ruby is completely inside the status
-            #
             if ruby.start >= stat.start and ruby.end <= stat.end:
                 # print("The ruby is completely inside the status.")
                 self._highlighted = (
@@ -225,7 +220,6 @@ class Expression:
                 ruby = None
 
                 # Pull and process rubies until the next ruby is outside of this status.
-                #
                 while self.rubies:
                     if self.rubies[-1].end <= stat.start:
                         break
@@ -240,7 +234,6 @@ class Expression:
                 continue
 
             # If the status is completely inside the ruby
-            #
             if ruby.start <= stat.start and ruby.end >= stat.end:
                 # print("The status is completely inside the ruby.")
                 self._highlighted = ruby.inject(self._highlighted)
@@ -250,7 +243,6 @@ class Expression:
                 stat = None
 
                 # Pull and process statuses until the next status is outside of this ruby.
-                #
                 while self.statuses:
                     if self.statuses[-1].end <= ruby.start:
                         break
@@ -265,7 +257,6 @@ class Expression:
                 continue
 
             # If the ruby starts then status starts, ruby ends, status ends
-            #
             if ruby.start < stat.start and ruby.end < stat.end:
                 # print("The ruby starts then status starts, ruby ends, status ends.")
                 self._highlighted = (
@@ -286,11 +277,9 @@ class Expression:
                     + stat.close()
                     + self._highlighted[stat.end :]
                 )
-
                 stat = None
 
                 # Pull and process statuses until the next status is outside of this ruby.
-                #
                 while self.statuses:
                     if self.statuses[-1].end <= ruby.start:
                         break
@@ -305,7 +294,6 @@ class Expression:
                 continue
 
             # If the status starts then ruby starts, status ends, ruby ends
-            #
             if ruby.start > stat.start and ruby.end > stat.end:
                 # print("The status starts then ruby starts, status ends, ruby ends.")
                 self._highlighted = (
@@ -322,23 +310,23 @@ class Expression:
                     + ruby.close()
                     + self._highlighted[ruby.end :]
                 )
+
                 ruby = None
                 stat = None
                 continue
 
-            # print("errrr what the what?")
+            # print("Made it past all possible cases. This should not be possible.")
+
+            # Just in case, to prevent infinite loop, we're disposing of the current pieces
+            ruby = None
+            stat = None
 
 
 class MorphemeMeta:
     """A class to track morpheme data relevant to highlighting."""
 
     def __init__(self, morpheme: Morpheme, am_config: AnkiMorphsConfig):
-        self.text = (
-            morpheme.inflection
-            if am_config.evaluate_morph_inflection
-            else morpheme.lemma
-        ).lower()
-
+        self.text = morpheme.inflection.lower()
         self.status = MorphemeMeta.get_morph_status(
             (
                 getattr(morpheme, "highest_inflection_learning_interval", 0)
