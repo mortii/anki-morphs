@@ -81,7 +81,7 @@ class StatusRange(Range):
         return f"Range: {self.start}-{self.end}. Status: {self.status}."
 
 
-class Expression:
+class TextHighlighter:
     """Represents an expression to highlight. Tracks 2 sets of data, one for rubies the other
     for morph status. all the magic happens in _process() where we merge them together on top
     of the base string."""
@@ -385,4 +385,4 @@ def get_highlighted_text(
         for morpheme in morphemes
     ]
 
-    return Expression(text, morphs_and_statuses).highlighted()
+    return TextHighlighter(text, morphs_and_statuses).highlighted()
