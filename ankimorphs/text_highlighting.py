@@ -39,8 +39,8 @@ class RubyRange(Range):
     def rt_offset(self) -> int:
         return len(self.base) - 1
 
-    def inject(self, text: str) -> str:
-        return text[: self.start] + str(self) + text[self.end :]
+    def inject(self, target: str) -> str:
+        return target[: self.start] + str(self) + target[self.end :]
 
     def __str__(self) -> str:
         return f"<ruby>{self.base}<rt>{self.ruby}</rt></ruby>"
@@ -66,15 +66,15 @@ class StatusRange(Range):
     def close(self) -> str:
         return "</span>"
 
-    def inject(self, text: str) -> str:
+    def inject(self, target: str) -> str:
         """Put this morph into the given string."""
 
         return (
-            text[: self.start]
+            target[: self.start]
             + self.open()
-            + text[self.start : self.end]
+            + target[self.start : self.end]
             + self.close()
-            + text[self.end :]
+            + target[self.end :]
         )
 
     def __repr__(self) -> str:
@@ -86,14 +86,14 @@ class Expression:
     for morph status. all the magic happens in _process() where we merge them together on top
     of the base string."""
 
-    def __init__(self, text: str, morph_metas: list[MorphemeMeta]):
+    def __init__(self, expression: str, morphs_and_statuses: list[MorphAndStatus]):
         self._highlighted: str | None = None
-        self.expression: str = text
+        self.expression: str = expression
         self.rubies: deque[RubyRange] = deque()
         self.statuses: deque[StatusRange] = deque()
 
         self._tag_rubies()
-        self._tag_morphemes(self.expression.lower(), morph_metas)
+        self._tag_morphemes(self.expression.lower(), morphs_and_statuses)
 
     def _tag_rubies(self) -> None:
         """Populate internal deque of found ruby locations."""
@@ -118,22 +118,26 @@ class Expression:
                 + self.expression[match.end() :]
             )
 
-    def _tag_morphemes(self, haystack: str, morph_metas: list[MorphemeMeta]) -> None:
+    def _tag_morphemes(
+        self, expression: str, morphs_and_statuses: list[MorphAndStatus]
+    ) -> None:
         """Populate internal deque of found morph locations."""
 
-        for morph_meta in sorted(
-            morph_metas, key=lambda meta: len(meta.text), reverse=True
+        for morph_and_status in sorted(
+            morphs_and_statuses, key=lambda meta: len(meta.morph), reverse=True
         ):
             while True:
-                start = haystack.find(morph_meta.text)
+                start = expression.find(morph_and_status.morph)
 
                 if start == -1:
                     break
 
-                end = start + len(morph_meta.text)
+                end = start + len(morph_and_status.morph)
 
-                self.statuses.append(StatusRange(start, end, morph_meta.status))
-                haystack = haystack[:start] + (" " * (end - start)) + haystack[end:]
+                self.statuses.append(StatusRange(start, end, morph_and_status.status))
+                expression = (
+                    expression[:start] + (" " * (end - start)) + expression[end:]
+                )
 
         self.statuses = deque(sorted(self.statuses, key=lambda range: range.start))
 
@@ -167,6 +171,8 @@ class Expression:
             # If there are only statuses.
             if ruby is None:
                 # print("There are only statuses.")
+                # Ignore is here because (surprisingly) mypy can not tell the
+                # only path that leads here requires stat to be non-None.
                 self._highlighted = stat.inject(self._highlighted)  # type: ignore[union-attr]
                 stat = None
                 continue
@@ -322,26 +328,36 @@ class Expression:
             stat = None
 
 
-class MorphemeMeta:
+class MorphAndStatus:
     """A class to track morpheme data relevant to highlighting."""
 
-    def __init__(self, morpheme: Morpheme, am_config: AnkiMorphsConfig):
-        self.text = morpheme.inflection.lower()
-        self.status = MorphemeMeta.get_morph_status(
-            (
-                getattr(morpheme, "highest_inflection_learning_interval", 0)
-                if am_config.evaluate_morph_inflection
-                else getattr(morpheme, "highest_lemma_learning_interval", 0)
-            ),
-            am_config.interval_for_known_morphs,
+    def __init__(
+        self,
+        morpheme: Morpheme,
+        evaluate_morph_inflection: bool,
+        interval_for_known_morphs: int,
+    ):
+        self.morph = morpheme.inflection.lower()
+        self.status = MorphAndStatus.get_status_for_morph(
+            morpheme,
+            evaluate_morph_inflection,
+            interval_for_known_morphs,
         )
 
     @staticmethod
-    def get_morph_status(
-        learning_interval: int,
+    def get_status_for_morph(
+        morpheme: Morpheme,
+        evaluate_morph_inflection: bool,
         interval_for_known_morphs: int,
     ) -> str:
         """Get the morpheme's status. Use the relevant interval based on the user's config."""
+
+        if evaluate_morph_inflection:
+            learning_interval = getattr(
+                morpheme, "highest_inflection_learning_interval", 0
+            )
+        else:
+            learning_interval = getattr(morpheme, "highest_lemma_learning_interval", 0)
 
         if learning_interval == 0:
             return "unknown"
@@ -360,6 +376,13 @@ def get_highlighted_text(
     """Highlight a text string based on found morphemes. Supports rubies.
     See test cases for exhaustive examples."""
 
-    return Expression(
-        text, [MorphemeMeta(morpheme, am_config) for morpheme in morphemes]
-    ).highlighted()
+    morphs_and_statuses = [
+        MorphAndStatus(
+            morpheme,
+            am_config.evaluate_morph_inflection,
+            am_config.interval_for_known_morphs,
+        )
+        for morpheme in morphemes
+    ]
+
+    return Expression(text, morphs_and_statuses).highlighted()
