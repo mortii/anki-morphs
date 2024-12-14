@@ -26,8 +26,8 @@ def _fake_environment_fixture() -> Iterator[None]:
     "morphemizer_description, sentence, correct_morphs",
     [
         (
-            "AnkiMorphs: SSS + Punctuations",
-            "Tu es quelqu'un de bien.",  # french test
+            "AnkiMorphs: Simple Space Splitter",
+            "Tu es quelqu'un de bien",  # french test
             {
                 Morpheme("tu", "tu"),
                 Morpheme("es", "es"),
@@ -37,7 +37,7 @@ def _fake_environment_fixture() -> Iterator[None]:
             },
         ),
         (
-            "AnkiMorphs: SSS + Punctuations",
+            "AnkiMorphs: Simple Space Splitter",
             "My mother-in-law is wonderful",  # english test
             {
                 Morpheme("my", "my"),
@@ -72,4 +72,5 @@ def test_simple_space_splitters(
     assert len(extracted_morphs) == len(correct_morphs)
 
     for morph in extracted_morphs:
+        # print(f"morph: {morph.inflection}")
         assert morph in correct_morphs

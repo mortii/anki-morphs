@@ -18,7 +18,7 @@ default_config_filter = default_config_dict[ConfigKeys.FILTERS][0]
 default_config_filter[FilterKeys.NOTE_TYPE] = "Basic"
 default_config_filter[FilterKeys.FIELD] = "Front"
 default_config_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = (
-    "AnkiMorphs: SSS + Punctuations"
+    "AnkiMorphs: Simple Space Splitter"
 )
 default_config_filter[FilterKeys.EXTRA_ALL_MORPHS] = True
 default_config_filter[FilterKeys.EXTRA_ALL_MORPHS_COUNT] = True
@@ -65,6 +65,10 @@ config_lemma_evaluation_ignore_brackets[ConfigKeys.PREPROCESS_IGNORE_BRACKET_CON
 # fmt: off
 config_known_morphs_enabled = copy.deepcopy(default_config_dict)
 config_known_morphs_enabled[ConfigKeys.READ_KNOWN_MORPHS_FOLDER] = True
+config_known_morphs_enabled[ConfigKeys.PREPROCESS_IGNORE_CUSTOM_CHARACTERS] = True
+config_known_morphs_enabled[ConfigKeys.PREPROCESS_CUSTOM_CHARACTERS_TO_IGNORE] = (
+    ",.!"
+)
 # fmt: on
 
 

@@ -27,7 +27,7 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 
 import pytest
 
-from ankimorphs import ankimorphs_config
+from ankimorphs import ankimorphs_config, text_preprocessing
 from ankimorphs import ankimorphs_globals as am_globals
 from ankimorphs.ankimorphs_config import RawConfigFilterKeys
 from ankimorphs.exceptions import (
@@ -191,6 +191,8 @@ def test_recalc(  # pylint:disable=too-many-locals
 ) -> None:
     if fake_environment_fixture is None:
         pytest.xfail()
+
+    text_preprocessing.update_translation_table()  # updates custom characters to ignore
 
     actual_collection = fake_environment_fixture.mock_mw.col
     expected_collection = fake_environment_fixture.expected_collection
