@@ -7,7 +7,6 @@ from ..morpheme import Morpheme
 from . import jieba_wrapper, mecab_wrapper, spacy_wrapper
 
 space_char_regex = re.compile(" ")
-space_and_punctuation_pattern = re.compile(r"\w+(?:[-']\w+)*", re.UNICODE)
 
 ####################################################################################################
 # Base Class
@@ -55,7 +54,6 @@ def get_all_morphemizers() -> list[Morphemizer]:
         # therefore always included since nothing has to be installed
         morphemizers = [
             SimpleSpaceMorphemizer(),
-            SimpleSpaceAndPunctuationMorphemizer(),
         ]
 
         _mecab = MecabMorphemizer()
@@ -118,43 +116,6 @@ class SimpleSpaceMorphemizer(Morphemizer):
 
     def get_description(self) -> str:
         return "AnkiMorphs: Simple Space Splitter"
-
-
-####################################################################################################
-# Simple Space and Punctuation Morphemizer
-####################################################################################################
-
-
-class SimpleSpaceAndPunctuationMorphemizer(Morphemizer):
-    """
-    Extension of the SSS morphemizer that targets english and french, and should work
-    on words like:
-        - "mother-in-law"
-        - "quelqu'un"
-    """
-
-    def _get_morphemes_from_expr(self, expression: str) -> list[Morpheme]:
-        # Regex:
-        # The '\w' character matches alphanumeric and underscore characters
-        #
-        # To also match words that have multiple hyphens or apostrophes, we add
-        # the optional group: '([-']\w+)*'
-        #
-        # re.findall() treats groups in a special way:
-        #   "If one or more capturing groups are present in the pattern, return
-        #    a list of groups; this will be a list of tuples if the pattern
-        #    has more than one group."
-        # We don't want this to happen, we want a pure list of matches. To prevent
-        # this we prepend '?:' to make the group non-capturing.
-
-        word_list = [
-            word.lower()
-            for word in re.findall(space_and_punctuation_pattern, expression)
-        ]
-        return [Morpheme(lemma=word, inflection=word) for word in word_list]
-
-    def get_description(self) -> str:
-        return "AnkiMorphs: SSS + Punctuations"
 
 
 ####################################################################################################
