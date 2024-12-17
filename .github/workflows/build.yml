@@ -11,6 +11,8 @@ jobs:
         os: [ubuntu-latest, macOS-latest, windows-latest]
     steps:
     - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
     - uses: tlambert03/setup-qt-libs@v1  # installs libraries necessary to run a Qt desktop environment on linux runners
     - name: Set up Python
       uses: actions/setup-python@v5

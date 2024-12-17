@@ -5,15 +5,14 @@ on:
     - cron: '21 2 * * *'
   workflow_dispatch:
 
-permissions:
-  issues: write
-
 concurrency:
   group: lock-threads
 
 jobs:
   action:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - uses: dessant/lock-threads@v5
         with:
