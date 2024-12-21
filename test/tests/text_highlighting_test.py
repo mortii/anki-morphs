@@ -145,6 +145,34 @@ case_morph_and_ruby_card_morphs = [
     ),
 ]
 
+
+##############################################################################################
+#                                CASE: HIGHLIGHT BASED UNSPACED TEXT
+##############################################################################################
+# Highlight the text the best we can without spaces to determine where to place rubies.
+# Collection choice is arbitrary.
+# Database choice is arbitrary.
+##############################################################################################
+case_highlight_unspaced_params = FakeEnvironmentParams(
+    config=config_big_japanese_collection,
+)
+CASE_HIGHLIGHT_UNSPACED_INPUT_TEXT = "私は明日[あした]新しい[あたらしい]。"
+CASE_HIGHLIGHT_UNSPACED_OUTPUT = '<ruby><span morph-status="known">私</span>は<span morph-status="learning">明日</span><rt>あした</rt></ruby><ruby>新しい<rt>あたらしい</rt></ruby>。'
+case_highlight_unspaced_morphs = [
+    Morpheme(
+        lemma="私",
+        inflection="私",
+        highest_inflection_learning_interval=30,
+        highest_lemma_learning_interval=30,
+    ),
+    Morpheme(
+        lemma="明日",
+        inflection="明日",
+        highest_inflection_learning_interval=10,
+        highest_lemma_learning_interval=10,
+    ),
+]
+
 ##############################################################################################
 #                                         CASE: GERMAN
 ##############################################################################################
@@ -280,6 +308,12 @@ case_highlight_based_on_lemma_morphs = [
             CASE_MORPH_AND_RUBY_INPUT_TEXT,
             case_morph_and_ruby_card_morphs,
             CASE_MORPH_AND_RUBY_CORRECT_OUTPUT,
+        ),
+        (
+            case_highlight_unspaced_params,
+            CASE_HIGHLIGHT_UNSPACED_INPUT_TEXT,
+            case_highlight_unspaced_morphs,
+            CASE_HIGHLIGHT_UNSPACED_OUTPUT,
         ),
         (
             case_german_params,

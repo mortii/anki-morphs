@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from collections import deque
 
 from . import text_preprocessing
@@ -98,19 +97,18 @@ class TextHighlighter:
     def _tag_rubies(self) -> None:
         """Populate internal deque of found ruby locations."""
 
+        end = 0
+
         while True:
-            match = re.search(text_preprocessing.ruby_regex, self.expression)
+            match = text_preprocessing.ruby_regex.search(self.expression, pos=end)
 
             if not match:
                 break
 
+            end = match.start() + len(match.group(1))
+
             self.rubies.append(
-                RubyRange(
-                    match.start(),
-                    match.start() + len(match.group(1)),
-                    match.group(1),
-                    match.group(2),
-                )
+                RubyRange(match.start(), end, match.group(1), match.group(2))
             )
             self.expression = (
                 self.expression[: match.start()]
