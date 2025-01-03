@@ -31,7 +31,13 @@ def highlight_morphs_jit(
     # Perf: Bail early if the user attempts to use this template filter on the already
     # formatted data.
     if (
-        filter_name != "am-highlight"
+        filter_name
+        not in [
+            "am-highlight",
+            "am-highlight-furigana",
+            "am-highlight-kanji",
+            "am-highlight-kana",
+        ]
         or field_name == ankimorphs_globals.EXTRA_FIELD_HIGHLIGHTED
     ):
         return field_text
@@ -60,9 +66,7 @@ def highlight_morphs_jit(
         return field_text
 
     return text_highlighting.get_highlighted_text(
-        am_config,
-        card_morphs,
-        _dehtml(field_text),
+        am_config, card_morphs, _dehtml(field_text), True
     )
 
 

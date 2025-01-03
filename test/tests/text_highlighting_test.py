@@ -131,6 +131,7 @@ case_morph_and_ruby = FakeEnvironmentParams(
 )
 CASE_MORPH_AND_RUBY_INPUT_TEXT = "12345  09876[def]  12345[abc]  12[abc] 34[abc]5  09876[def] 1 23[abc]45  012345[abc]  1234512345[abc]  0123[abc]45 1 23456[abc]  12345777[zyzzzzz]"
 CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = '<span morph-status="unknown">12345</span> <ruby>09876<rt>def</rt></ruby> <span morph-status="unknown"><ruby>12345<rt>abc</rt></ruby></span> <span morph-status="unknown"><ruby>12<rt>abc</rt></ruby><ruby>34<rt>abc</rt></ruby>5</span> <ruby>09876<rt>def</rt></ruby> <span morph-status="unknown">1<ruby>23<rt>abc</rt></ruby>45</span> <ruby>0<span morph-status="unknown">12345</span><rt>abc</rt></ruby> <ruby><span morph-status="unknown">12345</span><span morph-status="unknown">12345</span><rt>abc</rt></ruby> <ruby>0<span morph-status="unknown">123</span><rt>abc</rt></ruby><span morph-status="unknown">45</span> <span morph-status="unknown">1</span><ruby><span morph-status="unknown">2345</span>6<rt>abc</rt></ruby> <ruby><span morph-status="unknown">12345</span><span morph-status="unknown">777</span><rt>zyzzzzz</rt></ruby>'
+CASE_MORPH_AND_TEXT_RUBY_CORRECT_OUTPUT = '<span morph-status="unknown">12345</span>  09876[def] <span morph-status="unknown"> 12345[abc]</span> <span morph-status="unknown"> 12[abc] 34[abc]5</span>  09876[def] <span morph-status="unknown">1 23[abc]45</span> <span morph-status="unknown"> 012345[abc]</span> <span morph-status="unknown"> 1234512345[abc]</span> <span morph-status="unknown"> 0123[abc]45</span> <span morph-status="unknown">1 23456[abc]</span> <span morph-status="unknown"> 12345777[zyzzzzz]</span>'
 
 case_morph_and_ruby_card_morphs = [
     Morpheme(
@@ -145,6 +146,27 @@ case_morph_and_ruby_card_morphs = [
     ),
 ]
 
+##############################################################################################
+#                                    CASE: Morph and ruby interaction
+##############################################################################################
+# Special test for codepath "7" - The ruby starts then status starts, ruby ends, status ends
+# |---mmm-|
+# |--rrr--|
+##############################################################################################
+case_morph_and_ruby_path_7 = FakeEnvironmentParams(
+    config=config_big_japanese_collection,
+)
+CASE_MORPH_AND_RUBY_INPUT_TEXT_PATH_7 = "文書[ぶんしょ]を 謎解[なぞと]きに"
+CASE_MORPH_AND_RUBY_CORRECT_OUTPUT_PATH_7 = '<span morph-status="unknown"><ruby>文書<rt>ぶんしょ</rt></ruby></span><span morph-status="known">を</span><ruby><span morph-status="unknown">謎</span><span morph-status="unknown">解</span><rt>なぞと</rt></ruby><span morph-status="unknown">き</span><span morph-status="known">に</span>'
+CASE_MORPH_AND_TEXT_RUBY_CORRECT_OUTPUT_PATH_7 = '<span morph-status="unknown"> 文書[ぶんしょ]</span><span morph-status="known">を</span><span morph-status="unknown"> 謎解[なぞと]き</span><span morph-status="known">に</span>'
+
+case_morph_and_ruby_card_morphs1 = [
+    Morpheme(lemma="に", inflection="に", highest_inflection_learning_interval=100),
+    Morpheme(lemma="を", inflection="を", highest_inflection_learning_interval=100),
+    Morpheme(lemma="文書", inflection="文書", highest_inflection_learning_interval=0),
+    Morpheme(lemma="解き", inflection="解き", highest_inflection_learning_interval=0),
+    Morpheme(lemma="謎", inflection="謎", highest_inflection_learning_interval=0),
+]
 
 ##############################################################################################
 #                                CASE: HIGHLIGHT BASED UNSPACED TEXT
@@ -283,55 +305,84 @@ case_highlight_based_on_lemma_morphs = [
 # but the config needs to have the option "preprocess_ignore_bracket_contents"
 # activated
 @pytest.mark.parametrize(
-    "fake_environment_fixture, input_text, card_morphs, correct_output",
+    "fake_environment_fixture, input_text, card_morphs, correct_output, use_html_rubies",
     [
         (
             case_japanese_one_params,
             CASE_JAPANESE_ONE_INPUT_TEXT,
             case_japanese_one_card_morphs,
             CASE_JAPANESE_ONE_CORRECT_OUTPUT,
+            True,
         ),
         (
             case_japanese_two_params,
             CASE_JAPANESE_TWO_INPUT_TEXT,
             case_japanese_two_card_morphs,
             CASE_JAPANESE_TWO_CORRECT_OUTPUT,
+            True,
         ),
         (
             case_japanese_three_params,
             CASE_JAPANESE_THREE_INPUT_TEXT,
             case_japanese_three_card_morphs,
             CASE_JAPANESE_THREE_CORRECT_OUTPUT,
+            True,
         ),
         (
             case_morph_and_ruby,
             CASE_MORPH_AND_RUBY_INPUT_TEXT,
             case_morph_and_ruby_card_morphs,
             CASE_MORPH_AND_RUBY_CORRECT_OUTPUT,
+            True,
+        ),
+        (
+            case_morph_and_ruby,
+            CASE_MORPH_AND_RUBY_INPUT_TEXT,
+            case_morph_and_ruby_card_morphs,
+            CASE_MORPH_AND_TEXT_RUBY_CORRECT_OUTPUT,
+            False,
         ),
         (
             case_highlight_unspaced_params,
             CASE_HIGHLIGHT_UNSPACED_INPUT_TEXT,
             case_highlight_unspaced_morphs,
             CASE_HIGHLIGHT_UNSPACED_OUTPUT,
+            True,
         ),
         (
             case_german_params,
             CASE_GERMAN_INPUT_TEXT,
             case_german_card_morphs,
             CASE_GERMAN_CORRECT_OUTPUT,
+            True,
         ),
         (
             case_regex_escape_params,
             CASE_REGEX_ESCAPE_INPUT_TEXT,
             case_regex_escape_card_morphs,
             CASE_REGEX_ESCAPE_CORRECT_OUTPUT,
+            True,
         ),
         (
             case_highlight_based_on_lemma_params,
             CASE_HIGHLIGHT_BASED_ON_LEMMA_INPUT_TEXT,
             case_highlight_based_on_lemma_morphs,
             CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT,
+            True,
+        ),
+        (
+            case_morph_and_ruby_path_7,
+            CASE_MORPH_AND_RUBY_INPUT_TEXT_PATH_7,
+            case_morph_and_ruby_card_morphs1,
+            CASE_MORPH_AND_RUBY_CORRECT_OUTPUT_PATH_7,
+            True,
+        ),
+        (
+            case_morph_and_ruby_path_7,
+            CASE_MORPH_AND_RUBY_INPUT_TEXT_PATH_7,
+            case_morph_and_ruby_card_morphs1,
+            CASE_MORPH_AND_TEXT_RUBY_CORRECT_OUTPUT_PATH_7,
+            False,
         ),
     ],
     indirect=["fake_environment_fixture"],
@@ -341,9 +392,12 @@ def test_highlighting(  # pylint:disable=unused-argument
     input_text: str,
     card_morphs: list[Morpheme],
     correct_output: str,
+    use_html_rubies: bool,
 ) -> None:
     am_config = AnkiMorphsConfig()
     highlighted_text: str = text_highlighting.get_highlighted_text(
-        am_config, card_morphs, input_text
+        am_config, card_morphs, input_text, use_html_rubies
     )
+    print(highlighted_text)
+    print(correct_output)
     assert highlighted_text == correct_output
