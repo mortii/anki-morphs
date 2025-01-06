@@ -36,7 +36,9 @@ from aqt.toolbar import Toolbar
 from aqt.utils import tooltip
 from aqt.webview import AnkiWebView
 
-from . import ankimorphs_config
+from . import (
+    ankimorphs_config,
+)
 from . import ankimorphs_globals as am_globals
 from . import (
     browser_utils,

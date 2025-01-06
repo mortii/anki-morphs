@@ -27,8 +27,9 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 
 import pytest
 
-from ankimorphs import ankimorphs_config, text_preprocessing
+from ankimorphs import ankimorphs_config
 from ankimorphs import ankimorphs_globals as am_globals
+from ankimorphs import text_preprocessing
 from ankimorphs.ankimorphs_config import RawConfigFilterKeys
 from ankimorphs.exceptions import (
     AnkiFieldNotFound,
