@@ -65,11 +65,19 @@ def highlight_morphs_jit(
     if not card_morphs:
         return field_text
 
-    return text_highlighting.get_highlighted_text(
-        am_config=am_config,
-        morphemes=card_morphs,
-        text=_dehtml(field_text),
-        use_html_rubies=True,
+    styles = _get_styles(filter_name)
+
+    return (
+        f"<span class='{filter_name}'>"
+        + styles
+        + " "
+        + text_highlighting.get_highlighted_text(
+            am_config=am_config,
+            morphemes=card_morphs,
+            text=_dehtml(field_text),
+            use_html_rubies=filter_name != "am-highlight",
+        )
+        + "</span>"
     )
 
 
@@ -149,3 +157,34 @@ def _dehtml(
         text = anki.utils.strip_html(text)
 
     return text_preprocessing.get_processed_text(am_config, text) if am_config else text
+
+
+def _get_styles(filter_name: str) -> str:
+    """Get local styles for this run, based on the filter name."""
+
+    if filter_name == "am-highlight-kana":
+        return """<style>
+.am-highlight-kana {
+    & ruby {
+        display: inline-block;
+        visibility: hidden;
+
+        & rt {
+            font-size: inherit;
+            margin-top: -1em;
+            visibility: visible;
+        }
+    }
+}
+</style>"""
+
+    if filter_name == "am-highlight-kanji":
+        return """<style>
+.am-highlight-kanji {
+    & ruby rt {
+        display: none;
+    }
+}
+</style>"""
+
+    return ""
