@@ -39,9 +39,6 @@ class RubyRange(Range):
     def rt(self) -> str:
         return NotImplemented
 
-    def rt_offset(self) -> int:
-        return len(self.base) - 1
-
     def inject(self, target: str) -> str:
         return target[: self.start] + str(self) + target[self.end :]
 
@@ -295,7 +292,7 @@ class TextHighlighter:
 
                 elif isinstance(ruby, TextRubyRange):
                     # print("text path")
-                    stat.status = "unknown"
+                    stat.status = "undefined"
                     self._highlighted = (
                         self._highlighted[: ruby.start]
                         + stat.open()
@@ -354,7 +351,7 @@ class TextHighlighter:
 
                 elif isinstance(ruby, TextRubyRange):
                     # print("text path")
-                    stat.status = "unknown"
+                    stat.status = "undefined"
                     self._highlighted = (
                         self._highlighted[: ruby.start]
                         + stat.open()
@@ -371,62 +368,6 @@ class TextHighlighter:
                             break
 
                         stat = self.statuses.pop()
-
-                ruby = None
-                stat = None
-                continue
-
-            # If the status starts then ruby starts, status ends, ruby ends
-            if ruby.start > stat.start and ruby.end > stat.end:
-                # print("The status starts then ruby starts, status ends, ruby ends.")
-                if isinstance(ruby, HtmlRubyRange):
-                    # print("html path")
-                    self._highlighted = (
-                        self._highlighted[: stat.start]
-                        + stat.open()
-                        + self._highlighted[stat.start : ruby.start]
-                        + stat.close()
-                        + ruby.open()
-                        + stat.open()
-                        + self._highlighted[ruby.start : ruby.start + ruby.rt_offset()]
-                        + stat.close()
-                        + self._highlighted[stat.end : ruby.end]
-                        + ruby.rt()
-                        + ruby.close()
-                        + self._highlighted[ruby.end :]
-                    )
-                    ruby = None
-
-                    while self.rubies:
-                        if self.rubies[-1].end <= stat.start:
-                            break
-
-                        ruby = self.rubies.pop()
-                        ruby.start += stat.open_len()
-                        ruby.end += stat.open_len()
-                        self._highlighted = ruby.inject(self._highlighted)
-
-                if isinstance(ruby, TextRubyRange):
-                    # print("text path")
-                    self._highlighted = (
-                        self._highlighted[: stat.start]
-                        + stat.open()
-                        + self._highlighted[stat.start : ruby.start]
-                        + str(ruby)
-                        + self._highlighted[ruby.end : stat.end]
-                        + stat.close()
-                        + self._highlighted[ruby.end :]
-                    )
-                    ruby = None
-
-                    while self.rubies:
-                        if self.rubies[-1].end <= stat.start:
-                            break
-
-                        ruby = self.rubies.pop()
-                        ruby.start += stat.open_len()
-                        ruby.end += stat.open_len()
-                        self._highlighted = ruby.inject(self._highlighted)
 
                 ruby = None
                 stat = None

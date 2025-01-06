@@ -66,7 +66,10 @@ def highlight_morphs_jit(
         return field_text
 
     return text_highlighting.get_highlighted_text(
-        am_config, card_morphs, _dehtml(field_text), True
+        am_config=am_config,
+        morphemes=card_morphs,
+        text=_dehtml(field_text),
+        use_html_rubies=True,
     )
 
 
