@@ -10,6 +10,7 @@ from . import (
     ankimorphs_globals,
     text_highlighting,
     text_preprocessing,
+    debug_utils,
 )
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
@@ -65,9 +66,11 @@ def highlight_morphs_jit(
     if not card_morphs:
         return field_text
 
+    debug_utils.dev_print(f"filter name: {filter_name}")
+
     styles = _get_styles(filter_name)
 
-    return (
+    highlighted_jit_text = (
         f"<span class='{filter_name}'>"
         + styles
         + " "
@@ -79,6 +82,10 @@ def highlight_morphs_jit(
         )
         + "</span>"
     )
+
+    debug_utils.dev_print(f"highlighted_jit_text: {highlighted_jit_text}")
+
+    return highlighted_jit_text
 
 
 def _get_morph_meta_for_text(

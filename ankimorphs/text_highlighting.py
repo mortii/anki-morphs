@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from collections import deque
 
-from . import text_preprocessing
+from . import text_preprocessing, debug_utils
 from .ankimorphs_config import AnkiMorphsConfig
 from .morpheme import Morpheme
 
@@ -46,7 +46,7 @@ class RubyRange(Range):
         return f"{self.open()}{self.base}{self.rt()}{self.close()}"
 
     def __repr__(self) -> str:
-        return f"Range: {self.start}-{self.end}. Value: {str(self)}."
+        return f"Range: {self.start}-{self.end}. Value: {str(self)}"
 
 
 class HtmlRubyRange(RubyRange):
@@ -78,9 +78,10 @@ class TextRubyRange(RubyRange):
 class StatusRange(Range):
     """Represents a morph's status and range in parent string."""
 
-    def __init__(self, start: int, end: int, status: str):
+    def __init__(self, start: int, end: int, status: str, morph: str):
         super().__init__(start, end)
         self.status = status
+        self.morph = morph
 
     def open_len(self) -> int:
         """Len of the open tag, useful for setting string splice offsets."""
@@ -104,7 +105,7 @@ class StatusRange(Range):
         )
 
     def __repr__(self) -> str:
-        return f"Range: {self.start}-{self.end}. Status: {self.status}."
+        return f"Range: {self.start}-{self.end}. Status: {self.status}, Morph: {self.morph}"
 
 
 class TextHighlighter:
@@ -125,6 +126,10 @@ class TextHighlighter:
 
         self._tag_rubies(ruby_range_type)
         self._tag_morphemes(self.expression.lower(), morphs_and_statuses)
+
+        debug_utils.dev_print(f"stripped expression: {self.expression}")
+        debug_utils.dev_print(f"self.rubies: {self.rubies}")
+        debug_utils.dev_print(f"self.statuses: {self.statuses}")
 
     def _tag_rubies(self, ruby_range_type: type[RubyRange]) -> None:
         """Populate internal deque of found ruby locations."""
@@ -164,12 +169,16 @@ class TextHighlighter:
 
                 end = start + len(morph_and_status.morph)
 
-                self.statuses.append(StatusRange(start, end, morph_and_status.status))
+                self.statuses.append(
+                    StatusRange(
+                        start, end, morph_and_status.status, morph_and_status.morph
+                    )
+                )
                 expression = (
                     expression[:start] + (" " * (end - start)) + expression[end:]
                 )
 
-        self.statuses = deque(sorted(self.statuses, key=lambda range: range.start))
+        self.statuses = deque(sorted(self.statuses, key=lambda _range: _range.start))
 
     def highlighted(self) -> str:
         """Get the highlighted string. Pull from cache if present."""
@@ -186,198 +195,219 @@ class TextHighlighter:
         """Process the text in self._highlighted, now that all the metadata has been gathered."""
 
         ruby: RubyRange | None = None
-        stat: StatusRange | None = None
+        status: StatusRange | None = None
+
+        while_counter = -1
 
         while self._highlighted is not None:
+
+            debug_utils.dev_print(f"self._highlighted: {self._highlighted}")
+
+            while_counter += 1
+            debug_utils.dev_print(f"while counter: {while_counter}")
+
             if ruby is None and self.rubies:
                 ruby = self.rubies.pop()
 
-            if stat is None and self.statuses:
-                stat = self.statuses.pop()
+            if status is None and self.statuses:
+                status = self.statuses.pop()
 
-            if ruby is None and stat is None:
+            if ruby is None and status is None:
                 break
 
             # If there are only statuses.
             if ruby is None:
-                # print("There are only statuses.")
+                debug_utils.dev_print("Scenario 1: There are only statuses.")
                 # Ignore is here because (surprisingly) mypy can not tell the
                 # only path that leads here requires stat to be non-None.
-                self._highlighted = stat.inject(self._highlighted)  # type: ignore[union-attr]
-                stat = None
+                self._highlighted = status.inject(self._highlighted)  # type: ignore[union-attr]
+                status = None
                 continue
 
             # If there are only rubies.
-            if stat is None:
-                # print("There are only rubies.")
+            if status is None:
+                debug_utils.dev_print("Scenario 2: There are only rubies.")
                 self._highlighted = ruby.inject(self._highlighted)
                 ruby = None
                 continue
 
+            debug_utils.dev_print(f"current ruby: {repr(ruby)}")
+            debug_utils.dev_print(f"current status: {repr(status)}")
+
             # If there is no overlap between ruby and status, process the latest one.
-            if ruby.end <= stat.start or ruby.start >= stat.end:
-                # print("There is no overlap between ruby and status.")
-                if ruby.start > stat.start:
+            if ruby.end <= status.start or ruby.start >= status.end:
+                debug_utils.dev_print(
+                    "Scenario 3: There is no overlap between ruby and status."
+                )
+                if ruby.start > status.start:
                     self._highlighted = ruby.inject(self._highlighted)
                     ruby = None
                 else:
-                    self._highlighted = stat.inject(self._highlighted)
-                    stat = None
+                    self._highlighted = status.inject(self._highlighted)
+                    status = None
                 continue
 
             # If the status is the same as the ruby
-            if ruby.start == stat.start and ruby.end == stat.end:
-                # print("The status is the same as the ruby.")
+            if ruby.start == status.start and ruby.end == status.end:
+                debug_utils.dev_print("Scenario 4: The status is the same as the ruby.")
                 self._highlighted = (
-                    self._highlighted[: stat.start]
-                    + stat.open()
+                    self._highlighted[: status.start]
+                    + status.open()
                     + str(ruby)
-                    + stat.close()
-                    + self._highlighted[stat.end :]
+                    + status.close()
+                    + self._highlighted[status.end :]
                 )
                 ruby = None
-                stat = None
+                status = None
                 continue
 
             # If the ruby is completely inside the status
-            if ruby.start >= stat.start and ruby.end <= stat.end:
-                # print("The ruby is completely inside the status.")
+            if ruby.start >= status.start and ruby.end <= status.end:
+                debug_utils.dev_print(
+                    "Scenario 5: The ruby is completely inside the status."
+                )
                 self._highlighted = (
-                    self._highlighted[: stat.start]
-                    + stat.open()
+                    self._highlighted[: status.start]
+                    + status.open()
                     + self._highlighted[
-                        stat.start : stat.start + ruby.start - stat.start
+                        status.start : status.start + ruby.start - status.start
                     ]
                     + str(ruby)
-                    + self._highlighted[ruby.end : stat.end]
-                    + stat.close()
-                    + self._highlighted[stat.end :]
+                    + self._highlighted[ruby.end : status.end]
+                    + status.close()
+                    + self._highlighted[status.end :]
                 )
                 ruby = None
 
                 # Pull and process rubies until the next ruby is outside of this status.
                 while self.rubies:
-                    if self.rubies[-1].end <= stat.start:
+                    if self.rubies[-1].end <= status.start:
                         break
 
                     ruby = self.rubies.pop()
-                    ruby.start += stat.open_len()
-                    ruby.end += stat.open_len()
+                    ruby.start += status.open_len()
+                    ruby.end += status.open_len()
                     self._highlighted = ruby.inject(self._highlighted)
 
-                stat = None
+                status = None
                 ruby = None
                 continue
 
             # If the status is completely inside the ruby
-            if ruby.start <= stat.start and ruby.end >= stat.end:
-                # print("The status is completely inside the ruby.")
+            if ruby.start <= status.start and ruby.end >= status.end:
+                debug_utils.dev_print(
+                    "Scenario 6: The status is completely inside the ruby."
+                )
                 if isinstance(ruby, HtmlRubyRange):
-                    # print("html path")
+                    debug_utils.dev_print("html path")
                     self._highlighted = ruby.inject(self._highlighted)
-                    stat.start += ruby.open_len()
-                    stat.end += ruby.open_len()
-                    self._highlighted = stat.inject(self._highlighted)
-                    stat = None
+                    status.start += ruby.open_len()
+                    status.end += ruby.open_len()
+                    self._highlighted = status.inject(self._highlighted)
+                    status = None
 
                     # Pull and process statuses until the next status is outside of this ruby.
                     while self.statuses:
                         if self.statuses[-1].end <= ruby.start:
                             break
 
-                        stat = self.statuses.pop()
-                        stat.start += ruby.open_len()
-                        stat.end += ruby.open_len()
-                        self._highlighted = stat.inject(self._highlighted)
+                        status = self.statuses.pop()
+                        status.start += ruby.open_len()
+                        status.end += ruby.open_len()
+                        self._highlighted = status.inject(self._highlighted)
 
                 elif isinstance(ruby, TextRubyRange):
-                    # print("text path")
-                    stat.status = "undefined"
+                    debug_utils.dev_print("text path")
+                    status.status = "undefined"
                     self._highlighted = (
                         self._highlighted[: ruby.start]
-                        + stat.open()
+                        + status.open()
                         + str(ruby)
-                        + stat.close()
+                        + status.close()
                         + self._highlighted[ruby.end :]
                     )
 
-                    stat = None
+                    status = None
 
                     # Pull and process statuses until the next status is outside of this ruby.
                     while self.statuses:
                         if self.statuses[-1].end <= ruby.start:
                             break
 
-                        stat = self.statuses.pop()
+                        status = self.statuses.pop()
 
                 ruby = None
-                stat = None
+                status = None
                 continue
 
             # If the ruby starts then status starts, ruby ends, status ends
-            if ruby.start < stat.start and ruby.end < stat.end:
-                # print("The ruby starts then status starts, ruby ends, status ends.")
+            if ruby.start < status.start and ruby.end < status.end:
+                debug_utils.dev_print(
+                    "Scenario 7: The ruby starts then status starts, ruby ends, status ends."
+                )
                 if isinstance(ruby, HtmlRubyRange):
-                    # print("html path")
+                    debug_utils.dev_print("html path")
                     self._highlighted = (
                         self._highlighted[: ruby.start]
                         + ruby.open()
-                        + self._highlighted[ruby.start : stat.start]
-                        + stat.open()
+                        + self._highlighted[ruby.start : status.start]
+                        + status.open()
                         + self._highlighted[
-                            stat.start : stat.start
-                            + (stat.end - stat.start)
-                            - (stat.end - ruby.end)
+                            status.start : status.start
+                            + (status.end - status.start)
+                            - (status.end - ruby.end)
                         ]
-                        + stat.close()
+                        + status.close()
                         + ruby.rt()
                         + ruby.close()
-                        + stat.open()
-                        + self._highlighted[ruby.end : stat.end]
-                        + stat.close()
-                        + self._highlighted[stat.end :]
+                        + status.open()
+                        + self._highlighted[ruby.end : status.end]
+                        + status.close()
+                        + self._highlighted[status.end :]
                     )
-                    stat = None
+                    status = None
 
                     # Pull and process statuses until the next status is outside of this ruby.
                     while self.statuses:
                         if self.statuses[-1].end <= ruby.start:
                             break
 
-                        stat = self.statuses.pop()
-                        stat.start += ruby.open_len()
-                        stat.end += ruby.open_len()
-                        self._highlighted = stat.inject(self._highlighted)
+                        status = self.statuses.pop()
+                        status.start += ruby.open_len()
+                        status.end += ruby.open_len()
+                        self._highlighted = status.inject(self._highlighted)
 
                 elif isinstance(ruby, TextRubyRange):
-                    # print("text path")
-                    stat.status = "undefined"
+                    debug_utils.dev_print("text path")
+                    status.status = "undefined"
                     self._highlighted = (
                         self._highlighted[: ruby.start]
-                        + stat.open()
+                        + status.open()
                         + str(ruby)
-                        + self._highlighted[ruby.end : stat.end]
-                        + stat.close()
-                        + self._highlighted[stat.end :]
+                        + self._highlighted[ruby.end : status.end]
+                        + status.close()
+                        + self._highlighted[status.end :]
                     )
-                    stat = None
+                    status = None
 
                     # Pull and process statuses until the next status is outside of this ruby.
                     while self.statuses:
                         if self.statuses[-1].end <= ruby.start:
                             break
 
-                        stat = self.statuses.pop()
+                        status = self.statuses.pop()
 
                 ruby = None
-                stat = None
+                status = None
                 continue
 
-            # print("Made it past all possible cases. This should not be possible.")
+            debug_utils.dev_print(
+                "Made it past all possible cases. This should not be possible."
+            )
 
             # Just in case, to prevent infinite loop, we're disposing of the current pieces
             ruby = None
-            stat = None
+            status = None
 
 
 class MorphAndStatus:
@@ -429,6 +459,8 @@ def get_highlighted_text(
     """Highlight a text string based on found morphemes. Supports rubies.
     See test cases for exhaustive examples."""
 
+    debug_utils.dev_print(f"input text: {text}")
+
     morphs_and_statuses = [
         MorphAndStatus(
             morpheme,
@@ -438,8 +470,17 @@ def get_highlighted_text(
         for morpheme in morphemes
     ]
 
+    debug_utils.dev_print_morphs(morphemes)
+
     ruby_range_type: type[RubyRange] = TextRubyRange
     if use_html_rubies:
         ruby_range_type = HtmlRubyRange
 
-    return TextHighlighter(text, morphs_and_statuses, ruby_range_type).highlighted()
+    highlighted_text = TextHighlighter(
+        text, morphs_and_statuses, ruby_range_type
+    ).highlighted()
+
+    debug_utils.dev_print(f"output text: {highlighted_text}")
+    debug_utils.dev_print("")
+
+    return highlighted_text

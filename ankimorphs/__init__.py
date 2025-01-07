@@ -40,7 +40,7 @@ from . import ankimorphs_config
 from . import ankimorphs_globals as am_globals
 from . import (
     browser_utils,
-    debugging_utils,
+    debug_utils,
     message_box_utils,
     name_file_utils,
     reviewing_utils,

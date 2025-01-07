@@ -6,6 +6,9 @@ import traceback
 from pathlib import Path
 from typing import Any
 
+from . import ankimorphs_globals
+from .morpheme import Morpheme
+
 
 def print_stacktrace() -> None:
     stacktrace = ""
@@ -72,3 +75,14 @@ def print_directory_tree(root_dir: str, indent: str = "") -> None:
             print_directory_tree(item_path, indent + "    ")
         else:
             print(new_indent + item)
+
+
+def dev_print(message: str) -> None:
+    if ankimorphs_globals.DEV_MODE:
+        print(message)
+
+
+def dev_print_morphs(morphs: list[Morpheme]) -> None:
+    if ankimorphs_globals.DEV_MODE:
+        for morph in morphs:
+            print(f"morph: {morph.inflection}")
