@@ -8,9 +8,9 @@ from anki.template import TemplateRenderContext
 from . import (
     ankimorphs_config,
     ankimorphs_globals,
+    debug_utils,
     text_highlighting,
     text_preprocessing,
-    debug_utils,
 )
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
@@ -68,17 +68,13 @@ def highlight_morphs_jit(
 
     debug_utils.dev_print(f"filter name: {filter_name}")
 
-    styles = _get_styles(filter_name)
-
     highlighted_jit_text = (
         f"<span class='{filter_name}'>"
-        + styles
-        + " "
         + text_highlighting.get_highlighted_text(
             am_config=am_config,
             morphemes=card_morphs,
             text=_dehtml(field_text),
-            use_html_rubies=filter_name != "am-highlight",
+            ruby_type=_get_ruby_type(filter_name),
         )
         + "</span>"
     )
@@ -166,32 +162,14 @@ def _dehtml(
     return text_preprocessing.get_processed_text(am_config, text) if am_config else text
 
 
-def _get_styles(filter_name: str) -> str:
+def _get_ruby_type(filter_name: str) -> str:
     """Get local styles for this run, based on the filter name."""
 
-    if filter_name == "am-highlight-kana":
-        return """<style>
-.am-highlight-kana {
-    & ruby {
-        display: inline-block;
-        visibility: hidden;
-
-        & rt {
-            font-size: inherit;
-            margin-top: -1em;
-            visibility: visible;
-        }
-    }
-}
-</style>"""
-
+    if filter_name == "am-highlight-furigana":
+        return "furigana"
     if filter_name == "am-highlight-kanji":
-        return """<style>
-.am-highlight-kanji {
-    & ruby rt {
-        display: none;
-    }
-}
-</style>"""
+        return "kanji"
+    if filter_name == "am-highlight-kana":
+        return "kana"
 
-    return ""
+    return "text"

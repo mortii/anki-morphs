@@ -33,8 +33,17 @@ case_japanese_one_params = FakeEnvironmentParams(
 CASE_JAPANESE_ONE_INPUT_TEXT: str = (
     "（ 刑事[けいじ]） （刑事） 珍[めずら]しく 時間[じかん]が 空[あ]いたので　お 前[まえ]たちの 顔[かお]を　 お前[まえ]たちの 見[み]に 様方[さまかた]が な[b]  思い出[おもいだ]してくれ"
 )
-CASE_JAPANESE_ONE_CORRECT_OUTPUT: str = (
+CASE_JAPANESE_ONE_CORRECT_FURIGANA_OUTPUT: str = (
     """（<span morph-status="unknown"><ruby>刑事<rt>けいじ</rt></ruby></span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known"><ruby>珍<rt>めずら</rt></ruby>しく</span><span morph-status="unknown"><ruby>時間<rt>じかん</rt></ruby></span><span morph-status="unknown">が</span><span morph-status="known"><ruby>空<rt>あ</rt></ruby>い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お<ruby>前<rt>まえ</rt></ruby></span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"><ruby>顔<rt>かお</rt></ruby></span><span morph-status="unknown">を</span>　<span morph-status="unknown"><ruby>お前<rt>まえ</rt></ruby></span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"><ruby>見<rt>み</rt></ruby></span><span morph-status="unknown">に</span><ruby>様<span morph-status="learning">方</span><rt>さまかた</rt></ruby><span morph-status="unknown">が</span><span morph-status="unknown"><ruby>な<rt>b</rt></ruby></span> <ruby><span morph-status="unknown">思い</span><span morph-status="learning">出</span><rt>おもいだ</rt></ruby><span morph-status="learning">し</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
+)
+CASE_JAPANESE_ONE_CORRECT_TEXT_OUTPUT: str = (
+    """（<span morph-status="unknown"> 刑事[けいじ]</span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known"> 珍[めずら]しく</span><span morph-status="unknown"> 時間[じかん]</span><span morph-status="unknown">が</span><span morph-status="known"> 空[あ]い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お 前[まえ]</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"> 顔[かお]</span><span morph-status="unknown">を</span>　<span morph-status="unknown"> お前[まえ]</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"> 見[み]</span><span morph-status="unknown">に</span><span morph-status="undefined"> 様方[さまかた]</span><span morph-status="unknown">が</span><span morph-status="unknown"> な[b]</span> <span morph-status="undefined"> 思い出[おもいだ]し</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
+)
+CASE_JAPANESE_ONE_CORRECT_KANJI_OUTPUT: str = (
+    """（<span morph-status="unknown">刑事</span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known">珍しく</span><span morph-status="unknown">時間</span><span morph-status="unknown">が</span><span morph-status="known">空い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お前</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown">顔</span><span morph-status="unknown">を</span>　<span morph-status="unknown">お前</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown">見</span><span morph-status="unknown">に</span><span morph-status="undefined">様方</span><span morph-status="unknown">が</span><span morph-status="unknown">な</span> <span morph-status="undefined">思い出し</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
+)
+CASE_JAPANESE_ONE_CORRECT_KANA_OUTPUT: str = (
+    """（<span morph-status="unknown">けいじ</span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known">めずらしく</span><span morph-status="unknown">じかん</span><span morph-status="unknown">が</span><span morph-status="known">あい</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">おまえ</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown">かお</span><span morph-status="unknown">を</span>　<span morph-status="unknown">まえ</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown">み</span><span morph-status="unknown">に</span><span morph-status="undefined">さまかた</span><span morph-status="unknown">が</span><span morph-status="unknown">b</span> <span morph-status="undefined">おもいだし</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
 )
 case_japanese_one_card_morphs: list[Morpheme] = [
     Morpheme(lemma="刑事", inflection="刑事", highest_inflection_learning_interval=0),
@@ -74,7 +83,10 @@ case_japanese_two_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
 CASE_JAPANESE_TWO_INPUT_TEXT = "そうです ね"
-CASE_JAPANESE_TWO_CORRECT_OUTPUT = "そうです ね"
+CASE_JAPANESE_TWO_CORRECT_FURIGANA_OUTPUT = "そうです ね"
+CASE_JAPANESE_TWO_CORRECT_TEXT_OUTPUT = "そうです ね"
+CASE_JAPANESE_TWO_CORRECT_KANJI_OUTPUT = "そうです ね"
+CASE_JAPANESE_TWO_CORRECT_KANA_OUTPUT = "そうです ね"
 case_japanese_two_card_morphs = [
     Morpheme(
         lemma="そうですね",
@@ -90,13 +102,10 @@ case_japanese_three_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
 CASE_JAPANESE_THREE_INPUT_TEXT = "雪[ゆき]が お 留守番[るすばん]  相変[あいか]わらずの"
-CASE_JAPANESE_THREE_CORRECT_OUTPUT = (
-    '<span morph-status="known"><ruby>雪<rt>ゆき</rt></ruby></span><span morph-status="learning">が</span>'
-    + " "
-    + '<span morph-status="learning">お</span><ruby><span morph-status="known">留守</span><span morph-status="learning">番</span><rt>るすばん</rt></ruby>'
-    + " "
-    + '<ruby><span morph-status="learning">相</span><span morph-status="learning">変</span><rt>あいか</rt></ruby><span morph-status="learning">わら</span><span morph-status="learning">ず</span>の'
-)
+CASE_JAPANESE_THREE_CORRECT_FURIGANA_OUTPUT = '<span morph-status="known"><ruby>雪<rt>ゆき</rt></ruby></span><span morph-status="learning">が</span> <span morph-status="learning">お</span><ruby><span morph-status="known">留守</span><span morph-status="learning">番</span><rt>るすばん</rt></ruby> <ruby><span morph-status="learning">相</span><span morph-status="learning">変</span><rt>あいか</rt></ruby><span morph-status="learning">わら</span><span morph-status="learning">ず</span>の'
+CASE_JAPANESE_THREE_CORRECT_TEXT_OUTPUT = '<span morph-status="known"> 雪[ゆき]</span><span morph-status="learning">が</span> <span morph-status="learning">お</span><span morph-status="undefined"> 留守番[るすばん]</span> <span morph-status="undefined"> 相変[あいか]わら</span><span morph-status="learning">ず</span>の'
+CASE_JAPANESE_THREE_CORRECT_KANJI_OUTPUT = '<span morph-status="known">雪</span><span morph-status="learning">が</span> <span morph-status="learning">お</span><span morph-status="undefined">留守番</span> <span morph-status="undefined">相変わら</span><span morph-status="learning">ず</span>の'
+CASE_JAPANESE_THREE_CORRECT_KANA_OUTPUT = '<span morph-status="known">ゆき</span><span morph-status="learning">が</span> <span morph-status="learning">お</span><span morph-status="undefined">るすばん</span> <span morph-status="undefined">あいかわら</span><span morph-status="learning">ず</span>の'
 
 case_japanese_three_card_morphs = [
     Morpheme(lemma="雪", inflection="雪", highest_inflection_learning_interval=30),
@@ -130,8 +139,10 @@ case_morph_and_ruby = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
 CASE_MORPH_AND_RUBY_INPUT_TEXT = "12345  09876[def]  12345[abc]  12[abc] 34[abc]5  09876[def] 1 23[abc]45  012345[abc]  1234512345[abc]  0123[abc]45  12345777[zyzzzzz]"
-CASE_MORPH_AND_RUBY_CORRECT_OUTPUT = '<span morph-status="unknown">12345</span> <ruby>09876<rt>def</rt></ruby> <span morph-status="unknown"><ruby>12345<rt>abc</rt></ruby></span> <span morph-status="unknown"><ruby>12<rt>abc</rt></ruby><ruby>34<rt>abc</rt></ruby>5</span> <ruby>09876<rt>def</rt></ruby> <span morph-status="unknown">1<ruby>23<rt>abc</rt></ruby>45</span> <ruby>0<span morph-status="unknown">12345</span><rt>abc</rt></ruby> <ruby><span morph-status="unknown">12345</span><span morph-status="unknown">12345</span><rt>abc</rt></ruby> <ruby>0<span morph-status="unknown">123</span><rt>abc</rt></ruby><span morph-status="unknown">45</span> <ruby><span morph-status="unknown">12345</span><span morph-status="unknown">777</span><rt>zyzzzzz</rt></ruby>'
-CASE_MORPH_AND_TEXT_RUBY_CORRECT_OUTPUT = '<span morph-status="unknown">12345</span>  09876[def] <span morph-status="unknown"> 12345[abc]</span> <span morph-status="unknown"> 12[abc] 34[abc]5</span>  09876[def] <span morph-status="unknown">1 23[abc]45</span> <span morph-status="undefined"> 012345[abc]</span> <span morph-status="undefined"> 1234512345[abc]</span> <span morph-status="undefined"> 0123[abc]45</span> <span morph-status="undefined"> 12345777[zyzzzzz]</span>'
+CASE_MORPH_AND_RUBY_CORRECT_FURIGANA_OUTPUT = '<span morph-status="unknown">12345</span> <ruby>09876<rt>def</rt></ruby> <span morph-status="unknown"><ruby>12345<rt>abc</rt></ruby></span> <span morph-status="unknown"><ruby>12<rt>abc</rt></ruby><ruby>34<rt>abc</rt></ruby>5</span> <ruby>09876<rt>def</rt></ruby> <span morph-status="unknown">1<ruby>23<rt>abc</rt></ruby>45</span> <ruby>0<span morph-status="unknown">12345</span><rt>abc</rt></ruby> <ruby><span morph-status="unknown">12345</span><span morph-status="unknown">12345</span><rt>abc</rt></ruby> <ruby>0<span morph-status="unknown">123</span><rt>abc</rt></ruby><span morph-status="unknown">45</span> <ruby><span morph-status="unknown">12345</span><span morph-status="unknown">777</span><rt>zyzzzzz</rt></ruby>'
+CASE_MORPH_AND_RUBY_CORRECT_TEXT_OUTPUT = '<span morph-status="unknown">12345</span>  09876[def] <span morph-status="unknown"> 12345[abc]</span> <span morph-status="unknown"> 12[abc] 34[abc]5</span>  09876[def] <span morph-status="unknown">1 23[abc]45</span> <span morph-status="undefined"> 012345[abc]</span> <span morph-status="undefined"> 1234512345[abc]</span> <span morph-status="undefined"> 0123[abc]45</span> <span morph-status="undefined"> 12345777[zyzzzzz]</span>'
+CASE_MORPH_AND_RUBY_CORRECT_KANJI_OUTPUT = '<span morph-status="unknown">12345</span> 09876 <span morph-status="unknown">12345</span> <span morph-status="unknown">12345</span> 09876 <span morph-status="unknown">12345</span> <span morph-status="undefined">012345</span> <span morph-status="undefined">1234512345</span> <span morph-status="undefined">012345</span> <span morph-status="undefined">12345777</span>'
+CASE_MORPH_AND_RUBY_CORRECT_KANA_OUTPUT = '<span morph-status="unknown">12345</span> def <span morph-status="unknown">abc</span> <span morph-status="unknown">abcabc5</span> def <span morph-status="unknown">1abc45</span> <span morph-status="undefined">abc</span> <span morph-status="undefined">abc</span> <span morph-status="undefined">abc45</span> <span morph-status="undefined">zyzzzzz</span>'
 
 case_morph_and_ruby_card_morphs = [
     Morpheme(
@@ -157,8 +168,10 @@ case_morph_and_ruby_path_7 = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
 CASE_MORPH_AND_RUBY_INPUT_TEXT_PATH_7 = "文書[ぶんしょ]を 謎解[なぞと]きに"
-CASE_MORPH_AND_RUBY_CORRECT_OUTPUT_PATH_7 = '<span morph-status="unknown"><ruby>文書<rt>ぶんしょ</rt></ruby></span><span morph-status="known">を</span><ruby><span morph-status="unknown">謎</span><span morph-status="unknown">解</span><rt>なぞと</rt></ruby><span morph-status="unknown">き</span><span morph-status="known">に</span>'
-CASE_MORPH_AND_TEXT_RUBY_CORRECT_OUTPUT_PATH_7 = '<span morph-status="unknown"> 文書[ぶんしょ]</span><span morph-status="known">を</span><span morph-status="undefined"> 謎解[なぞと]き</span><span morph-status="known">に</span>'
+CASE_MORPH_AND_RUBY_CORRECT_FURIGANA_OUTPUT_PATH_7 = '<span morph-status="unknown"><ruby>文書<rt>ぶんしょ</rt></ruby></span><span morph-status="known">を</span><ruby><span morph-status="unknown">謎</span><span morph-status="unknown">解</span><rt>なぞと</rt></ruby><span morph-status="unknown">き</span><span morph-status="known">に</span>'
+CASE_MORPH_AND_RUBY_CORRECT_TEXT_OUTPUT_PATH_7 = '<span morph-status="unknown"> 文書[ぶんしょ]</span><span morph-status="known">を</span><span morph-status="undefined"> 謎解[なぞと]き</span><span morph-status="known">に</span>'
+CASE_MORPH_AND_RUBY_CORRECT_KANJI_OUTPUT_PATH_7 = '<span morph-status="unknown">文書</span><span morph-status="known">を</span><span morph-status="undefined">謎解き</span><span morph-status="known">に</span>'
+CASE_MORPH_AND_RUBY_CORRECT_KANA_OUTPUT_PATH_7 = '<span morph-status="unknown">ぶんしょ</span><span morph-status="known">を</span><span morph-status="undefined">なぞとき</span><span morph-status="known">に</span>'
 
 case_morph_and_ruby_card_morphs1 = [
     Morpheme(lemma="に", inflection="に", highest_inflection_learning_interval=100),
@@ -179,7 +192,16 @@ case_highlight_unspaced_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
 CASE_HIGHLIGHT_UNSPACED_INPUT_TEXT = "私は明日[あした]新しい[あたらしい]。"
-CASE_HIGHLIGHT_UNSPACED_OUTPUT = '<ruby><span morph-status="known">私</span>は<span morph-status="learning">明日</span><rt>あした</rt></ruby><ruby>新しい<rt>あたらしい</rt></ruby>。'
+CASE_HIGHLIGHT_UNSPACED_FURIGANA_OUTPUT = '<ruby><span morph-status="known">私</span>は<span morph-status="learning">明日</span><rt>あした</rt></ruby><ruby>新しい<rt>あたらしい</rt></ruby>。'
+CASE_HIGHLIGHT_UNSPACED_TEXT_OUTPUT = (
+    '<span morph-status="undefined"> 私は明日[あした]</span> 新しい[あたらしい]。'
+)
+CASE_HIGHLIGHT_UNSPACED_KANJI_OUTPUT = (
+    '<span morph-status="undefined">私は明日</span>新しい。'
+)
+CASE_HIGHLIGHT_UNSPACED_KANA_OUTPUT = (
+    '<span morph-status="undefined">あした</span>あたらしい。'
+)
 case_highlight_unspaced_morphs = [
     Morpheme(
         lemma="私",
@@ -305,84 +327,259 @@ case_highlight_based_on_lemma_morphs = [
 # but the config needs to have the option "preprocess_ignore_bracket_contents"
 # activated
 @pytest.mark.parametrize(
-    "fake_environment_fixture, input_text, card_morphs, correct_output, use_html_rubies",
+    "fake_environment_fixture, input_text, card_morphs, correct_output, ruby_type",
     [
         (
             case_japanese_one_params,
             CASE_JAPANESE_ONE_INPUT_TEXT,
             case_japanese_one_card_morphs,
-            CASE_JAPANESE_ONE_CORRECT_OUTPUT,
-            True,
+            CASE_JAPANESE_ONE_CORRECT_FURIGANA_OUTPUT,
+            "furigana",
+        ),
+        (
+            case_japanese_one_params,
+            CASE_JAPANESE_ONE_INPUT_TEXT,
+            case_japanese_one_card_morphs,
+            CASE_JAPANESE_ONE_CORRECT_TEXT_OUTPUT,
+            "text",
+        ),
+        (
+            case_japanese_one_params,
+            CASE_JAPANESE_ONE_INPUT_TEXT,
+            case_japanese_one_card_morphs,
+            CASE_JAPANESE_ONE_CORRECT_KANJI_OUTPUT,
+            "kanji",
+        ),
+        (
+            case_japanese_one_params,
+            CASE_JAPANESE_ONE_INPUT_TEXT,
+            case_japanese_one_card_morphs,
+            CASE_JAPANESE_ONE_CORRECT_KANA_OUTPUT,
+            "kana",
         ),
         (
             case_japanese_two_params,
             CASE_JAPANESE_TWO_INPUT_TEXT,
             case_japanese_two_card_morphs,
-            CASE_JAPANESE_TWO_CORRECT_OUTPUT,
-            True,
+            CASE_JAPANESE_TWO_CORRECT_FURIGANA_OUTPUT,
+            "furigana",
+        ),
+        (
+            case_japanese_two_params,
+            CASE_JAPANESE_TWO_INPUT_TEXT,
+            case_japanese_two_card_morphs,
+            CASE_JAPANESE_TWO_CORRECT_TEXT_OUTPUT,
+            "text",
+        ),
+        (
+            case_japanese_two_params,
+            CASE_JAPANESE_TWO_INPUT_TEXT,
+            case_japanese_two_card_morphs,
+            CASE_JAPANESE_TWO_CORRECT_KANJI_OUTPUT,
+            "kanji",
+        ),
+        (
+            case_japanese_two_params,
+            CASE_JAPANESE_TWO_INPUT_TEXT,
+            case_japanese_two_card_morphs,
+            CASE_JAPANESE_TWO_CORRECT_KANA_OUTPUT,
+            "kana",
         ),
         (
             case_japanese_three_params,
             CASE_JAPANESE_THREE_INPUT_TEXT,
             case_japanese_three_card_morphs,
-            CASE_JAPANESE_THREE_CORRECT_OUTPUT,
-            True,
+            CASE_JAPANESE_THREE_CORRECT_FURIGANA_OUTPUT,
+            "furigana",
+        ),
+        (
+            case_japanese_three_params,
+            CASE_JAPANESE_THREE_INPUT_TEXT,
+            case_japanese_three_card_morphs,
+            CASE_JAPANESE_THREE_CORRECT_TEXT_OUTPUT,
+            "text",
+        ),
+        (
+            case_japanese_three_params,
+            CASE_JAPANESE_THREE_INPUT_TEXT,
+            case_japanese_three_card_morphs,
+            CASE_JAPANESE_THREE_CORRECT_KANJI_OUTPUT,
+            "kanji",
+        ),
+        (
+            case_japanese_three_params,
+            CASE_JAPANESE_THREE_INPUT_TEXT,
+            case_japanese_three_card_morphs,
+            CASE_JAPANESE_THREE_CORRECT_KANA_OUTPUT,
+            "kana",
         ),
         (
             case_morph_and_ruby,
             CASE_MORPH_AND_RUBY_INPUT_TEXT,
             case_morph_and_ruby_card_morphs,
-            CASE_MORPH_AND_RUBY_CORRECT_OUTPUT,
-            True,
+            CASE_MORPH_AND_RUBY_CORRECT_FURIGANA_OUTPUT,
+            "furigana",
         ),
         (
             case_morph_and_ruby,
             CASE_MORPH_AND_RUBY_INPUT_TEXT,
             case_morph_and_ruby_card_morphs,
-            CASE_MORPH_AND_TEXT_RUBY_CORRECT_OUTPUT,
-            False,
+            CASE_MORPH_AND_RUBY_CORRECT_TEXT_OUTPUT,
+            "text",
+        ),
+        (
+            case_morph_and_ruby,
+            CASE_MORPH_AND_RUBY_INPUT_TEXT,
+            case_morph_and_ruby_card_morphs,
+            CASE_MORPH_AND_RUBY_CORRECT_KANJI_OUTPUT,
+            "kanji",
+        ),
+        (
+            case_morph_and_ruby,
+            CASE_MORPH_AND_RUBY_INPUT_TEXT,
+            case_morph_and_ruby_card_morphs,
+            CASE_MORPH_AND_RUBY_CORRECT_KANA_OUTPUT,
+            "kana",
         ),
         (
             case_highlight_unspaced_params,
             CASE_HIGHLIGHT_UNSPACED_INPUT_TEXT,
             case_highlight_unspaced_morphs,
-            CASE_HIGHLIGHT_UNSPACED_OUTPUT,
-            True,
+            CASE_HIGHLIGHT_UNSPACED_FURIGANA_OUTPUT,
+            "furigana",
+        ),
+        (
+            case_highlight_unspaced_params,
+            CASE_HIGHLIGHT_UNSPACED_INPUT_TEXT,
+            case_highlight_unspaced_morphs,
+            CASE_HIGHLIGHT_UNSPACED_TEXT_OUTPUT,
+            "text",
+        ),
+        (
+            case_highlight_unspaced_params,
+            CASE_HIGHLIGHT_UNSPACED_INPUT_TEXT,
+            case_highlight_unspaced_morphs,
+            CASE_HIGHLIGHT_UNSPACED_KANJI_OUTPUT,
+            "kanji",
+        ),
+        (
+            case_highlight_unspaced_params,
+            CASE_HIGHLIGHT_UNSPACED_INPUT_TEXT,
+            case_highlight_unspaced_morphs,
+            CASE_HIGHLIGHT_UNSPACED_KANA_OUTPUT,
+            "kana",
         ),
         (
             case_german_params,
             CASE_GERMAN_INPUT_TEXT,
             case_german_card_morphs,
             CASE_GERMAN_CORRECT_OUTPUT,
-            True,
+            "furigana",
+        ),
+        (
+            case_german_params,
+            CASE_GERMAN_INPUT_TEXT,
+            case_german_card_morphs,
+            CASE_GERMAN_CORRECT_OUTPUT,
+            "text",
+        ),
+        (
+            case_german_params,
+            CASE_GERMAN_INPUT_TEXT,
+            case_german_card_morphs,
+            CASE_GERMAN_CORRECT_OUTPUT,
+            "kanji",
+        ),
+        (
+            case_german_params,
+            CASE_GERMAN_INPUT_TEXT,
+            case_german_card_morphs,
+            CASE_GERMAN_CORRECT_OUTPUT,
+            "kana",
         ),
         (
             case_regex_escape_params,
             CASE_REGEX_ESCAPE_INPUT_TEXT,
             case_regex_escape_card_morphs,
             CASE_REGEX_ESCAPE_CORRECT_OUTPUT,
-            True,
+            "furigana",
+        ),
+        (
+            case_regex_escape_params,
+            CASE_REGEX_ESCAPE_INPUT_TEXT,
+            case_regex_escape_card_morphs,
+            CASE_REGEX_ESCAPE_CORRECT_OUTPUT,
+            "text",
+        ),
+        (
+            case_regex_escape_params,
+            CASE_REGEX_ESCAPE_INPUT_TEXT,
+            case_regex_escape_card_morphs,
+            CASE_REGEX_ESCAPE_CORRECT_OUTPUT,
+            "kanji",
+        ),
+        (
+            case_regex_escape_params,
+            CASE_REGEX_ESCAPE_INPUT_TEXT,
+            case_regex_escape_card_morphs,
+            CASE_REGEX_ESCAPE_CORRECT_OUTPUT,
+            "kana",
         ),
         (
             case_highlight_based_on_lemma_params,
             CASE_HIGHLIGHT_BASED_ON_LEMMA_INPUT_TEXT,
             case_highlight_based_on_lemma_morphs,
             CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT,
-            True,
+            "furigana",
+        ),
+        (
+            case_highlight_based_on_lemma_params,
+            CASE_HIGHLIGHT_BASED_ON_LEMMA_INPUT_TEXT,
+            case_highlight_based_on_lemma_morphs,
+            CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT,
+            "text",
+        ),
+        (
+            case_highlight_based_on_lemma_params,
+            CASE_HIGHLIGHT_BASED_ON_LEMMA_INPUT_TEXT,
+            case_highlight_based_on_lemma_morphs,
+            CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT,
+            "kanji",
+        ),
+        (
+            case_highlight_based_on_lemma_params,
+            CASE_HIGHLIGHT_BASED_ON_LEMMA_INPUT_TEXT,
+            case_highlight_based_on_lemma_morphs,
+            CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT,
+            "kana",
         ),
         (
             case_morph_and_ruby_path_7,
             CASE_MORPH_AND_RUBY_INPUT_TEXT_PATH_7,
             case_morph_and_ruby_card_morphs1,
-            CASE_MORPH_AND_RUBY_CORRECT_OUTPUT_PATH_7,
-            True,
+            CASE_MORPH_AND_RUBY_CORRECT_FURIGANA_OUTPUT_PATH_7,
+            "furigana",
         ),
         (
             case_morph_and_ruby_path_7,
             CASE_MORPH_AND_RUBY_INPUT_TEXT_PATH_7,
             case_morph_and_ruby_card_morphs1,
-            CASE_MORPH_AND_TEXT_RUBY_CORRECT_OUTPUT_PATH_7,
-            False,
+            CASE_MORPH_AND_RUBY_CORRECT_TEXT_OUTPUT_PATH_7,
+            "text",
+        ),
+        (
+            case_morph_and_ruby_path_7,
+            CASE_MORPH_AND_RUBY_INPUT_TEXT_PATH_7,
+            case_morph_and_ruby_card_morphs1,
+            CASE_MORPH_AND_RUBY_CORRECT_KANJI_OUTPUT_PATH_7,
+            "kanji",
+        ),
+        (
+            case_morph_and_ruby_path_7,
+            CASE_MORPH_AND_RUBY_INPUT_TEXT_PATH_7,
+            case_morph_and_ruby_card_morphs1,
+            CASE_MORPH_AND_RUBY_CORRECT_KANA_OUTPUT_PATH_7,
+            "kana",
         ),
     ],
     indirect=["fake_environment_fixture"],
@@ -392,10 +589,10 @@ def test_highlighting(  # pylint:disable=unused-argument
     input_text: str,
     card_morphs: list[Morpheme],
     correct_output: str,
-    use_html_rubies: bool,
+    ruby_type: str,
 ) -> None:
     am_config = AnkiMorphsConfig()
     highlighted_text: str = text_highlighting.get_highlighted_text(
-        am_config, card_morphs, input_text, use_html_rubies
+        am_config, card_morphs, input_text, ruby_type
     )
     assert highlighted_text == correct_output

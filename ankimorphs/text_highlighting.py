@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from collections import deque
 
-from . import text_preprocessing, debug_utils
+from . import debug_utils, text_preprocessing
 from .ankimorphs_config import AnkiMorphsConfig
 from .morpheme import Morpheme
 
@@ -49,7 +49,7 @@ class RubyRange(Range):
         return f"Range: {self.start}-{self.end}. Value: {str(self)}"
 
 
-class HtmlRubyRange(RubyRange):
+class FuriganaRubyRange(RubyRange):
     """Represents an html ruby and its range in parent string."""
 
     def open(self) -> str:
@@ -60,6 +60,35 @@ class HtmlRubyRange(RubyRange):
 
     def rt(self) -> str:
         return f"<rt>{self.ruby}</rt>"
+
+
+class KanjiRubyRange(RubyRange):
+    """Represents a kanji ruby and its range in parent string."""
+
+    def open(self) -> str:
+        return ""
+
+    def close(self) -> str:
+        return ""
+
+    def rt(self) -> str:
+        return ""
+
+
+class KanaRubyRange(RubyRange):
+    """Represents a kana ruby and its range in parent string."""
+
+    def open(self) -> str:
+        return ""
+
+    def close(self) -> str:
+        return ""
+
+    def rt(self) -> str:
+        return ""
+
+    def __str__(self) -> str:
+        return self.ruby
 
 
 class TextRubyRange(RubyRange):
@@ -298,7 +327,7 @@ class TextHighlighter:
                 debug_utils.dev_print(
                     "Scenario 6: The status is completely inside the ruby."
                 )
-                if isinstance(ruby, HtmlRubyRange):
+                if isinstance(ruby, FuriganaRubyRange):
                     debug_utils.dev_print("html path")
                     self._highlighted = ruby.inject(self._highlighted)
                     status.start += ruby.open_len()
@@ -316,7 +345,7 @@ class TextHighlighter:
                         status.end += ruby.open_len()
                         self._highlighted = status.inject(self._highlighted)
 
-                elif isinstance(ruby, TextRubyRange):
+                else:
                     debug_utils.dev_print("text path")
                     status.status = "undefined"
                     self._highlighted = (
@@ -345,7 +374,7 @@ class TextHighlighter:
                 debug_utils.dev_print(
                     "Scenario 7: The ruby starts then status starts, ruby ends, status ends."
                 )
-                if isinstance(ruby, HtmlRubyRange):
+                if isinstance(ruby, FuriganaRubyRange):
                     debug_utils.dev_print("html path")
                     self._highlighted = (
                         self._highlighted[: ruby.start]
@@ -377,7 +406,7 @@ class TextHighlighter:
                         status.end += ruby.open_len()
                         self._highlighted = status.inject(self._highlighted)
 
-                elif isinstance(ruby, TextRubyRange):
+                else:
                     debug_utils.dev_print("text path")
                     status.status = "undefined"
                     self._highlighted = (
@@ -454,7 +483,7 @@ def get_highlighted_text(
     am_config: AnkiMorphsConfig,
     morphemes: list[Morpheme],
     text: str,
-    use_html_rubies: bool = False,
+    ruby_type: str = "text",
 ) -> str:
     """Highlight a text string based on found morphemes. Supports rubies.
     See test cases for exhaustive examples."""
@@ -473,8 +502,13 @@ def get_highlighted_text(
     debug_utils.dev_print_morphs(morphemes)
 
     ruby_range_type: type[RubyRange] = TextRubyRange
-    if use_html_rubies:
-        ruby_range_type = HtmlRubyRange
+
+    if ruby_type == "furigana":
+        ruby_range_type = FuriganaRubyRange
+    if ruby_type == "kanji":
+        ruby_range_type = KanjiRubyRange
+    if ruby_type == "kana":
+        ruby_range_type = KanaRubyRange
 
     highlighted_text = TextHighlighter(
         text, morphs_and_statuses, ruby_range_type
