@@ -5,19 +5,21 @@ import re
 import anki
 from anki.template import TemplateRenderContext
 
-from . import (
-    ankimorphs_config,
-    ankimorphs_globals,
-    debug_utils,
-    text_highlighting,
-    text_preprocessing,
+from .. import ankimorphs_config, ankimorphs_globals, debug_utils, text_preprocessing
+from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
+from ..ankimorphs_db import AnkiMorphsDB
+from ..highlighting.ruby_classes import (
+    FuriganaRuby,
+    KanaRuby,
+    KanjiRuby,
+    Ruby,
+    TextRuby,
 )
-from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
-from .ankimorphs_db import AnkiMorphsDB
-from .morpheme import Morpheme
-from .morphemizers import morphemizer as morphemizer_module
-from .morphemizers import spacy_wrapper
-from .morphemizers.morphemizer import Morphemizer, SpacyMorphemizer
+from ..highlighting.text_highlighter import TextHighlighter
+from ..morpheme import Morpheme
+from ..morphemizers import morphemizer as morphemizer_module
+from ..morphemizers import spacy_wrapper
+from ..morphemizers.morphemizer import Morphemizer, SpacyMorphemizer
 
 
 def highlight_morphs_jit(
@@ -68,16 +70,14 @@ def highlight_morphs_jit(
 
     debug_utils.dev_print(f"filter name: {filter_name}")
 
-    highlighted_jit_text = (
-        f"<span class='{filter_name}'>"
-        + text_highlighting.get_highlighted_text(
-            am_config=am_config,
-            morphemes=card_morphs,
-            text=_dehtml(field_text),
-            ruby_type=_get_ruby_type(filter_name),
-        )
-        + "</span>"
-    )
+    ruby_type: type[Ruby] = _get_ruby_type(filter_name)
+
+    highlighted_jit_text = TextHighlighter(
+        am_config=am_config,
+        morphemes=card_morphs,
+        expression=_dehtml(field_text),
+        ruby_type=ruby_type,
+    ).highlighted()
 
     debug_utils.dev_print(f"highlighted_jit_text: {highlighted_jit_text}")
 
@@ -162,14 +162,13 @@ def _dehtml(
     return text_preprocessing.get_processed_text(am_config, text) if am_config else text
 
 
-def _get_ruby_type(filter_name: str) -> str:
+def _get_ruby_type(filter_name: str) -> type[Ruby]:
     """Get local styles for this run, based on the filter name."""
 
     if filter_name == "am-highlight-furigana":
-        return "furigana"
+        return FuriganaRuby
     if filter_name == "am-highlight-kanji":
-        return "kanji"
+        return KanjiRuby
     if filter_name == "am-highlight-kana":
-        return "kana"
-
-    return "text"
+        return KanaRuby
+    return TextRuby

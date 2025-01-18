@@ -7,7 +7,7 @@ that file and not here.
 # Semantic Versioning https://semver.org/
 __version__ = "3.3.0"
 
-DEV_MODE: bool = True
+DEV_MODE: bool = False
 
 PROFILE_SETTINGS_FILE_NAME = "ankimorphs_profile_settings.json"
 NAMES_TXT_FILE_NAME = "names.txt"
@@ -40,6 +40,10 @@ INFLECTION_HEADER = "Morph-Inflection"
 LEMMA_PRIORITY_HEADER = "Lemma-Priority"
 INFLECTION_PRIORITY_HEADER = "Inflection-Priority"
 OCCURRENCES_HEADER = "Occurrences"
+
+STATUS_KNOWN = "known"
+STATUS_LEARNING = "learning"
+STATUS_UNKNOWN = "unknown"
 
 config_broken: bool = False
 new_config_found: bool = False

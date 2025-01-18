@@ -6,8 +6,8 @@ from aqt import mw
 
 from .. import ankimorphs_config
 from .. import ankimorphs_globals as am_globals
-from .. import text_highlighting
 from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
+from ..highlighting.text_highlighter import TextHighlighter
 from ..morpheme import Morpheme
 
 
@@ -171,11 +171,9 @@ def update_highlighted_field(
     expression_field_index: int = field_name_dict[config_filter.field][0]
     text_to_highlight = note.fields[expression_field_index]
 
-    highlighted_text = text_highlighting.get_highlighted_text(
-        am_config,
-        card_morphs,
-        text_to_highlight,
-    )
+    highlighted_text = TextHighlighter(
+        am_config=am_config, expression=text_to_highlight, morphemes=card_morphs
+    ).highlighted()
 
     extra_field_index: int = field_name_dict[am_globals.EXTRA_FIELD_HIGHLIGHTED][0]
     note.fields[extra_field_index] = highlighted_text

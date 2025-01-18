@@ -53,7 +53,7 @@ from .ankimorphs_db import AnkiMorphsDB
 from .extra_settings import ankimorphs_extra_settings, extra_settings_keys
 from .extra_settings.ankimorphs_extra_settings import AnkiMorphsExtraSettings
 from .generators.generators_window import GeneratorWindow
-from .highlight_morphs_jit import highlight_morphs_jit
+from .highlighting.highlight_just_in_time import highlight_morphs_jit
 from .known_morphs_exporter import KnownMorphsExporterDialog
 from .progression.progression_window import ProgressionWindow
 from .recalc import recalc_main
