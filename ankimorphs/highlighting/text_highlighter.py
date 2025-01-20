@@ -5,7 +5,7 @@ from collections import deque
 from .. import ankimorphs_globals, debug_utils, text_preprocessing
 from ..ankimorphs_config import AnkiMorphsConfig
 from ..morpheme import Morpheme
-from .ruby_classes import FuriganaRuby, KanjiRuby, Ruby, TextRuby
+from .ruby_classes import Ruby, TextRuby
 from .status_class import Status
 
 
@@ -111,9 +111,10 @@ class TextHighlighter:
         """
         Process the text in 'self._highlighted_expression', now that all the metadata has been gathered.
 
-        This method works backwards through the text by matching the found morphs and rubies. When a match is found,
-        we remove that part of the string and inject highlighting, and the respective morphs and rubies are removed from
-        their queues, and the process is repeated.
+        This method works backwards through the sets of found morphs and rubies. It compares the relationship of the
+        last morph and last ruby. Depending on the relationship, the base string is updated with relevant data from
+        the morph and/or ruby. When one, the other, or both are processed, they are discarded and a new candidate for
+        the discarded token is popped. The analysis then repeats until there are no tokens left.
 
         Scenarios Handled:
 
@@ -182,39 +183,37 @@ class TextHighlighter:
             if status is None and self.statuses:
                 status = self.statuses.pop()
 
-            # Scenario 1: nothing more is highlighted.
+            # Scenario 1: Nothing more to be highlighted.
             if ruby is None and status is None:
-                debug_utils.dev_print("Scenario 1: nothing more is highlighted.")
+                debug_utils.dev_print("Scenario 1: Nothing more to be highlighted.")
                 break
-
-            # Scenario 2: There are only statuses.
-            if ruby is None:
-                debug_utils.dev_print("Scenario 2: There are only statuses.")
-                # Ignore is here because (surprisingly) mypy can not tell the
-                # only path that leads here requires stat to be non-None.
-                self._highlighted_expression = status.inject(self._highlighted_expression)  # type: ignore[union-attr]
-                status = None
-                continue
-
-            # Scenario 3: There are only rubies.
-            if status is None:
-                debug_utils.dev_print("Scenario 3: There are only rubies.")
-                self._highlighted_expression = ruby.inject(self._highlighted_expression)
-                ruby = None
-                continue
 
             debug_utils.dev_print(f"current ruby: {repr(ruby)}")
             debug_utils.dev_print(f"current status: {repr(status)}")
 
+            # Scenario 2: There are only statuses.
+            # Scenario 3: There are only rubies.
             # Scenario 4: There is no overlap between ruby and status.
-            if ruby.end <= status.start or ruby.start >= status.end:
+            # (includes if one or the other is not present)
+            if (
+                ruby is None
+                or status is None
+                or ruby.end <= status.start
+                or ruby.start >= status.end
+            ):
                 debug_utils.dev_print(
-                    "Scenario 4: There is no overlap between ruby and status."
+                    """
+                    Scenario 2: There are only statuses.
+                    OR
+                    Scenario 3: There are only rubies.
+                    OR
+                    Scenario 4: There is no overlap between ruby and status.
+                    """
                 )
-                if ruby.start > status.start:
-                    self._highlighted_expression = ruby.inject(
-                        self._highlighted_expression
-                    )
+                if status is None or (ruby is not None and ruby.start > status.start):
+                    # Ignore is here because (surprisingly) mypy can not tell the
+                    # only path that leads here requires ruby to be non-None.
+                    self._highlighted_expression = ruby.inject(self._highlighted_expression)  # type: ignore[union-attr]
                     ruby = None
                 else:
                     self._highlighted_expression = status.inject(
@@ -224,23 +223,16 @@ class TextHighlighter:
                 continue
 
             # Scenario 5: The status is the same as the ruby.
-            if ruby.start == status.start and ruby.end == status.end:
-                debug_utils.dev_print("Scenario 5: The status is the same as the ruby.")
-                self._highlighted_expression = (
-                    self._highlighted_expression[: status.start]
-                    + status.open()
-                    + str(ruby)
-                    + status.close()
-                    + self._highlighted_expression[status.end :]
-                )
-                ruby = None
-                status = None
-                continue
-
+            # OR
             # Scenario 6: The ruby is completely inside the status.
-            if ruby.start >= status.start and ruby.end <= status.end:
+            if (ruby.start == status.start and ruby.end == status.end) or (
+                ruby.start >= status.start and ruby.end <= status.end
+            ):
                 debug_utils.dev_print(
-                    "Scenario 6: The ruby is completely inside the status."
+                    """
+                    Scenario 5: The status is the same as the ruby.
+                    OR
+                    Scenario 6: The ruby is completely inside the status."""
                 )
                 self._highlighted_expression = (
                     self._highlighted_expression[: status.start]
@@ -271,109 +263,31 @@ class TextHighlighter:
                 continue
 
             # Scenario 7: The status is completely inside the ruby.
-            if ruby.start <= status.start and ruby.end >= status.end:
+            # OR
+            # Scenario 8: The ruby starts then status starts, ruby ends, status ends."""
+            if (ruby.start <= status.start and ruby.end >= status.end) or (
+                ruby.start < status.start and ruby.end < status.end
+            ):
                 debug_utils.dev_print(
-                    "Scenario 7: The status is completely inside the ruby."
+                    """Scenario 7: The status is completely inside the ruby.
+                    OR
+                    Scenario 8: The ruby starts then status starts, ruby ends, status ends."""
                 )
-                if isinstance(ruby, (FuriganaRuby, KanjiRuby)):
-                    debug_utils.dev_print("html path")
-                    self._highlighted_expression = ruby.inject(
-                        self._highlighted_expression
-                    )
-                    status.start += ruby.open_len()
-                    status.end += ruby.open_len()
-                    self._highlighted_expression = status.inject(
-                        self._highlighted_expression
-                    )
-
-                    # Pull and process statuses until the next status is outside of this ruby.
-                    while self.statuses:
-                        if self.statuses[-1].end <= ruby.start:
-                            break
-
-                        status = self.statuses.pop()
-                        status.start += ruby.open_len()
-                        status.end += ruby.open_len()
-                        self._highlighted_expression = status.inject(
-                            self._highlighted_expression
-                        )
-
-                else:
-                    debug_utils.dev_print("text path")
-                    status.status = ankimorphs_globals.STATUS_UNDEFINED
-                    self._highlighted_expression = (
-                        self._highlighted_expression[: ruby.start]
-                        + status.open()
-                        + str(ruby)
-                        + status.close()
-                        + self._highlighted_expression[ruby.end :]
-                    )
-
-                    # Pull and process statuses until the next status is outside of this ruby.
-                    while self.statuses:
-                        if self.statuses[-1].end <= ruby.start:
-                            break
-                        self.statuses.pop()
-
-                ruby = None
-                status = None
-                continue
-
-            # Scenario 8: The ruby starts then status starts, ruby ends, status ends.
-            if ruby.start < status.start and ruby.end < status.end:
-                debug_utils.dev_print(
-                    "Scenario 8: The ruby starts then status starts, ruby ends, status ends."
+                status.status = ankimorphs_globals.STATUS_UNDEFINED
+                self._highlighted_expression = (
+                    self._highlighted_expression[: ruby.start]
+                    + status.open()
+                    + str(ruby)
+                    + self._highlighted_expression[ruby.end : status.end]
+                    + status.close()
+                    + self._highlighted_expression[status.end :]
                 )
-                if isinstance(ruby, (FuriganaRuby, KanjiRuby)):
-                    debug_utils.dev_print("html path")
-                    self._highlighted_expression = (
-                        self._highlighted_expression[: ruby.start]
-                        + ruby.open()
-                        + self._highlighted_expression[ruby.start : status.start]
-                        + status.open()
-                        + self._highlighted_expression[
-                            status.start : status.start
-                            + (status.end - status.start)
-                            - (status.end - ruby.end)
-                        ]
-                        + status.close()
-                        + ruby.rt()
-                        + ruby.close()
-                        + status.open()
-                        + self._highlighted_expression[ruby.end : status.end]
-                        + status.close()
-                        + self._highlighted_expression[status.end :]
-                    )
 
-                    # Pull and process statuses until the next status is outside of this ruby.
-                    while self.statuses:
-                        if self.statuses[-1].end <= ruby.start:
-                            break
-
-                        status = self.statuses.pop()
-                        status.start += ruby.open_len()
-                        status.end += ruby.open_len()
-                        self._highlighted_expression = status.inject(
-                            self._highlighted_expression
-                        )
-
-                else:
-                    debug_utils.dev_print("text path")
-                    status.status = ankimorphs_globals.STATUS_UNDEFINED
-                    self._highlighted_expression = (
-                        self._highlighted_expression[: ruby.start]
-                        + status.open()
-                        + str(ruby)
-                        + self._highlighted_expression[ruby.end : status.end]
-                        + status.close()
-                        + self._highlighted_expression[status.end :]
-                    )
-
-                    # Pull and process statuses until the next status is outside of this ruby.
-                    while self.statuses:
-                        if self.statuses[-1].end <= ruby.start:
-                            break
-                        self.statuses.pop()
+                # Pull and process statuses until the next status is outside of this ruby.
+                while self.statuses:
+                    if self.statuses[-1].end <= ruby.start:
+                        break
+                    self.statuses.pop()
 
                 ruby = None
                 status = None

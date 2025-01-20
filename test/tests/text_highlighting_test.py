@@ -41,7 +41,7 @@ CASE_JAPANESE_ONE_INPUT_TEXT: str = (
     "（ 刑事[けいじ]） （刑事） 珍[めずら]しく 時間[じかん]が 空[あ]いたので　お 前[まえ]たちの 顔[かお]を　 お前[まえ]たちの 見[み]に 様方[さまかた]が な[b]  思い出[おもいだ]してくれ"
 )
 CASE_JAPANESE_ONE_CORRECT_FURIGANA_OUTPUT: str = (
-    """（<span morph-status="unknown"><ruby>刑事<rt>けいじ</rt></ruby></span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known"><ruby>珍<rt>めずら</rt></ruby>しく</span><span morph-status="unknown"><ruby>時間<rt>じかん</rt></ruby></span><span morph-status="unknown">が</span><span morph-status="known"><ruby>空<rt>あ</rt></ruby>い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お<ruby>前<rt>まえ</rt></ruby></span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"><ruby>顔<rt>かお</rt></ruby></span><span morph-status="unknown">を</span>　<span morph-status="unknown"><ruby>お前<rt>まえ</rt></ruby></span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"><ruby>見<rt>み</rt></ruby></span><span morph-status="unknown">に</span><ruby>様<span morph-status="learning">方</span><rt>さまかた</rt></ruby><span morph-status="unknown">が</span><span morph-status="unknown"><ruby>な<rt>b</rt></ruby></span> <ruby><span morph-status="unknown">思い</span><span morph-status="learning">出</span><rt>おもいだ</rt></ruby><span morph-status="learning">し</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
+    """（<span morph-status="unknown"><ruby>刑事<rt>けいじ</rt></ruby></span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known"><ruby>珍<rt>めずら</rt></ruby>しく</span><span morph-status="unknown"><ruby>時間<rt>じかん</rt></ruby></span><span morph-status="unknown">が</span><span morph-status="known"><ruby>空<rt>あ</rt></ruby>い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お<ruby>前<rt>まえ</rt></ruby></span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"><ruby>顔<rt>かお</rt></ruby></span><span morph-status="unknown">を</span>　<span morph-status="unknown"><ruby>お前<rt>まえ</rt></ruby></span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"><ruby>見<rt>み</rt></ruby></span><span morph-status="unknown">に</span><span morph-status="undefined"><ruby>様方<rt>さまかた</rt></ruby></span><span morph-status="unknown">が</span><span morph-status="unknown"><ruby>な<rt>b</rt></ruby></span> <span morph-status="undefined"><ruby>思い出<rt>おもいだ</rt></ruby>し</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
 )
 CASE_JAPANESE_ONE_CORRECT_TEXT_OUTPUT: str = (
     """（<span morph-status="unknown"> 刑事[けいじ]</span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known"> 珍[めずら]しく</span><span morph-status="unknown"> 時間[じかん]</span><span morph-status="unknown">が</span><span morph-status="known"> 空[あ]い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お 前[まえ]</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"> 顔[かお]</span><span morph-status="unknown">を</span>　<span morph-status="unknown"> お前[まえ]</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"> 見[み]</span><span morph-status="unknown">に</span><span morph-status="undefined"> 様方[さまかた]</span><span morph-status="unknown">が</span><span morph-status="unknown"> な[b]</span> <span morph-status="undefined"> 思い出[おもいだ]し</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
@@ -56,7 +56,7 @@ CASE_JAPANESE_ONE_CORRECT_TEXT_OUTPUT: str = (
 # to produce efficient html.
 # Duplicate of path 8's issue
 CASE_JAPANESE_ONE_CORRECT_KANJI_OUTPUT: str = (
-    """（<span morph-status="unknown">刑事</span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known">珍しく</span><span morph-status="unknown">時間</span><span morph-status="unknown">が</span><span morph-status="known">空い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お前</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown">顔</span><span morph-status="unknown">を</span>　<span morph-status="unknown">お前</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown">見</span><span morph-status="unknown">に</span>様<span morph-status="learning">方</span><span morph-status="unknown">が</span><span morph-status="unknown">な</span> <span morph-status="unknown">思い</span><span morph-status="learning">出</span><span morph-status="learning">し</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
+    """（<span morph-status="unknown">刑事</span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known">珍しく</span><span morph-status="unknown">時間</span><span morph-status="unknown">が</span><span morph-status="known">空い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お前</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown">顔</span><span morph-status="unknown">を</span>　<span morph-status="unknown">お前</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown">見</span><span morph-status="unknown">に</span><span morph-status="undefined">様方</span><span morph-status="unknown">が</span><span morph-status="unknown">な</span> <span morph-status="undefined">思い出し</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
 )
 CASE_JAPANESE_ONE_CORRECT_KANA_OUTPUT: str = (
     """（<span morph-status="unknown">けいじ</span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known">めずらしく</span><span morph-status="unknown">じかん</span><span morph-status="unknown">が</span><span morph-status="known">あい</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">おまえ</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown">かお</span><span morph-status="unknown">を</span>　<span morph-status="unknown">まえ</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown">み</span><span morph-status="unknown">に</span><span morph-status="undefined">さまかた</span><span morph-status="unknown">が</span><span morph-status="unknown">b</span> <span morph-status="undefined">おもいだし</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
@@ -115,9 +115,9 @@ case_japanese_three_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
 CASE_JAPANESE_THREE_INPUT_TEXT = "雪[ゆき]が お 留守番[るすばん]  相変[あいか]わらずの"
-CASE_JAPANESE_THREE_CORRECT_FURIGANA_OUTPUT = '<span morph-status="known"><ruby>雪<rt>ゆき</rt></ruby></span><span morph-status="learning">が</span> <span morph-status="learning">お</span><ruby><span morph-status="known">留守</span><span morph-status="learning">番</span><rt>るすばん</rt></ruby> <ruby><span morph-status="learning">相</span><span morph-status="learning">変</span><rt>あいか</rt></ruby><span morph-status="learning">わら</span><span morph-status="learning">ず</span>の'
+CASE_JAPANESE_THREE_CORRECT_FURIGANA_OUTPUT = '<span morph-status="known"><ruby>雪<rt>ゆき</rt></ruby></span><span morph-status="learning">が</span> <span morph-status="learning">お</span><span morph-status="undefined"><ruby>留守番<rt>るすばん</rt></ruby></span> <span morph-status="undefined"><ruby>相変<rt>あいか</rt></ruby>わら</span><span morph-status="learning">ず</span>の'
 CASE_JAPANESE_THREE_CORRECT_TEXT_OUTPUT = '<span morph-status="known"> 雪[ゆき]</span><span morph-status="learning">が</span> <span morph-status="learning">お</span><span morph-status="undefined"> 留守番[るすばん]</span> <span morph-status="undefined"> 相変[あいか]わら</span><span morph-status="learning">ず</span>の'
-CASE_JAPANESE_THREE_CORRECT_KANJI_OUTPUT = '<span morph-status="known">雪</span><span morph-status="learning">が</span> <span morph-status="learning">お</span><span morph-status="known">留守</span><span morph-status="learning">番</span> <span morph-status="learning">相</span><span morph-status="learning">変</span><span morph-status="learning">わら</span><span morph-status="learning">ず</span>の'
+CASE_JAPANESE_THREE_CORRECT_KANJI_OUTPUT = '<span morph-status="known">雪</span><span morph-status="learning">が</span> <span morph-status="learning">お</span><span morph-status="undefined">留守番</span> <span morph-status="undefined">相変わら</span><span morph-status="learning">ず</span>の'
 CASE_JAPANESE_THREE_CORRECT_KANA_OUTPUT = '<span morph-status="known">ゆき</span><span morph-status="learning">が</span> <span morph-status="learning">お</span><span morph-status="undefined">るすばん</span> <span morph-status="undefined">あいかわら</span><span morph-status="learning">ず</span>の'
 
 case_japanese_three_card_morphs = [
@@ -313,12 +313,12 @@ CASE_RUBY_SCENARIO_7_CORRECT_TEXT_OUTPUT = (
     '<span morph-status="undefined"> 錬金術師[れんきんじゅつし]</span>'
 )
 CASE_RUBY_SCENARIO_7_CORRECT_KANJI_OUTPUT = (
-    '<span morph-status="learning">錬金術</span><span morph-status="known">師</span>'
+    '<span morph-status="undefined">錬金術師</span>'
 )
 CASE_RUBY_SCENARIO_7_CORRECT_KANA_OUTPUT = (
     '<span morph-status="undefined">れんきんじゅつし</span>'
 )
-CASE_RUBY_SCENARIO_7_CORRECT_FURIGANA_OUTPUT = '<ruby><span morph-status="learning">錬金術</span><span morph-status="known">師</span><rt>れんきんじゅつし</rt></ruby>'
+CASE_RUBY_SCENARIO_7_CORRECT_FURIGANA_OUTPUT = '<span morph-status="undefined"><ruby>錬金術師<rt>れんきんじゅつし</rt></ruby></span>'
 case_ruby_scenario_7_morphs = [
     Morpheme(
         lemma="師",
@@ -354,15 +354,18 @@ CASE_RUBY_SCENARIO_8_CORRECT_TEXT_OUTPUT = (
 # the tagging is accurate but inefficient. Do we leave the code simple and produce less efficient html, or do we add slight complexity to the code
 # to produce efficient html.
 #
-CASE_RUBY_SCENARIO_8_CORRECT_KANJI_OUTPUT = '<span morph-status="learning">謎</span><span morph-status="known">解</span><span morph-status="known">き</span>'
+CASE_RUBY_SCENARIO_8_CORRECT_KANJI_OUTPUT = (
+    '<span morph-status="undefined">謎解き</span>'
+)
 CASE_RUBY_SCENARIO_8_CORRECT_KANA_OUTPUT = (
     '<span morph-status="undefined">なぞとき</span>'
 )
-CASE_RUBY_SCENARIO_8_CORRECT_FURIGANA_OUTPUT = '<ruby><span morph-status="learning">謎</span><span morph-status="known">解</span><rt>なぞと</rt></ruby><span morph-status="known">き</span>'
+CASE_RUBY_SCENARIO_8_CORRECT_FURIGANA_OUTPUT = (
+    '<span morph-status="undefined"><ruby>謎解<rt>なぞと</rt></ruby>き</span>'
+)
 
 case_ruby_scenario_8_morphs = [
     Morpheme(lemma="解き", inflection="解き", highest_inflection_learning_interval=50),
-    Morpheme(lemma="謎", inflection="謎", highest_inflection_learning_interval=10),
 ]
 
 ##############################################################################################
@@ -379,9 +382,11 @@ CASE_HIGHLIGHT_UNSPACED_INPUT_TEXT = "私は明日[あした]"
 CASE_HIGHLIGHT_UNSPACED_TEXT_OUTPUT = (
     '<span morph-status="undefined"> 私は明日[あした]</span>'
 )
-CASE_HIGHLIGHT_UNSPACED_KANJI_OUTPUT = '<span morph-status="known">私</span><span morph-status="learning">は</span><span morph-status="unknown">明日</span>'
+CASE_HIGHLIGHT_UNSPACED_KANJI_OUTPUT = '<span morph-status="undefined">私は明日</span>'
 CASE_HIGHLIGHT_UNSPACED_KANA_OUTPUT = '<span morph-status="undefined">あした</span>'
-CASE_HIGHLIGHT_UNSPACED_FURIGANA_OUTPUT = '<ruby><span morph-status="known">私</span><span morph-status="learning">は</span><span morph-status="unknown">明日</span><rt>あした</rt></ruby>'
+CASE_HIGHLIGHT_UNSPACED_FURIGANA_OUTPUT = (
+    '<span morph-status="undefined"><ruby>私は明日<rt>あした</rt></ruby></span>'
+)
 
 case_highlight_unspaced_morphs = [
     Morpheme(
@@ -831,6 +836,4 @@ def test_highlighting(  # pylint:disable=unused-argument
         highlighted_text: str = TextHighlighter(
             am_config, input_text, card_morphs, ruby_type
         ).highlighted()
-        print(highlighted_text)
-        print(correct_output)
         assert highlighted_text == correct_output
