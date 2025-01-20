@@ -44,6 +44,7 @@ OCCURRENCES_HEADER = "Occurrences"
 STATUS_KNOWN = "known"
 STATUS_LEARNING = "learning"
 STATUS_UNKNOWN = "unknown"
+STATUS_UNDEFINED = "undefined"
 
 config_broken: bool = False
 new_config_found: bool = False

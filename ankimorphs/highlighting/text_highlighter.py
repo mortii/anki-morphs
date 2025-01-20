@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from collections import deque
 
-from .. import debug_utils, text_preprocessing
+from .. import ankimorphs_globals, debug_utils, text_preprocessing
 from ..ankimorphs_config import AnkiMorphsConfig
 from ..morpheme import Morpheme
-from .ruby_classes import FuriganaRuby, Ruby, TextRuby
+from .ruby_classes import FuriganaRuby, KanjiRuby, Ruby, TextRuby
 from .status_class import Status
 
 
@@ -48,7 +48,7 @@ class TextHighlighter:
         This helps us determine the start of the ruby text even when the morphemizer incorrectly
         splits the word, which we can then use to override the start highlighting. However, when
         this occurs we can no longer use the morphemizer to infer the learning interval of the text
-        so we have to give it the status 'undefined'.
+        so we have to give it the status ankimorphs_globals.STATUS_UNDEFINED.
 
         more info: https://docs.ankiweb.net/templates/fields.html?highlight=ruby#ruby-characters
         """
@@ -128,7 +128,8 @@ class TextHighlighter:
 
         3. Only rubies remain (no more morphs):
             Example: `37[さんじゅうなな]！`
-            Action: wrap the current ruby (to the preceding whitespace) with the status 'undefined'.
+            Action: wrap the current ruby (to the preceding whitespace) with the
+             status ankimorphs_globals.STATUS_UNDEFINED.
             Explanation: we assume that rubies are intentionally curated into something that makes sense,
              so if there are no found morphs, that means the morphemizer is incorrect, and we cannot make
              any inferences about how well this section of text is known.
@@ -151,14 +152,14 @@ class TextHighlighter:
 
         7. Status is completely inside the ruby:
             Example: '錬金術師[れんきんじゅつし]'
-            Action: wrap everything with the status 'undefined'
+            Action: wrap everything with the status ankimorphs_globals.STATUS_UNDEFINED
             Explanation: occurs when multiple morphs match a single ruby. in this example the actual word is
              '錬金術師', but the morphemizer incorrectly splits it into ['錬金術', '師']. Since the morphemizer
              is incorrect, we cannot make an inference on how well the text is known.
 
         8. Ruby starts, then status starts, ruby ends, and status ends:
             Example: '謎解[なぞと]き'
-            Action: wrap everything with the status 'undefined'
+            Action: wrap everything with the status ankimorphs_globals.STATUS_UNDEFINED
             Explanation: this is a combination of scenarios 6 and 7.
              The correct word here is '謎解き' (scenario 6), but the morphemizer splits it into ['謎','解き'] (scenario 7).
         """
@@ -274,7 +275,7 @@ class TextHighlighter:
                 debug_utils.dev_print(
                     "Scenario 7: The status is completely inside the ruby."
                 )
-                if isinstance(ruby, FuriganaRuby):
+                if isinstance(ruby, (FuriganaRuby, KanjiRuby)):
                     debug_utils.dev_print("html path")
                     self._highlighted_expression = ruby.inject(
                         self._highlighted_expression
@@ -299,7 +300,7 @@ class TextHighlighter:
 
                 else:
                     debug_utils.dev_print("text path")
-                    status.status = "undefined"
+                    status.status = ankimorphs_globals.STATUS_UNDEFINED
                     self._highlighted_expression = (
                         self._highlighted_expression[: ruby.start]
                         + status.open()
@@ -323,7 +324,7 @@ class TextHighlighter:
                 debug_utils.dev_print(
                     "Scenario 8: The ruby starts then status starts, ruby ends, status ends."
                 )
-                if isinstance(ruby, FuriganaRuby):
+                if isinstance(ruby, (FuriganaRuby, KanjiRuby)):
                     debug_utils.dev_print("html path")
                     self._highlighted_expression = (
                         self._highlighted_expression[: ruby.start]
@@ -358,7 +359,7 @@ class TextHighlighter:
 
                 else:
                     debug_utils.dev_print("text path")
-                    status.status = "undefined"
+                    status.status = ankimorphs_globals.STATUS_UNDEFINED
                     self._highlighted_expression = (
                         self._highlighted_expression[: ruby.start]
                         + status.open()
