@@ -46,15 +46,6 @@ CASE_JAPANESE_ONE_CORRECT_FURIGANA_OUTPUT: str = (
 CASE_JAPANESE_ONE_CORRECT_TEXT_OUTPUT: str = (
     """（<span morph-status="unknown"> 刑事[けいじ]</span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known"> 珍[めずら]しく</span><span morph-status="unknown"> 時間[じかん]</span><span morph-status="unknown">が</span><span morph-status="known"> 空[あ]い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お 前[まえ]</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"> 顔[かお]</span><span morph-status="unknown">を</span>　<span morph-status="unknown"> お前[まえ]</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown"> 見[み]</span><span morph-status="unknown">に</span><span morph-status="undefined"> 様方[さまかた]</span><span morph-status="unknown">が</span><span morph-status="unknown"> な[b]</span> <span morph-status="undefined"> 思い出[おもいだ]し</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
 )
-# Commenting until we have the conversation about how to handle
-# CASE_JAPANESE_ONE_CORRECT_KANJI_OUTPUT: str = (
-#     """（<span morph-status="unknown">刑事</span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known">珍しく</span><span morph-status="unknown">時間</span><span morph-status="unknown">が</span><span morph-status="known">空い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お前</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown">顔</span><span morph-status="unknown">を</span>　<span morph-status="unknown">お前</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown">見</span><span morph-status="unknown">に</span>様<span morph-status="learning">方</span><span morph-status="unknown">が</span><span morph-status="unknown">な</span> <span morph-status="unknown">思い</span><span morph-status="learning">出し</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
-# )
-
-# interesting side effect here. because we use the same path for Furigana and Kanji, we get the side effect of a split where the furigana text used to be.
-# the tagging is accurate but inefficient. Do we leave the code simple and produce less efficient html, or do we add slight complexity to the code
-# to produce efficient html.
-# Duplicate of path 8's issue
 CASE_JAPANESE_ONE_CORRECT_KANJI_OUTPUT: str = (
     """（<span morph-status="unknown">刑事</span>） （<span morph-status="unknown">刑事</span>）<span morph-status="known">珍しく</span><span morph-status="unknown">時間</span><span morph-status="unknown">が</span><span morph-status="known">空い</span><span morph-status="known">た</span><span morph-status="unknown">ので</span>　<span morph-status="unknown">お前</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown">顔</span><span morph-status="unknown">を</span>　<span morph-status="unknown">お前</span><span morph-status="unknown">たち</span><span morph-status="unknown">の</span><span morph-status="unknown">見</span><span morph-status="unknown">に</span><span morph-status="undefined">様方</span><span morph-status="unknown">が</span><span morph-status="unknown">な</span> <span morph-status="undefined">思い出し</span><span morph-status="learning">て</span><span morph-status="learning">くれ</span>"""
 )
@@ -346,14 +337,6 @@ CASE_RUBY_SCENARIO_8_INPUT_TEXT = "謎解[なぞと]き"
 CASE_RUBY_SCENARIO_8_CORRECT_TEXT_OUTPUT = (
     '<span morph-status="undefined"> 謎解[なぞと]き</span>'
 )
-# Commenting until we have the conversation about how to handle
-# CASE_RUBY_SCENARIO_8_CORRECT_KANJI_OUTPUT = (
-#     '<span morph-status="learning">謎</span><span morph-status="known">解き</span>'
-# )
-# interesting side effect here. because we use the same path for Furigana and Kanji, we get the side effect of a split where the furigana text used to be.
-# the tagging is accurate but inefficient. Do we leave the code simple and produce less efficient html, or do we add slight complexity to the code
-# to produce efficient html.
-#
 CASE_RUBY_SCENARIO_8_CORRECT_KANJI_OUTPUT = (
     '<span morph-status="undefined">謎解き</span>'
 )
