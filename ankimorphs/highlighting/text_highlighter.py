@@ -210,10 +210,21 @@ class TextHighlighter:
                     Scenario 4: There is no overlap between ruby and status.
                     """
                 )
-                if status is None or (ruby is not None and ruby.start > status.start):
+                if status is None:
+                    # If there is no morph for this ruby,
+                    # manufacture one and let Scenario 5 take over.
                     # Ignore is here because (surprisingly) mypy can not tell the
                     # only path that leads here requires ruby to be non-None.
-                    self._highlighted_expression = ruby.inject(self._highlighted_expression)  # type: ignore[union-attr]
+                    status = Status(
+                        ruby.start,  # type: ignore[union-attr]
+                        ruby.end,  # type: ignore[union-attr]
+                        ankimorphs_globals.STATUS_UNDEFINED,
+                        self._highlighted_expression[ruby.start : ruby.end],  # type: ignore[union-attr]
+                    )
+                elif ruby is not None and ruby.start > status.start:
+                    self._highlighted_expression = ruby.inject(
+                        self._highlighted_expression
+                    )
                     ruby = None
                 else:
                     self._highlighted_expression = status.inject(
@@ -225,9 +236,7 @@ class TextHighlighter:
             # Scenario 5: The status is the same as the ruby.
             # OR
             # Scenario 6: The ruby is completely inside the status.
-            if (ruby.start == status.start and ruby.end == status.end) or (
-                ruby.start >= status.start and ruby.end <= status.end
-            ):
+            if ruby.start >= status.start and ruby.end <= status.end:
                 debug_utils.dev_print(
                     """
                     Scenario 5: The status is the same as the ruby.
@@ -265,9 +274,7 @@ class TextHighlighter:
             # Scenario 7: The status is completely inside the ruby.
             # OR
             # Scenario 8: The ruby starts then status starts, ruby ends, status ends."""
-            if (ruby.start <= status.start and ruby.end >= status.end) or (
-                ruby.start < status.start and ruby.end < status.end
-            ):
+            if ruby.start <= status.start:
                 debug_utils.dev_print(
                     """Scenario 7: The status is completely inside the ruby.
                     OR

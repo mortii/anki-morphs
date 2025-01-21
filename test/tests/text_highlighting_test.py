@@ -184,11 +184,15 @@ case_ruby_scenario_3_params = FakeEnvironmentParams(
     config=config_big_japanese_collection,
 )
 CASE_RUBY_SCENARIO_3_INPUT_TEXT = "37[さんじゅうなな]！"
-CASE_RUBY_SCENARIO_3_CORRECT_TEXT_OUTPUT = " 37[さんじゅうなな]！"
-CASE_RUBY_SCENARIO_3_CORRECT_KANJI_OUTPUT = "37！"
-CASE_RUBY_SCENARIO_3_CORRECT_KANA_OUTPUT = "さんじゅうなな！"
+CASE_RUBY_SCENARIO_3_CORRECT_TEXT_OUTPUT = (
+    '<span morph-status="undefined"> 37[さんじゅうなな]</span>！'
+)
+CASE_RUBY_SCENARIO_3_CORRECT_KANJI_OUTPUT = '<span morph-status="undefined">37</span>！'
+CASE_RUBY_SCENARIO_3_CORRECT_KANA_OUTPUT = (
+    '<span morph-status="undefined">さんじゅうなな</span>！'
+)
 CASE_RUBY_SCENARIO_3_CORRECT_FURIGANA_OUTPUT = (
-    "<ruby>37<rt>さんじゅうなな</rt></ruby>！"
+    '<span morph-status="undefined"><ruby>37<rt>さんじゅうなな</rt></ruby></span>！'
 )
 case_ruby_scenario_3_morphs: list[Morpheme] = []
 
