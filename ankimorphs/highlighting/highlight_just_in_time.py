@@ -65,9 +65,6 @@ def highlight_morphs_jit(
         morphemizer, field_text, am_config
     )
 
-    if not card_morphs:
-        return field_text
-
     debug_utils.dev_print(f"filter name: {filter_name}")
 
     ruby_type: type[Ruby] = _get_ruby_type(filter_name)
