@@ -9,10 +9,16 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
     FakeEnvironmentParams,
     fake_environment_fixture,
 )
+from typing import Any
+from unittest import mock
 
+import anki
 import pytest
 
-from ankimorphs.ankimorphs_config import AnkiMorphsConfig
+from ankimorphs import ankimorphs_config
+from ankimorphs.ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
+from ankimorphs.highlighting import highlight_just_in_time
+from ankimorphs.highlighting.highlight_just_in_time import highlight_morphs_jit
 from ankimorphs.highlighting.ruby_classes import (
     FuriganaRuby,
     KanaRuby,
@@ -22,6 +28,8 @@ from ankimorphs.highlighting.ruby_classes import (
 )
 from ankimorphs.highlighting.text_highlighter import TextHighlighter
 from ankimorphs.morpheme import Morpheme
+from ankimorphs.morphemizers import morphemizer as morphemizer_module
+from ankimorphs.morphemizers.morphemizer import Morphemizer
 
 ##############################################################################################
 #                                    CASE: JAPANESE ONE
@@ -820,7 +828,65 @@ def test_highlighting(  # pylint:disable=unused-argument
     # ruby types for extra confirmation, since they should all produce
     # the same result.
     for ruby_type in ruby_types:
-        highlighted_text: str = TextHighlighter(
+        static_highlighted_text: str = TextHighlighter(
             am_config, input_text, card_morphs, ruby_type
         ).highlighted()
-        assert highlighted_text == correct_output
+        assert static_highlighted_text == correct_output
+
+        dynamic_highlighted_text = _get_dynamic_highlighted_text(
+            input_text, card_morphs, ruby_type
+        )
+        assert dynamic_highlighted_text == correct_output
+
+
+def _get_dynamic_highlighted_text(
+    input_text: str,
+    card_morphs: list[Morpheme],
+    ruby_type: type[Ruby],
+) -> str:
+    patches: list[Any] = [
+        mock.patch.object(
+            highlight_just_in_time,
+            "_get_morph_meta_for_text",
+            lambda x, y, z: card_morphs,
+        ),
+        mock.patch.object(
+            ankimorphs_config,
+            "get_matching_filter",
+            lambda _: mock.Mock(
+                spec=AnkiMorphsConfigFilter, morphemizer_description=""
+            ),
+        ),
+        mock.patch.object(
+            morphemizer_module,
+            "get_morphemizer_by_description",
+            lambda _: mock.Mock(spec=Morphemizer),
+        ),
+    ]
+
+    for patch in patches:
+        patch.start()
+
+    highlighted_jit = highlight_morphs_jit(
+        field_text=input_text,
+        field_name="",
+        filter_name=_get_filter_name(ruby_type),
+        context=mock.Mock(spec=anki.template.TemplateRenderContext),
+    )
+
+    for patch in patches:
+        patch.stop()
+
+    return highlighted_jit
+
+
+def _get_filter_name(ruby_type: type[Ruby]) -> str:
+    """Get local styles for this run, based on the filter name."""
+
+    if ruby_type == FuriganaRuby:
+        return "am-highlight-furigana"
+    if ruby_type == KanjiRuby:
+        return "am-highlight-kanji"
+    if ruby_type == KanaRuby:
+        return "am-highlight-kana"
+    return "am-highlight"
