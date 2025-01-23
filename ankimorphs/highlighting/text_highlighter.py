@@ -120,48 +120,48 @@ class TextHighlighter:
 
         1. No remaining statuses or rubies:
             Example: '(ㆆ _ ㆆ)?!'
-            Action: break
+            Action: Break
             Explanation: 'self._highlighted_expression' is fully handled.
 
         2. Only morphs remain (no more rubies):
             Example: '私...'
-            Action: wrap the current morph with the respective status.
+            Action: Wrap the current morph with the respective status.
 
         3. Only rubies remain (no more morphs):
             Example: `37[さんじゅうなな]！`
-            Action: wrap the current ruby (to the preceding whitespace) with the
+            Action: Wrap the current ruby (to the preceding whitespace) with the
              status ankimorphs_globals.STATUS_UNDEFINED.
-            Explanation: we assume that rubies are intentionally curated into something that makes sense,
+            Explanation: We assume that rubies are intentionally curated into something that makes sense,
              so if there are no found morphs, that means the morphemizer is incorrect, and we cannot make
              any inferences about how well this section of text is known.
 
         4. No overlap between status and ruby:
             Example: '予定[よてい]です'
-            Action: only wrap the current morph at the end of the (sub)string.
+            Action: Only wrap the current morph at the end of the (sub)string.
             Explanation: The morph 'です' is checked against the ruby '予定[よてい]', but 'です' is independent
              of the ruby, i.e. no overlap, so the morph is wrapped with its respective status.
 
         5. Ruby and status match exactly:
             Example: '予定[よてい]'
-            Action: wrap the ruby with the respective status.
+            Action: Wrap the ruby with the respective status.
 
         6. Ruby is completely inside the status:
             Example: '相変[あいか]わらず'
-            Action: wrap everything with the respective status
-            Explanation: the morph that has a corresponding status here is '相変わらず', i.e. the
+            Action: Wrap everything with the respective status
+            Explanation: The morph that has a corresponding status here is '相変わらず', i.e. the
              ruby is there to clarify the first part of the word.
 
         7. Status is completely inside the ruby:
             Example: '錬金術師[れんきんじゅつし]'
-            Action: wrap everything with the status ankimorphs_globals.STATUS_UNDEFINED
-            Explanation: occurs when multiple morphs match a single ruby. in this example the actual word is
+            Action: Wrap everything with the status ankimorphs_globals.STATUS_UNDEFINED
+            Explanation: Occurs when multiple morphs match a single ruby. in this example the actual word is
              '錬金術師', but the morphemizer incorrectly splits it into ['錬金術', '師']. Since the morphemizer
              is incorrect, we cannot make an inference on how well the text is known.
 
         8. Ruby starts, then status starts, ruby ends, and status ends:
             Example: '謎解[なぞと]き'
-            Action: wrap everything with the status ankimorphs_globals.STATUS_UNDEFINED
-            Explanation: this is a combination of scenarios 6 and 7.
+            Action: Wrap everything with the status ankimorphs_globals.STATUS_UNDEFINED
+            Explanation: This is a combination of scenarios 6 and 7.
              The correct word here is '謎解き' (scenario 6), but the morphemizer splits it into ['謎','解き'] (scenario 7).
         """
 
@@ -192,41 +192,41 @@ class TextHighlighter:
             debug_utils.dev_print(f"current status: {repr(status)}")
 
             # Scenario 2: There are only statuses.
+            if ruby is None:
+                debug_utils.dev_print("Scenario 2: There are only statuses.")
+                # Ignore is here because (surprisingly) mypy can not tell the
+                # only path that leads here requires status to be non-None.
+                self._highlighted_expression = status.inject(self._highlighted_expression)  # type: ignore[union-attr]
+                status = None
+                continue
+
             # Scenario 3: There are only rubies.
-            # Scenario 4: There is no overlap between ruby and status.
-            # (includes if one or the other is not present)
-            if (
-                ruby is None
-                or status is None
-                or ruby.end <= status.start
-                or ruby.start >= status.end
-            ):
-                debug_utils.dev_print(
-                    """
-                    Scenario 2: There are only statuses.
-                    OR
-                    Scenario 3: There are only rubies.
-                    OR
-                    Scenario 4: There is no overlap between ruby and status.
-                    """
+            if status is None:
+                debug_utils.dev_print("Scenario 3: There are only rubies.")
+                # If there is no status for this ruby,
+                # manufacture one and let Scenario 5 take over.
+                status = Status(
+                    ruby.start,
+                    ruby.end,
+                    ankimorphs_globals.STATUS_UNDEFINED,
+                    self._highlighted_expression[ruby.start : ruby.end],
                 )
-                if status is None:
-                    # If there is no morph for this ruby,
-                    # manufacture one and let Scenario 5 take over.
-                    # Ignore is here because (surprisingly) mypy can not tell the
-                    # only path that leads here requires ruby to be non-None.
-                    status = Status(
-                        ruby.start,  # type: ignore[union-attr]
-                        ruby.end,  # type: ignore[union-attr]
-                        ankimorphs_globals.STATUS_UNDEFINED,
-                        self._highlighted_expression[ruby.start : ruby.end],  # type: ignore[union-attr]
+                continue
+
+            # Scenario 4: There is no overlap between ruby and status.
+            if ruby.end <= status.start or ruby.start >= status.end:
+                if ruby.start > status.start:
+                    debug_utils.dev_print(
+                        "Scenario 4a: There is no overlap between ruby and status. Ruby last."
                     )
-                elif ruby is not None and ruby.start > status.start:
                     self._highlighted_expression = ruby.inject(
                         self._highlighted_expression
                     )
                     ruby = None
                 else:
+                    debug_utils.dev_print(
+                        "Scenario 4b: There is no overlap between ruby and status. Status last."
+                    )
                     self._highlighted_expression = status.inject(
                         self._highlighted_expression
                     )
