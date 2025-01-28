@@ -10,9 +10,11 @@ from .status_class import Status
 
 
 class TextHighlighter:
-    """Represents an expression to highlight. Tracks 2 sets of data, one for rubies the other
-    for morph statuses. all the magic happens in _process() where we merge them together on top
-    of the base string."""
+    """
+    Represents an expression to highlight. Tracks 2 sets of data, one for rubies the other
+     for morph statuses. All the magic happens in _process() where we merge them together on top
+     of the base string.
+    """
 
     def __init__(
         self,
@@ -46,11 +48,11 @@ class TextHighlighter:
         Incorrect: "世[よ]の中[なか]"
 
         This helps us determine the start of the ruby text even when the morphemizer incorrectly
-        splits the word, which we can then use to override the start highlighting. However, when
-        this occurs we can no longer use the morphemizer to infer the learning interval of the text
-        so we have to give it the status ankimorphs_globals.STATUS_UNDEFINED.
+         splits the word, which we can then use to override the start highlighting. However, when
+         this occurs we can no longer use the morphemizer to infer the learning interval of the text
+         so we have to give it the status ankimorphs_globals.STATUS_UNDEFINED.
 
-        more info: https://docs.ankiweb.net/templates/fields.html?highlight=ruby#ruby-characters
+        More info: https://docs.ankiweb.net/templates/fields.html?highlight=ruby#ruby-characters
         """
 
         end = 0
@@ -73,7 +75,15 @@ class TextHighlighter:
             )
 
     def _tag_morphemes(self, expression: str, morphemes: list[Morpheme]) -> None:
-        """Populate internal deque of found morph locations."""
+        """
+        Populate internal deque of found morph locations.
+
+        Start with the longest morphemes so that we do not tag parts of morphs, and then miss the
+         bigger ones.
+
+        Clear the found morph out of the string and replace it with spaces so that our indexes are
+         correct for subsequent iterations.
+        """
 
         for morph in sorted(
             morphemes, key=lambda morpheme: len(morpheme.inflection), reverse=True
@@ -109,12 +119,14 @@ class TextHighlighter:
 
     def _process(self) -> None:  # pylint:disable=too-many-branches, too-many-statements
         """
-        Process the text in 'self._highlighted_expression', now that all the metadata has been gathered.
+        Process the text in 'self._highlighted_expression', now that all the metadata has been
+         gathered.
 
-        This method works backwards through the sets of found morphs and rubies. It compares the relationship of the
-        last morph and last ruby. Depending on the relationship, the base string is updated with relevant data from
-        the morph and/or ruby. When one, the other, or both are processed, they are discarded and a new candidate for
-        the discarded token is popped. The analysis then repeats until there are no tokens left.
+        This method works backwards through the sets of found morphs and rubies. It compares the
+         relationship of the last morph and last ruby. Depending on the relationship, the base
+         string is updated with relevant data from the morph and/or ruby. When one, the other, or
+         both are processed, they are discarded and a new candidate for the discarded token is
+         popped. The analysis then repeats until there are no tokens left.
 
         Scenarios Handled:
 
@@ -131,15 +143,27 @@ class TextHighlighter:
             Example: `37[さんじゅうなな]！`
             Action: Wrap the current ruby (to the preceding whitespace) with the
              status ankimorphs_globals.STATUS_UNDEFINED.
-            Explanation: We assume that rubies are intentionally curated into something that makes sense,
-             so if there are no found morphs, that means the morphemizer is incorrect, and we cannot make
-             any inferences about how well this section of text is known.
+             This undefined status is manufactured just-in-time. This turns all instances of this
+             scenario into scenario 5.
+            Explanation: We assume that rubies are intentionally curated into something that makes
+             sense, so if there are no found morphs, that means the morphemizer is incorrect, and
+             we cannot make any inferences about how well this section of text is known.
 
-        4. No overlap between status and ruby:
+        4a. No overlap between status and ruby (ruby last):
+            Example: '...です。 予定[よてい]'
+            Action: Only wrap the later token in the string. If the ruby is later, we must
+             manufacture an undefined status temporarily and use it.
+            Explanation: The morph 'です' is checked against the ruby '予定[よてい]', but 'です' is
+             independent of the ruby, i.e. no overlap, ruby is last, so we manufacture an undefined
+             status to go with this ruby, and we annotate like scenario 5.
+
+        4b. No overlap between status and ruby (morph last):
             Example: '予定[よてい]です'
-            Action: Only wrap the current morph at the end of the (sub)string.
-            Explanation: The morph 'です' is checked against the ruby '予定[よてい]', but 'です' is independent
-             of the ruby, i.e. no overlap, so the morph is wrapped with its respective status.
+            Action: Only wrap the later token in the string. If the morph is later, process it
+             normally.
+            Explanation: The morph 'です' is checked against the ruby '予定[よてい]', but 'です' is
+             independent of the ruby, i.e. no overlap, morph is last, so it is wrapped with its
+             respective status, and the ruby is left alone to be processed next time.
 
         5. Ruby and status match exactly:
             Example: '予定[よてい]'
@@ -154,15 +178,17 @@ class TextHighlighter:
         7. Status is completely inside the ruby:
             Example: '錬金術師[れんきんじゅつし]'
             Action: Wrap everything with the status ankimorphs_globals.STATUS_UNDEFINED
-            Explanation: Occurs when multiple morphs match a single ruby. in this example the actual word is
-             '錬金術師', but the morphemizer incorrectly splits it into ['錬金術', '師']. Since the morphemizer
-             is incorrect, we cannot make an inference on how well the text is known.
+            Explanation: Occurs when multiple morphs match a single ruby. In this example the
+             actual word is '錬金術師', but the morphemizer incorrectly splits it into
+             ['錬金術', '師']. Since the morphemizer is incorrect, we cannot make an inference
+             on how well the text is known.
 
         8. Ruby starts, then status starts, ruby ends, and status ends:
             Example: '謎解[なぞと]き'
             Action: Wrap everything with the status ankimorphs_globals.STATUS_UNDEFINED
             Explanation: This is a combination of scenarios 6 and 7.
-             The correct word here is '謎解き' (scenario 6), but the morphemizer splits it into ['謎','解き'] (scenario 7).
+             The correct word here is '謎解き' (scenario 6), but the morphemizer splits it into
+             ['謎','解き'] (scenario 7).
         """
 
         ruby: Ruby | None = None
@@ -219,10 +245,30 @@ class TextHighlighter:
                     debug_utils.dev_print(
                         "Scenario 4a: There is no overlap between ruby and status. Ruby last."
                     )
-                    self._highlighted_expression = ruby.inject(
-                        self._highlighted_expression
+                    # There is no status for this ruby, manufacture one and update.
+                    temp_status: Status | None = Status(
+                        ruby.start,
+                        ruby.end,
+                        ankimorphs_globals.STATUS_UNDEFINED,
+                        self._highlighted_expression[ruby.start : ruby.end],
+                    )
+
+                    # This is just like scenario 5.
+                    self._highlighted_expression = (
+                        self._highlighted_expression[: temp_status.start]  # type: ignore[union-attr]
+                        + temp_status.open()  # type: ignore[union-attr]
+                        + self._highlighted_expression[
+                            temp_status.start : temp_status.start  # type: ignore[union-attr]
+                            + ruby.start
+                            - temp_status.start  # type: ignore[union-attr]
+                        ]
+                        + str(ruby)
+                        + self._highlighted_expression[ruby.end : temp_status.end]  # type: ignore[union-attr]
+                        + temp_status.close()  # type: ignore[union-attr]
+                        + self._highlighted_expression[temp_status.end :]  # type: ignore[union-attr]
                     )
                     ruby = None
+                    temp_status = None
                 else:
                     debug_utils.dev_print(
                         "Scenario 4b: There is no overlap between ruby and status. Status last."
@@ -241,7 +287,8 @@ class TextHighlighter:
                     """
                     Scenario 5: The status is the same as the ruby.
                     OR
-                    Scenario 6: The ruby is completely inside the status."""
+                    Scenario 6: The ruby is completely inside the status.
+                    """
                 )
                 self._highlighted_expression = (
                     self._highlighted_expression[: status.start]
@@ -276,9 +323,11 @@ class TextHighlighter:
             # Scenario 8: The ruby starts then status starts, ruby ends, status ends."""
             if ruby.start <= status.start:
                 debug_utils.dev_print(
-                    """Scenario 7: The status is completely inside the ruby.
+                    """
+                    Scenario 7: The status is completely inside the ruby.
                     OR
-                    Scenario 8: The ruby starts then status starts, ruby ends, status ends."""
+                    Scenario 8: The ruby starts then status starts, ruby ends, status ends.
+                    """
                 )
                 status.status = ankimorphs_globals.STATUS_UNDEFINED
                 self._highlighted_expression = (

@@ -2,7 +2,9 @@ from ..highlighting.base_classes import Injector, Range
 
 
 class Status(Range, Injector):
-    """Represents a morph's status and range in parent string."""
+    """
+    Represents a morph's status and range in parent string.
+    """
 
     def __init__(self, start: int, end: int, status: str, morph: str):
         super().__init__(start, end)
@@ -16,7 +18,9 @@ class Status(Range, Injector):
         return "</span>"
 
     def inject(self, target: str) -> str:
-        """Put this morph into the given string."""
+        """
+        Put this morph into the given string.
+        """
 
         return (
             target[: self.start]

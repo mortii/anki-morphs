@@ -4,7 +4,9 @@ from ..highlighting.base_classes import Injector, Range
 
 
 class Ruby(Range, Injector):
-    """Abstract base class to define minimum interface for all Ruby Range subclasses."""
+    """
+    Abstract base class to define minimum interface for all Ruby Range subclasses.
+    """
 
     def __init__(self, start: int, end: int, base: str, ruby: str):
         super().__init__(start, end)
@@ -26,7 +28,9 @@ class Ruby(Range, Injector):
 
 
 class FuriganaRuby(Ruby):
-    """Represents an html ruby and its range in parent string."""
+    """
+    Represents an html ruby and its range in parent string.
+    """
 
     def open(self) -> str:
         return "<ruby>"
@@ -39,7 +43,9 @@ class FuriganaRuby(Ruby):
 
 
 class KanjiRuby(Ruby):
-    """Represents a kanji ruby and its range in parent string."""
+    """
+    Represents a kanji ruby and its range in parent string.
+    """
 
     def open(self) -> str:
         return ""
@@ -52,7 +58,9 @@ class KanjiRuby(Ruby):
 
 
 class KanaRuby(Ruby):
-    """Represents a kana ruby and its range in parent string."""
+    """
+    Represents a kana ruby and its range in parent string.
+    """
 
     def open(self) -> str:
         return ""
@@ -68,7 +76,9 @@ class KanaRuby(Ruby):
 
 
 class TextRuby(Ruby):
-    """Represents a text ruby and its range in parent string."""
+    """
+    Represents a text ruby and its range in parent string.
+    """
 
     def open(self) -> str:
         return " "

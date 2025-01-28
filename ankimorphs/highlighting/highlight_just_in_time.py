@@ -28,8 +28,10 @@ def highlight_morphs_jit(
     filter_name: str,
     context: TemplateRenderContext,
 ) -> str:
-    """Use morph learning progress to decorate the morphemes in the supplied text.
-    Adds css classes to the output that can be styled in the card."""
+    """
+    Use morph learning progress to decorate the morphemes in the supplied text.
+    Adds css classes to the output that can be styled in the card.
+    """
 
     # Perf: Bail early if the user attempts to use this template filter on the already
     # formatted data.
@@ -129,7 +131,8 @@ def _dehtml(
     am_config: AnkiMorphsConfig | None = None,
     clean_html: bool = False,
 ) -> str:
-    """Prepare a string to be passed to a morphemizer. Specially process <ruby><rt> tags to extract
+    """
+    Prepare a string to be passed to a morphemizer. Specially process <ruby><rt> tags to extract
     ruby to reconstruct base/ruby ruby shorthand. Remove all html from the input string.
     """
 
