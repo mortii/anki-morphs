@@ -138,6 +138,32 @@ case_japanese_three_card_morphs = [
     Morpheme(lemma="相", inflection="相", highest_inflection_learning_interval=10),
 ]
 
+##############################################################################################
+#                             CASE: Pasted html wrapping ruby
+##############################################################################################
+# Full paste into card can produce cases where there are no spaces preceding a ruby.
+# Collection choice is arbitrary.
+# Database choice is arbitrary.
+##############################################################################################
+case_ruby_with_html_params = FakeEnvironmentParams(
+    config=config_big_japanese_collection,
+)
+
+CASE_RUBY_WITH_HTML_INPUT_TEXT = "<div>本[ほん]</div>"
+CASE_RUBY_WITH_HTML_CORRECT_TEXT_OUTPUT = (
+    '<div><span morph-status="undefined"> 本[ほん]</span></div>'
+)
+CASE_RUBY_WITH_HTML_CORRECT_KANJI_OUTPUT = (
+    '<div><span morph-status="undefined">本</span></div>'
+)
+CASE_RUBY_WITH_HTML_CORRECT_KANA_OUTPUT = (
+    '<div><span morph-status="undefined">ほん</span></div>'
+)
+CASE_RUBY_WITH_HTML_CORRECT_FURIGANA_OUTPUT = (
+    '<div><span morph-status="undefined"><ruby>本<rt>ほん</rt></ruby></span></div>'
+)
+
+case_ruby_with_html_morphs: list[Morpheme] = []
 
 ##############################################################################################
 #                                    CASE: Ruby scenario 1
@@ -624,6 +650,34 @@ case_highlight_based_on_lemma_morphs = [
             case_highlight_based_on_lemma_morphs,
             CASE_HIGHLIGHT_BASED_ON_LEMMA_OUTPUT,
             [TextRuby, KanjiRuby, KanaRuby, FuriganaRuby],
+        ),
+        (
+            case_ruby_with_html_params,
+            CASE_RUBY_WITH_HTML_INPUT_TEXT,
+            case_ruby_with_html_morphs,
+            CASE_RUBY_WITH_HTML_CORRECT_TEXT_OUTPUT,
+            [TextRuby],
+        ),
+        (
+            case_ruby_with_html_params,
+            CASE_RUBY_WITH_HTML_INPUT_TEXT,
+            case_ruby_with_html_morphs,
+            CASE_RUBY_WITH_HTML_CORRECT_KANJI_OUTPUT,
+            [KanjiRuby],
+        ),
+        (
+            case_ruby_with_html_params,
+            CASE_RUBY_WITH_HTML_INPUT_TEXT,
+            case_ruby_with_html_morphs,
+            CASE_RUBY_WITH_HTML_CORRECT_KANA_OUTPUT,
+            [KanaRuby],
+        ),
+        (
+            case_ruby_with_html_params,
+            CASE_RUBY_WITH_HTML_INPUT_TEXT,
+            case_ruby_with_html_morphs,
+            CASE_RUBY_WITH_HTML_CORRECT_FURIGANA_OUTPUT,
+            [FuriganaRuby],
         ),
         (
             case_ruby_scenario_1_params,
