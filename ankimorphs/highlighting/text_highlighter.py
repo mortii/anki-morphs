@@ -246,7 +246,7 @@ class TextHighlighter:
                         "Scenario 4a: There is no overlap between ruby and status. Ruby last."
                     )
                     # There is no status for this ruby, manufacture one and update.
-                    temp_status: Status | None = Status(
+                    temp_status: Status = Status(
                         ruby.start,
                         ruby.end,
                         ankimorphs_globals.STATUS_UNDEFINED,
@@ -255,20 +255,19 @@ class TextHighlighter:
 
                     # This is just like scenario 5.
                     self._highlighted_expression = (
-                        self._highlighted_expression[: temp_status.start]  # type: ignore[union-attr]
-                        + temp_status.open()  # type: ignore[union-attr]
+                        self._highlighted_expression[: temp_status.start]
+                        + temp_status.open()
                         + self._highlighted_expression[
-                            temp_status.start : temp_status.start  # type: ignore[union-attr]
+                            temp_status.start : temp_status.start
                             + ruby.start
-                            - temp_status.start  # type: ignore[union-attr]
+                            - temp_status.start
                         ]
                         + str(ruby)
-                        + self._highlighted_expression[ruby.end : temp_status.end]  # type: ignore[union-attr]
-                        + temp_status.close()  # type: ignore[union-attr]
-                        + self._highlighted_expression[temp_status.end :]  # type: ignore[union-attr]
+                        + self._highlighted_expression[ruby.end : temp_status.end]
+                        + temp_status.close()
+                        + self._highlighted_expression[temp_status.end :]
                     )
                     ruby = None
-                    temp_status = None
                 else:
                     debug_utils.dev_print(
                         "Scenario 4b: There is no overlap between ruby and status. Status last."
