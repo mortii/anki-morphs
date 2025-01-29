@@ -73,10 +73,12 @@ dark-mode, then only adding the first line would be enough. You can also change 
 [morph-status=unknown] { color: blue; }
 [morph-status=learning] { color: #8bb33d; } /* light-green */
 [morph-status=known] { color: green; }
+[morph-status=undefined] { color: grey; }
 
 .nightMode [morph-status=unknown] { color: red; } 
 .nightMode [morph-status=learning] { color: #ffff99; } /* yellow */
 .nightMode [morph-status=known] { color: #8bb33d; } /* light-green */
+.nightMode [morph-status=undefined] { color: grey; }
 ```
 
 
@@ -84,41 +86,43 @@ dark-mode, then only adding the first line would be enough. You can also change 
 It’s also possible to use `background-color`:
 
 ``` css
-[morph-status=unknown] { background-color: #f7867e; } /* red */
-[morph-status=learning] { background-color: #ffff99; } /* yellow */
-[morph-status=known] { background-color: #49f53e; } /* green */
+[morph-status=unknown] { background-color: blue; }
+[morph-status=learning] { background-color: #8bb33d; } /* light-green */
+[morph-status=known] { background-color: green; }
+[morph-status=undefined] { background-color: grey; }
 
-.nightMode [morph-status=unknown] { background-color: #b74d4d; } /* red */
-.nightMode [morph-status=learning] { background-color: #ccad50; } /* yellow */
-.nightMode [morph-status=known] { background-color: #27961f; } /* green */
+.nightMode [morph-status=unknown] { background-color: red; } 
+.nightMode [morph-status=learning] { background-color: #ffff99; } /* yellow */
+.nightMode [morph-status=known] { background-color: #8bb33d; } /* light-green */
+.nightMode [morph-status=undefined] { background-color: grey; }
 ```
 
 
-### Furigana and other ruby characters
+### Ruby Character Filters 
 
-![ruby_characters_preserved.png](../../../img/ruby_characters_preserved.png)
 
 > **Note**: The `Ignore content in square brackets` [preprocess setting](../setup/settings/preprocess.md) option needs to
 > be activated for ruby character highlighting to function properly.
 
-To have [ruby characters](https://docs.ankiweb.net/templates/fields.html#ruby-characters) such as furigana displayed,
-you have to prepend the respective [character filter](https://docs.ankiweb.net/templates/fields.html#additional-ruby-character-filters)
-to the field on the card
-template, e.g:
-
-``` text
-{{furigana:am-highlighted}}
-```
-or
-
-``` text
-{{am-highlight:furigana:Japanese}}
-```
+Anki supports [ruby characters](https://docs.ankiweb.net/templates/fields.html#ruby-characters) (pronunciation annotations) such as furigana.
+You can choose how these are displayed by prepending the respective [character filter](https://docs.ankiweb.net/templates/fields.html#additional-ruby-character-filters)
+to the field on the card template. The native character filters work on the static highlighting, and for the dynamic highlighting
+we have corresponding custom filters.
 
 
-> **Note**: Because [Anki cannot process custom filters before built in filters](https://github.com/ankicommunity/anki-desktop/blob/main/rslib/src/template_filters.rs#L22-L24),
-> it is required to apply the character filter to the right of `am-highlight:`
+<br>
 
+|                             | Static             | Dynamic                           |
+|-----------------------------|--------------------|-----------------------------------|
+| **Kanji only**              | `kanji:` | `am-highlight-kanji:`                       |
+| **Kana only**               | `kana:` | `am-highlight-kana:`                         |
+| **Furigana**                | `furigana:` | `am-highlight-furigana:` |
+
+<br>
+
+Here is an example of what they all look like:
+
+![ruby-filters.png](../../img/ruby-filters.png)
 
 
 ### Duplicate Audio Problem
