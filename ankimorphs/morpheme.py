@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import functools
+
+from . import ankimorphs_globals
+
 
 class Morpheme:
     __slots__ = (
@@ -54,6 +58,26 @@ class Morpheme:
 
     def is_proper_noun(self) -> bool:
         return self.sub_part_of_speech == "固有名詞" or self.part_of_speech == "PROPN"
+
+    @functools.lru_cache(maxsize=131072)
+    def get_learning_status(
+        self,
+        evaluate_inflection: bool,
+        interval_for_known_morphs: int,
+    ) -> str:
+        interval_attribute: str = (
+            "highest_inflection_learning_interval"
+            if evaluate_inflection
+            else "highest_lemma_learning_interval"
+        )
+
+        learning_interval = getattr(self, interval_attribute, 0)
+
+        if learning_interval == 0:
+            return ankimorphs_globals.STATUS_UNKNOWN
+        if learning_interval < interval_for_known_morphs:
+            return ankimorphs_globals.STATUS_LEARNING
+        return ankimorphs_globals.STATUS_KNOWN
 
 
 class MorphOccurrence:

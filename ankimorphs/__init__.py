@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Literal
 
 import aqt
+from anki import hooks
 from anki.cards import Card
 from anki.collection import OpChangesAfterUndo
 from aqt import gui_hooks, mw
@@ -39,7 +40,7 @@ from . import ankimorphs_config
 from . import ankimorphs_globals as am_globals
 from . import (
     browser_utils,
-    debugging_utils,
+    debug_utils,
     message_box_utils,
     name_file_utils,
     reviewing_utils,
@@ -52,6 +53,7 @@ from .ankimorphs_db import AnkiMorphsDB
 from .extra_settings import ankimorphs_extra_settings, extra_settings_keys
 from .extra_settings.ankimorphs_extra_settings import AnkiMorphsExtraSettings
 from .generators.generators_window import GeneratorWindow
+from .highlighting.highlight_just_in_time import highlight_morphs_jit
 from .known_morphs_exporter import KnownMorphsExporterDialog
 from .progression.progression_window import ProgressionWindow
 from .recalc import recalc_main
@@ -96,6 +98,8 @@ def main() -> None:
     gui_hooks.state_did_undo.append(rebuild_seen_morphs)
 
     gui_hooks.profile_will_close.append(cleanup_profile_session)
+
+    hooks.field_filter.append(highlight_morphs_jit)
 
 
 def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:

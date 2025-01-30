@@ -172,8 +172,9 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
     modified_cards: dict[int, Card] = {}  # a dict makes the offsetting process easier
     modified_notes: list[Note] = []
 
-    # clear the morph collection frequency cache between recalcs
+    # clear relevant caches between recalcs
     am_db.get_morph_priorities_from_collection.cache_clear()
+    Morpheme.get_learning_status.cache_clear()
 
     for config_filter in modify_enabled_config_filters:
         note_type_dict: NotetypeDict = extra_field_utils.add_extra_fields_to_note_type(

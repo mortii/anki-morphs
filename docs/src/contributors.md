@@ -6,11 +6,11 @@ know, and I'll add you ;)
 
 ### Code contribution
 
-mortii, Vilhelm-Ian, xofm31, Jcuhfehl, schiozzone, Tartee, wolearyc, mdraves91, hans.
+mortii, Vilhelm-Ian, xofm31, Jcuhfehl, schiozzone, Tartee, wolearyc, mdraves91, hans, RobHelgeson.
 
 ### Docs contribution
 
-Matt Vs Japan, mortii, Vilhelm-Ian, cocowash, xuiqzy, xofm31, zeroeightysix, wolearyc, Celebes.
+Matt Vs Japan, mortii, Vilhelm-Ian, cocowash, xuiqzy, xofm31, zeroeightysix, wolearyc, Celebes, RobHelgeson.
 
 ### Bugs reports, feature requests, or other helpful guidance
 

@@ -24,6 +24,7 @@
   - [Prioritizing](user_guide/setup/prioritizing.md)
   - [Names](user_guide/setup/names.md)
   - [Setting Known Morphs](user_guide/setup/setting-known-morphs.md)
+  - [Highlighting](user_guide/setup/highlighting.md)
 - [Usage](user_guide/usage.md)
   - [Recalc](user_guide/usage/recalc.md)
   - [Reviewing Cards](user_guide/usage/reviewing-cards.md)

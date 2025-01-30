@@ -10,7 +10,7 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 
 import pytest
 
-from ankimorphs import debugging_utils, morph_priority_utils
+from ankimorphs import debug_utils, morph_priority_utils
 from ankimorphs.ankimorphs_config import AnkiMorphsConfig
 from ankimorphs.exceptions import PriorityFileMalformedException
 
@@ -62,7 +62,7 @@ def test_morph_priority_with_priority_file(  # pylint:disable=unused-argument
 ) -> None:
     """
     Checks if morph priorities are loaded correctly from the priority files.
-    Creating json files can be done with 'save_to_json_file' from 'debugging_utils.py'
+    Creating json files can be done with 'save_to_json_file' from 'debug_utils.py'
     """
 
     if fake_environment_fixture is None:
@@ -80,7 +80,7 @@ def test_morph_priority_with_priority_file(  # pylint:disable=unused-argument
 
     # debugging_utils.save_to_json_file(json_file_path, morph_priorities)
 
-    correct_morphs_priorities = debugging_utils.load_dict_from_json_file(json_file_path)
+    correct_morphs_priorities = debug_utils.load_dict_from_json_file(json_file_path)
     assert len(correct_morphs_priorities) > 0
     assert morph_priorities == correct_morphs_priorities
 
@@ -139,7 +139,7 @@ def test_morph_priority_with_collection_frequency(  # pylint:disable=unused-argu
         json_file_name,
     )
 
-    correct_morphs_priorities = debugging_utils.load_dict_from_json_file(json_file_path)
+    correct_morphs_priorities = debug_utils.load_dict_from_json_file(json_file_path)
     assert len(correct_morphs_priorities) > 0
     assert morph_priorities == correct_morphs_priorities
 

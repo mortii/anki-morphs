@@ -12,6 +12,7 @@ from anki.models import NotetypeId
 from aqt import mw
 from aqt.operations import QueryOp
 
+from . import ankimorphs_globals
 from .ankimorphs_config import AnkiMorphsConfig
 from .morpheme import Morpheme
 from .name_file_utils import get_names_from_file_as_morphs
@@ -401,11 +402,11 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                 key = row[0] + row[1]
                 interval = row[2]
                 if interval >= am_config.interval_for_known_morphs:
-                    learning_status = "known"
+                    learning_status = ankimorphs_globals.STATUS_KNOWN
                 elif interval > 0:
-                    learning_status = "learning"
+                    learning_status = ankimorphs_globals.STATUS_LEARNING
                 else:
-                    learning_status = "unknown"
+                    learning_status = ankimorphs_globals.STATUS_UNKNOWN
 
                 morph_status_dict[key] = learning_status
 
@@ -427,11 +428,11 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                 key = row[0]
                 interval = row[1]
                 if interval >= am_config.interval_for_known_morphs:
-                    learning_status = "known"
+                    learning_status = ankimorphs_globals.STATUS_KNOWN
                 elif interval > 0:
-                    learning_status = "learning"
+                    learning_status = ankimorphs_globals.STATUS_LEARNING
                 else:
-                    learning_status = "unknown"
+                    learning_status = ankimorphs_globals.STATUS_UNKNOWN
 
                 morph_status_dict[key] = learning_status
 

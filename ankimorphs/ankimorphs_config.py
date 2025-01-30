@@ -816,6 +816,18 @@ def get_modify_enabled_filters() -> list[AnkiMorphsConfigFilter]:
     return modify_filters
 
 
+def get_matching_filter(note: Note) -> AnkiMorphsConfigFilter | None:
+    assert mw is not None
+    config_filters = AnkiMorphsConfig().get_config_filters()
+    assert isinstance(config_filters, list)
+
+    for am_filter in config_filters:
+        note_type_id: NotetypeId | None = mw.col.models.id_for_name(am_filter.note_type)
+        if note_type_id == note.mid:
+            return am_filter
+    return None
+
+
 def get_matching_modify_filter(note: Note) -> AnkiMorphsConfigFilter | None:
     assert mw is not None
     modify_filters: list[AnkiMorphsConfigFilter] = get_modify_enabled_filters()

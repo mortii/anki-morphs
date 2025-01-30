@@ -10,6 +10,7 @@ square_brackets_regex = re.compile(r"\[[^]]*]")
 round_brackets_regex = re.compile(r"（[^）]*）")
 slim_round_brackets_regexp = re.compile(r"\([^)]*\)")
 non_alpha_regexp = re.compile(r"[-'\w]")
+ruby_regex = re.compile(r" ?([^] \W]+)\[(.+?)\]")
 
 translation_table: dict[int, Any] = {}
 
