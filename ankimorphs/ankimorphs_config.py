@@ -88,6 +88,7 @@ class RawConfigKeys:
     )
     PREPROCESS_IGNORE_NAMES_MORPHEMIZER = "preprocess_ignore_names_morphemizer"
     PREPROCESS_IGNORE_NAMES_TEXTFILE = "preprocess_ignore_names_textfile"
+    PREPROCESS_IGNORE_NUMBERS = "preprocess_ignore_numbers"
     PREPROCESS_IGNORE_SUSPENDED_CARDS_CONTENT = (
         "preprocess_ignore_suspended_cards_content"
     )
@@ -359,6 +360,11 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many
             )
             self.preprocess_ignore_names_textfile: bool = self._get_config_item(
                 key=RawConfigKeys.PREPROCESS_IGNORE_NAMES_TEXTFILE,
+                expected_type=bool,
+                use_default=is_default,
+            )
+            self.preprocess_ignore_numbers: bool = self._get_config_item(
+                key=RawConfigKeys.PREPROCESS_IGNORE_NUMBERS,
                 expected_type=bool,
                 use_default=is_default,
             )

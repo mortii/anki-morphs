@@ -35,11 +35,11 @@ _mecab_args = [
     "--unk-format=",
 ]
 
-successful_startup: bool = False
+successful_import: bool = False
 
 
 def setup_mecab() -> None:
-    global successful_startup
+    global successful_import
     global _mecab_windows_startupinfo
     global _mecab_encoding
     global _mecab_base_cmd
@@ -69,7 +69,7 @@ def setup_mecab() -> None:
     assert charset_match is not None
     _mecab_encoding = charset_match.group(1)  # example: utf8, type: <class 'str'>
 
-    successful_startup = True
+    successful_import = True
 
 
 def get_windows_startup_info() -> Any:

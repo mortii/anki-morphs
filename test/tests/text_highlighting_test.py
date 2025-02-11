@@ -28,7 +28,9 @@ from ankimorphs.highlighting.ruby_classes import (
 )
 from ankimorphs.highlighting.text_highlighter import TextHighlighter
 from ankimorphs.morpheme import Morpheme
-from ankimorphs.morphemizers import morphemizer as morphemizer_module
+from ankimorphs.morphemizers import (
+    morphemizer_utils,
+)
 from ankimorphs.morphemizers.morphemizer import Morphemizer
 
 ##############################################################################################
@@ -912,7 +914,7 @@ def _get_dynamic_highlighted_text(
             ),
         ),
         mock.patch.object(
-            morphemizer_module,
+            morphemizer_utils,
             "get_morphemizer_by_description",
             lambda _: mock.Mock(spec=Morphemizer),
         ),

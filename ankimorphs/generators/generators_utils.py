@@ -4,7 +4,8 @@ import copy
 from enum import Enum
 from functools import partial
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
+from unittest.mock import Mock
 
 from aqt import mw
 from aqt.qt import (  # pylint:disable=no-name-in-module
@@ -13,16 +14,34 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
     QTableWidgetItem,
 )
 
+from .. import text_preprocessing
 from ..ankimorphs_config import AnkiMorphsConfig
 from ..ankimorphs_db import AnkiMorphsDB
-from ..exceptions import CancelledOperationException
+from ..exceptions import CancelledOperationException, UnicodeException
 from ..morpheme import Morpheme, MorphOccurrence
 from ..morphemizers import spacy_wrapper
-from ..morphemizers.morphemizer import Morphemizer, SpacyMorphemizer
+from ..morphemizers.morphemizer import Morphemizer
+from ..morphemizers.spacy_morphemizer import SpacyMorphemizer
 from ..ui.generators_window_ui import Ui_GeneratorsWindow
-from . import generators_text_processing
 from .generators_output_dialog import OutputOptions
-from .generators_text_processing import PreprocessOptions
+from .text_extractors import (
+    extract_ass_text,
+    extract_basic_text,
+    extract_epub_text,
+    extract_html_text,
+    extract_srt_text,
+    extract_vtt_text,
+)
+
+extractors: dict[str, Callable[[Path], list[str]]] = {
+    ".ass": extract_ass_text,
+    ".epub": extract_epub_text,
+    ".html": extract_html_text,
+    ".srt": extract_srt_text,
+    ".vtt": extract_vtt_text,
+    ".md": extract_basic_text,
+    ".txt": extract_basic_text,
+}
 
 
 class Column(Enum):
@@ -83,6 +102,28 @@ class FileMorphsStats:
         self.total_unknowns += other.total_unknowns
 
         return self
+
+
+class PreprocessOptions:
+    def __init__(self, ui: Ui_GeneratorsWindow):
+        self.filter_square_brackets: bool = ui.squareBracketsCheckBox.isChecked()
+        self.filter_round_brackets: bool = ui.roundBracketsCheckBox.isChecked()
+        self.filter_slim_round_brackets: bool = ui.slimRoundBracketsCheckBox.isChecked()
+        self.filter_numbers: bool = ui.numbersCheckBox.isChecked()
+        self.filter_morphemizer_names: bool = ui.namesMorphemizerCheckBox.isChecked()
+        self.filter_names_from_file: bool = ui.namesFileCheckBox.isChecked()
+
+    def to_mock_am_config(self) -> AnkiMorphsConfig:
+        return Mock(
+            spec=AnkiMorphsConfig,
+            preprocess_ignore_bracket_contents=self.filter_square_brackets,
+            preprocess_ignore_round_bracket_contents=self.filter_round_brackets,
+            preprocess_ignore_slim_round_bracket_contents=self.filter_slim_round_brackets,
+            preprocess_ignore_numbers=self.filter_numbers,
+            preprocess_ignore_names_morphemizer=self.filter_morphemizer_names,
+            preprocess_ignore_names_textfile=self.filter_names_from_file,
+            preprocess_ignore_custom_characters="",  # todo: add option in generators window?
+        )
 
 
 def get_morph_stats_from_file(
@@ -188,16 +229,71 @@ def generate_morph_occurrences_by_file(
         )
 
         file_morph_occurrences: dict[str, MorphOccurrence] = (
-            generators_text_processing.create_file_morph_occurrences(
+            create_file_morph_occurrences(
                 preprocess_options=preprocess_options,
                 file_path=input_file,
                 morphemizer=_morphemizer,
-                nlp=_nlp,
             )
         )
         morph_occurrences_by_file[input_file] = file_morph_occurrences
 
     return morph_occurrences_by_file
+
+
+def create_file_morph_occurrences(
+    preprocess_options: PreprocessOptions,
+    file_path: Path,
+    morphemizer: Morphemizer,
+) -> dict[str, MorphOccurrence]:
+
+    morph_occurrences: dict[str, MorphOccurrence]
+    raw_lines: list[str]
+    filtered_lines: list[str] = []
+    extension = file_path.suffix
+    mock_am_config = preprocess_options.to_mock_am_config()
+
+    if extension in extractors:
+        raw_lines = extractors[extension](file_path)
+    else:
+        raise ValueError(f"Unsupported file format: {extension}")
+
+    try:
+        for line in raw_lines:
+            # lower-case to avoid proper noun false-positives
+            filtered_line = text_preprocessing.get_processed_text(
+                am_config=mock_am_config, text=line.strip().lower()
+            )
+            if filtered_line:
+                filtered_lines.append(filtered_line)
+
+    except UnicodeDecodeError as exc:
+        raise UnicodeException(path=file_path) from exc
+
+    morph_occurrences = get_morph_occurrences(
+        mock_am_config=mock_am_config,
+        morphemizer=morphemizer,
+        all_lines=filtered_lines,
+    )
+
+    return morph_occurrences
+
+
+def get_morph_occurrences(
+    mock_am_config: AnkiMorphsConfig,
+    morphemizer: Morphemizer,
+    all_lines: list[str],
+) -> dict[str, MorphOccurrence]:
+    morph_occurrences: dict[str, MorphOccurrence] = {}
+
+    for processed_morphs in morphemizer.get_processed_morphs(mock_am_config, all_lines):
+        for morph in processed_morphs:
+            key = morph.lemma + morph.inflection
+            if key in morph_occurrences:
+                morph_occurrences[key].occurrence += 1
+            else:
+                morph_occurrences[key] = MorphOccurrence(morph)
+
+    return morph_occurrences
 
 
 def _get_selected_morphemizer_and_nlp(

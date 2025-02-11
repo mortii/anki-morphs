@@ -8,7 +8,7 @@ import pytest
 
 from ankimorphs.morpheme import Morpheme
 from ankimorphs.morphemizers import spacy_wrapper
-from ankimorphs.morphemizers.morphemizer import get_morphemizer_by_description
+from ankimorphs.morphemizers.morphemizer_utils import get_morphemizer_by_description
 
 
 @pytest.fixture(
@@ -47,7 +47,7 @@ def test_mecab_morpheme_generation(  # pylint:disable=unused-argument
         Morpheme("ない", "ない"),
     }
 
-    extracted_morphs = morphemizer.get_morphemes_from_expr(sentence)
+    extracted_morphs = next(morphemizer.get_morphemes([sentence]))
     assert len(extracted_morphs) == 9
 
     for morph in extracted_morphs:
@@ -72,7 +72,7 @@ def test_jieba_morpheme_generation(  # pylint:disable=unused-argument
         Morpheme("请", "请"),
     }
 
-    extracted_morphs = morphemizer.get_morphemes_from_expr(sentence)
+    extracted_morphs = next(morphemizer.get_morphemes([sentence]))
     assert len(extracted_morphs) == 7
 
     for morph in extracted_morphs:
@@ -86,7 +86,7 @@ def test_jieba_morpheme_generation(  # pylint:disable=unused-argument
         Morpheme("跳", "跳"),
     }
 
-    extracted_morphs = morphemizer.get_morphemes_from_expr(sentence)
+    extracted_morphs = next(morphemizer.get_morphemes([sentence]))
     assert len(extracted_morphs) == 4
 
     for morph in extracted_morphs:

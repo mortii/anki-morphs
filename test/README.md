@@ -125,3 +125,13 @@ Basically reverse the steps in the section above, i.e:
 2. rename the collection to `collection.anki2`
 3. place the file in the profile folder of a new anki profile
 4. open the anki profile and the cards should be available for viewing
+
+
+## Priority files
+
+The priority files found in "correct_outputs" are generated with the following settings:
+- all the file formats selected
+- none of the preprocess options selected
+- occurrences column is always added
+- when comprehension is selected the target is always '90%'
+- when minimum occurrence is used the target is always '1'

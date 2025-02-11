@@ -6,7 +6,7 @@ import pytest
 import ankimorphs.morphemizers.morphemizer
 from ankimorphs.morpheme import Morpheme
 from ankimorphs.morphemizers import spacy_wrapper
-from ankimorphs.morphemizers.morphemizer import get_morphemizer_by_description
+from ankimorphs.morphemizers.morphemizer_utils import get_morphemizer_by_description
 
 
 @pytest.fixture(scope="function")
@@ -18,8 +18,7 @@ def _fake_environment_fixture() -> Iterator[None]:
     yield
     patch_testing_variable.stop()
     # this resets the morphemizers for the future tests
-    # todo: refactor this to be more palatable
-    ankimorphs.morphemizers.morphemizer.morphemizers = None
+    ankimorphs.morphemizers.morphemizer_utils.available_morphemizers = None
 
 
 @pytest.mark.parametrize(
@@ -68,7 +67,7 @@ def test_simple_space_splitters(
     morphemizer = get_morphemizer_by_description(morphemizer_description)
     assert morphemizer is not None
 
-    extracted_morphs = morphemizer.get_morphemes_from_expr(sentence)
+    extracted_morphs = next(morphemizer.get_morphemes([sentence]))
     assert len(extracted_morphs) == len(correct_morphs)
 
     for morph in extracted_morphs:

@@ -5,7 +5,7 @@ import re
 import anki
 from anki.template import TemplateRenderContext
 
-from .. import ankimorphs_config, ankimorphs_globals, debug_utils, text_preprocessing
+from .. import ankimorphs_config, ankimorphs_globals, text_preprocessing
 from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from ..ankimorphs_db import AnkiMorphsDB
 from ..highlighting.ruby_classes import (
@@ -17,9 +17,10 @@ from ..highlighting.ruby_classes import (
 )
 from ..highlighting.text_highlighter import TextHighlighter
 from ..morpheme import Morpheme
-from ..morphemizers import morphemizer as morphemizer_module
-from ..morphemizers import spacy_wrapper
-from ..morphemizers.morphemizer import Morphemizer, SpacyMorphemizer
+from ..morphemizers import morphemizer_utils
+from ..morphemizers.morphemizer import (
+    Morphemizer,
+)
 
 
 def highlight_morphs_jit(
@@ -54,7 +55,7 @@ def highlight_morphs_jit(
     if am_config_filter is None:
         return field_text
 
-    morphemizer: Morphemizer | None = morphemizer_module.get_morphemizer_by_description(
+    morphemizer: Morphemizer | None = morphemizer_utils.get_morphemizer_by_description(
         am_config_filter.morphemizer_description
     )
 
@@ -67,8 +68,6 @@ def highlight_morphs_jit(
         morphemizer, field_text, am_config
     )
 
-    debug_utils.dev_print(f"filter name: {filter_name}")
-
     ruby_type: type[Ruby] = _get_ruby_type(filter_name)
 
     highlighted_jit_text = TextHighlighter(
@@ -77,8 +76,6 @@ def highlight_morphs_jit(
         expression=_dehtml(field_text),
         ruby_type=ruby_type,
     ).highlighted()
-
-    debug_utils.dev_print(f"highlighted_jit_text: {highlighted_jit_text}")
 
     return highlighted_jit_text
 
@@ -94,20 +91,10 @@ def _get_morph_meta_for_text(
     # data, we need to do some cleansing.
     clean_text = _dehtml(field_text, am_config, True)
 
-    if isinstance(morphemizer, SpacyMorphemizer):
-        nlp = spacy_wrapper.get_nlp(
-            morphemizer.get_description().removeprefix("spaCy: ")
-        )
-
-        morphs = text_preprocessing.get_processed_spacy_morphs(
-            am_config, next(nlp.pipe([clean_text]))
-        )
-    else:
-        morphs = text_preprocessing.get_processed_morphemizer_morphs(
-            morphemizer, clean_text, am_config
-        )
-
-    morphs = list(set(morphs))
+    # we only need to first item of the iterator since we only have one sentence,
+    morphs: list[Morpheme] = next(
+        morphemizer.get_processed_morphs(am_config, sentences=[clean_text])
+    )
 
     if not morphs:
         return []

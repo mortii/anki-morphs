@@ -31,7 +31,7 @@ from ..ankimorphs_config import (
     RawConfigFilterKeys,
     RawConfigKeys,
 )
-from ..morphemizers.morphemizer import get_all_morphemizers
+from ..morphemizers.morphemizer_utils import get_all_morphemizers
 from ..tag_selection_dialog import TagSelectionDialog
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .data_provider import DataProvider

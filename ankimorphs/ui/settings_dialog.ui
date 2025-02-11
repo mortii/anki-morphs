@@ -655,6 +655,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="preprocessIgnoreNumbersCheckBox">
+             <property name="text">
+              <string>Ignore numbers</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <layout class="QHBoxLayout" name="horizontalLayout_28">
              <item>
               <widget class="QCheckBox" name="preprocessIgnoreCustomCharactersCheckBox">

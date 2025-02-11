@@ -32,7 +32,7 @@ from ..exceptions import (
 )
 from ..morph_priority_utils import get_morph_priority
 from ..morpheme import Morpheme
-from ..morphemizers import morphemizer as morphemizer_module
+from ..morphemizers import morphemizer_utils
 from . import caching, extra_field_utils
 from .anki_data_utils import AnkiMorphsCardData
 from .card_morphs_metrics import CardMorphsMetrics
@@ -127,7 +127,7 @@ def _check_selected_settings_for_errors(
         if config_filter.field not in note_type_field_name_dict:
             return AnkiFieldNotFound()
 
-        morphemizer_found = morphemizer_module.get_morphemizer_by_description(
+        morphemizer_found = morphemizer_utils.get_morphemizer_by_description(
             config_filter.morphemizer_description
         )
         if morphemizer_found is None:

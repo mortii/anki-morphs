@@ -59,6 +59,7 @@ class Morpheme:
     def is_proper_noun(self) -> bool:
         return self.sub_part_of_speech == "固有名詞" or self.part_of_speech == "PROPN"
 
+    # the cache needs to have a max size to maintain garbage collection
     @functools.lru_cache(maxsize=131072)
     def get_learning_status(
         self,

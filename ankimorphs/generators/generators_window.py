@@ -28,7 +28,7 @@ from ..exceptions import (
 )
 from ..extra_settings import extra_settings_keys
 from ..extra_settings.ankimorphs_extra_settings import AnkiMorphsExtraSettings
-from ..morphemizers import morphemizer
+from ..morphemizers import morphemizer_utils
 from ..morphemizers.morphemizer import Morphemizer
 from ..ui.generators_window_ui import Ui_GeneratorsWindow
 from . import (
@@ -54,7 +54,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self.am_extra_settings.beginGroup(extra_settings_keys.Dialogs.GENERATORS_WINDOW)
 
         self._input_files: list[Path] = []
-        self._morphemizers: list[Morphemizer] = morphemizer.get_all_morphemizers()
+        self._morphemizers: list[Morphemizer] = morphemizer_utils.get_all_morphemizers()
         self._setup_morphemizers()
         self._setup_checkboxes()
         self._input_dir_root: Path

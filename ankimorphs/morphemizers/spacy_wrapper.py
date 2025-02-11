@@ -1,94 +1,130 @@
+from __future__ import annotations
+
+import functools
 import os.path
 import sys
+from types import ModuleType
+from typing import Any
 
 from anki.utils import is_win
 from aqt import mw
 
 updated_python_path: bool = False
 testing_environment: bool = False
+successful_import: bool = False
+
+_spacy: ModuleType | None = None
+_spacy_utils: ModuleType | None = None  #  spacy.util
+
+_SpacyLanguage: Any = None  #  spacy.language
+_SpacyTokenizer: Any = None  # spacy.tokenizer
+_SpacyDoc: Any = None  #  spacy.tokens.doc
+
+LANGUAGE_PIPE_CONFIGS: dict[str, set[str]] = {
+    "ja": {""},  # Japanese uses SudachiPy
+    "nb": {"tok2vec", "attribute_ruler", "lemmatizer", "morphologizer", "ner"},
+    "da": {"tok2vec", "morphologizer", "lemmatizer"},
+    "de": {"tok2vec", "lemmatizer", "morphologizer"},
+    "fr": {"tok2vec", "lemmatizer", "morphologizer"},
+    "en": {"tok2vec", "tagger", "attribute_ruler", "lemmatizer", "morphologizer"},
+    "es": {"tok2vec", "lemmatizer", "morphologizer"},
+    "sv": {"tok2vec", "lemmatizer", "morphologizer"},
+    "nl": {"tok2vec", "lemmatizer", "morphologizer"},
+    "hr": {"tok2vec", "lemmatizer", "morphologizer"},
+    "fi": {"tok2vec", "lemmatizer", "morphologizer"},
+    "el": {"tok2vec", "lemmatizer", "morphologizer"},
+    "it": {"tok2vec", "lemmatizer", "morphologizer"},
+    "lt": {"tok2vec", "lemmatizer", "morphologizer"},
+    "mk": {"tok2vec", "lemmatizer", "morphologizer"},
+    "pl": {"tok2vec", "lemmatizer", "morphologizer"},
+    "pt": {"tok2vec", "lemmatizer", "morphologizer"},
+    "ro": {"tok2vec", "tagger", "morphologizer", "lemmatizer", "attribute_ruler"},
+    "sl": {"tok2vec", "lemmatizer", "morphologizer"},
+    "ca": {"tok2vec", "morphologizer", "lemmatizer"},
+    "ru": {"tok2vec", "morphologizer", "lemmatizer"},
+    "uk": {"tok2vec", "morphologizer", "lemmatizer"},
+    "ko": {"tok2vec", "morphologizer", "lemmatizer"},
+    "zh": {"tok2vec", "tagger", "attribute_ruler"},
+}
 
 
-def get_nlp(spacy_model_name: str):  # type: ignore[no-untyped-def] # pylint:disable=too-many-branches, too-many-statements
-    # -> Optional[spacy.Language]
+def load_spacy_modules() -> None:
+    global updated_python_path
+    global successful_import
+    global _spacy
+    global _SpacyLanguage
+    global _SpacyTokenizer
+    global _SpacyDoc
+    global _spacy_utils
+
+    # dev environments should already have spaCy, so this can be skipped
+    if not updated_python_path and not testing_environment:
+        # Anki only looks into its own directories for python packages,
+        # to add other lookup folders we have to change the sys path.
+        # In the guide we instruct the users to install the spacy
+        # virtual environment into the addons21 folder as 'spacyenv',
+        # that way we can get the path based on the anki mw.pm.
+
+        assert mw is not None
+        spacy_path = os.path.join(mw.pm.addonFolder(), "spacyenv")
+
+        if is_win is True:
+            spacy_bin_path = os.path.join(spacy_path, "Scripts")
+            spacy_site_packages_path = os.path.join(spacy_path, "Lib", "site-packages")
+        else:
+            spacy_bin_path = os.path.join(spacy_path, "bin")
+            spacy_site_packages_path = os.path.join(
+                spacy_path,
+                "lib",
+                f"python{sys.version_info.major}.{sys.version_info.minor}",
+                "site-packages",
+            )
+
+        sys.path.append(spacy_bin_path)
+        sys.path.append(spacy_site_packages_path)
+        updated_python_path = True
+
     try:
-        import spacy  # pylint:disable=import-outside-toplevel
-        from spacy.lang.char_classes import (  # pylint:disable=import-outside-toplevel
-            LIST_ELLIPSES,
-            LIST_ICONS,
-        )
-        from spacy.language import Language  # pylint:disable=import-outside-toplevel
-        from spacy.tokenizer import Tokenizer  # pylint:disable=import-outside-toplevel
-        from spacy.tokens import Doc  # pylint:disable=import-outside-toplevel
-        from spacy.util import (  # pylint:disable=import-outside-toplevel
-            compile_infix_regex,
-        )
+        # pylint:disable=import-outside-toplevel
+
+        import spacy
+        import spacy.util
+        from spacy.language import Language
+        from spacy.tokenizer import Tokenizer
+        from spacy.tokens import Doc
+
+        # pylint:enable=import-outside-toplevel
+        # moves the modules and classes to global scope
+        _spacy = spacy
+        _spacy_utils = spacy.util
+        _SpacyLanguage = Language
+        _SpacyTokenizer = Tokenizer
+        _SpacyDoc = Doc
+
+        successful_import = True
+
     except ModuleNotFoundError:
         # spacy not installed
+        pass
+
+
+def get_installed_models() -> list[str]:
+    if not successful_import:
+        return []
+
+    assert _spacy_utils is not None
+    return [f"{model_name}" for model_name in _spacy_utils.get_installed_models()]
+
+
+# the cache needs to have a max size to maintain garbage collection
+@functools.lru_cache(maxsize=131072)
+def get_nlp(spacy_model_name: str):  # type: ignore[no-untyped-def] # pylint:disable=too-many-branches, too-many-statements
+    # -> Optional[spacy.Language]
+
+    if not successful_import:
         return None
 
-    ################################################################
-    #                           INFIXES
-    ################################################################
-    # The infixes rules tell the tokenizer where to split the text
-    # segments. We want to split on everything that is not alphanum (\w),
-    # hyphen (-), and apostrophes ('), french: (’)
-    # Since the text can be malformed, e.g. "los?«Harry", we have to split
-    # before AND after the non-alpha characters.
-    # If you only split before, then you get: los ? «Harry
-    # if you only split after: los? « Harry
-    # if you do both: los ? « Harry
-    #
-    # Regex explanation:
-    # ?! <- This means inverse match, i.e., don't match
-    # (?! [...]) <- this means lookahead and inverse match anything inside the brackets
-    # (?<! [...]) <- this means lookbehind and inverse match anything inside the brackets
-    ################################################################
-    infixes = (
-        LIST_ELLIPSES
-        + LIST_ICONS
-        + [
-            r"(?<![\w\-\'\’])",
-            r"(?![\w\-\'\’])",
-        ]
-    )
-    infix_re = compile_infix_regex(infixes)
-
-    ################################################################
-    #                        CUSTOM PIPES
-    ################################################################
-    # The spacy models use 'pipes' that adjusts the output they produce.
-    # These pipes are simply functions that take in the doc, makes changes
-    # to it, and then returns it. This way the pipes sequentially
-    # update the doc to make it more and more sophisticated.
-    #
-    # The korean and chinese models don't produce lemmas in the same
-    # way as the other languages, so we therefore have to make some
-    # custom pipes to make them conform to the rest.
-    # We can then add the custom pipes to specific nlps this way:
-    #     nlp.add_pipe("chinese_lemma_adder", last=True)
-    # The order of the pipes matters, so we add the pipe to the end
-    # of the line to make sure the docs have been given the necessary
-    # changes already, and to not cause problems for any earlier pipes
-    # that might expect the docs to be different compared to our changes.
-    ################################################################
-    @Language.component("strip_korean_lemmas")
-    def strip_korean_lemmas(doc: Doc) -> Doc:
-        # The korean lemmatizer produces lemmas in this format:
-        #  누르+어
-        # where the + parts are the conjugations.
-        # We only want the stem, so we splice the string there
-        for w in doc:
-            conjugation_position = w.lemma_.find("+")
-            if conjugation_position != -1:
-                w.lemma_ = w.lemma_[:conjugation_position]
-        return doc
-
-    @Language.component("chinese_lemma_adder")
-    def stripped_korean_lemma(doc: Doc) -> Doc:
-        # The chinese models don't produce lemmas, so we just set them to be the text
-        for w in doc:
-            w.lemma_ = w.text
-        return doc
+    assert _spacy is not None
 
     ################################################################
     #                       DISABLING PIPES
@@ -101,7 +137,7 @@ def get_nlp(spacy_model_name: str):  # type: ignore[no-untyped-def] # pylint:dis
     # https://spacy.io/usage/processing-pipelines#disabling
     # https://spacy.io/models#design-modify
     ################################################################
-    enabled_pipes: set[str] = {""}
+
     # dev_all_pipes: set[str] = {
     #     "tok2vec",
     #     "tagger",
@@ -113,203 +149,59 @@ def get_nlp(spacy_model_name: str):  # type: ignore[no-untyped-def] # pylint:dis
     #     "ner",
     # }
 
-    nlp = spacy.load(spacy_model_name)
+    nlp = _spacy.load(spacy_model_name)
 
-    if nlp.lang == "ja":
-        enabled_pipes = {""}
-    elif nlp.lang == "nb":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "attribute_ruler",
-            "lemmatizer",
-            "morphologizer",
-            "ner",
-        }
-    elif nlp.lang == "da":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "morphologizer",
-            "lemmatizer",
-        }
-    elif nlp.lang == "de":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "fr":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "en":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "tagger",
-            "attribute_ruler",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "es":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "sv":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "nl":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "hr":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "fi":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "el":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "it":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "lt":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "mk":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "pl":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "pt":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "ro":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "tagger",
-            "morphologizer",
-            "lemmatizer",
-            "attribute_ruler",
-        }
-    elif nlp.lang == "sl":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "lemmatizer",
-            "morphologizer",
-        }
-    elif nlp.lang == "ca":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.tokenizer.infix_finditer = infix_re.finditer
-        enabled_pipes = {
-            "tok2vec",
-            "morphologizer",
-            "lemmatizer",
-        }
-    elif nlp.lang == "ru":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        enabled_pipes = {
-            "tok2vec",
-            "morphologizer",
-            "lemmatizer",
-        }
-    elif nlp.lang == "uk":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        enabled_pipes = {
-            "tok2vec",
-            "morphologizer",
-            "lemmatizer",
-        }
-    elif nlp.lang == "ko":
-        assert isinstance(nlp.tokenizer, Tokenizer)
-        nlp.add_pipe("strip_korean_lemmas", last=True)
-        enabled_pipes = {
-            "tok2vec",
-            "morphologizer",
-            "lemmatizer",
-            "strip_korean_lemmas",
-        }
-    elif nlp.lang == "zh":
-        nlp.add_pipe("chinese_lemma_adder", last=True)
-        enabled_pipes = {
-            "tok2vec",
-            "tagger",
-            "attribute_ruler",
-            "chinese_lemma_adder",
-        }
+    # Get the enabled pipes based on language, default to an empty set if not defined
+    enabled_pipes = LANGUAGE_PIPE_CONFIGS.get(nlp.lang, set())
 
+    # Disable all other pipes that are not explicitly enabled
     for pipe in nlp.component_names:
         if pipe not in enabled_pipes:
             nlp.disable_pipe(pipe)
+
+    ################################################################
+    #                        CUSTOM PIPES
+    ################################################################
+    # The spacy models use 'pipes' that adjusts the output they produce.
+    # These pipes are simply functions that take in the doc, makes
+    # changes to it, and then returns it. This way the pipes sequentially
+    # update the doc to make it more and more sophisticated.
+    #
+    # The korean and chinese models don't produce lemmas in the same
+    # way as the other languages, so we have to make some custom
+    # pipes to make them conform to the rest.
+    #
+    # We can then add the custom pipes to specific nlps this way:
+    #     nlp.add_pipe("lemma_adder_chinese", last=True)
+    #
+    # The order of the pipes matters, so we add the pipe to the end
+    # of the line to make sure that they do not cause problems for
+    # any other pipes that might not be able to handle our doc changes.
+    ################################################################
+    @_SpacyLanguage.component("lemma_stripper_korean")  # type: ignore[misc]
+    def lemma_stripper_korean(doc: _SpacyDoc) -> _SpacyDoc:
+        # The korean lemmatizer produces lemmas in this format:
+        #  누르+어
+        # where the + parts are the conjugations.
+        # We only want the stem, so we splice the string there
+        for w in doc:
+            conjugation_position = w.lemma_.find("+")
+            if conjugation_position != -1:
+                w.lemma_ = w.lemma_[:conjugation_position]
+        return doc
+
+    @_SpacyLanguage.component("lemma_adder_chinese")  # type: ignore[misc]
+    def lemma_adder_chinese(doc: _SpacyDoc) -> _SpacyDoc:
+        # The chinese models don't produce lemmas, so we just set them to be the text
+        for w in doc:
+            w.lemma_ = w.text
+        return doc
+
+    if nlp.lang == "zh":
+        nlp.add_pipe("lemma_adder_chinese", last=True)
+
+    if nlp.lang == "ko":
+        nlp.add_pipe("lemma_stripper_korean", last=True)
 
     # print(f"pipe names: {nlp.pipe_names}")
     # print(f"pipe disabled: {nlp.disabled}")
@@ -317,43 +209,3 @@ def get_nlp(spacy_model_name: str):  # type: ignore[no-untyped-def] # pylint:dis
     # print(f"pipe names: {nlp.meta}")
 
     return nlp
-
-
-def get_installed_models() -> list[str]:
-    try:
-        global updated_python_path
-
-        if not updated_python_path and not testing_environment:
-            # Anki only looks into its own directories for python packages,
-            # to add other lookup folders we have to change the sys path.
-            # In the guide we instruct the users to install the spacy
-            # virtual environment into the addons21 folder as 'spacyenv'.
-            # That way we can get the path based on the anki mw.pm.
-            assert mw is not None
-
-            spacy_path = os.path.join(mw.pm.addonFolder(), "spacyenv")
-
-            if is_win is True:
-                spacy_bin_path = os.path.join(spacy_path, "Scripts")
-                spacy_site_packages_path = os.path.join(
-                    spacy_path, "Lib", "site-packages"
-                )
-            else:
-                spacy_bin_path = os.path.join(spacy_path, "bin")
-                spacy_site_packages_path = os.path.join(
-                    spacy_path,
-                    "lib",
-                    f"python{sys.version_info.major}.{sys.version_info.minor}",
-                    "site-packages",
-                )
-
-            sys.path.append(spacy_bin_path)
-            sys.path.append(spacy_site_packages_path)
-            updated_python_path = True
-
-        import spacy.util  # pylint:disable=import-outside-toplevel
-
-        return [f"{model_name}" for model_name in spacy.util.get_installed_models()]
-    except ModuleNotFoundError:
-        # spacy not installed
-        return []

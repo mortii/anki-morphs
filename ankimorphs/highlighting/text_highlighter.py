@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import re
 from collections import deque
 
-from .. import ankimorphs_globals, debug_utils, text_preprocessing
+from .. import ankimorphs_globals
 from ..ankimorphs_config import AnkiMorphsConfig
 from ..morpheme import Morpheme
 from .ruby_classes import Ruby, TextRuby
 from .status_class import Status
+
+ruby_regex = re.compile(r" ?([^] \W]+)\[(.+?)\]")
 
 
 class TextHighlighter:
@@ -32,10 +35,6 @@ class TextHighlighter:
         self._tag_rubies(ruby_type)
         self._tag_morphemes(self.expression.lower(), morphemes)
 
-        debug_utils.dev_print(f"stripped expression: {self.expression}")
-        debug_utils.dev_print(f"self.rubies: {self.rubies}")
-        debug_utils.dev_print(f"self.statuses: {self.statuses}")
-
     def _tag_rubies(self, ruby_type: type[Ruby]) -> None:
         """
         Populate internal deque of found ruby locations.
@@ -58,7 +57,7 @@ class TextHighlighter:
         end = 0
 
         while True:
-            match = text_preprocessing.ruby_regex.search(self.expression, pos=end)
+            match = ruby_regex.search(self.expression, pos=end)
 
             if not match:
                 break
@@ -194,14 +193,7 @@ class TextHighlighter:
         ruby: Ruby | None = None
         status: Status | None = None
 
-        while_counter = -1
-
         while self._highlighted_expression is not None:
-
-            debug_utils.dev_print(f"self._highlighted: {self._highlighted_expression}")
-
-            while_counter += 1
-            debug_utils.dev_print(f"while counter: {while_counter}")
 
             if ruby is None and self.rubies:
                 ruby = self.rubies.pop()
@@ -211,15 +203,10 @@ class TextHighlighter:
 
             # Scenario 1: Nothing more to be highlighted.
             if ruby is None and status is None:
-                debug_utils.dev_print("Scenario 1: Nothing more to be highlighted.")
                 break
-
-            debug_utils.dev_print(f"current ruby: {repr(ruby)}")
-            debug_utils.dev_print(f"current status: {repr(status)}")
 
             # Scenario 2: There are only statuses.
             if ruby is None:
-                debug_utils.dev_print("Scenario 2: There are only statuses.")
                 # Ignore is here because (surprisingly) mypy can not tell the
                 # only path that leads here requires status to be non-None.
                 self._highlighted_expression = status.inject(self._highlighted_expression)  # type: ignore[union-attr]
@@ -228,7 +215,6 @@ class TextHighlighter:
 
             # Scenario 3: There are only rubies.
             if status is None:
-                debug_utils.dev_print("Scenario 3: There are only rubies.")
                 # If there is no status for this ruby,
                 # manufacture one and let Scenario 5 take over.
                 status = Status(
@@ -242,9 +228,6 @@ class TextHighlighter:
             # Scenario 4: There is no overlap between ruby and status.
             if ruby.end <= status.start or ruby.start >= status.end:
                 if ruby.start > status.start:
-                    debug_utils.dev_print(
-                        "Scenario 4a: There is no overlap between ruby and status. Ruby last."
-                    )
                     # There is no status for this ruby, manufacture one and update.
                     temp_status: Status = Status(
                         ruby.start,
@@ -269,9 +252,6 @@ class TextHighlighter:
                     )
                     ruby = None
                 else:
-                    debug_utils.dev_print(
-                        "Scenario 4b: There is no overlap between ruby and status. Status last."
-                    )
                     self._highlighted_expression = status.inject(
                         self._highlighted_expression
                     )
@@ -282,13 +262,6 @@ class TextHighlighter:
             # OR
             # Scenario 6: The ruby is completely inside the status.
             if ruby.start >= status.start and ruby.end <= status.end:
-                debug_utils.dev_print(
-                    """
-                    Scenario 5: The status is the same as the ruby.
-                    OR
-                    Scenario 6: The ruby is completely inside the status.
-                    """
-                )
                 self._highlighted_expression = (
                     self._highlighted_expression[: status.start]
                     + status.open()
@@ -321,13 +294,6 @@ class TextHighlighter:
             # OR
             # Scenario 8: The ruby starts then status starts, ruby ends, status ends."""
             if ruby.start <= status.start:
-                debug_utils.dev_print(
-                    """
-                    Scenario 7: The status is completely inside the ruby.
-                    OR
-                    Scenario 8: The ruby starts then status starts, ruby ends, status ends.
-                    """
-                )
                 status.status = ankimorphs_globals.STATUS_UNDEFINED
                 self._highlighted_expression = (
                     self._highlighted_expression[: ruby.start]
@@ -347,10 +313,6 @@ class TextHighlighter:
                 ruby = None
                 status = None
                 continue
-
-            debug_utils.dev_print(
-                "Made it past all possible cases. This should not be possible."
-            )
 
             # Just in case, to prevent infinite loop, we're disposing of the current pieces
             ruby = None

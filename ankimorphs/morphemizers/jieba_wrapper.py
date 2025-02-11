@@ -8,7 +8,7 @@ from types import ModuleType
 from ..morpheme import Morpheme
 
 posseg: ModuleType | None = None
-successful_startup: bool = False
+successful_import: bool = False
 
 ################################################################################
 # This section about cjk_ideographs is based on zhon/hanzi.py in:
@@ -33,7 +33,7 @@ if sys.maxunicode > 0xFFFF:
 
 
 def import_jieba() -> None:
-    global posseg, successful_startup
+    global posseg, successful_import
 
     if importlib.util.find_spec("1857311956"):
         posseg = importlib.import_module("1857311956.jieba.posseg")
@@ -42,7 +42,7 @@ def import_jieba() -> None:
     else:
         return
 
-    successful_startup = True
+    successful_import = True
 
 
 def get_morphemes_jieba(expression: str) -> list[Morpheme]:

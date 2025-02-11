@@ -11,14 +11,8 @@ from .. import progress_utils
 from ..ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from ..ankimorphs_db import AnkiMorphsDB
 from ..exceptions import CancelledOperationException, KnownMorphsFileMalformedException
-from ..morphemizers import morphemizer as morphemizer_module
-from ..morphemizers import spacy_wrapper
-from ..morphemizers.morphemizer import SpacyMorphemizer
-from ..text_preprocessing import (
-    get_processed_morphemizer_morphs,
-    get_processed_spacy_morphs,
-    get_processed_text,
-)
+from ..morphemizers import morphemizer_utils
+from ..text_preprocessing import get_processed_text
 from . import anki_data_utils
 from .anki_data_utils import AnkiCardData
 
@@ -50,7 +44,6 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
 
     # We only want to cache the morphs on the note-filters that have 'read' enabled
     for config_filter in read_enabled_config_filters:
-
         cards_data_dict: dict[int, AnkiCardData] = (
             anki_data_utils.create_card_data_dict(
                 am_config,
@@ -75,49 +68,21 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
             all_text.append(expression)
             all_keys.append(key)
 
-        nlp = None  # spacy.Language
-        morphemizer = morphemizer_module.get_morphemizer_by_description(
+        morphemizer = morphemizer_utils.get_morphemizer_by_description(
             config_filter.morphemizer_description
         )
         assert morphemizer is not None
 
-        if isinstance(morphemizer, SpacyMorphemizer):
-            spacy_model = config_filter.morphemizer_description.removeprefix("spaCy: ")
-            nlp = spacy_wrapper.get_nlp(spacy_model)
-
-        # Since function overloading isn't a thing in python, we use
-        # this ugly branching with near identical code. An alternative
-        # approach of using variable number of arguments (*args) would
-        # require an extra function call, so this is faster.
-        #
-        # We don't want to store duplicate morphs because it can lead
-        # to the same morph being counted twice, which is bad for the
-        # scoring algorithm. We therefore convert the lists of morphs
-        # we receive from the morphemizers into sets.
-        if nlp is not None:
-            for index, doc in enumerate(nlp.pipe(all_text)):
-                progress_utils.background_update_progress_potentially_cancel(
-                    label=f"Extracting morphs from<br>{config_filter.note_type} cards<br>card: {index} of {card_amount}",
-                    counter=index,
-                    max_value=card_amount,
-                )
-                morphs = set(get_processed_spacy_morphs(am_config, doc))
-                key = all_keys[index]
-                cards_data_dict[key].morphs = morphs
-        else:
-            for index, _expression in enumerate(all_text):
-                progress_utils.background_update_progress_potentially_cancel(
-                    label=f"Extracting morphs from<br>{config_filter.note_type} cards<br>card: {index} of {card_amount}",
-                    counter=index,
-                    max_value=card_amount,
-                )
-                morphs = set(
-                    get_processed_morphemizer_morphs(
-                        morphemizer, _expression, am_config
-                    )
-                )
-                key = all_keys[index]
-                cards_data_dict[key].morphs = morphs
+        for index, processed_morphs in enumerate(
+            morphemizer.get_processed_morphs(am_config, all_text)
+        ):
+            progress_utils.background_update_progress_potentially_cancel(
+                label=f"Extracting morphs from<br>{config_filter.note_type} cards<br>card: {index} of {card_amount}",
+                counter=index,
+                max_value=card_amount,
+            )
+            key = all_keys[index]
+            cards_data_dict[key].morphs = set(processed_morphs)
 
         for counter, card_id in enumerate(cards_data_dict):
             progress_utils.background_update_progress_potentially_cancel(
@@ -142,7 +107,6 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
                     "note_id": card_data.note_id,
                     "note_type_id": card_data.note_type_id,
                     "card_type": card_data.type,
-                    "fields": card_data.fields,
                     "tags": card_data.tags,
                 }
             )
@@ -155,7 +119,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
                     {
                         "lemma": morph.lemma,
                         "inflection": morph.inflection,
-                        "highest_lemma_learning_interval": None,
+                        "highest_lemma_learning_interval": None,  # updates later
                         "highest_inflection_learning_interval": highest_interval,
                     }
                 )

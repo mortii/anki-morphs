@@ -90,6 +90,8 @@ def main() -> None:
 
     gui_hooks.sync_will_start.append(recalc_on_sync)
 
+    hooks.field_filter.append(highlight_morphs_jit)
+
     gui_hooks.webview_will_show_context_menu.append(add_text_as_name_action)
     gui_hooks.webview_will_show_context_menu.append(browse_study_morphs_for_text_action)
 
@@ -100,8 +102,6 @@ def main() -> None:
     gui_hooks.state_did_undo.append(rebuild_seen_morphs)
 
     gui_hooks.profile_will_close.append(cleanup_profile_session)
-
-    hooks.field_filter.append(highlight_morphs_jit)
 
 
 def init_toolbar_items(links: list[str], toolbar: Toolbar) -> None:

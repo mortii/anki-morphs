@@ -1,6 +1,6 @@
 import json
+import os
 from collections.abc import Iterator
-from typing import Any
 from unittest import mock
 
 import aqt
@@ -10,8 +10,7 @@ from ankimorphs import ankimorphs_config
 from ankimorphs.ankimorphs_config import AnkiMorphsConfig
 from ankimorphs.morpheme import Morpheme
 from ankimorphs.morphemizers import spacy_wrapper
-from ankimorphs.morphemizers.spacy_wrapper import get_nlp
-from ankimorphs.text_preprocessing import get_processed_spacy_morphs
+from ankimorphs.morphemizers.spacy_morphemizer import SpacyMorphemizer
 
 
 class SpacyMorph:
@@ -26,22 +25,29 @@ class SpacyMorph:
 )
 def fake_environment_fixture() -> Iterator[None]:
     print("fake environment initiated")
-    mock_mw = mock.Mock(spec=aqt.mw)  # can use any mw to spec
 
     _config_data = None
     with open("ankimorphs/config.json", encoding="utf-8") as file:
         _config_data = json.load(file)
 
+    mock_mw = mock.Mock(spec=aqt.mw)  # can use any mw to spec
+    mock_mw.pm.profileFolder.return_value = os.path.join("test", "data")
     mock_mw.addonManager.getConfig.return_value = _config_data
+
     patch_config_mw = mock.patch.object(ankimorphs_config, "mw", mock_mw)
+    patch_spacy_wrapper_mw = mock.patch.object(spacy_wrapper, "mw", mock_mw)
     patch_testing_variable = mock.patch.object(
         spacy_wrapper, "testing_environment", True
     )
 
     patch_config_mw.start()
+    patch_spacy_wrapper_mw.start()
     patch_testing_variable.start()
+
     yield
+
     patch_config_mw.stop()
+    patch_spacy_wrapper_mw.stop()
     patch_testing_variable.stop()
 
 
@@ -94,11 +100,11 @@ def fake_environment_fixture() -> Iterator[None]:
                 SpacyMorph(lemma=",", inflection=",", part_of_speech="PUNCT"),
                 SpacyMorph(lemma="harry", inflection="harry", part_of_speech="PROPN"),
                 SpacyMorph(lemma="'s", inflection="'s", part_of_speech="PART"),
-                SpacyMorph(
-                    lemma="mother-in-law",
-                    inflection="mother-in-law",
-                    part_of_speech="NOUN",
-                ),
+                SpacyMorph(lemma="mother", inflection="mother", part_of_speech="NOUN"),
+                SpacyMorph(lemma="-", inflection="-", part_of_speech="PUNCT"),
+                SpacyMorph(lemma="in", inflection="in", part_of_speech="ADP"),
+                SpacyMorph(lemma="-", inflection="-", part_of_speech="PUNCT"),
+                SpacyMorph(lemma="law", inflection="law", part_of_speech="NOUN"),
                 SpacyMorph(lemma="walk", inflection="walked", part_of_speech="VERB"),
                 SpacyMorph(lemma="away", inflection="away", part_of_speech="ADV"),
                 SpacyMorph(lemma=".", inflection=".", part_of_speech="PUNCT"),
@@ -108,14 +114,108 @@ def fake_environment_fixture() -> Iterator[None]:
                 Morpheme(lemma="3", inflection="3"),
                 Morpheme(lemma="o'clock", inflection="o'clock"),
                 Morpheme(lemma="'s", inflection="'s"),
-                Morpheme(lemma="mother-in-law", inflection="mother-in-law"),
+                Morpheme(lemma="mother", inflection="mother"),
+                Morpheme(lemma="in", inflection="in"),
+                Morpheme(lemma="law", inflection="law"),
                 Morpheme(lemma="walk", inflection="walked"),
                 Morpheme(lemma="away", inflection="away"),
             ],
         ),
         (
+            "en_core_web_sm",  # English
+            r".,?$¥£/{[]}@^~+= . , ? $ ¥ £ / { [ ] } @ ^ ~ + =",
+            [
+                SpacyMorph(
+                    lemma=r".,?$¥£/{[]}@^~+=",
+                    inflection=r".,?$¥£/{[]}@^~+=",
+                    part_of_speech="INTJ",
+                ),
+                SpacyMorph(
+                    lemma=r".",
+                    inflection=r".",
+                    part_of_speech="PUNCT",
+                ),
+                SpacyMorph(
+                    lemma=r",",
+                    inflection=r",",
+                    part_of_speech="PUNCT",
+                ),
+                SpacyMorph(
+                    lemma=r"?",
+                    inflection=r"?",
+                    part_of_speech="PUNCT",
+                ),
+                SpacyMorph(
+                    lemma=r"$",
+                    inflection=r"$",
+                    part_of_speech="SYM",
+                ),
+                SpacyMorph(
+                    lemma=r"¥",
+                    inflection=r"¥",
+                    part_of_speech="SYM",
+                ),
+                SpacyMorph(
+                    lemma=r"£",
+                    inflection=r"£",
+                    part_of_speech="X",
+                ),
+                SpacyMorph(
+                    lemma=r"/",
+                    inflection=r"/",
+                    part_of_speech="SYM",
+                ),
+                SpacyMorph(
+                    lemma=r"{",
+                    inflection=r"{",
+                    part_of_speech="PUNCT",
+                ),
+                SpacyMorph(
+                    lemma=r"[",
+                    inflection=r"[",
+                    part_of_speech="PUNCT",
+                ),
+                SpacyMorph(
+                    lemma=r"]",
+                    inflection=r"]",
+                    part_of_speech="X",
+                ),
+                SpacyMorph(
+                    lemma=r"}",
+                    inflection=r"}",
+                    part_of_speech="PUNCT",
+                ),
+                SpacyMorph(
+                    lemma=r"@",
+                    inflection=r"@",
+                    part_of_speech="ADP",
+                ),
+                SpacyMorph(
+                    lemma=r"^",
+                    inflection=r"^",
+                    part_of_speech="NOUN",
+                ),
+                SpacyMorph(
+                    lemma=r"~",
+                    inflection=r"~",
+                    part_of_speech="PUNCT",
+                ),
+                SpacyMorph(
+                    lemma=r"+",
+                    inflection=r"+",
+                    part_of_speech="CCONJ",
+                ),
+                SpacyMorph(
+                    lemma=r"=",
+                    inflection=r"=",
+                    part_of_speech="NOUN",
+                ),
+            ],
+            [],
+        ),
+        (
             "de_core_news_md",  # German, sm model is not great
-            "»Was ist los?«Harry schüttelte den Kopf und spähte.",
+            "»Was ist los? «Harry schüttelte den Kopf und spähte.",
             [
                 SpacyMorph(lemma="--", inflection="»", part_of_speech="PUNCT"),
                 SpacyMorph(lemma="was", inflection="was", part_of_speech="PRON"),
@@ -182,16 +282,17 @@ def fake_environment_fixture() -> Iterator[None]:
         ),
         (
             "fr_core_news_sm",  # French
-            "Ça m’est égal?",
+            "Ça m’est égal",
             [
                 SpacyMorph(lemma="cela", inflection="ça", part_of_speech="PRON"),
-                SpacyMorph(lemma="m’est", inflection="m’est", part_of_speech="VERB"),
+                SpacyMorph(lemma="m’", inflection="m’", part_of_speech="ADJ"),
+                SpacyMorph(lemma="être", inflection="est", part_of_speech="AUX"),
                 SpacyMorph(lemma="égal", inflection="égal", part_of_speech="ADJ"),
-                SpacyMorph(lemma="?", inflection="?", part_of_speech="PUNCT"),
             ],
             [
                 Morpheme(lemma="cela", inflection="ça"),
-                Morpheme(lemma="m’est", inflection="m’est"),
+                Morpheme(lemma="m’", inflection="m’"),
+                Morpheme(lemma="être", inflection="est"),
                 Morpheme(lemma="égal", inflection="égal"),
             ],
         ),
@@ -330,18 +431,18 @@ def fake_environment_fixture() -> Iterator[None]:
         ),
         (
             "mk_core_news_sm",  # Macedonian
-            "дали Александар одеше?",
+            "Александар пиеше кафе.",
             [
-                SpacyMorph(lemma="дали", inflection="дали", part_of_speech="SCONJ"),
                 SpacyMorph(
                     lemma="александар", inflection="александар", part_of_speech="PROPN"
                 ),
-                SpacyMorph(lemma="одеше", inflection="одеше", part_of_speech="SPACE"),
-                SpacyMorph(lemma="?", inflection="?", part_of_speech="SPACE"),
+                SpacyMorph(lemma="пие", inflection="пиеше", part_of_speech="VERB"),
+                SpacyMorph(lemma="кафе", inflection="кафе", part_of_speech="NOUN"),
+                SpacyMorph(lemma=".", inflection=".", part_of_speech="PROPN"),  # wrong
             ],
             [
-                Morpheme(lemma="дали", inflection="дали"),
-                Morpheme(lemma="одеше", inflection="одеше"),
+                Morpheme(lemma="пие", inflection="пиеше"),
+                Morpheme(lemma="кафе", inflection="кафе"),
             ],
         ),
         (
@@ -469,15 +570,21 @@ def test_spacy(  # pylint:disable=unused-argument
     expected_spacy_morphs: list[SpacyMorph],
     expected_am_morphs: list[Morpheme],
 ) -> None:
-    nlp: Any = get_nlp(spacy_model_name=spacy_model_name)
+    spacy_wrapper.load_spacy_modules()
+
+    morphemizer = SpacyMorphemizer(spacy_model_name)
+
+    nlp = spacy_wrapper.get_nlp(spacy_model_name)
     doc = nlp(sentence.lower())  # the recalc process lowercases like this
-    assert len(doc) == len(expected_spacy_morphs)
 
     # for w in doc:
     #     print(f"w.lemma_: {w.lemma_}")
     #     print(f"w.text: {w.text}")
+    #     print(f"w.pos: {w.pos}")
     #     print(f"w.pos_: {w.pos_}")
     #     print("")
+
+    assert len(doc) == len(expected_spacy_morphs)
 
     for index, w in enumerate(doc):
         morph: SpacyMorph = expected_spacy_morphs[index]
@@ -487,18 +594,21 @@ def test_spacy(  # pylint:disable=unused-argument
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
-    processed_morphs: list[Morpheme] = get_processed_spacy_morphs(am_config, doc)
+    processed_morphs: list[Morpheme] = next(
+        morphemizer.get_processed_morphs(am_config, [sentence.lower()])
+    )
 
     # print(f"processes morphs: {len(processed_morphs)}")
     # for _morph in processed_morphs:
-    #     print(f"base: {_morph.lemma}")
-    #     print(f"inflected: {_morph.inflection}")
+    #     print(f"lemma: {_morph.lemma}")
+    #     print(f"inflection: {_morph.inflection}")
     #     print("")
     #
     # print(f"expected_am_morphs: {len(expected_am_morphs)}")
     # for _morph in expected_am_morphs:
-    #     print(f"base: {_morph.lemma}")
-    #     print(f"inflected: {_morph.inflection}")
+    #     print(f"lemma: {_morph.lemma}")
+    #     print(f"inflection: {_morph.inflection}")
     #     print("")
 
     assert processed_morphs == expected_am_morphs
+    # assert False

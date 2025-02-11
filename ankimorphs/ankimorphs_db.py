@@ -45,7 +45,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
         """
         Closes the database connection when exiting the context.
-        Commits if no exception occurred, rolls back if one did.
+        Commits if no exception occurred, else rolls back.
         """
         if self.con:
             if exc_type is None:

@@ -78,7 +78,7 @@ def test_morph_priority_with_priority_file(  # pylint:disable=unused-argument
         json_file_name,
     )
 
-    # debugging_utils.save_to_json_file(json_file_path, morph_priorities)
+    # debug_utils.save_to_json_file(json_file_path, morph_priorities)
 
     correct_morphs_priorities = debug_utils.load_dict_from_json_file(json_file_path)
     assert len(correct_morphs_priorities) > 0
