@@ -1,13 +1,5 @@
 # Frequently Asked Questions
 
-### Can you make AnkiMorphs work on Anki qt5?
-
-No, supporting multiple versions of Qt is too detrimental to the project's workflow and code-base.
-
-[The last release of Qt 5 was in May 2023](https://www.qt.io/blog/the-conversion-program-is-ending), so using Qt 6 is
-the sensible thing to do.
-
-
 ### Transitioning from MorphMan
 
 > Should I add a note-filter row for both my sentence field and my focus morph field?
