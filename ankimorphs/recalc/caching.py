@@ -288,7 +288,7 @@ def _update_learning_intervals(
 
 
 def _get_learning_intervals_of_lemmas(
-    morph_table_data: list[dict[str, Any]]
+    morph_table_data: list[dict[str, Any]],
 ) -> dict[str, int]:
     learning_intervals_of_lemmas: dict[str, int] = {}
 

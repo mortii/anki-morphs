@@ -745,7 +745,7 @@ def get_all_defaults_config_dict() -> dict[str, Any]:
 
 
 def load_stored_am_configs(
-    stored_config: dict[str, str | int | float | bool | object]
+    stored_config: dict[str, str | int | float | bool | object],
 ) -> None:
     """
     This function loads the stored dict found in 'ankimorphs_profile_settings.json' and
@@ -781,7 +781,7 @@ def update_configs(new_configs: dict[str, str | int | float | bool | object]) ->
 
 
 def save_config_to_am_file(
-    configs: dict[str, str | int | float | bool | object]
+    configs: dict[str, str | int | float | bool | object],
 ) -> None:
     assert mw is not None
     profile_settings_path = Path(

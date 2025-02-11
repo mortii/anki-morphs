@@ -342,7 +342,7 @@ def _get_input_files_table_sorted(
 
 
 def get_total_morph_occurrences_dict(
-    morph_occurrences_by_file: dict[Path, dict[str, MorphOccurrence]]
+    morph_occurrences_by_file: dict[Path, dict[str, MorphOccurrence]],
 ) -> dict[str, MorphOccurrence]:
     """
     Returns total_morph_occurrences: dict[str, MorphOccurrence]
@@ -412,7 +412,7 @@ def get_min_occurrence_cutoff(
 
 
 def get_sorted_lemma_occurrence_dict(
-    morph_occurrence_dict_original: dict[str, MorphOccurrence]
+    morph_occurrence_dict_original: dict[str, MorphOccurrence],
 ) -> dict[str, MorphOccurrence]:
     """
     This creates a new dict with keys that only consist of the lemma, and

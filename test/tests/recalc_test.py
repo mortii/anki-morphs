@@ -42,7 +42,7 @@ from ankimorphs.exceptions import (
 from ankimorphs.recalc import recalc_main
 
 # these have to be placed here to avoid cyclical imports
-from anki.cards import Card  # isort:skip  pylint:disable=wrong-import-order
+from anki.cards import Card, CardId  # isort:skip  pylint:disable=wrong-import-order
 from anki.models import (  # isort:skip pylint:disable=wrong-import-order
     ModelManager,
     NotetypeDict,
@@ -238,6 +238,7 @@ def test_recalc(  # pylint:disable=too-many-locals
 
     for card_id in expected_collection_cards:
         # print(f"card_id: {card_id}")
+        card_id = CardId(card_id)
 
         actual_card: Card = actual_collection.get_card(card_id)
         actual_note: Note = actual_card.note()

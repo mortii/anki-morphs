@@ -1,6 +1,6 @@
-anki==24.06.3
-aqt==24.06.3
-black==24.10.0
+anki==25.02
+aqt==25.02
+black==25.1.0
 ca_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ca_core_news_sm-3.8.0/ca_core_news_sm-3.8.0-py3-none-any.whl
 csv-diff==1.2
 da_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/da_core_news_sm-3.8.0/da_core_news_sm-3.8.0-py3-none-any.whl
@@ -16,19 +16,19 @@ ja_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ja
 ko_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ko_core_news_sm-3.8.0/ko_core_news_sm-3.8.0-py3-none-any.whl
 lt_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/lt_core_news_sm-3.8.0/lt_core_news_sm-3.8.0-py3-none-any.whl
 mk_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/mk_core_news_sm-3.8.0/mk_core_news_sm-3.8.0-py3-none-any.whl
-mypy==1.13.0
+mypy==1.15.0
 nb_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/nb_core_news_sm-3.8.0/nb_core_news_sm-3.8.0-py3-none-any.whl
 nl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/nl_core_news_sm-3.8.0/nl_core_news_sm-3.8.0-py3-none-any.whl
 pl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pl_core_news_sm-3.8.0/pl_core_news_sm-3.8.0-py3-none-any.whl
-pre-commit==4.0.1
+pre-commit==4.1.0
 pt_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.8.0/pt_core_news_sm-3.8.0-py3-none-any.whl
-pylint==3.3.1
+pylint==3.3.4
 PyQt6==6.6.1  # used by anki, newer versions can cause crashes in prod
 PyQt6-Qt6==6.6.1  # used by anki, newer versions can cause crashes in prod
 PyQt6-WebEngine==6.6.0  # used by anki, newer versions can cause crashes in prod
 PyQt6-WebEngine-Qt6==6.6.0  # used by anki, newer versions can cause crashes in prod
 PyQt6_sip==13.6.0  # used by anki, newer versions can cause crashes in prod
-pytest==8.3.3
+pytest==8.3.4
 pytest-cov==6.0.0
 pytest-expect==1.1.0
 pytest-qt==4.4.0
@@ -37,7 +37,7 @@ pytest-sugar==1.0.0
 pytest-xvfb==3.0.0
 ro_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ro_core_news_sm-3.8.0/ro_core_news_sm-3.8.0-py3-none-any.whl
 ru_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ru_core_news_sm-3.8.0/ru_core_news_sm-3.8.0-py3-none-any.whl
-six==1.16.0  # some spacy package is missing this from their requirements
+six==1.17.0  # some spacy package is missing this from their requirements
 sl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/sl_core_news_sm-3.8.0/sl_core_news_sm-3.8.0-py3-none-any.whl
 spacy==3.8.2
 sv_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/sv_core_news_sm-3.8.0/sv_core_news_sm-3.8.0-py3-none-any.whl

@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
-from anki.cards import Card
+from anki.cards import Card, CardId
 from anki.consts import CARD_TYPE_NEW
 from anki.models import FieldDict, ModelManager, NotetypeDict
 from anki.notes import Note
@@ -168,8 +168,8 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
     am_db = AnkiMorphsDB()
     model_manager: ModelManager = mw.col.models
     card_morph_map_cache: dict[int, list[Morpheme]] = am_db.get_card_morph_map_cache()
-    handled_cards: dict[int, None] = {}  # we only care about the key lookup, not values
-    modified_cards: dict[int, Card] = {}  # a dict makes the offsetting process easier
+    handled_cards: dict[CardId, None] = {}  # we only care about the key lookup
+    modified_cards: dict[CardId, Card] = {}
     modified_notes: list[Note] = []
 
     # clear relevant caches between recalcs
@@ -188,8 +188,10 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
             only_lemma_priorities=am_config.evaluate_morph_lemma,
             morph_priority_selection=config_filter.morph_priority_selection,
         )
-        cards_data_dict: dict[int, AnkiMorphsCardData] = am_db.get_am_cards_data_dict(
-            note_type_id=model_manager.id_for_name(config_filter.note_type)
+        cards_data_dict: dict[CardId, AnkiMorphsCardData] = (
+            am_db.get_am_cards_data_dict(
+                note_type_id=model_manager.id_for_name(config_filter.note_type)
+            )
         )
         card_amount = len(cards_data_dict)
 
@@ -325,15 +327,15 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
 def _add_offsets_to_new_cards(
     am_config: AnkiMorphsConfig,
     card_morph_map_cache: dict[int, list[Morpheme]],
-    already_modified_cards: dict[int, Card],
-    handled_cards: dict[int, None],
-) -> dict[int, Card]:
+    already_modified_cards: dict[CardId, Card],
+    handled_cards: dict[CardId, None],
+) -> dict[CardId, Card]:
     # This essentially replaces the need for the "skip" options, which in turn
     # makes reviewing cards on mobile a viable alternative.
     assert mw is not None
 
     earliest_due_card_for_unknown_morph: dict[str, Card] = {}
-    cards_with_morph: dict[str, set[int]] = {}  # a set has faster lookup than a list
+    cards_with_morph: dict[str, set[CardId]] = {}  # a set has faster lookup than a list
 
     card_amount = len(handled_cards)
     for counter, card_id in enumerate(handled_cards):
@@ -377,7 +379,7 @@ def _add_offsets_to_new_cards(
             earliest_due_card_for_unknown_morph.items(), key=lambda item: item[1].due
         )
     )
-    modified_offset_cards: dict[int, Card] = _apply_offsets(
+    modified_offset_cards: dict[CardId, Card] = _apply_offsets(
         am_config=am_config,
         already_modified_cards=already_modified_cards,
         earliest_due_card_for_unknown_morph=earliest_due_card_for_unknown_morph,
@@ -391,13 +393,13 @@ def _add_offsets_to_new_cards(
 
 def _apply_offsets(
     am_config: AnkiMorphsConfig,
-    already_modified_cards: dict[int, Card],
+    already_modified_cards: dict[CardId, Card],
     earliest_due_card_for_unknown_morph: dict[str, Card],
-    cards_with_morph: dict[str, set[int]],
-) -> dict[int, Card]:
+    cards_with_morph: dict[str, set[CardId]],
+) -> dict[CardId, Card]:
     assert mw is not None
 
-    modified_offset_cards: dict[int, Card] = {}
+    modified_offset_cards: dict[CardId, Card] = {}
 
     for counter, _unknown_morph in enumerate(earliest_due_card_for_unknown_morph):
         if counter > am_config.recalc_number_of_morphs_to_offset:

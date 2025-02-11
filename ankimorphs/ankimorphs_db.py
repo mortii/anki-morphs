@@ -7,6 +7,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
+from anki.cards import CardId
 from anki.collection import SearchNode
 from anki.models import NotetypeId
 from aqt import mw
@@ -301,14 +302,14 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
     def get_ids_of_cards_with_same_morphs(
         self,
-        card_id: int,
+        card_id: CardId,
         search_unknowns: bool = False,
         search_lemma_only: bool = False,
-    ) -> set[int] | None:
+    ) -> set[CardId] | None:
         # The where_query_string is a necessary hack to overcome the sqlite problem
         # of not allowing variable length parameters
 
-        card_ids: set[int] = set()
+        card_ids: set[CardId] = set()
         card_morphs: set[tuple[str, str]] | None = self.get_card_morphs(
             card_id, search_unknowns
         )
@@ -339,7 +340,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             ).fetchall()
 
             for card_id_raw in raw_card_ids:
-                card_ids.add(card_id_raw[0])
+                card_ids.add(CardId(card_id_raw[0]))
 
         if len(card_ids) == 0:
             return None
@@ -470,7 +471,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
     def get_am_cards_data_dict(
         self, note_type_id: NotetypeId | None
-    ) -> dict[int, AnkiMorphsCardData]:
+    ) -> dict[CardId, AnkiMorphsCardData]:
         assert mw is not None
         assert mw.col.db is not None
         assert note_type_id is not None
@@ -484,7 +485,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             (note_type_id,),
         ).fetchall()
 
-        am_db_row_data_dict: dict[int, AnkiMorphsCardData] = {}
+        am_db_row_data_dict: dict[CardId, AnkiMorphsCardData] = {}
         for am_data in map(AnkiMorphsCardData, result):
             am_db_row_data_dict[am_data.card_id] = am_data
         return am_db_row_data_dict

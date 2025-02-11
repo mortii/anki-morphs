@@ -15,7 +15,9 @@ class Ruby(Range, Injector):
 
     @abstractmethod
     def rt(self) -> str:
-        return NotImplemented
+        """
+        defines how the rt is injected
+        """
 
     def inject(self, target: str) -> str:
         return target[: self.start] + str(self) + target[self.end :]

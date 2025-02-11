@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from anki.cards import CardId
 from anki.collection import SearchNode
 from anki.notes import Note
 from anki.utils import ids2str
@@ -34,7 +35,7 @@ def run_browse_morph(
     am_config = AnkiMorphsConfig()
 
     # Only use the first selected card since note-types can be different
-    card_id: int = browser.selectedCards()[0]
+    card_id: CardId = browser.selectedCards()[0]
 
     card = mw.col.get_card(card_id)
     note = card.note()
@@ -49,7 +50,7 @@ def run_browse_morph(
 
 def browse_same_morphs(  # pylint:disable=too-many-arguments
     am_config: AnkiMorphsConfig,
-    card_id: int | None = None,
+    card_id: CardId | None = None,
     note: Note | None = None,
     search_unknowns: bool = False,
     search_ready_tag: bool = False,
@@ -84,7 +85,7 @@ def browse_same_morphs(  # pylint:disable=too-many-arguments
         )
         return
 
-    card_ids: set[int] | None
+    card_ids: set[CardId] | None
 
     # These branches are simplified by the fact that we have not exhaustively
     # added all combinations of known/unknown and inflection/lemma.
@@ -155,7 +156,7 @@ def browse_study_morphs_for_highlighted_morph(selected_text: str) -> None:
 
 def focus_query(
     am_config: AnkiMorphsConfig,
-    card_ids: set[int],
+    card_ids: set[CardId],
     ready_tag: bool = False,
 ) -> str | None:
     assert mw is not None
@@ -180,7 +181,7 @@ def run_already_known_tagger() -> None:
     am_config = AnkiMorphsConfig()
 
     known_tag: str = am_config.tag_known_manually
-    selected_cards: Sequence[int] = browser.selectedCards()
+    selected_cards: Sequence[CardId] = browser.selectedCards()
 
     for card_id in selected_cards:
         card = mw.col.get_card(card_id)

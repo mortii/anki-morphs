@@ -9,6 +9,7 @@ from collections.abc import Sequence
 from typing import Any
 
 import anki.utils
+from anki.cards import CardId
 from anki.models import ModelManager, NotetypeDict, NotetypeId
 from anki.tags import TagManager
 from aqt import mw
@@ -113,7 +114,7 @@ class AnkiMorphsCardData:
 
     def __init__(self, data_row: list[int | str]) -> None:
         assert isinstance(data_row[0], int)
-        self.card_id: int = data_row[0]
+        self.card_id: CardId = CardId(data_row[0])
 
         assert isinstance(data_row[1], int)
         self.note_id: int = data_row[1]
