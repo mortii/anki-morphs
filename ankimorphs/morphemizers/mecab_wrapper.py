@@ -114,6 +114,8 @@ def _spawn_cmd(cmd: list[str], _startupinfo: Any) -> subprocess.Popen[bytes]:
     )
 
 
+# the cache needs to have a max size to maintain garbage collection
+@functools.lru_cache(maxsize=131072)
 def get_morphemes_mecab(expression: str) -> list[Morpheme]:
     # HACK: mecab sometimes does not produce the right morphs if there are no extra characters in the expression,
     # so we just add a whitespace and a japanese punctuation mark "。" at the end to prevent the problem.

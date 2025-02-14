@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import importlib
 import importlib.util
 import sys
@@ -45,6 +46,8 @@ def import_jieba() -> None:
     successful_import = True
 
 
+# the cache needs to have a max size to maintain garbage collection
+@functools.lru_cache(maxsize=131072)
 def get_morphemes_jieba(expression: str) -> list[Morpheme]:
     assert posseg is not None
     _morphs: list[Morpheme] = []
