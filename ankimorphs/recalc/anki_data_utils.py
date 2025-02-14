@@ -57,7 +57,6 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         "manually_known_tag",
         "ready_tag",
         "not_ready_tag",
-        "fields",
         "tags",
         "note_id",
         "note_type_id",
@@ -90,7 +89,6 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         self.manually_known_tag = manually_known_tag
         self.ready_tag = ready_tag
         self.not_ready_tag = not_ready_tag
-        self.fields = anki_row_data.note_fields
         self.tags = anki_row_data.note_tags
         self.note_id = anki_row_data.note_id
         self.note_type_id = note_type_id
