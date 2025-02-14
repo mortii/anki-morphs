@@ -1,10 +1,8 @@
 # Highlighting
 
 <video autoplay loop muted controls>
-    <source src="../../../img/highlighting.mp4" type="video/mp4">
+    <source src="../../img/highlighting.mp4" type="video/mp4">
 </video>
-
-
 
 AnkiMorphs can automatically color-code morphs based on their learning status, i.e., how well you know them.
 
@@ -127,7 +125,7 @@ Here is an example of what they all look like:
 
 ### Duplicate Audio Problem
 
-![duplicate-audio.png](../../../img/duplicate-audio.png)
+![duplicate-audio.png](../../img/duplicate-audio.png)
 
 When the back of a card also has an audio field and not just the front, then both might play after each other when you
 press `Show Answer` on the card. To prevent both playing you can do the following:
