@@ -190,7 +190,9 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
         )
         cards_data_dict: dict[CardId, AnkiMorphsCardData] = (
             am_db.get_am_cards_data_dict(
-                note_type_id=model_manager.id_for_name(config_filter.note_type)
+                note_type_id=model_manager.id_for_name(config_filter.note_type),
+                include_tags=config_filter.tags["include"],
+                exclude_tags=config_filter.tags["exclude"],
             )
         )
         card_amount = len(cards_data_dict)

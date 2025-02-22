@@ -470,24 +470,39 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         return card_morph_map_cache
 
     def get_am_cards_data_dict(
-        self, note_type_id: NotetypeId | None
+        self,
+        note_type_id: NotetypeId | None,
+        include_tags: str,  # whitespace separated string
+        exclude_tags: str,  # whitespace separated string
     ) -> dict[CardId, AnkiMorphsCardData]:
         assert mw is not None
         assert mw.col.db is not None
         assert note_type_id is not None
 
-        result = self.con.execute(
-            """
+        query = """
             SELECT card_id, note_id, note_type_id, card_type, tags
             FROM Cards
             WHERE note_type_id = ?
-            """,
-            (note_type_id,),
-        ).fetchall()
+        """
+
+        params: list[Any] = [note_type_id]
+
+        if len(include_tags) > 0:
+            required_conditions = " AND ".join(["tags LIKE ?"] * len(include_tags))
+            query += f" AND {required_conditions}"
+            params.extend([f"% {tag} %" for tag in include_tags])
+
+        if len(exclude_tags) > 0:
+            excluded_conditions = " AND ".join(["tags NOT LIKE ?"] * len(exclude_tags))
+            query += f" AND {excluded_conditions}"
+            params.extend([f"% {tag} %" for tag in exclude_tags])
+
+        result = self.con.execute(query, tuple(params)).fetchall()
 
         am_db_row_data_dict: dict[CardId, AnkiMorphsCardData] = {}
         for am_data in map(AnkiMorphsCardData, result):
             am_db_row_data_dict[am_data.card_id] = am_data
+
         return am_db_row_data_dict
 
     # the cache needs to have a max size to maintain garbage collection
