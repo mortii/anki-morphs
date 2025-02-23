@@ -91,9 +91,20 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
             None
         )
 
-        self._shown_reset_tags_note_type_warning: bool = False
-        self._shown_reset_tags_field_warning: bool = False
-        self._shown_reset_tags_morphemizer_warning: bool = False
+        # key = source combobox
+        self.reset_tags_warning_shown = {
+            "field": False,
+            "note type": False,
+            "morphemizer": False,
+        }
+
+        # Dynamically added widgets in the rows can be randomly garbage collected
+        # if there are no persistent references to them outside the function that creates them.
+        # This dict acts as a workaround to that problem.
+        self.widget_references_by_row: list[tuple[Any, ...]] = []
+
+        # needed to prevent garbage collection
+        self.selection_model: QItemSelectionModel | None = None
 
         self.populate()
         self.setup_buttons()
@@ -144,6 +155,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         else:
             filters = self._config.filters
 
+        self._clear_note_filters_table()
         self._setup_note_filters_table(filters)
 
     def setup_buttons(self) -> None:
@@ -158,16 +170,15 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         # disable while no rows are selected
         self._on_no_row_selected()
 
-        selection_model = self.ui.note_filters_table.selectionModel()
-        assert selection_model is not None
+        self.selection_model = self.ui.note_filters_table.selectionModel()
+        assert self.selection_model is not None
+        self.selection_model.selectionChanged.connect(self._on_selection_changed)
 
-        selection_model.selectionChanged.connect(
-            lambda: self._on_selection_changed(selection_model)
-        )
+    def _on_selection_changed(self) -> None:
+        assert self.selection_model is not None
 
-    def _on_selection_changed(self, selection_model: QItemSelectionModel) -> None:
-        selected_rows = selection_model.selectedRows()
-        selected_indexes = selection_model.selectedIndexes()
+        selected_rows = self.selection_model.selectedRows()
+        selected_indexes = self.selection_model.selectedIndexes()
 
         if len(selected_indexes) == 1 or len(selected_rows) == 1:
             self._on_row_selected()
@@ -280,7 +291,19 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         if confirmed:
             selected_row = self.ui.note_filters_table.currentRow()
             self.ui.note_filters_table.removeRow(selected_row)
+
+            # prevents memory leaks
+            del self.widget_references_by_row[selected_row]
+
             self.notify_subscribers()
+
+    def _clear_note_filters_table(self) -> None:
+        """
+        Prevents Memory Leaks
+        """
+        self.widget_references_by_row.clear()
+        self.ui.note_filters_table.clearContents()
+        self.ui.note_filters_table.setRowCount(0)  # uses removeRows()
 
     def _set_note_filters_table_row(
         self, row: int, config_filter: AnkiMorphsConfigFilter
@@ -292,10 +315,12 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         note_type_cbox.setProperty("previousIndex", note_type_cbox.currentIndex())
         selected_note_type: str = note_type_cbox.itemText(note_type_cbox.currentIndex())
 
+        tags_filter_widget = QTableWidgetItem(json.dumps(config_filter.tags))
+
         field_cbox = self._setup_fields_cbox(config_filter, selected_note_type)
         field_cbox.setProperty("previousIndex", field_cbox.currentIndex())
         field_cbox.currentIndexChanged.connect(
-            lambda index: self._potentially_reset_tags_field(
+            lambda index: self._potentially_reset_tags(
                 new_index=index,
                 combo_box=field_cbox,
                 reason_for_reset="field",
@@ -304,10 +329,10 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
 
         # Fields are dependent on note-type
         note_type_cbox.currentIndexChanged.connect(
-            lambda index: self._update_fields_cbox(field_cbox, note_type_cbox)
+            lambda _: self._update_fields_cbox(field_cbox, note_type_cbox)
         )
         note_type_cbox.currentIndexChanged.connect(
-            lambda index: self._potentially_reset_tags_note_type(
+            lambda index: self._potentially_reset_tags(
                 new_index=index,
                 combo_box=note_type_cbox,
                 reason_for_reset="note type",
@@ -318,7 +343,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         morphemizer_cbox = self._setup_morphemizer_cbox(config_filter)
         morphemizer_cbox.setProperty("previousIndex", morphemizer_cbox.currentIndex())
         morphemizer_cbox.currentIndexChanged.connect(
-            lambda index: self._potentially_reset_tags_morphemizer(
+            lambda index: self._potentially_reset_tags(
                 new_index=index,
                 combo_box=morphemizer_cbox,
                 reason_for_reset="morphemizer",
@@ -341,7 +366,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
         self.ui.note_filters_table.setItem(
             row,
             self._note_filter_tags_column,
-            QTableWidgetItem(json.dumps(config_filter.tags)),
+            tags_filter_widget,
         )
         self.ui.note_filters_table.setCellWidget(
             row, self._note_filter_field_column, field_cbox
@@ -359,64 +384,40 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
             row, self._note_filter_modify_column, modify_checkbox
         )
 
-    def _potentially_reset_tags_note_type(
-        self, new_index: int, combo_box: QComboBox, reason_for_reset: str
-    ) -> None:
-        if self._shown_reset_tags_note_type_warning is False:
-            did_show_warning: bool = self._potentially_reset_tags(
-                new_index=new_index,
-                combo_box=combo_box,
-                reason_for_reset=reason_for_reset,
+        # store widgets persistently to prevent garbage collection
+        self.widget_references_by_row.append(
+            (
+                note_type_cbox,
+                tags_filter_widget,
+                field_cbox,
+                morphemizer_cbox,
+                morph_priority_cbox,
+                read_checkbox,
+                modify_checkbox,
             )
-            if did_show_warning:
-                self._shown_reset_tags_note_type_warning = True
-
-    def _potentially_reset_tags_field(
-        self, new_index: int, combo_box: QComboBox, reason_for_reset: str
-    ) -> None:
-        if self._shown_reset_tags_field_warning is False:
-            did_show_warning: bool = self._potentially_reset_tags(
-                new_index=new_index,
-                combo_box=combo_box,
-                reason_for_reset=reason_for_reset,
-            )
-            if did_show_warning:
-                self._shown_reset_tags_field_warning = True
-
-    def _potentially_reset_tags_morphemizer(
-        self, new_index: int, combo_box: QComboBox, reason_for_reset: str
-    ) -> None:
-        if self._shown_reset_tags_morphemizer_warning is False:
-            did_show_warning: bool = self._potentially_reset_tags(
-                new_index=new_index,
-                combo_box=combo_box,
-                reason_for_reset=reason_for_reset,
-            )
-            if did_show_warning:
-                self._shown_reset_tags_morphemizer_warning = True
+        )
 
     def _potentially_reset_tags(
         self, new_index: int, combo_box: QComboBox, reason_for_reset: str
-    ) -> bool:
+    ) -> None:
         """
         To prevent annoying the user, we only want to show the warning dialog once
         per combobox, per setting.
-
-        Returns True if warning dialog was shown, otherwise returns False.
         """
 
-        if new_index == 0:
-            # we can ignore the "(none)" selection
-            return False
+        if not self.reset_tags_warning_shown.get(reason_for_reset, False):
+            if new_index == 0:  # Ignore the "(none)" selection
+                return
 
-        previous_index = combo_box.property("previousIndex")
-        if previous_index != 0:
+            previous_index = combo_box.property("previousIndex")
+            if previous_index == 0:  # Skip if no change
+                return
+
             if self._want_to_reset_am_tags(reason_for_reset):
                 tags_and_queue_utils.reset_am_tags(parent=self._parent)
-            return True
 
-        combo_box.setProperty("previousIndex", new_index)
-        return False
+            self.reset_tags_warning_shown[reason_for_reset] = True
+            combo_box.setProperty("previousIndex", new_index)
 
     def _setup_note_type_cbox(self, config_filter: AnkiMorphsConfigFilter) -> QComboBox:
         note_type_cbox = QComboBox(self.ui.note_filters_table)
@@ -484,8 +485,9 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
             morph_priority_cbox.setCurrentIndex(morph_priority_cbox_index)
         return morph_priority_cbox
 
-    @staticmethod
-    def _update_fields_cbox(field_cbox: QComboBox, note_type_cbox: QComboBox) -> None:
+    def _update_fields_cbox(
+        self, field_cbox: QComboBox, note_type_cbox: QComboBox
+    ) -> None:
         """
         When the note type selection changes we repopulate the fields list,
         and we set the selected field to (none)

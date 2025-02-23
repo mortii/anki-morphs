@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from functools import partial
 from pathlib import Path
 from typing import Callable
 
@@ -9,6 +10,7 @@ from aqt import mw
 from aqt.operations import QueryOp
 from aqt.qt import (  # pylint:disable=no-name-in-module
     QAbstractItemView,
+    QCheckBox,
     QDialog,
     QDir,
     QFileDialog,
@@ -53,6 +55,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self.am_extra_settings = AnkiMorphsExtraSettings()
         self.am_extra_settings.beginGroup(extra_settings_keys.Dialogs.GENERATORS_WINDOW)
 
+        self.checkboxes: list[QCheckBox] = []
         self._input_files: list[Path] = []
         self._morphemizers: list[Morphemizer] = morphemizer_utils.get_all_morphemizers()
         self._setup_morphemizers()
@@ -129,7 +132,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
             self.ui.inputDirLineEdit.setText(stored_input_dir)
 
         self.ui.inputDirLineEdit.textEdited.connect(
-            lambda: self.ui.loadFilesPushButton.setEnabled(True)
+            partial(self.ui.loadFilesPushButton.setEnabled, True)
         )
 
     def _setup_geometry(self) -> None:
@@ -148,7 +151,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self._setup_preprocess_checkboxes()
 
     def _setup_file_extension_checkboxes(self) -> None:
-        checkboxes = [
+        self.checkboxes = [
             self.ui.assFilesCheckBox,
             self.ui.epubFilesCheckBox,
             self.ui.htmlFilesCheckBox,
@@ -194,9 +197,9 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self.ui.txtFilesCheckBox.setChecked(stored_txt_checkbox)
         self.ui.vttFilesCheckBox.setChecked(stored_vtt_checkbox)
 
-        for checkbox in checkboxes:
+        for checkbox in self.checkboxes:
             checkbox.clicked.connect(
-                lambda: self.ui.loadFilesPushButton.setEnabled(True)
+                partial(self.ui.loadFilesPushButton.setEnabled, True)
             )
 
     def _setup_preprocess_checkboxes(self) -> None:
