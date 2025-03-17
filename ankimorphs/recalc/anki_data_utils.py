@@ -73,7 +73,10 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
     ) -> None:
         fields_list = anki.utils.split_fields(anki_row_data.note_fields)
         expression_field = fields_list[expression_field_index]
-        expression = anki.utils.strip_html(expression_field)
+        expression = anki.utils.strip_html(
+            # this prevents morphs accidentally merging
+            expression_field.replace("<br>", "\n")
+        )
 
         tags_list = tag_manager.split(anki_row_data.note_tags)
 

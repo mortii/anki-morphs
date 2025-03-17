@@ -46,48 +46,6 @@
 
 
 <details>
-  <summary style="display:list-item">Morphs don't split correctly</summary>
-
-> Anki stores text on cards as HTML, and this can cause some weird/unexpected problems. One such problems is that
-> line breaks are actually stored as `<br>`.
->
-> Here is how it looks on the card:
->
->```plaintext
->Hello.
->Goodbye.
->```
->
->This is how it is actually stored:
->
->```plaintext
->Hello.<br>Goodbye.
->```
->
->Most morphemizers completely ignore the unicode equivalent of `<br>`, which results in them interpreting the text as:
->
->```plaintext
->Hello.Goodbye.
->```
->
->To fix this problem, we can use the [find and replace feature](https://docs.ankiweb.net/browsing.html#find-and-replace)
-> in Anki to add a whitespace between before the `<br>` on all our cards:
-![find_and_replace_split.png](../img/find_and_replace_split.png)
-> Where the `Find` field has this:
->```plaintext
->(\S)<br>
->```
->The `(\S)` part finds a non-whitespace character and saves it for later.
->
->And then the `Replace With` field has this:
->```plaintext
->${1} <br>
->```
->The `${1}` part re-inserts the `(\S)` character that was found earlier.
-</details>
-
-
-<details>
   <summary style="display:list-item">Incorrect highlighting of ignored names</summary>
 
 > When names are ignored, either by the morphemizer or those found in the `names.txt`, then the highlighting
