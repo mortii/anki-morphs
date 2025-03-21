@@ -324,7 +324,16 @@ def replace_card_reviewer() -> None:
 
     reviewing_utils.init_undo_targets()
 
-    mw.reviewer.nextCard = reviewing_utils.am_next_card
+    # Next card
+    old_next_card = mw.reviewer.nextCard
+
+    def new_next_card():
+        reviewing_utils.am_next_card()  # Custom AM next card
+        return old_next_card()          # then fallback to original
+
+    mw.reviewer.nextCard = new_next_card
+
+    # Shortcut keys
     mw.reviewer._shortcutKeys = partial(
         reviewing_utils.am_reviewer_shortcut_keys,
         self=mw.reviewer,
