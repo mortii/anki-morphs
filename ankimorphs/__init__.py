@@ -327,9 +327,9 @@ def replace_card_reviewer() -> None:
     # Next card
     old_next_card = mw.reviewer.nextCard
 
-    def new_next_card():
+    def new_next_card() -> None:
         reviewing_utils.am_next_card()  # Custom AM next card
-        return old_next_card()          # then fallback to original
+        old_next_card()                 # then fallback to original
 
     mw.reviewer.nextCard = new_next_card
 
