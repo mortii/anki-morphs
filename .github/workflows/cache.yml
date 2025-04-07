@@ -8,6 +8,8 @@ on:
 
 jobs:
   build:
+    permissions:
+      actions: write
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

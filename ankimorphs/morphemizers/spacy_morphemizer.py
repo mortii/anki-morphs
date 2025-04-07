@@ -8,7 +8,7 @@ from ..morpheme import Morpheme
 from ..morphemizers import spacy_wrapper
 from ..morphemizers.morphemizer import Morphemizer
 
-# matches strings/words entirely made up of punctuations and symbols
+# matches strings/words entirely made up of punctuation and symbols
 punctuation_and_symbols = re.compile(r"^[\W_]+$", re.UNICODE)
 
 
