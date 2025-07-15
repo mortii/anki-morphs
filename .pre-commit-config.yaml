@@ -3,8 +3,6 @@ ci: # the pre-commit ci bot on github does not like repo: local
     autoupdate_schedule: quarterly
     autofix_prs: false
 
-default_language_version:
-  python: python3.9
 exclude: |
   (?x)^(
       ankimorphs/ui/.*|
