@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gc
 import os
 import shutil
 import sys
@@ -155,24 +156,28 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals
     mock_db = FakeDB()
 
     try:
-        yield FakeEnvironment(
-            mock_mw=mock_mw,
+        try:
+            fake_env = FakeEnvironment(
+                mock_mw=mock_mw,
+                mock_db=mock_db,
+                config=_config_data,
+                known_morphs_dir=_known_morphs_dir,
+                priority_files_dir=_priority_files_dir,
+                actual_collection=mock_mw.col,
+                expected_collection=Collection(str(path_duplicate_expected_col)),
+            )
+
+        except anki.errors.DBError:
+            fake_env = None
+
+        yield fake_env
+
+    finally:
+        post_test_teardown(
             mock_db=mock_db,
-            config=_config_data,
-            known_morphs_dir=_known_morphs_dir,
-            priority_files_dir=_priority_files_dir,
-            actual_collection=mock_mw.col,
-            expected_collection=Collection(str(path_duplicate_expected_col)),
+            mock_mw=mock_mw,
+            patches=mw_patches + am_db_patches + misc_patches,
         )
-
-    except anki.errors.DBError:
-        yield None
-
-    post_test_teardown(
-        mock_db=mock_db,
-        mock_mw=mock_mw,
-        patches=mw_patches + am_db_patches + misc_patches,
-    )
 
 
 def create_mock_mw(
@@ -252,6 +257,9 @@ def post_test_teardown(
 
     for patch in patches:
         patch.stop()
+
+    # Windows can sometimes have lingering references so we force cleanup here
+    gc.collect()
 
     sys.path.remove(str(PATH_FAKE_MORPHEMIZERS))
 
