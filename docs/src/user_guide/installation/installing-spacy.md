@@ -85,7 +85,7 @@ py -3.9 -m pip install --upgrade pip virtualenv
 py -3.9 -m venv spacyenv
 spacyenv\Scripts\activate
 py -m pip install --upgrade pip setuptools wheel
-py -m pip install --upgrade spacy six
+py -m pip install --upgrade spacy==3.7.5 six
 ```
 
 In the same command prompt, we now want to download the models. Here I'll use the Korean model `ko_core_news_sm` and the
