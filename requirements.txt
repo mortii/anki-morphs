@@ -39,7 +39,7 @@ ro_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ro
 ru_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ru_core_news_sm-3.8.0/ru_core_news_sm-3.8.0-py3-none-any.whl
 six==1.17.0  # some spacy package is missing this from their requirements
 sl_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/sl_core_news_sm-3.8.0/sl_core_news_sm-3.8.0-py3-none-any.whl
-spacy==3.8.7
+spacy==3.8.2
 sv_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/sv_core_news_sm-3.8.0/sv_core_news_sm-3.8.0-py3-none-any.whl
 uk_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/uk_core_news_sm-3.8.0/uk_core_news_sm-3.8.0-py3-none-any.whl
 zh_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/zh_core_web_sm-3.8.0/zh_core_web_sm-3.8.0-py3-none-any.whl
