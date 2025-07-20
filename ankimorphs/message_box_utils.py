@@ -9,6 +9,16 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
 )
 
 
+def show_info_box(title: str, body: str, parent: QWidget) -> None:
+    info_box = QMessageBox(parent)
+    info_box.setWindowTitle(title)
+    info_box.setIcon(QMessageBox.Icon.Information)
+    info_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+    info_box.setTextFormat(Qt.TextFormat.MarkdownText)
+    info_box.setText(body)
+    info_box.exec()
+
+
 def show_warning_box(title: str, body: str, parent: QWidget) -> bool:
     """
     Returns 'True' if user clicked 'Ok' button

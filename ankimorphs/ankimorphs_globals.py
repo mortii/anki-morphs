@@ -5,7 +5,7 @@ that file and not here.
 """
 
 # Semantic Versioning https://semver.org/
-__version__ = "4.0.2"
+__version__ = "5.0.0"
 
 DEV_MODE: bool = False
 
@@ -19,6 +19,7 @@ TAG_SELECTOR_DIALOG_NAME: str = "am_tag_selector_dialog"
 GENERATOR_DIALOG_NAME: str = "am_generator_dialog"
 PROGRESSION_DIALOG_NAME: str = "am_progression_dialog"
 KNOWN_MORPHS_EXPORTER_DIALOG_NAME: str = "am_known_morphs_exporter_dialog"
+SPACY_MANAGER_DIALOG_NAME: str = "am_spacy_manager_dialog"
 
 # The static names of the extra fields
 EXTRA_FIELD_ALL_MORPHS: str = "am-all-morphs"

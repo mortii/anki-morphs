@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import functools
 import os.path
+import shutil
+import subprocess
 import sys
 from types import ModuleType
 from typing import Any
 
 from anki.utils import is_win
 from aqt import mw
+from aqt.package import venv_binary
 
 updated_python_path: bool = False
 testing_environment: bool = False
@@ -20,35 +23,71 @@ _SpacyLanguage: Any = None  #  spacy.language
 _SpacyTokenizer: Any = None  # spacy.tokenizer
 _SpacyDoc: Any = None  #  spacy.tokens.doc
 
+
+# spaCy does not have a cli to query available languages or models, so we hardcode it.
+available_langs_and_models: dict[str, list[str]] = {
+    # fmt: off
+    "Catalan": ["ca_core_news_sm", "ca_core_news_md", "ca_core_news_lg"],
+    "Chinese": ["zh_core_web_sm", "zh_core_web_md", "zh_core_web_lg"],
+    "Croatian": ["hr_core_news_sm", "hr_core_news_md", "hr_core_news_lg"],
+    "Danish": ["da_core_news_sm", "da_core_news_md", "da_core_news_lg"],
+    "Dutch": ["nl_core_news_sm", "nl_core_news_md", "nl_core_news_lg"],
+    "English": ["en_core_web_sm", "en_core_web_md", "en_core_web_lg"],
+    "Finnish": ["fi_core_news_sm", "fi_core_news_md", "fi_core_news_lg"],
+    "French": ["fr_core_news_sm", "fr_core_news_md", "fr_core_news_lg"],
+    "German": ["de_core_news_sm", "de_core_news_md", "de_core_news_lg"],
+    "Greek": ["el_core_news_sm", "el_core_news_md", "el_core_news_lg"],
+    "Italian": ["it_core_news_sm", "it_core_news_md", "it_core_news_lg"],
+    "Japanese": ["ja_core_news_sm", "ja_core_news_md", "ja_core_news_lg"],
+    "Korean": ["ko_core_news_sm", "ko_core_news_md", "ko_core_news_lg"],
+    "Lithuanian": ["lt_core_news_sm", "lt_core_news_md", "lt_core_news_lg"],
+    "Macedonian": ["mk_core_news_sm", "mk_core_news_md", "mk_core_news_lg"],
+    "Norwegian Bokmål": ["nb_core_news_sm", "nb_core_news_md", "nb_core_news_lg"],
+    "Polish": ["pl_core_news_sm", "pl_core_news_md", "pl_core_news_lg"],
+    "Portuguese": ["pt_core_news_sm", "pt_core_news_md", "pt_core_news_lg"],
+    "Romanian": ["ro_core_news_sm", "ro_core_news_md", "ro_core_news_lg"],
+    "Russian": ["ru_core_news_sm", "ru_core_news_md", "ru_core_news_lg"],
+    "Slovenian": ["sl_core_news_sm", "sl_core_news_md", "sl_core_news_lg"],
+    "Spanish": ["es_core_news_sm", "es_core_news_md", "es_core_news_lg"],
+    "Swedish": ["sv_core_news_sm", "sv_core_news_md", "sv_core_news_lg"],
+    "Ukrainian": ["uk_core_news_sm", "uk_core_news_md", "uk_core_news_lg"],
+    # fmt: on
+}
+
+
 LANGUAGE_PIPE_CONFIGS: dict[str, set[str]] = {
-    "ja": {""},  # Japanese uses SudachiPy
-    "nb": {"tok2vec", "attribute_ruler", "lemmatizer", "morphologizer", "ner"},
-    "da": {"tok2vec", "morphologizer", "lemmatizer"},
-    "de": {"tok2vec", "lemmatizer", "morphologizer"},
-    "fr": {"tok2vec", "lemmatizer", "morphologizer"},
-    "en": {"tok2vec", "tagger", "attribute_ruler", "lemmatizer", "morphologizer"},
-    "es": {"tok2vec", "lemmatizer", "morphologizer"},
-    "sv": {"tok2vec", "lemmatizer", "morphologizer"},
-    "nl": {"tok2vec", "lemmatizer", "morphologizer"},
+    "ca": {"tok2vec", "morphologizer", "lemmatizer"},
+    "zh": {"tok2vec", "tagger", "attribute_ruler"},
     "hr": {"tok2vec", "lemmatizer", "morphologizer"},
+    "da": {"tok2vec", "morphologizer", "lemmatizer"},
+    "nl": {"tok2vec", "lemmatizer", "morphologizer"},
+    "en": {"tok2vec", "tagger", "attribute_ruler", "lemmatizer", "morphologizer"},
     "fi": {"tok2vec", "lemmatizer", "morphologizer"},
+    "fr": {"tok2vec", "lemmatizer", "morphologizer"},
+    "de": {"tok2vec", "lemmatizer", "morphologizer"},
     "el": {"tok2vec", "lemmatizer", "morphologizer"},
     "it": {"tok2vec", "lemmatizer", "morphologizer"},
+    "ja": {""},  # Japanese uses SudachiPy
+    "ko": {"tok2vec", "morphologizer", "lemmatizer"},
     "lt": {"tok2vec", "lemmatizer", "morphologizer"},
     "mk": {"tok2vec", "lemmatizer", "morphologizer"},
+    "nb": {"tok2vec", "attribute_ruler", "lemmatizer", "morphologizer", "ner"},
     "pl": {"tok2vec", "lemmatizer", "morphologizer"},
     "pt": {"tok2vec", "lemmatizer", "morphologizer"},
     "ro": {"tok2vec", "tagger", "morphologizer", "lemmatizer", "attribute_ruler"},
-    "sl": {"tok2vec", "lemmatizer", "morphologizer"},
-    "ca": {"tok2vec", "morphologizer", "lemmatizer"},
     "ru": {"tok2vec", "morphologizer", "lemmatizer"},
+    "sl": {"tok2vec", "lemmatizer", "morphologizer"},
+    "es": {"tok2vec", "lemmatizer", "morphologizer"},
+    "sv": {"tok2vec", "lemmatizer", "morphologizer"},
     "uk": {"tok2vec", "morphologizer", "lemmatizer"},
-    "ko": {"tok2vec", "morphologizer", "lemmatizer"},
-    "zh": {"tok2vec", "tagger", "attribute_ruler"},
 }
 
 
 def load_spacy_modules() -> None:
+    # We load the spacy modules in this complicated way to maintain at least
+    # some form of static type checking, and to minimize error checking
+    # and exception handling
+
     global updated_python_path
     global successful_import
     global _spacy
@@ -59,14 +98,9 @@ def load_spacy_modules() -> None:
 
     # dev environments should already have spaCy, so this can be skipped
     if not updated_python_path and not testing_environment:
-        # Anki only looks into its own directories for python packages,
-        # to add other lookup folders we have to change the sys path.
-        # In the guide we instruct the users to install the spacy
-        # virtual environment into the addons21 folder as 'spacyenv',
-        # that way we can get the path based on the anki mw.pm.
-
         assert mw is not None
-        spacy_path = os.path.join(mw.pm.addonFolder(), "spacyenv")
+
+        spacy_path = _get_am_spacy_venv_path()
 
         if is_win is True:
             spacy_bin_path = os.path.join(spacy_path, "Scripts")
@@ -80,6 +114,7 @@ def load_spacy_modules() -> None:
                 "site-packages",
             )
 
+        # appending to the path is less disruptive than prepending
         sys.path.append(spacy_bin_path)
         sys.path.append(spacy_site_packages_path)
         updated_python_path = True
@@ -114,6 +149,79 @@ def get_installed_models() -> list[str]:
 
     assert _spacy_utils is not None
     return [f"{model_name}" for model_name in _spacy_utils.get_installed_models()]
+
+
+def _get_am_spacy_venv_python() -> str:
+    if is_win:
+        return os.path.join(_get_am_spacy_venv_path(), "Scripts", "python", ".exe")
+    return os.path.join(_get_am_spacy_venv_path(), "bin", "python")
+
+
+def _get_am_spacy_venv_path() -> str:
+    python_version = f"{sys.version_info.major}_{sys.version_info.minor}"
+    return os.path.join(mw.pm.addonFolder(), f"spacy-venv-python-{python_version}")
+
+
+def create_spacy_venv() -> None:
+    """
+    We create a dedicated venv to avoid polluting the anki launcher environment
+    """
+
+    spacy_venv_path = _get_am_spacy_venv_path()
+    python_path: str | None = venv_binary("python")
+    assert python_path is not None
+
+    subprocess.run([python_path, "-m", "venv", spacy_venv_path], check=True)
+
+    if is_win:
+        spacy_venv_python = os.path.join(spacy_venv_path, "Scripts", "python", ".exe")
+    else:
+        spacy_venv_python = os.path.join(spacy_venv_path, "bin", "python")
+
+    # make sure pip, setuptools, and wheel are up to date
+    subprocess.run(
+        [
+            spacy_venv_python,
+            "-m",
+            "pip",
+            "install",
+            "--upgrade",
+            "pip",
+            "setuptools",
+            "wheel",
+        ],
+        check=True,
+    )
+
+    # six is necessary for some models
+    subprocess.run(
+        [spacy_venv_python, "-m", "pip", "install", "--upgrade", "spacy", "six"],
+        check=True,
+    )
+
+
+def delete_spacy_venv() -> None:
+    shutil.rmtree(_get_am_spacy_venv_path())
+
+
+def install_model(model_name: str) -> None:
+    assert successful_import
+    assert _spacy is not None
+
+    subprocess.run(
+        [_get_am_spacy_venv_python(), "-m", "spacy", "download", model_name], check=True
+    )
+
+
+def uninstall_model(model_name: str) -> None:
+    assert successful_import
+    assert _spacy is not None
+
+    # the -y flag prevents a confirmation prompt
+    subprocess.run(
+        [_get_am_spacy_venv_python(), "-m", "pip", "uninstall", "-y", model_name],
+        check=True,
+    )
 
 
 # the cache needs to have a max size to maintain garbage collection

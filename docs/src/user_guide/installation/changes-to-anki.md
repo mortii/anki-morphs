@@ -262,5 +262,6 @@ You can find info about the options here:
 * [Recalc](../usage/recalc.md)
 * [Generators](../usage/generators.md)
 * [Progression](../usage/progression.md)
+* [spaCy Manager](../installation/installing-spacy.md)
 * [Known Morphs Exporter](../usage/known-morphs-exporter.md)
 * [Reset Tags](../usage/reset_tags.md)

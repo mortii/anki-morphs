@@ -16,6 +16,7 @@ from .extra_settings_keys import (
     KnownMorphsExporterKeys,
     PreprocessKeys,
     ProgressionWindowKeys,
+    SpacyManagerWindowKeys,
 )
 
 
@@ -71,6 +72,13 @@ class AnkiMorphsExtraSettings(QSettings):
         self.setValue(KnownMorphsExporterKeys.INFLECTION, ui.storeMorphLemmaAndInflectionRadioButton.isChecked())
         self.setValue(KnownMorphsExporterKeys.INTERVAL, ui.knownIntervalSpinBox.value())
         self.setValue(KnownMorphsExporterKeys.OCCURRENCES, ui.addOccurrencesColumnCheckBox.isChecked())
+        self.endGroup()
+        # fmt: on
+
+    def spacy_manager_window_settings(self, geometry: QByteArray) -> None:
+        # fmt: off
+        self.beginGroup(keys.Dialogs.SPACY_MANAGER_WINDOW)
+        self.setValue(SpacyManagerWindowKeys.WINDOW_GEOMETRY, geometry)
         self.endGroup()
         # fmt: on
 

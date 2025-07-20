@@ -1,5 +1,5 @@
-anki==25.7.2
-aqt==25.7.2
+anki==25.07.3
+aqt==25.07.3
 black==25.1.0
 ca_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ca_core_news_sm-3.8.0/ca_core_news_sm-3.8.0-py3-none-any.whl
 csv-diff==1.2

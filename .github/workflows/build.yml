@@ -9,7 +9,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python_version: [3.9, 3.13]
+        python_version: [3.13]
         os: [ubuntu-latest, macOS-latest, windows-latest]
       fail-fast: false
     steps:

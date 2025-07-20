@@ -38,6 +38,10 @@ pyuic6 -o ankimorphs/ui/generator_output_dialog_ui.py ankimorphs/ui/generator_ou
 pyuic6 -o ankimorphs/ui/progression_window_ui.py ankimorphs/ui/progression_window.ui
 ```
 
+```bash
+pyuic6 -o ankimorphs/ui/spacy_manager_dialog_ui.py ankimorphs/ui/spacy_manager_dialog.ui
+```
+
 Useful guides:
 - https://realpython.com/qt-designer-python/
 - https://www.pythontutorial.net/pyqt/qt-designer/
