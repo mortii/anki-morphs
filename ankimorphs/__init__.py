@@ -57,6 +57,7 @@ from .extra_settings.ankimorphs_extra_settings import AnkiMorphsExtraSettings
 from .generators.generators_window import GeneratorWindow
 from .highlighting.highlight_just_in_time import highlight_morphs_jit
 from .known_morphs_exporter import KnownMorphsExporterDialog
+from .morphemizers import spacy_wrapper
 from .progression.progression_window import ProgressionWindow
 from .recalc import recalc_main
 from .settings import settings_dialog
@@ -88,6 +89,7 @@ def main() -> None:
     gui_hooks.profile_did_open.append(init_browser_menus_and_actions)
     gui_hooks.profile_did_open.append(replace_card_reviewer)
     gui_hooks.profile_did_open.append(text_preprocessing.update_translation_table)
+    gui_hooks.profile_did_open.append(spacy_wrapper.maybe_delete_spacy_venv)
 
     gui_hooks.sync_will_start.append(recalc_on_sync)
 

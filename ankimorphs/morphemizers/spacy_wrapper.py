@@ -5,6 +5,7 @@ import os.path
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 from types import ModuleType
 from typing import Any
 
@@ -153,7 +154,7 @@ def get_installed_models() -> list[str]:
 
 def _get_am_spacy_venv_python() -> str:
     if is_win:
-        return os.path.join(_get_am_spacy_venv_path(), "Scripts", "python", ".exe")
+        return os.path.join(_get_am_spacy_venv_path(), "Scripts", "python.exe")
     return os.path.join(_get_am_spacy_venv_path(), "bin", "python")
 
 
@@ -168,17 +169,21 @@ def create_spacy_venv() -> None:
     """
 
     spacy_venv_path = _get_am_spacy_venv_path()
+
+    # delete in case it already exists from previously failed attempts
+    shutil.rmtree(spacy_venv_path, ignore_errors=True)
+
     python_path: str | None = venv_binary("python")
     assert python_path is not None
 
     subprocess.run([python_path, "-m", "venv", spacy_venv_path], check=True)
 
     if is_win:
-        spacy_venv_python = os.path.join(spacy_venv_path, "Scripts", "python", ".exe")
+        spacy_venv_python = os.path.join(spacy_venv_path, "Scripts", "python.exe")
     else:
         spacy_venv_python = os.path.join(spacy_venv_path, "bin", "python")
 
-    # make sure pip, setuptools, and wheel are up to date
+    # make sure pip, setuptools, and wheel are up-to-date
     subprocess.run(
         [
             spacy_venv_python,
@@ -201,7 +206,21 @@ def create_spacy_venv() -> None:
 
 
 def delete_spacy_venv() -> None:
-    shutil.rmtree(_get_am_spacy_venv_path())
+    spacy_venv_path = _get_am_spacy_venv_path()
+    try:
+        shutil.rmtree(spacy_venv_path)
+    except PermissionError:
+        # windows does not like deleting files in use, so we add this flag file
+        # and we delete the venv on startup if the file exists
+        (Path(spacy_venv_path) / ".delete_me").touch()
+
+
+def maybe_delete_spacy_venv() -> None:
+    # gracefully delete spacy venv on windows
+    spacy_venv_path = _get_am_spacy_venv_path()
+    flag = Path(spacy_venv_path, ".delete_me")
+    if flag.exists():
+        shutil.rmtree(spacy_venv_path)
 
 
 def install_model(model_name: str) -> None:
