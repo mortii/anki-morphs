@@ -74,6 +74,7 @@ class Ui_SettingsDialog(object):
         self.label_16.setObjectName("label_16")
         self.horizontalLayout_6.addWidget(self.label_16)
         self.recalcIntervalSpinBox = QtWidgets.QSpinBox(parent=self.general_tab)
+        self.recalcIntervalSpinBox.setMaximum(999)
         self.recalcIntervalSpinBox.setObjectName("recalcIntervalSpinBox")
         self.horizontalLayout_6.addWidget(self.recalcIntervalSpinBox)
         self.label_17 = QtWidgets.QLabel(parent=self.general_tab)

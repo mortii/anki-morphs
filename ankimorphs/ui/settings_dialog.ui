@@ -133,7 +133,11 @@
               </widget>
              </item>
              <item>
-              <widget class="QSpinBox" name="recalcIntervalSpinBox"/>
+              <widget class="QSpinBox" name="recalcIntervalSpinBox">
+               <property name="maximum">
+                <number>999</number>
+               </property>
+              </widget>
              </item>
              <item>
               <widget class="QLabel" name="label_17">
