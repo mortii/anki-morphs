@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 from typing import Any
 
@@ -9,7 +11,7 @@ square_brackets_regex = re.compile(r"\[[^]]*]")
 round_brackets_regex = re.compile(r"（[^）]*）")
 slim_round_brackets_regexp = re.compile(r"\([^)]*\)")
 
-translation_table: dict[int, Any] = {}
+global_translation_table: dict[int, Any] = {}
 
 
 def update_translation_table() -> None:
@@ -19,13 +21,18 @@ def update_translation_table() -> None:
 
     Note: this function is executed on startup and when settings are saved
     """
-    global translation_table
-    translation_table = str.maketrans(
+    global global_translation_table
+    global_translation_table = str.maketrans(
         "", "", AnkiMorphsConfig().preprocess_custom_characters_to_ignore
     )
 
 
-def get_processed_text(am_config: AnkiMorphsConfig, text: str) -> str:
+def get_processed_text(
+    am_config: AnkiMorphsConfig,
+    text: str,
+    translation_table: dict[int, int | None] | None = None,
+) -> str:
+
     if am_config.preprocess_ignore_bracket_contents:
         text = square_brackets_regex.sub("", text)
 
@@ -39,6 +46,8 @@ def get_processed_text(am_config: AnkiMorphsConfig, text: str) -> str:
         text = re.sub(r"\d", "", text)
 
     if am_config.preprocess_ignore_custom_characters:
+        if translation_table is None:
+            translation_table = global_translation_table
         # str.translate() removes characters in a single pass, which is
         # much more efficient than str.replace()
         text = text.translate(translation_table)

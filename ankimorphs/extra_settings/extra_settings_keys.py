@@ -36,6 +36,8 @@ class PreprocessKeys:
     IGNORE_NAMES_MORPHEMIZER = "ignore_names_morphemizer"
     IGNORE_NAMES_IN_FILE = "ignore_names_in_file"
     IGNORE_NUMBERS = "ignore_numbers"
+    IGNORE_CUSTOM_CHARS = "ignore_custom_chars"
+    CHARS_TO_IGNORE = "chars_to_ignore"
 
 
 class KnownMorphsExporterKeys:

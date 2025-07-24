@@ -57,6 +57,8 @@ class AnkiMorphsExtraSettings(QSettings):
         self.setValue(PreprocessKeys.IGNORE_NAMES_MORPHEMIZER, ui.namesMorphemizerCheckBox.isChecked())
         self.setValue(PreprocessKeys.IGNORE_NAMES_IN_FILE, ui.namesFileCheckBox.isChecked())
         self.setValue(PreprocessKeys.IGNORE_NUMBERS, ui.numbersCheckBox.isChecked())
+        self.setValue(PreprocessKeys.IGNORE_CUSTOM_CHARS, ui.customCharactersCheckBox.isChecked())
+        self.setValue(PreprocessKeys.CHARS_TO_IGNORE, ui.customCharactersLineEdit.text())
         self.endGroup()  # preprocess group
         self.endGroup()  # generators window group
         # fmt: on

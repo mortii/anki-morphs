@@ -16,6 +16,7 @@ from aqt.qt import (  # pylint:disable=no-name-in-module
     QFileDialog,
     QHeaderView,
     QMainWindow,
+    Qt,
     QTableWidget,
     QTableWidgetItem,
 )
@@ -57,15 +58,14 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
 
         self.checkboxes: list[QCheckBox] = []
         self._input_files: list[Path] = []
+        self._input_dir_root: Path
         self._morphemizers: list[Morphemizer] = morphemizer_utils.get_all_morphemizers()
         self._setup_morphemizers()
+        self._setup_line_edits()
         self._setup_checkboxes()
-        self._input_dir_root: Path
-
         self._setup_table(self.ui.numericalTableWidget)
         self._setup_table(self.ui.percentTableWidget)
         self._setup_buttons()
-        self._setup_input_field()
         self._setup_geometry()
 
         self.am_extra_settings.endGroup()
@@ -124,12 +124,26 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
 
         self.ui.loadFilesPushButton.setFocus()  # quality of life
 
-    def _setup_input_field(self) -> None:
+    def _setup_line_edits(self) -> None:
         stored_input_dir: str = self.am_extra_settings.value(
             extra_settings_keys.GeneratorsWindowKeys.INPUT_DIR, type=str
         )
+
+        self.am_extra_settings.beginGroup(
+            extra_settings_keys.GeneratorsWindowKeys.PREPROCESS
+        )
+        stored_chars_to_ignore: str = self.am_extra_settings.value(
+            extra_settings_keys.PreprocessKeys.CHARS_TO_IGNORE, type=str
+        )
+        self.am_extra_settings.endGroup()
+
         if stored_input_dir is not None:
             self.ui.inputDirLineEdit.setText(stored_input_dir)
+
+        if stored_chars_to_ignore is not None:
+            self.ui.customCharactersLineEdit.setText(stored_chars_to_ignore)
+
+        self.ui.customCharactersLineEdit.setDisabled(True)
 
         self.ui.inputDirLineEdit.textEdited.connect(
             partial(self.ui.loadFilesPushButton.setEnabled, True)
@@ -225,8 +239,15 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         stored_ignore_numbers: bool = self.am_extra_settings.value(
             extra_settings_keys.PreprocessKeys.IGNORE_NUMBERS, type=bool
         )
+        stored_ignore_custom_chars: bool = self.am_extra_settings.value(
+            extra_settings_keys.PreprocessKeys.IGNORE_CUSTOM_CHARS, type=bool
+        )
 
         self.am_extra_settings.endGroup()
+
+        self.ui.customCharactersCheckBox.stateChanged.connect(
+            self._toggle_disable_custom_characters_line_edit
+        )
 
         self.ui.squareBracketsCheckBox.setChecked(stored_ignore_square_brackets)
         self.ui.roundBracketsCheckBox.setChecked(stored_ignore_round_brackets)
@@ -234,6 +255,13 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         self.ui.namesMorphemizerCheckBox.setChecked(stored_ignore_names_morphemizer)
         self.ui.namesFileCheckBox.setChecked(stored_ignore_names_in_file)
         self.ui.numbersCheckBox.setChecked(stored_ignore_numbers)
+        self.ui.customCharactersCheckBox.setChecked(stored_ignore_custom_chars)
+
+    def _toggle_disable_custom_characters_line_edit(self) -> None:
+        if self.ui.customCharactersCheckBox.checkState() == Qt.CheckState.Unchecked:
+            self.ui.customCharactersLineEdit.setDisabled(True)
+        else:
+            self.ui.customCharactersLineEdit.setEnabled(True)
 
     def _on_select_folder_clicked(self) -> None:
         input_dir: str = QFileDialog.getExistingDirectory(

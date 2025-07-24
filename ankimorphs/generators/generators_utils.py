@@ -104,7 +104,7 @@ class FileMorphsStats:
         return self
 
 
-class PreprocessOptions:
+class PreprocessOptions:  # pylint:disable=too-many-instance-attributes
     def __init__(self, ui: Ui_GeneratorsWindow):
         self.filter_square_brackets: bool = ui.squareBracketsCheckBox.isChecked()
         self.filter_round_brackets: bool = ui.roundBracketsCheckBox.isChecked()
@@ -112,6 +112,8 @@ class PreprocessOptions:
         self.filter_numbers: bool = ui.numbersCheckBox.isChecked()
         self.filter_morphemizer_names: bool = ui.namesMorphemizerCheckBox.isChecked()
         self.filter_names_from_file: bool = ui.namesFileCheckBox.isChecked()
+        self.filter_custom_chars: bool = ui.customCharactersCheckBox.isChecked()
+        self.custom_chars_to_ignore: str = ui.customCharactersLineEdit.text()
 
     def to_mock_am_config(self) -> AnkiMorphsConfig:
         return Mock(
@@ -122,7 +124,8 @@ class PreprocessOptions:
             preprocess_ignore_numbers=self.filter_numbers,
             preprocess_ignore_names_morphemizer=self.filter_morphemizer_names,
             preprocess_ignore_names_textfile=self.filter_names_from_file,
-            preprocess_ignore_custom_characters="",  # todo: add option in generators window?
+            preprocess_ignore_custom_characters=self.filter_custom_chars,
+            preprocess_custom_characters_to_ignore=self.custom_chars_to_ignore,
         )
 
 
@@ -206,7 +209,6 @@ def generate_morph_occurrences_by_file(
     )
     preprocess_options = PreprocessOptions(ui)
     morph_occurrences_by_file: dict[Path, dict[str, MorphOccurrence]] = {}
-
     sorted_input_files: list[Path]
 
     if sorted_by_table:
@@ -216,6 +218,8 @@ def generate_morph_occurrences_by_file(
         )
     else:
         sorted_input_files = input_files
+
+    translation_table = str.maketrans("", "", preprocess_options.custom_chars_to_ignore)
 
     for input_file in sorted_input_files:
         if mw.progress.want_cancel():  # user clicked 'x' button
@@ -233,6 +237,7 @@ def generate_morph_occurrences_by_file(
                 preprocess_options=preprocess_options,
                 file_path=input_file,
                 morphemizer=_morphemizer,
+                translation_table=translation_table,
             )
         )
         morph_occurrences_by_file[input_file] = file_morph_occurrences
@@ -244,9 +249,9 @@ def create_file_morph_occurrences(
     preprocess_options: PreprocessOptions,
     file_path: Path,
     morphemizer: Morphemizer,
+    translation_table: dict[int, int | None],
 ) -> dict[str, MorphOccurrence]:
 
-    morph_occurrences: dict[str, MorphOccurrence]
     raw_lines: list[str]
     filtered_lines: list[str] = []
     extension = file_path.suffix
@@ -261,21 +266,20 @@ def create_file_morph_occurrences(
         for line in raw_lines:
             # lower-case to avoid proper noun false-positives
             filtered_line = text_preprocessing.get_processed_text(
-                am_config=mock_am_config, text=line.strip().lower()
+                am_config=mock_am_config,
+                text=line.strip().lower(),
+                translation_table=translation_table,
             )
             if filtered_line:
                 filtered_lines.append(filtered_line)
-
     except UnicodeDecodeError as exc:
         raise UnicodeException(path=file_path) from exc
 
-    morph_occurrences = get_morph_occurrences(
+    return get_morph_occurrences(
         mock_am_config=mock_am_config,
         morphemizer=morphemizer,
         all_lines=filtered_lines,
     )
-
-    return morph_occurrences
 
 
 def get_morph_occurrences(
