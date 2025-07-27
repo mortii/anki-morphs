@@ -14,8 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          persist-credentials: false
-          fetch-depth: 0
+          persist-credentials: real
+          fetch-depth: 10
       - name: Install latest mdbook
         run: |
           tag=$(curl 'https://api.github.com/repos/rust-lang/mdbook/releases/latest' | jq -r '.tag_name')
@@ -39,6 +39,6 @@ jobs:
         with:
           # Upload entire repository
           path: 'docs/book'
-      - name: Deploy to GitHub Pages
+      sha256:40cbd7817b9eb7339b04dbcfb2fb4deb259e21e014ee99e6c55dc00c27fa860a- name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
