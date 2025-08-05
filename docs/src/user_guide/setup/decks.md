@@ -34,8 +34,23 @@ do the following:
     <source src="../../img/deck-options.mp4" type="video/mp4">
 </video>
 
-1. Go to the deck options of the deck that has sub-decks  
-2. Go to `Display Order`  
-3. Set `New card gather order` to `Ascending position` 
+1. Go to the deck options of the deck that has sub-decks
+2. Go to `Display Order`
+3. Set `New card gather order` to `Ascending position`
 
+## Using Existing Decks
 
+If you have already studied cards and are comfortable with their content, you can configure AnkiMorphs
+to [read and/or modify them](https://mortii.github.io/anki-morphs/user_guide/setup/settings/note-filter.html#read--modify)
+as shown in the [note filter](https://mortii.github.io/anki-morphs/user_guide/setup/settings/note-filter.html) section.
+This can significantly speed up your progress, as the add-on will identify the morphs you already know, letting you skip
+redundant reviews and focus on new material.
+
+Adding a lot of semi-known vocabulary at the same time can be overwhelming, so it's a good idea to err on the side of
+caution and only add material that you know you are comfortable with. For example, if you've been studying a vocabulary
+deck, it's probably better to have AnkiMorphs read the word field, and not the example sentence field.
+
+If you decided to create
+a [note filter](https://mortii.github.io/anki-morphs/user_guide/setup/settings/note-filter.html) with your already
+studied cards, but realize you’ve bitten off more than you can chew, you can simply delete the note filter or uncheck
+the **“read”** option and AnkiMorphs will then stop treating those morphs as known.
