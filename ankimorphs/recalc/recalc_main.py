@@ -36,7 +36,7 @@ from ..morphemizers import morphemizer_utils
 from . import caching, extra_field_utils
 from .anki_data_utils import AnkiMorphsCardData
 from .card_morphs_metrics import CardMorphsMetrics
-from .card_score import _DEFAULT_SCORE, CardScore
+from .card_score import _MAX_SCORE, CardScore
 
 
 def recalc() -> None:
@@ -177,11 +177,13 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
     Morpheme.get_learning_status.cache_clear()
 
     for config_filter in modify_enabled_config_filters:
-        note_type_dict: NotetypeDict = extra_field_utils.add_extra_fields_to_note_type(
-            model_manager, config_filter
+        note_type_dict: NotetypeDict = (
+            extra_field_utils.potentially_add_extra_fields_to_note_type(
+                model_manager=model_manager, config_filter=config_filter
+            )
         )
         field_name_dict: dict[str, tuple[int, FieldDict]] = model_manager.field_map(
-            note_type_dict
+            notetype=note_type_dict
         )
         morph_priorities: dict[tuple[str, str], int] = get_morph_priority(
             am_db=am_db,
@@ -226,9 +228,9 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
 
             if card.type == CARD_TYPE_NEW:
                 score_values = CardScore(am_config, cards_morph_metrics)
-                card.due = score_values.score
+                card.due = score_values.due
 
-                tags_and_queue_utils.update_tags_and_queue_of_new_cards(
+                tags_and_queue_utils.update_tags_and_queue_of_new_card(
                     am_config=am_config,
                     note=note,
                     card=card,
@@ -251,6 +253,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                         note=note,
                         all_morphs=cards_morph_metrics.all_morphs,
                     )
+
                 if config_filter.extra_all_morphs_count:
                     extra_field_utils.update_all_morphs_count_field(
                         field_name_dict=field_name_dict,
@@ -264,11 +267,12 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                         note=note,
                         score=score_values.score,
                     )
+
                 if config_filter.extra_score_terms:
                     extra_field_utils.update_score_terms_field(
                         field_name_dict=field_name_dict,
                         note=note,
-                        score_terms=score_values.terms,
+                        score_terms=score_values.score_terms,
                     )
             else:
                 # not new cards
@@ -286,6 +290,7 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
                     note=note,
                     unknown_morphs=cards_morph_metrics.unknown_morphs,
                 )
+
             if config_filter.extra_unknown_morphs_count:
                 extra_field_utils.update_unknown_morphs_count_field(
                     field_name_dict=field_name_dict,
@@ -417,10 +422,10 @@ def _apply_offsets(
 
             # we don't want to offset the card due if it has already been offset previously
             if card_id in already_modified_cards:
-                # limit to _DEFAULT_SCORE to prevent integer overflow
+                # limit to _MAX_SCORE to prevent integer overflow
                 score_and_offset = min(
                     already_modified_cards[card_id].due + am_config.recalc_due_offset,
-                    _DEFAULT_SCORE,
+                    _MAX_SCORE,
                 )
                 if _card.due == score_and_offset:
                     del already_modified_cards[card_id]
@@ -429,7 +434,7 @@ def _apply_offsets(
             if score_and_offset is None:
                 score_and_offset = min(
                     _card.due + am_config.recalc_due_offset,
-                    _DEFAULT_SCORE,
+                    _MAX_SCORE,
                 )
 
             _card.due = score_and_offset
@@ -480,8 +485,8 @@ def _on_failure(  # pylint:disable=too-many-branches
 
     if isinstance(error, DefaultSettingsException):
         text = (
-            f'Found a note filter containing a "{ankimorphs_globals.NONE_OPTION}" option. Please select something else.\n\n'
-            f"Note filter guide: https://mortii.github.io/anki-morphs/user_guide/setup/settings/note-filter.html"
+            f'Found a note filter containing a "{ankimorphs_globals.NONE_OPTION}" option. Please select something else.<br><br>'
+            f"See <a href='https://mortii.github.io/anki-morphs/user_guide/setup/settings/note-filter.html'> the note filter guide</a> for more info. "
         )
     elif isinstance(error, AnkiNoteTypeNotFound):
         text = "The AnkiMorphs settings uses one or more note types that no longer exists. Please redo your settings."
@@ -490,18 +495,18 @@ def _on_failure(  # pylint:disable=too-many-branches
     elif isinstance(error, MorphemizerNotFoundException):
         if error.morphemizer_name == "MecabMorphemizer":
             text = (
-                'Morphemizer "AnkiMorphs: Japanese" was not found.\n\n'
-                "The Japanese morphemizer can be added by installing a separate companion add-on:\n\n"
-                "Link: https://ankiweb.net/shared/info/1974309724 \n\n"
-                "Installation code: 1974309724 \n\n"
+                'Morphemizer "AnkiMorphs: Japanese" was not found.<br><br>'
+                "The Japanese morphemizer can be added by installing a separate companion add-on:<br><br>"
+                "Link: <a href='https://ankiweb.net/shared/info/1974309724'>https://ankiweb.net/shared/info/1974309724</a><br>"
+                "Installation code: 1974309724 <br><br>"
                 "The morphemizer should be automatically found after the add-on is installed and Anki has restarted."
             )
         elif error.morphemizer_name == "JiebaMorphemizer":
             text = (
-                'Morphemizer "AnkiMorphs: Chinese" was not found.\n\n'
-                "The Chinese morphemizer can be added by installing a separate companion add-on:\n\n"
-                "Link: https://ankiweb.net/shared/info/1857311956 \n\n"
-                "Installation code: 1857311956 \n\n"
+                'Morphemizer "AnkiMorphs: Chinese" was not found.<br><br>'
+                "The Chinese morphemizer can be added by installing a separate companion add-on:<br>"
+                "Link: <a href='https://ankiweb.net/shared/info/1857311956'>https://ankiweb.net/shared/info/1857311956</a> <br>"
+                "Installation code: 1857311956 <br><br>"
                 "The morphemizer should be automatically found after the add-on is installed and Anki has restarted."
             )
         else:
@@ -511,13 +516,13 @@ def _on_failure(  # pylint:disable=too-many-branches
         text = f"Priority file: {error.path} not found!"
     elif isinstance(error, PriorityFileMalformedException):
         text = (
-            f"Priority file: {error.path} is malformed (possibly outdated).\n\n"
-            f"{error.reason}\n\n"
+            f"Priority file: {error.path} is malformed (possibly outdated).<br><br>"
+            f"{error.reason}<br><br>"
             f"Please generate a new one."
         )
     elif isinstance(error, KnownMorphsFileMalformedException):
         text = (
-            f"Known morphs file: {error.path} is malformed.\n\n"
+            f"Known morphs file: {error.path} is malformed.<br><br>"
             f"Please generate a new one."
         )
     else:

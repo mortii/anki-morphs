@@ -55,7 +55,7 @@ def _get_states_of_extra_fields(
     # fmt: on
 
 
-def add_extra_fields_to_note_type(
+def potentially_add_extra_fields_to_note_type(
     model_manager: ModelManager,
     config_filter: AnkiMorphsConfigFilter,
 ) -> NotetypeDict:

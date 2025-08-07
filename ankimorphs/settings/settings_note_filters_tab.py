@@ -283,7 +283,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
     def _delete_row(self) -> None:
         title = "Confirmation"
         text = (
-            "Are you sure you want to delete the selected row?\n\n"
+            "Are you sure you want to delete the selected row?<br>"
             "Note: This will also unselect the respective extra fields!"
         )
         confirmed = message_box_utils.show_warning_box(title, text, parent=self._parent)
@@ -537,7 +537,7 @@ class NoteFiltersTab(  # pylint:disable=too-many-instance-attributes
 
     def get_confirmation_text(self) -> str:
         return (
-            "Are you sure you want to restore default note filter settings?\n\n"
+            "Are you sure you want to restore default note filter settings?<br>"
             "Note: This will also unselect the respective extra fields!"
         )
 

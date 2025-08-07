@@ -107,14 +107,15 @@ you can specify custom characters to ignore in [the preprocess settings](preproc
 ## Morph Priority
 
 The calculated [score](../../usage/recalc.md#scoring-algorithm) of the card, and as a result, the sorting of the card, depends on
-the [priority](../prioritizing.md) you give the morphs. You can either set the priorities to be `Collection frequency` (how often the morphs occur in your card collection), or you could use
-a [custom priority file](../prioritizing.md#custom-priority-files) that specifies the priorities of the morphs.
+the [priority](../prioritizing.md) you give the morphs. You can either set the priorities to be `Collection frequency` (how often the
+morphs occur in your card collection), or you could use a [custom priority file](../prioritizing.md#custom-priority-files) that specifies the priorities of
+the morphs.
 
-AnkiMorphs automatically finds .csv files placed
+AnkiMorphs automatically finds `.csv` files placed
 in [[anki profile folder](../../glossary.md#profile-folder)]`/priority-files/`.
 
 > **Note:** using `Collection frequency` is not recommended because it can be volatile; if you make any changes to your
-> cards (delete, suspend, move, etc.), then it can cause a cascade of sorting changes.
+> cards (delete, suspend, move, etc.), then a cascade of sorting changes can occur.
 
 ## Read & Modify
 
@@ -136,13 +137,14 @@ There are some nuances that are important to be aware of when it comes to note f
 
 ![filter-order.png](../../../img/filter-order.png)
 
-Order matters. In the image above all the cards that have note type `ankimorphs_sub2srs` will have the text found in
+Order matters. In the image above all the cards that have note type `japanese_sub2srs` will have the text found in
 the `Japanese` field analyzed, and then those cards will be sorted based on
 the score of that text.
 
 **After those cards are analyzed and sorted** then the next note filter will take effect: All the cards that have the
-note type `Kanji` will have the text found in the `Front` field analyzed and then those cards will be sorted based on
+note type `kanji` will have the text found in the `Front` field analyzed and then those cards will be sorted based on
 the score of that text.
+
 
 ### Overlapping filters
 
@@ -150,6 +152,7 @@ If a card matches multiple filters, then it will **only** be analyzed and sorted
 Any subsequent filters will not analyze and sort the card.
 
 If you were to do something like this:
+
 ![overlapping-filters.png](../../../img/overlapping-filters.png)
 
 Then the second filter would do nothing because all the cards would have already been used by the first filter.

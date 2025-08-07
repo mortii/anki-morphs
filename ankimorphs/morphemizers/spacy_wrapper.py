@@ -104,10 +104,8 @@ def load_spacy_modules() -> None:
         spacy_path = _get_am_spacy_venv_path()
 
         if is_win is True:
-            spacy_bin_path = os.path.join(spacy_path, "Scripts")
             spacy_site_packages_path = os.path.join(spacy_path, "Lib", "site-packages")
         else:
-            spacy_bin_path = os.path.join(spacy_path, "bin")
             spacy_site_packages_path = os.path.join(
                 spacy_path,
                 "lib",
@@ -116,7 +114,6 @@ def load_spacy_modules() -> None:
             )
 
         # appending to the path is less disruptive than prepending
-        sys.path.append(spacy_bin_path)
         sys.path.append(spacy_site_packages_path)
         updated_python_path = True
 
@@ -210,7 +207,7 @@ def delete_spacy_venv() -> None:
     try:
         shutil.rmtree(spacy_venv_path)
     except PermissionError:
-        # windows does not like deleting files in use, so we add this flag file
+        # windows does not like deleting files in use, so we add this flag file,
         # and we delete the venv on startup if the file exists
         (Path(spacy_venv_path) / ".delete_me").touch()
 
@@ -256,7 +253,7 @@ def get_nlp(spacy_model_name: str):  # type: ignore[no-untyped-def] # pylint:dis
     ################################################################
     #                       DISABLING PIPES
     ################################################################
-    # Pipes add processing time, that means we want to disable as
+    # Pipes add processing time, which means we want to disable as
     # many as possible for efficiency reasons.
     # We disable any pipes that are not necessary for producing
     # lemmas and pos (part of speech).

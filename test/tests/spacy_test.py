@@ -24,7 +24,7 @@ class SpacyMorph:
     scope="module"  # module-scope: created and destroyed once per module. Cached.
 )
 def fake_environment_fixture() -> Iterator[None]:
-    print("fake environment initiated")
+    # print("fake environment initiated")
 
     _config_data = None
     with open("ankimorphs/config.json", encoding="utf-8") as file:

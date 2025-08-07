@@ -116,8 +116,8 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
 
     def _setup_buttons(self) -> None:
-        self.ui.calculateProgressPushButton.clicked.connect(
-            self._on_calculate_progress_button_clicked
+        self.ui.viewProgressPushButton.clicked.connect(
+            self._on_view_progress_button_clicked
         )
 
         am_config = AnkiMorphsConfig()
@@ -194,15 +194,15 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         if stored_geometry is not None:
             self.restoreGeometry(stored_geometry)
 
-    def _on_calculate_progress_button_clicked(self) -> None:
+    def _on_view_progress_button_clicked(self) -> None:
         # calculate progress stats and populate table in the background,
         # since it could take a long time to complete
         assert mw is not None
 
-        mw.progress.start(label="Calculating progress report")
+        mw.progress.start(label="Processing progress report")
         operation = QueryOp(
             parent=self,
-            op=lambda _: self._background_calculate_progress_and_populate_tables(),
+            op=lambda _: self._background_process_and_populate_tables(),
             success=lambda _: self._on_success(),
         )
         operation.failure(self._on_failure)
@@ -219,7 +219,7 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
     def _is_lemma_priority_selected(self) -> bool:
         return self.ui.lemmaRadioButton.isChecked()
 
-    def _background_calculate_progress_and_populate_tables(self) -> None:
+    def _background_process_and_populate_tables(self) -> None:
         assert mw is not None
 
         am_db = AnkiMorphsDB()
@@ -249,7 +249,7 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         mw.taskman.run_on_main(
             partial(
                 mw.progress.update,
-                label="Calculating morph statuses",
+                label="Processing morph statuses",
             )
         )
         morph_statuses = get_priority_ordered_morph_statuses(
@@ -431,9 +431,6 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         # This function runs on the main thread.
         assert mw is not None
         assert mw.progress is not None
-
-        self.ui.calculateProgressPushButton.setText("Recalculate\nProgress\nReport")
-
         mw.progress.finish()
         tooltip("Progress report finished", parent=self)
 
@@ -449,8 +446,6 @@ class ProgressionWindow(QMainWindow):  # pylint:disable=too-many-instance-attrib
         # This function runs on the main thread.
         assert mw is not None
         assert mw.progress is not None
-
-        self.ui.calculateProgressPushButton.setText("Recalculate\nProgress\nReport")
 
         mw.progress.finish()
 

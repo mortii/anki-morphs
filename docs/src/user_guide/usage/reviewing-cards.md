@@ -73,8 +73,8 @@ refer to the [Anki studying guide](https://docs.ankiweb.net/studying.html#learni
 
 There are three scenarios where AnkiMorphs will automatically skip a card:
 
-1. **You have selected the `Skip cards with only known morphs`-option the in the [card-handling settings](../setup/settings/card_handling.md)**:   
-   If the next card has one of the ['known' tags](../setup/settings/tags.md), then it will be skipped.
+1. **You have selected the `Skip cards with no unknown morphs`-option the in the [card-handling settings](../setup/settings/card_handling.md)**:   
+   If the card does not have any unknown morphs, it will be skipped.
 
 2. **You have selected the `Skip cards that have unknown morphs already seen today`-option
    in the [card-handling settings](../setup/settings/card_handling.md)**:   

@@ -71,6 +71,7 @@ _BROWSE_MENU: str = "am_browse_menu"
 _CONTEXT_MENU: str = "am_context_menu"
 
 _startup_sync: bool = True
+_showed_update_warning: bool = False
 _updated_seen_morphs_for_profile: bool = False
 
 
@@ -81,6 +82,7 @@ def main() -> None:
     gui_hooks.top_toolbar_did_init_links.append(init_toolbar_items)
 
     gui_hooks.profile_did_open.append(load_am_profile_configs)
+    gui_hooks.profile_did_open.append(reset_startup_sync_variable)
     gui_hooks.profile_did_open.append(init_db)
     gui_hooks.profile_did_open.append(create_am_directories_and_files)
     gui_hooks.profile_did_open.append(register_addon_dialogs)
@@ -90,6 +92,7 @@ def main() -> None:
     gui_hooks.profile_did_open.append(replace_card_reviewer)
     gui_hooks.profile_did_open.append(text_preprocessing.update_translation_table)
     gui_hooks.profile_did_open.append(spacy_wrapper.maybe_delete_spacy_venv)
+    gui_hooks.profile_did_open.append(maybe_show_version_warning_wrapper)
 
     gui_hooks.sync_will_start.append(recalc_on_sync)
 
@@ -165,10 +168,17 @@ def load_am_profile_configs() -> None:
         # This is reached when we load a new anki profile that hasn't saved
         # any ankimorphs settings yet. It's important that we don't carry over
         # any settings from the previous profile because they can be somewhat
-        # hidden (note filter tags), which could lead to completely unexpected
+        # hidden (like note filter tags), which could lead to completely unexpected
         # results for no apparent reason. We therefore reset meta.json to
         # config.json (default settings)
         ankimorphs_config.reset_all_configs()
+
+
+def reset_startup_sync_variable() -> None:
+    # we have to reset this variable on profile_did_open rather than
+    # profile_will_close, because sync can trigger after the latter.
+    global _startup_sync
+    _startup_sync = True
 
 
 def init_db() -> None:
@@ -201,7 +211,8 @@ def register_addon_dialogs() -> None:
     # We use the Anki dialog manager to handle our dialogs
 
     aqt.dialogs.register_dialog(
-        name=am_globals.SETTINGS_DIALOG_NAME, creator=SettingsDialog
+        name=am_globals.SETTINGS_DIALOG_NAME,
+        creator=SettingsDialog,
     )
     aqt.dialogs.register_dialog(
         name=am_globals.GENERATOR_DIALOG_NAME,
@@ -288,6 +299,7 @@ def init_browser_menus_and_actions() -> None:
         )
         assert am_browse_menu_creation_action is not None
         am_browse_menu_creation_action.setObjectName(_BROWSE_MENU)
+
         am_browse_menu.addAction(view_action)
         am_browse_menu.addAction(learn_now_action)
         am_browse_menu.addAction(browse_morph_action)
@@ -302,6 +314,7 @@ def init_browser_menus_and_actions() -> None:
 
         context_menu_creation_action = context_menu.insertSeparator(learn_now_action)
         assert context_menu_creation_action is not None
+
         context_menu.addAction(view_action)
         context_menu.addAction(learn_now_action)
         context_menu.addAction(browse_morph_action)
@@ -315,17 +328,21 @@ def init_browser_menus_and_actions() -> None:
 
 
 def recalc_on_sync() -> None:
-    # Anki automatically syncs on startup, but we want to avoid running
-    # recalc at that time as it may be unnecessary.
-
+    # Anki can sync automatically on startup, but we don't
+    # want to recalc at that point.
     global _startup_sync
 
-    if _startup_sync:
-        _startup_sync = False
-    else:
-        am_config = AnkiMorphsConfig()
-        if am_config.recalc_on_sync:
-            recalc_main.recalc()
+    if mw.pm.auto_syncing_enabled():
+        if _startup_sync:
+            # trivial bug: this will cause recalc to not run on the first profile close
+            # sync after the user first activates the Anki 'auto_syncing_enabled'
+            # setting, but that's not a big deal.
+            _startup_sync = False
+            return
+
+    am_config = AnkiMorphsConfig()
+    if am_config.recalc_on_sync:
+        recalc_main.recalc()
 
 
 def replace_card_reviewer() -> None:
@@ -339,6 +356,49 @@ def replace_card_reviewer() -> None:
         self=mw.reviewer,
         _old=Reviewer._shortcutKeys,  # type: ignore[arg-type]
     )
+
+
+def maybe_show_version_warning_wrapper() -> None:
+    assert mw is not None
+    assert mw.pm is not None
+
+    if mw.pm.auto_syncing_enabled():
+        # we wait for sync to finish before we display
+        # our warning dialog to prevent gui race conditions
+        gui_hooks.sync_did_finish.append(maybe_show_version_warning)
+    else:
+        maybe_show_version_warning()
+
+
+def maybe_show_version_warning() -> None:
+    global _showed_update_warning
+
+    if _showed_update_warning:
+        return
+    _showed_update_warning = True
+
+    am_extra_settings = AnkiMorphsExtraSettings()
+
+    previous_local_am_version: list[str] = am_extra_settings.value(
+        extra_settings_keys.General.ANKIMORPHS_VERSION,
+        defaultValue=am_globals.__version__,
+        type=str,
+    ).split(".")
+
+    try:
+        if int(previous_local_am_version[0]) < 6:
+            _title = "AnkiMoprhs"
+            _body = (
+                "Some 'Card Handling' settings have been changed, please make"
+                " sure they are correct before using recalc."
+                "<br><br>"
+                "See <a href='https://github.com/mortii/anki-morphs/releases/tag/v6.0.0'>"
+                "the v6.0.0 release notes</a> for more info."
+            )
+            message_box_utils.show_info_box(title=_title, body=_body, parent=mw)
+    except ValueError:
+        # the extra settings file is broken somehow
+        pass
 
 
 def insert_seen_morphs(
@@ -357,7 +417,7 @@ def update_seen_morphs(_overview: Overview) -> None:
     """
     # Overview is NOT the starting screen; it's the screen you see
     # when you click on a deck. This is a good time to run this function,
-    # as 'seen morphs' only need to be known before starting a review.
+    # as 'seen morphs' only needs to be known before starting a review.
     # Previously, this function ran on the profile_did_open hook,
     # but that sometimes caused interference with the add-on updater
     # since both occurred simultaneously.
@@ -431,11 +491,13 @@ def reset_am_tags() -> None:
 
     title = "Reset Tags?"
     body = (
-        'Clicking "Yes" will remove the following tags from all cards:\n\n'
-        f"- {am_config.tag_known_automatically}\n\n"
-        f"- {am_config.tag_ready}\n\n"
-        f"- {am_config.tag_not_ready}\n\n"
-        f"- {am_config.tag_fresh}\n\n"
+        'Clicking "Yes" will remove the following tags from all cards:'
+        "<ul>"
+        f"<li> {am_config.tag_known_automatically}"
+        f"<li> {am_config.tag_ready}"
+        f"<li> {am_config.tag_not_ready}"
+        f"<li> {am_config.tag_fresh}"
+        "</ul>"
     )
     want_reset = message_box_utils.show_warning_box(title, body, parent=mw)
     if want_reset:
@@ -629,6 +691,20 @@ def test_function() -> None:
 
     assert mw is not None
     assert mw.col.db is not None
+
+    # am_config = AnkiMorphsConfig()
+    # title = "AnkiMorphs Error"
+    # body = (
+    #     'Clicking "Yes" will remove the following tags from all cards:'
+    #     "<ul>"
+    #     f"<li> {am_config.tag_known_automatically}"
+    #     f"<li> {am_config.tag_ready}"
+    #     f"<li> {am_config.tag_not_ready}"
+    #     f"<li> {am_config.tag_fresh}"
+    #     "</ul>"
+    # )
+
+    # message_box_utils.show_error_box(title=title, body=body, parent=mw)
 
     # with AnkiMorphsDB() as am_db:
     #     print("Seen_Morphs:")

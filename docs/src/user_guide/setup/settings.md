@@ -13,5 +13,4 @@ The settings are separated into the following sections:
 * [Preprocess](settings/preprocess.md): adjust the text AnkiMorphs analyzes  
 * [Card Handling](settings/card_handling.md): adjust how AnkiMorphs handles cards
 * [Algorithm](settings/algorithm.md): adjust the [scoring algorithm](../usage/recalc.md#scoring-algorithm)
-* [Toolbar](settings/toolbar.md): adjust the look of the [toolbar](../installation/changes-to-anki.md#toolbar)
 * [Shortcuts](settings/shortcuts.md): adjust keyboard shortcuts

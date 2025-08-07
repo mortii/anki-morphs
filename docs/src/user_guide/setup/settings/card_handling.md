@@ -2,10 +2,6 @@
 
 ![card-handling-tab.png](../../../img/card-handling-tab.png)
 
-
-
-**Encountering cards during study sessions**:
-
 This is where you can make AnkiMorphs really efficient. AnkiMorphs sorts
 your cards based on how well you know its content; the more you know, the sooner the card will be shown. The downside is
 this is that it might take a long time before you see a cards with any unknown morphs, i.e., you don't learn anything
@@ -13,22 +9,49 @@ new.
 
 To overcome this problem and speed up the learning process, we can use the options found here.
 
-* **Skip cards with only known morphs**:  
-  If AnkiMorph has determined that you know all the morphs on the card, then it will be buried and skipped.
+**When Encountering Cards (skip = bury)**:
+
+* **Skip cards that have no unknown morphs**:  
+  If AnkiMorph has determined that there are no unknown morphs on the card, then it will be buried and skipped.
+  
+    * **Don't skip if they contain fresh morphs**:  
+      Choose this if you want to study more [fresh/recently learned morphs](../../glossary.md#fresh-morphs).
+
+    * **Skip even if they contain fresh morphs**:  
+      Choose this if you want maximum efficiency and you don't feel the need to reinforce 
+      [fresh/recently learned morphs](../../glossary.md#fresh-morphs).
+      
+
 * **Skip cards that have unknown morphs already seen today**:  
   If you have already studied a card earlier today with the same unknown morph, then any subsequent cards with that
   unknown morph will be buried and skipped, which reduces the need to [Recalc](../../usage/recalc.md).
-* **Show "skipped x cards" notification**:  
+* **Show notification "Skipped x cards"**:  
   After cards are skipped, a notification in the lower left corner displays how many cards were skipped and for what
   reason. If you don't want to see this notification, you can uncheck this option.
 
   ![skipped_cards.png](../../../img/skipped_cards.png)
 
 
-**On recalc**:
-* **Suspend new cards with only known morphs**:  
-  Cards that have either the ['All morphs known' tag](tags.md) or the ['Set known and skip' tag](tags.md) will be
-  suspended on Recalc.
+**On Recalc**:
+* **Suspend new cards:**:  
+  This option suspends certain new cards, which can prevent having to skip the same
+  cards at the start of every session. These cards are are given the [suspended automatically tag](tags.md).
+
+    * **If all morphs are known**:  
+      Suspends new cards that have no **unknown** morphs, except if they include[ **fresh** morphs](../../glossary.md#fresh-morphs).
+
+    * **If all morphs are known or fresh**:  
+      Suspends new cards that have no **unknown** morphs, even if they include **fresh** morphs.
+
+* **Move new cards to the end of the due queue**:  
+  This option pushes certain new cards to the very end of the study queue, which can prevent having to skip the same
+  cards at the start of every session. These cards are assigned a `due` value of `2047483647`.
+
+    * **If all morphs are known**:  
+      Moves new cards that have no **unknown** morphs, except if they include [**fresh** morphs](../../glossary.md#fresh-morphs).
+  
+    * **If all morphs are known or fresh**:  
+      Moves new cards that have no **unknown** morphs, even if they include **fresh** morphs.
 
 * **Shift new cards that are not the first to have the unknown morph**:  
   This option is an alternative to the [skip options](skip.md) that are only available on desktop, potentially making it
@@ -99,6 +122,3 @@ To overcome this problem and speed up the learning process, we can use the optio
   </table>
   </div>
   <br>
-
-* **Move new cards without unknown morphs to the end of the due queue**:  
-  New cards that do not contain any unknown morphs will be given a `due` value of `2047483647` which is the max score given by AnkiMorphs.

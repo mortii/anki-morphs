@@ -4,6 +4,7 @@ from typing import Any, Callable
 
 import aqt
 from aqt import mw
+from aqt.operations import QueryOp
 from aqt.qt import QDialog, QSizePolicy, QWidget  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
@@ -14,6 +15,9 @@ from .. import (
     text_preprocessing,
 )
 from ..ankimorphs_config import AnkiMorphsConfig
+from ..extra_settings import extra_settings_keys
+from ..extra_settings.ankimorphs_extra_settings import AnkiMorphsExtraSettings
+from ..morphemizers import morphemizer_utils
 from ..ui.settings_dialog_ui import Ui_SettingsDialog
 from .settings_algorithm_tab import AlgorithmTab
 from .settings_card_handling_tab import CardHandlingTab
@@ -24,20 +28,51 @@ from .settings_preprocess_tab import PreprocessTab
 from .settings_shortcuts_tab import ShortcutTab
 from .settings_tab import SettingsTab
 from .settings_tags_tab import TagsTab
-from .settings_toolbar_tab import ToolbarTab
 
 
 class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
-    # The UI comes from ankimorphs/ui/settings_dialog.ui which is used in Qt Designer,
-    # which is then converted to ankimorphs/ui/settings_dialog_ui.py,
-    # which is then imported here.
-    #
-    # Here we make the final adjustments that can't be made (or are hard to make) in
-    # Qt Designer, like setting up tables and widget-connections.
-
     def __init__(self) -> None:
         super().__init__(parent=None)  # no parent makes the dialog modeless
+
+        tooltip(msg="Preparing settings window, this might take a while...", parent=mw)
+        mw.progress.start(label="Gathering available morphemizers...")
+
+        def _background_gather_resources() -> None:
+            # this can be really slow, especially on windows and macOS,
+            # so we do this on a background thread to prevent anki from
+            # freezing.
+            morphemizer_utils.get_all_morphemizers()
+
+        def _on_failure(_error: Exception) -> None:
+            # This function runs on the main thread.
+            assert mw is not None
+            assert mw.progress is not None
+            mw.progress.finish()
+            message_box_utils.show_error_box(
+                title="AnkiMorphs Error",
+                body="Something went horribly wrong when gathering morphemizers",
+                parent=mw,
+            )
+
+        operation = QueryOp(
+            parent=mw,
+            op=lambda _: _background_gather_resources(),
+            success=lambda _: self._init_ui(),
+        )
+        operation.failure(_on_failure)
+        operation.with_progress().run_in_background()
+
+    def _init_ui(self) -> None:
+        # The UI comes from ankimorphs/ui/settings_dialog.ui which is used in Qt Designer,
+        # which is then converted to ankimorphs/ui/settings_dialog_ui.py,
+        # which is then imported here.
+        #
+        # Here we make the final adjustments that can't be made (or are hard to make) in
+        # Qt Designer, like setting up tables and widget-connections.
+
         assert mw is not None
+        assert mw.progress is not None
+        mw.progress.finish()
 
         self.ui = Ui_SettingsDialog()  # pylint:disable=invalid-name
         self.ui.setupUi(self)  # type: ignore[no-untyped-call]
@@ -87,12 +122,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             config=self._config,
             default_config=self._default_config,
         )
-        self._toolbar_tab = ToolbarTab(
-            parent=self,
-            ui=self.ui,
-            config=self._config,
-            default_config=self._default_config,
-        )
         self._shortcut_tab = ShortcutTab(
             parent=self,
             ui=self.ui,
@@ -111,7 +140,6 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
             self._preprocess_tab,
             self._card_handling_tab,
             self._algorithm_tab,
-            self._toolbar_tab,
             self._shortcut_tab,
         ]
 
@@ -126,6 +154,11 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
 
         # apply the size policy to the initial tab
         self._update_size_policies(index=0)
+
+        self.am_extra_settings = AnkiMorphsExtraSettings()
+        self.am_extra_settings.beginGroup(extra_settings_keys.Dialogs.SETTINGS_DIALOG)
+        self._setup_geometry()
+        self.am_extra_settings.endGroup()
 
         self.show()
 
@@ -150,6 +183,13 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self.ui.applyPushButton.clicked.connect(self._save)
         self.ui.cancelPushButton.clicked.connect(self._discard_and_close)
         self.ui.restoreAllDefaultsPushButton.clicked.connect(self._restore_all_defaults)
+
+    def _setup_geometry(self) -> None:
+        stored_geometry = self.am_extra_settings.value(
+            extra_settings_keys.SettingsDialogKeys.WINDOW_GEOMETRY
+        )
+        if stored_geometry is not None:
+            self.restoreGeometry(stored_geometry)
 
     def _update_config(
         self, show_tooltip: bool = True, tooltip_mw: bool = False
@@ -240,6 +280,9 @@ class SettingsDialog(QDialog):  # pylint:disable=too-many-instance-attributes
         self, callback: Callable[[], None]
     ) -> None:
         # This is used by the Anki dialog manager
+        self.am_extra_settings.save_settings_dialog_settings(
+            geometry=self.saveGeometry()
+        )
         self.close()
         aqt.dialogs.markClosed(ankimorphs_globals.SETTINGS_DIALOG_NAME)
         callback()

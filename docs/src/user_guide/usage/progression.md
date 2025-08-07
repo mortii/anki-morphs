@@ -23,13 +23,16 @@ information. Any `.csv` file located in the folder [anki profile folder](../glos
 ### Options
 
 To gauge progression, AnkiMorphs essentially calculates a histogram. Morphs with assigned priorities are first binned
-into priority ranges (priorities `1-500`, `501-1000`, etc.). 
+into priority ranges (e.g., priorities `1-500`, `501-1000`, etc.). 
 
-The user can designate the bin size as well as the minimum and maximum priority considered. For example, these settings:
+The user can designate the bin size:
 
-![progression-bins.png](../../img/progression-bins.png)
+![bin_size.png](../../img/bin_size.png)
 
-specify the priority bins `1-2000`, `2001-4000`, `4001-6000`, and `6001-8000`. 
+as well as the minimum and maximum priority considered:
+
+![progression_priority_range.png](../../img/progression_priority_range.png)
+
 
 > **Note**: the calculated bins may differ depending on the number of specified morph priorities.  
 
@@ -49,7 +52,7 @@ if you are using a [lemma-only priority file](../setup/prioritizing.md#custom-le
 
 ## Results
 
-Clicking `Calculate progress report` will determine the current progression and populate the results. 
+Clicking `View Progress Report` will determine the current progression and populate the results. 
 
 ### Numerical and Percentage Tabs
 

@@ -6,13 +6,14 @@
 AnkiMorphs provides the following three generators:
 
 - [Readability Report Generator](#readability-report-generator)  
-  A report over how well you know the text in the specified files
+  Generates a report on how well you know the text in the specified files. The results are displayed in the table at the
+  bottom of the window (no file is created).
 
 - [Priority File Generator](#priority-file-generator)  
-  A file that lists all the found morphs sorted by their frequency  
+  Generates a `.csv` file listing all morphs from the input files, sorted by frequency.
 
 - [Study Plan Generator](#study-plan-generator)  
-  A combination of priority files in the order you specify
+  Generates a `.csv` file by merging priority files in a specified order.
 
 <br>
 
@@ -47,7 +48,7 @@ Take, for example, the following folders and their files:
 english_texts/
 ├── books/
 │   └── The Wise Man's Fear/
-│       ├── The Wise Man's Fear.pdf
+│       ├── The Wise Man's Fear.epub
 │       └── The Wise Man's Fear.txt
 └── subs/
     ├── Game-of-Thrones/
@@ -64,6 +65,7 @@ only use the `The Wise Man's Fear.txt` file.
 If you were to select the folder `english_texts` and you checked all the file format options, then the generator would
 use the files:
 
+- `The Wise Man's Fear.epub`
 - `The Wise Man's Fear.txt`
 - `episode_1.srt`
 - `The_Fellowship_of_the_Ring.vtt`
@@ -112,7 +114,8 @@ Limit the morphs to only those that occur at least `x` many times.
 
 ### Comprehension Target
 
-Limit the morphs to only those that occur below the specified comprehension percent. Let's take these morphs as an example:
+Limit the morphs to only those that occur below the specified comprehension percent. Let’s look at a simple scenario
+where these are all the morphs:
 
 ![comprehension-example.png](../../img/comprehension-example.png)
 
@@ -175,18 +178,18 @@ by AnkiMorphs, so you can delete or modify the other columns if you want.
 The study plan uses the same file order as that displayed in the currently opened table at the bottom of the window.
 This provides more flexibility than relying solely on the alphanumeric values of the file names.
 
-If I have this table open as I click the `Generate Study Plan` button:
+If I have this table open where I sort based on the `Total Known` column, as I click the `Generate Study Plan` button :
 
 ![study-plan-order-example-1.png](../../img/study-plan-order-example-1.png)
 
-Then the study plan will have the files in this order:
+the study plan will have the files in this order:
 1. `Jigokuraku-03.srt`
 2. `Jigokuraku-01.srt`
 3. `Jigokuraku-02.srt`
 
 > **Note**: the `Total` "file" is artificial and won't be included, nor is its data used in any calculations.
 
-With this table open:
+With this table open where I sort based on the `Total Unknown` column:
 
 ![study-plan-order-example-2.png](../../img/study-plan-order-example-2.png)
 

@@ -8,11 +8,14 @@ from aqt.operations import QueryOp
 from aqt.qt import QWidget  # pylint:disable=no-name-in-module
 from aqt.utils import tooltip
 
+from . import ankimorphs_globals as am_globals
 from . import progress_utils
 from .ankimorphs_config import AnkiMorphsConfig
 
+suspended = CardQueue(-1)
 
-def update_tags_and_queue_of_new_cards(
+
+def update_tags_and_queue_of_new_card(
     am_config: AnkiMorphsConfig,
     note: Note,
     card: Card,
@@ -32,7 +35,6 @@ def update_tags_and_queue_of_new_cards(
     #
     # Note: only new cards are handled in this function!
 
-    suspended = CardQueue(-1)
     mutually_exclusive_tags: list[str] = [
         am_config.tag_ready,
         am_config.tag_not_ready,
@@ -47,12 +49,14 @@ def update_tags_and_queue_of_new_cards(
             note.tags.remove(am_config.tag_fresh)
 
     if unknowns == 0:
-        if am_config.recalc_suspend_known_new_cards and card.queue != suspended:
+        if _should_suspend_card(am_config, card, has_learning_morphs):
             card.queue = suspended
+            note.tags.append(am_config.tag_suspended_automatically)
+
         if am_config.tag_known_manually in note.tags:
-            remove_exclusive_tags(note, mutually_exclusive_tags)
+            _remove_exclusive_tags(note, mutually_exclusive_tags)
         elif am_config.tag_known_automatically not in note.tags:
-            remove_exclusive_tags(note, mutually_exclusive_tags)
+            _remove_exclusive_tags(note, mutually_exclusive_tags)
             # if a card has any learning morphs, then we don't want to
             # give it a 'known' tag because that would automatically
             # give the morphs a 'known'-status instead of 'learning'
@@ -60,15 +64,30 @@ def update_tags_and_queue_of_new_cards(
                 note.tags.append(am_config.tag_known_automatically)
     elif unknowns == 1:
         if am_config.tag_ready not in note.tags:
-            remove_exclusive_tags(note, mutually_exclusive_tags)
+            _remove_exclusive_tags(note, mutually_exclusive_tags)
             note.tags.append(am_config.tag_ready)
     else:
         if am_config.tag_not_ready not in note.tags:
-            remove_exclusive_tags(note, mutually_exclusive_tags)
+            _remove_exclusive_tags(note, mutually_exclusive_tags)
             note.tags.append(am_config.tag_not_ready)
 
 
-def remove_exclusive_tags(note: Note, mutually_exclusive_tags: list[str]) -> None:
+def _should_suspend_card(
+    am_config: AnkiMorphsConfig, card: Card, has_learning_morphs: bool
+) -> bool:
+    if am_config.recalc_suspend_new_cards == am_globals.NEVER_OPTION:
+        return False
+
+    if am_config.recalc_suspend_new_cards == am_globals.ONLY_KNOWN_OPTION:
+        if not has_learning_morphs and card.queue != suspended:
+            return True
+    elif am_config.recalc_suspend_new_cards == am_globals.ONLY_KNOWN_OR_FRESH_OPTION:
+        if card.queue != suspended:
+            return True
+    return False
+
+
+def _remove_exclusive_tags(note: Note, mutually_exclusive_tags: list[str]) -> None:
     for tag in mutually_exclusive_tags:
         if tag in note.tags:
             note.tags.remove(tag)

@@ -71,7 +71,7 @@ To prevent misinterpretation of the inflected morphs, we also store the lemmas.
 
 ### Downloadable Priority Files
 
-Unless otherwise stated, these are `inflection` priority files, generated using a 90% comprehension cutoff.
+Unless stated otherwise, these are `inflection` priority files, generated using a 90% comprehension cutoff.
 
 
 <details>

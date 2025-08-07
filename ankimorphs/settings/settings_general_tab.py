@@ -27,11 +27,16 @@ class GeneralTab(SettingsTab):
         self._raw_config_key_to_radio_button: dict[str, QRadioButton] = {
             RawConfigKeys.EVALUATE_MORPH_LEMMA: self.ui.priorityLemmaRadioButton,
             RawConfigKeys.EVALUATE_MORPH_INFLECTION: self.ui.priorityInflectionRadioButton,
+            RawConfigKeys.TOOLBAR_STATS_USE_SEEN: self.ui.toolbarStatsUseSeenRadioButton,
+            RawConfigKeys.TOOLBAR_STATS_USE_KNOWN: self.ui.toolbarStatsUseKnownRadioButton,
         }
 
         self._raw_config_key_to_check_box: dict[str, QCheckBox] = {
             RawConfigKeys.RECALC_ON_SYNC: self.ui.recalcBeforeSyncCheckBox,
             RawConfigKeys.READ_KNOWN_MORPHS_FOLDER: self.ui.recalcReadKnownMorphsFolderCheckBox,
+            RawConfigKeys.HIDE_RECALC_TOOLBAR: self.ui.hideRecalcCheckBox,
+            RawConfigKeys.HIDE_LEMMA_TOOLBAR: self.ui.hideLemmaCheckBox,
+            RawConfigKeys.HIDE_INFLECTION_TOOLBAR: self.ui.hideInflectionCheckBox,
         }
 
         self._raw_config_key_to_spin_box: dict[str, QSpinBox | QDoubleSpinBox] = {
@@ -45,7 +50,7 @@ class GeneralTab(SettingsTab):
         self.update_previous_state()
 
     def populate(self, use_default_config: bool = False) -> None:
-        super().populate()
+        super().populate(use_default_config)
         if self.ui.priorityLemmaRadioButton.isChecked():
             self.previous_priority_selection = self.ui.priorityLemmaRadioButton
         else:

@@ -26,4 +26,6 @@ of the different tags if you want, or you can leave them as they are and move on
   New cards that only have morphs you already know will be given this tag. Cards with this tag can safely be deleted
   without AnkiMorphs losing track of which morphs you know. This can be useful if you want to trim down your card
   collection.
+* **Suspended automatically**:  
+  Cards that have been suspended with the [suspend new cards option](card_handling.md) will be given this tag.
 

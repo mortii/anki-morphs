@@ -134,3 +134,8 @@ class AnkiMorphsExtraSettings(QSettings):
         self.setValue(GeneratorsOutputKeys.OCCURRENCES_COLUMN_SELECTED, ui.addOccurrencesColumnCheckBox.isChecked())
         self.endGroup()
         # fmt: on
+
+    def save_settings_dialog_settings(self, geometry: QByteArray) -> None:
+        self.beginGroup(keys.Dialogs.SETTINGS_DIALOG)
+        self.setValue(GeneratorsOutputKeys.WINDOW_GEOMETRY, geometry)
+        self.endGroup()

@@ -109,16 +109,14 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
     def _setup_buttons(self) -> None:
         self.ui.selectFolderPushButton.clicked.connect(self._on_select_folder_clicked)
         self.ui.loadFilesPushButton.clicked.connect(self._on_load_files_button_clicked)
-        self.ui.generateReportPushButton.clicked.connect(
-            self._generate_readability_report
-        )
+        self.ui.viewReportPushButton.clicked.connect(self._generate_readability_report)
         self.ui.generatePriorityFilePushButton.clicked.connect(
             self._generate_priority_file
         )
         self.ui.generateStudyPlanPushButton.clicked.connect(self._generate_study_plan)
 
         # disable generator buttons until files have been loaded
-        self.ui.generateReportPushButton.setDisabled(True)
+        self.ui.viewReportPushButton.setDisabled(True)
         self.ui.generatePriorityFilePushButton.setDisabled(True)
         self.ui.generateStudyPlanPushButton.setDisabled(True)
 
@@ -289,7 +287,7 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
     def _on_successfully_loaded_files(self) -> None:
         assert mw is not None
         mw.progress.finish()
-        self.ui.generateReportPushButton.setEnabled(True)
+        self.ui.viewReportPushButton.setEnabled(True)
         self.ui.generatePriorityFilePushButton.setEnabled(True)
         self.ui.generateStudyPlanPushButton.setEnabled(True)
 
@@ -492,8 +490,8 @@ class GeneratorWindow(QMainWindow):  # pylint:disable=too-many-instance-attribut
         elif isinstance(error, UnicodeException):
             title = "Decoding Error"
             text = (
-                f"Error: All files must be UTF-8 encoded.\n\n"
-                f"The file at path '{error.path}' does not have UTF-8 encoding.\n\n"
+                f"Error: All files must be UTF-8 encoded.<br>"
+                f"The file at path '{error.path}' does not have UTF-8 encoding."
             )
             message_box_utils.show_error_box(title=title, body=text, parent=self)
         elif isinstance(error, NotADirectoryError):

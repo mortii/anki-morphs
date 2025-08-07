@@ -100,10 +100,27 @@ Current card collections (test/data/card_collections):
   - contains two cards, and uses the priority file `ja_core_news_sm_freq_inflection_min_occurrence.csv`. One card
   has a morph that is found in the priority file, the other card does not, which should give it a max morph priority value.
   - morphemizer: 'spaCy: ja_core_news_sm'
-- `suspend-*-col.anki2`
-  - These collection have two cards, one with the `am-known-manually` tag and the other gets the `am-known-automativally`
-  tag applied on recalc. This collection tests whether the cards get suspended on recalc since the corresponding config
-  has the option `recalc_suspend_known_new_cards` enabled.
+- `card_handling_collection.anki2`
+  - contains 6 cards:
+    - 3 known, not new cards
+    - 1 fresh, not new card
+    - 1 with only known or fresh morphs, new card
+    - 1 with known, fresh, and one unknown morph, new card
+  - creating an evergreen collection that has fresh morphs is surprisingly difficult, because the
+  due date of the card actually depends on the timestamp of card creation. To make this problem go away
+  you can set the date of your system back a couple of months and then create the cards.
+- `suspend_all_morphs_known.anki2`
+  - the base of this collection is `card_handling_collection.anki2`, that has been recalced with
+  the config `config_suspend_morphs_known`
+- `suspend_morphs_known_or_fresh.anki2`
+  - the base of this collection is `card_handling_collection.anki2`, that has been recalced with
+  the config `config_suspend_morphs_known_or_fresh`
+- `move_to_end_morphs_known.anki2`
+  - the base of this collection is `card_handling_collection.anki2`, that has been recalced with
+  the config `config_move_to_end_morphs_known`
+- `move_to_end_morphs_known_or_fresh.anki2`
+  - the base of this collection is `card_handling_collection.anki2`, that has been recalced with
+  the config `config_move_to_end_morphs_known_or_fresh`
 
 
 ## Engineering and adding collections

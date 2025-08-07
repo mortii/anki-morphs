@@ -19,7 +19,6 @@
     - [Preprocess](user_guide/setup/settings/preprocess.md)
     - [Card Handling](user_guide/setup/settings/card_handling.md)
     - [Algorithm](user_guide/setup/settings/algorithm.md)
-    - [Toolbar](user_guide/setup/settings/toolbar.md)
     - [Shortcuts](user_guide/setup/settings/shortcuts.md)
   - [Prioritizing](user_guide/setup/prioritizing.md)
   - [Names](user_guide/setup/names.md)

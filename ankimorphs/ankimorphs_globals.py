@@ -5,7 +5,7 @@ that file and not here.
 """
 
 # Semantic Versioning https://semver.org/
-__version__ = "5.1.0"
+__version__ = "6.0.0"
 
 DEV_MODE: bool = False
 
@@ -34,6 +34,11 @@ EXTRA_FIELD_STUDY_MORPHS: str = "am-study-morphs"
 # Morph priority options in the note filter settings
 NONE_OPTION = "(none)"
 COLLECTION_FREQUENCY_OPTION = "Collection frequency"
+
+# Combobox options for 'on recalc' in card-handling settings
+NEVER_OPTION = "Never"
+ONLY_KNOWN_OPTION = "If all morphs are known"
+ONLY_KNOWN_OR_FRESH_OPTION = "If all morphs are known or fresh"
 
 # Priority file/study plan headers
 LEMMA_HEADER = "Morph-Lemma"

@@ -73,28 +73,33 @@ grammatical structures. This approach can help in creating more effective and pe
 leading to faster and more efficient learning.
 
 
-## sub2srs
-
-You can get automatically generated Anki cards from tv-shows or movies by using a tool called sub2srs. Generating decks
-with sub2srs is pretty technical, so I recommend finding sub2srs decks other people have already made.
-
-[You can download many different anime sub2srs decks from this site.](https://www.mediafire.com/folder/p17g5uk4phb41/User_Uploaded_Anki_Decks)
-
-[Read more about sub2srs here](https://learnanylanguage.fandom.com/wiki/Subs2srs)
-
 ## New cards
 
-A card is considered 'new' by Anki if it hasn't been reviewed yet, meaning you have never answered the card with
-'Again', 'Hard', 'Good', or 'Easy'.
+A card is considered "new" by Anki if it hasn't been studied yet, meaning you have never answered the card with
+"Again", "Hard", "Good", or "Easy".
 
 You can tell if a card is in the 'new' state when its `due` value looks like this: `New #....`
 
-After reviewing a card, you can change its state back to 'new' by using the reset option.
+After reviewing a card, you can change its state back to "new" by using the reset option.
 
-### Reviewed cards
+## Reviewed cards
 
-Once a card has been reviewed once, i.e. answered with either 'Again', 'Hard', 'Good', or 'Easy', it will move
-from the 'new' state into the 'review' state.
+Once a card has been studied, i.e. answered with either "Again", "Hard", "Good", or "Easy", it will move
+from the "new" state into the "review" state.
+
+
+## Unknown Morphs
+A morph is classified as **unknown** if it does not appear on any review cards and is not stored in the
+[known morphs folder](setup/setting-known-morphs.md).
+
+## Known Morphs
+A morph is classified as **known** if it is on a review card with a learning interval of at least the
+[known morph interval setting](setup/settings/general.md), or if it is stored in the [known morphs folder](setup/setting-known-morphs.md).
+
+## Fresh Morphs
+A morph is classified as **fresh** if it only appears on review cards with a learning interval less than the
+[known morph interval setting](setup/settings/general.md). These morphs are in the learning state.
+
 
 ## Profile folder
 
@@ -111,3 +116,11 @@ Those can be found in the Anki profile folder. The path to the Anki profile fold
 * Linux: `/home/[user]/.local/share/Anki2/[profile_name]`
 
 
+## sub2srs
+
+You can get automatically generated Anki cards from tv-shows or movies by using a tool called sub2srs. Generating decks
+with sub2srs is pretty technical, so I recommend finding sub2srs decks other people have already made.
+
+[You can download many different anime sub2srs decks from this site.](https://www.mediafire.com/folder/p17g5uk4phb41/User_Uploaded_Anki_Decks)
+
+[Read more about sub2srs here](https://learnanylanguage.fandom.com/wiki/Subs2srs)

@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from ankimorphs import ankimorphs_globals
+from ankimorphs import ankimorphs_globals as am_globals
 from ankimorphs.ankimorphs_config import RawConfigFilterKeys as FilterKeys
 from ankimorphs.ankimorphs_config import RawConfigKeys as ConfigKeys
 
@@ -111,6 +111,27 @@ config_offset_lemma_enabled[ConfigKeys.RECALC_OFFSET_NEW_CARDS] = True
 
 
 ################################################################
+#          config_dont_skip_contains_fresh_morphs
+################################################################
+# Used with: `card_handling_collection.anki2`.
+################################################################
+# fmt: off
+config_dont_skip_contains_fresh_morphs = copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
+config_dont_skip_contains_fresh_morphs[ConfigKeys.SKIP_DONT_WHEN_CONTAINS_FRESH_MORPHS] = True
+config_dont_skip_contains_fresh_morphs[ConfigKeys.SKIP_WHEN_CONTAINS_FRESH_MORPHS] = False
+# fmt: on
+
+################################################################
+#             config_skip_known_disabled
+################################################################
+# Used with: `card_handling_collection.anki2`.
+################################################################
+# fmt: off
+config_skip_no_unknown_morphs_disabled = copy.deepcopy(config_dont_skip_contains_fresh_morphs)
+config_skip_no_unknown_morphs_disabled[ConfigKeys.SKIP_NO_UNKNOWN_MORPHS] = False
+# fmt: on
+
+################################################################
 #             config_offset_inflection_enabled
 ################################################################
 # Matches `offset_new_cards_inflection_collection.anki2`.
@@ -163,13 +184,44 @@ config_max_morph_priority_filter[FilterKeys.MORPH_PRIORITY_SELECTION] = "ja_core
 # fmt: on
 
 ################################################################
-#                     config_suspend_known
+#               config_suspend_morphs_known
 ################################################################
-# Matches `suspend_*_col.anki2`
+# Matches `suspend_all_morphs_known.anki2`
 ################################################################
 # fmt: off
-config_suspend_known = copy.deepcopy(default_config_dict)
-config_suspend_known[ConfigKeys.RECALC_SUSPEND_KNOWN_NEW_CARDS] = True
+config_suspend_morphs_known = copy.deepcopy(default_config_dict)
+config_suspend_morphs_known[ConfigKeys.RECALC_SUSPEND_NEW_CARDS] = am_globals.ONLY_KNOWN_OPTION
+# fmt: on
+
+################################################################
+#            config_suspend_morphs_known_or_fresh
+################################################################
+# Matches `suspend_morphs_known_or_fresh.anki2`
+################################################################
+# fmt: off
+config_suspend_morphs_known_or_fresh = copy.deepcopy(default_config_dict)
+config_suspend_morphs_known_or_fresh[ConfigKeys.RECALC_SUSPEND_NEW_CARDS] = am_globals.ONLY_KNOWN_OR_FRESH_OPTION
+# fmt: on
+
+
+################################################################
+#              config_move_to_end_morphs_known
+################################################################
+# Matches `move_to_end_morphs_known.anki2`
+################################################################
+# fmt: off
+config_move_to_end_morphs_known = copy.deepcopy(default_config_dict)
+config_move_to_end_morphs_known[ConfigKeys.RECALC_MOVE_NEW_CARDS_TO_THE_END] = am_globals.ONLY_KNOWN_OPTION
+# fmt: on
+
+################################################################
+#            config_move_to_end_morphs_known_or_fresh
+################################################################
+# Matches `move_to_end_morphs_known_or_fresh.anki2`
+################################################################
+# fmt: off
+config_move_to_end_morphs_known_or_fresh = copy.deepcopy(default_config_dict)
+config_move_to_end_morphs_known_or_fresh[ConfigKeys.RECALC_MOVE_NEW_CARDS_TO_THE_END] = am_globals.ONLY_KNOWN_OR_FRESH_OPTION
 # fmt: on
 
 
@@ -223,7 +275,7 @@ config_wrong_morphemizer_description[ConfigKeys.FILTERS][0][
 config_default_note_type = copy.deepcopy(default_config_dict)
 config_default_note_type[ConfigKeys.FILTERS][0][
     FilterKeys.NOTE_TYPE
-] = ankimorphs_globals.NONE_OPTION
+] = am_globals.NONE_OPTION
 
 
 ################################################################
@@ -232,9 +284,7 @@ config_default_note_type[ConfigKeys.FILTERS][0][
 # Works with any arbitrary collection and db
 ################################################################
 config_default_field = copy.deepcopy(default_config_dict)
-config_default_field[ConfigKeys.FILTERS][0][
-    FilterKeys.FIELD
-] = ankimorphs_globals.NONE_OPTION
+config_default_field[ConfigKeys.FILTERS][0][FilterKeys.FIELD] = am_globals.NONE_OPTION
 
 
 ################################################################
@@ -245,7 +295,7 @@ config_default_field[ConfigKeys.FILTERS][0][
 config_default_morph_priority = copy.deepcopy(default_config_dict)
 config_default_morph_priority[ConfigKeys.FILTERS][0][
     FilterKeys.MORPH_PRIORITY_SELECTION
-] = ankimorphs_globals.NONE_OPTION
+] = am_globals.NONE_OPTION
 
 
 ################################################################
@@ -256,7 +306,7 @@ config_default_morph_priority[ConfigKeys.FILTERS][0][
 config_default_morphemizer = copy.deepcopy(default_config_dict)
 config_default_morphemizer[ConfigKeys.FILTERS][0][
     FilterKeys.MORPHEMIZER_DESCRIPTION
-] = ankimorphs_globals.NONE_OPTION
+] = am_globals.NONE_OPTION
 
 ################################################################
 #             config_ignoring_custom_characters

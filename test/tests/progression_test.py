@@ -134,7 +134,7 @@ def test_progression(  # pylint:disable=too-many-arguments, unused-argument, too
     pw.ui.binSizeSpinBox.setValue(bin_size)
 
     # Calculate progress
-    pw._background_calculate_progress_and_populate_tables()
+    pw._background_process_and_populate_tables()
 
     # Compare to known output
     _item: QTableWidgetItem | None

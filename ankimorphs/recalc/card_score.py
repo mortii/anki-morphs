@@ -1,5 +1,6 @@
 import math
 
+from .. import ankimorphs_globals as am_globals
 from ..ankimorphs_config import AnkiMorphsConfig
 from .card_morphs_metrics import CardMorphsMetrics
 
@@ -8,7 +9,7 @@ from .card_morphs_metrics import CardMorphsMetrics
 # overflow. To prevent overflow when cards are repositioned,
 # we decrement the second digit (from the left) of the max value,
 # which should give plenty of leeway (10^8).
-_DEFAULT_SCORE: int = 2_047_483_647
+_MAX_SCORE: int = 2_047_483_647
 
 MORPH_UNKNOWN_PENALTY: int = 1_000_000
 
@@ -26,22 +27,24 @@ MORPH_UNKNOWN_PENALTY: int = 1_000_000
 class CardScore:
     __slots__ = (
         "score",
-        "terms",
+        "score_terms",
+        "due",
     )
 
     def __init__(
         self, am_config: AnkiMorphsConfig, card_morph_metrics: CardMorphsMetrics
     ) -> None:
-        self.score = _DEFAULT_SCORE
-        self.terms = "N/A"
+        # 'due' will be the same as 'score' except for some edge cases
+        self.due = self.score = _MAX_SCORE
+        self.score_terms = "N/A"
 
         if len(card_morph_metrics.all_morphs) == 0:
+            # we don't want buggy cards that have no morphs
+            # to clog up the start of the card queue, so we
+            # give them the max due (default), but we also
+            # signal with the score that there are no morphs
+            self.score = 0
             return
-
-        if am_config.recalc_move_known_new_cards_to_the_end:
-            if len(card_morph_metrics.unknown_morphs) == 0:
-                # Move stale cards to the end of the queue
-                return
 
         all_morphs_target_difference: int = _get_all_morphs_target_difference(
             am_config=am_config,
@@ -57,10 +60,12 @@ class CardScore:
             am_config.algorithm_total_priority_all_morphs_weight
             * card_morph_metrics.total_priority_all_morphs
         )
+
         unknown_morphs_total_priority_score = (
             am_config.algorithm_total_priority_unknown_morphs_weight
             * card_morph_metrics.total_priority_unknown_morphs
         )
+
         learning_morphs_total_priority_score = (
             am_config.algorithm_total_priority_learning_morphs_weight
             * card_morph_metrics.total_priority_learning_morphs
@@ -70,6 +75,7 @@ class CardScore:
             am_config.algorithm_average_priority_all_morphs_weight
             * card_morph_metrics.avg_priority_all_morphs
         )
+
         learning_morphs_avg_priority_score = (
             am_config.algorithm_average_priority_learning_morphs_weight
             * card_morph_metrics.avg_priority_learning_morphs
@@ -79,6 +85,7 @@ class CardScore:
             am_config.algorithm_learning_morphs_target_difference_weight
             * learning_morphs_target_difference
         )
+
         all_morphs_target_difference_score = (
             am_config.algorithm_all_morphs_target_difference_weight
             * all_morphs_target_difference
@@ -101,10 +108,10 @@ class CardScore:
         _score = unknown_morphs_amount_score + min(tuning, MORPH_UNKNOWN_PENALTY - 1)
 
         # cap score to prevent 32-bit integer overflow
-        self.score = min(_score, _DEFAULT_SCORE)
+        self.due = self.score = min(_score, _MAX_SCORE)
 
         # Note: we have a whitespace before the <br> tags to avoid bugs
-        self.terms = f"""
+        self.score_terms = f"""
                 unknown_morphs_amount_score: {unknown_morphs_amount_score}, <br>
                 all_morphs_total_priority_score: {all_morphs_total_priority_score}, <br>
                 unknown_morphs_total_priority_score: {unknown_morphs_total_priority_score}, <br>
@@ -114,6 +121,31 @@ class CardScore:
                 leaning_morphs_target_difference_score: {leaning_morphs_target_difference_score}, <br>
                 all_morphs_target_difference_score: {all_morphs_target_difference_score}
             """
+
+        if _should_move_card_to_end(am_config, card_morph_metrics):
+            self.due = _MAX_SCORE
+
+
+def _should_move_card_to_end(
+    am_config: AnkiMorphsConfig, card_morph_metrics: CardMorphsMetrics
+) -> bool:
+    if am_config.recalc_move_new_cards_to_the_end == am_globals.NEVER_OPTION:
+        return False
+
+    if am_config.recalc_move_new_cards_to_the_end == am_globals.ONLY_KNOWN_OPTION:
+        if (
+            len(card_morph_metrics.unknown_morphs) == 0
+            and card_morph_metrics.num_learning_morphs == 0
+        ):
+            return True
+    elif (
+        am_config.recalc_move_new_cards_to_the_end
+        == am_globals.ONLY_KNOWN_OR_FRESH_OPTION
+    ):
+        if len(card_morph_metrics.unknown_morphs) == 0:
+            return True
+
+    return False
 
 
 def _get_all_morphs_target_difference(

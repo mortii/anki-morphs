@@ -209,8 +209,7 @@ This graph shows:
 - Penalty for insufficient morphs: linear in relation to the target difference
 - Ideal range (target): 4-6 morphs
 
-AnkiMorphs provides the following metrics, whose variables you can adjust, and you can disable or amply them by changing
-their weights:
+AnkiMorphs provides the following metrics, which you can influence by changing the coefficients:
 
 <br>
 

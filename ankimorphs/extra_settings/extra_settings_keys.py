@@ -9,6 +9,7 @@ class Dialogs:
     PROGRESSION_WINDOW = "progression_window"
     GENERATOR_OUTPUT_PRIORITY_FILE = "generator_output_priority_file"
     GENERATOR_OUTPUT_STUDY_PLAN = "generator_output_study_plan"
+    SETTINGS_DIALOG = "settings_dialog"
 
 
 class GeneratorsWindowKeys:
@@ -75,3 +76,7 @@ class GeneratorsOutputKeys:
     COMPREHENSION_SELECTED = "comprehension_selected"
     COMPREHENSION_CUTOFF = "comprehension_cutoff"
     OCCURRENCES_COLUMN_SELECTED = "occurrences_column_selected"
+
+
+class SettingsDialogKeys:
+    WINDOW_GEOMETRY = "window_geometry"

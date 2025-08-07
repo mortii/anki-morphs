@@ -306,7 +306,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         search_unknowns: bool = False,
         search_lemma_only: bool = False,
     ) -> set[CardId] | None:
-        # The where_query_string is a necessary hack to overcome the sqlite problem
+        # The "where_query_string" is a necessary hack to overcome the sqlite problem
         # of not allowing variable length parameters
 
         card_ids: set[CardId] = set()
@@ -720,9 +720,8 @@ def _on_failure(error: Exception | sqlite3.OperationalError) -> None:
 
     if isinstance(error, sqlite3.OperationalError):
         # schema has been changed
-        am_db = AnkiMorphsDB()
-        am_db.drop_all_tables()
-        am_db.con.close()
+        with AnkiMorphsDB() as am_db:
+            am_db.drop_all_tables()
         return
 
     raise error

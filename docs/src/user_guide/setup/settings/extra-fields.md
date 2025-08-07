@@ -54,9 +54,9 @@ Here is an example card where all the extra-fields have been selected:
 
 <br>
 
-**The extra fields display morphs in this form**:
+**Extra fields display morphs in this form**:
 
-You can chose to display morphs in their inflected forms:
+You can choose to display morphs in their inflected forms:
    ``` text
   "walking and talking" -> [walking, and, talking]
    ```
@@ -68,8 +68,8 @@ or their lemma (base) forms:
 
 This effects the following three fields:
 - am-all-morphs
-- am-study-morphs
 - am-unknown-morphs
+- am-study-morphs
 
 
 ## Using am-study-morphs

@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 from aqt.qt import (  # pylint:disable=no-name-in-module
     QCheckBox,
+    QComboBox,
     QDialog,
     QDoubleSpinBox,
     QKeySequenceEdit,
@@ -33,6 +34,7 @@ class SettingsTab(ABC):  # pylint:disable=too-many-instance-attributes
         self._raw_config_key_to_radio_button: dict[str, QRadioButton] = {}
         self._raw_config_key_to_check_box: dict[str, QCheckBox] = {}
         self._raw_config_key_to_spin_box: dict[str, QSpinBox | QDoubleSpinBox] = {}
+        self._raw_config_key_to_combo_box: dict[str, QComboBox] = {}
         self._raw_config_key_to_line_edit: dict[str, QLineEdit] = {}
         self._raw_config_key_to_key_sequence: dict[str, QKeySequenceEdit] = {}
 
@@ -55,14 +57,15 @@ class SettingsTab(ABC):  # pylint:disable=too-many-instance-attributes
     def _want_to_reset_am_tags(self, reason_for_reset: str) -> bool:
         title = "Reset Tags?"
         body = (
-            f"Switching the {reason_for_reset} may cause some existing"
-            " AnkiMorphs tags to become misleading, and removing them is therefore recommended.\n\n"
-            "Would you like AnkiMorphs to remove the following tags from your cards now?\n\n"
-            + f"- {self._config.tag_known_automatically}\n\n"
-            f"- {self._config.tag_ready}\n\n"
-            f"- {self._config.tag_not_ready}\n\n"
-            f"- {self._config.tag_fresh}\n\n\n\n"
-            "&nbsp;\n\n"
+            f"Switching the {reason_for_reset} may cause some existing AnkiMorphs "
+            "tags to become misleading, and removing them is therefore recommended.<br><br>"
+            "Would you like AnkiMorphs to remove the following tags from your cards now?"
+            "<ul>"
+            f"<li> {self._config.tag_known_automatically}"
+            f"<li> {self._config.tag_ready}"
+            f"<li> {self._config.tag_not_ready}"
+            f"<li> {self._config.tag_fresh}"
+            "</ul>"
             "(Note: You can run this removal process at any time by navigating to: "
             "Tools -> AnkiMorphs -> Reset Tags)"
         )
@@ -91,6 +94,13 @@ class SettingsTab(ABC):  # pylint:disable=too-many-instance-attributes
         for config_attribute, spin_box in self._raw_config_key_to_spin_box.items():
             value = getattr(source_object, config_attribute)
             spin_box.setValue(value)
+
+        for config_attribute, combo_box in self._raw_config_key_to_combo_box.items():
+            value = getattr(source_object, config_attribute)
+            index = combo_box.findText(value)
+
+            if index != -1:
+                combo_box.setCurrentIndex(index)
 
         for config_attribute, line_edit in self._raw_config_key_to_line_edit.items():
             tag = getattr(source_object, config_attribute)
@@ -128,10 +138,16 @@ class SettingsTab(ABC):  # pylint:disable=too-many-instance-attributes
             config_key: spin_box.value()
             for config_key, spin_box in self._raw_config_key_to_spin_box.items()
         }
+        combo_box_settings = {
+            config_key: combo_box.currentText()
+            for config_key, combo_box in self._raw_config_key_to_combo_box.items()
+        }
+
         check_box_settings = {
             config_key: checkbox.isChecked()
             for config_key, checkbox in self._raw_config_key_to_check_box.items()
         }
+
         line_edit_settings = {
             config_key: line_edit.text()
             for config_key, line_edit in self._raw_config_key_to_line_edit.items()
@@ -144,6 +160,7 @@ class SettingsTab(ABC):  # pylint:disable=too-many-instance-attributes
         settings_dict: dict[str, str | int | bool | object] = {}
         settings_dict.update(radio_button_settings)
         settings_dict.update(spin_box_settings)
+        settings_dict.update(combo_box_settings)
         settings_dict.update(check_box_settings)
         settings_dict.update(line_edit_settings)
         settings_dict.update(key_sequence_settings)

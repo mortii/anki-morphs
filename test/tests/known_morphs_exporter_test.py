@@ -21,36 +21,42 @@ import pytest
 
 from ankimorphs.known_morphs_exporter import KnownMorphsExporterDialog
 
-################################################################
-#                CASES: EXPORTING KNOWN MORPHS
-################################################################
-# We can export known morphs based on their lemma, or
-# lemma + inflection, so we test both.
-# The KnownMorphsExporterDialog automatically checks which of
-# those options should be used depending on whether the
-# 'evaluate_morph_lemma' option is enabled in AnkiMorphsConfig.
-################################################################
-case_exporting_lemmas_params = FakeEnvironmentParams(
-    actual_col="some_studied_lemmas_collection",
-    expected_col="some_studied_lemmas_collection",
-    config=config_lemma_evaluation_lemma_extra_fields,
-    am_db="some_studied_lemmas.db",
-)
-
-case_exporting_inflections_params = FakeEnvironmentParams(
-    actual_col="some_studied_lemmas_collection",
-    expected_col="some_studied_lemmas_collection",
-    config=config_inflection_evaluation,
-    am_db="some_studied_lemmas.db",
-)
+test_cases = [
+    ################################################################
+    #                CASES: EXPORTING KNOWN MORPHS
+    ################################################################
+    # We can export known morphs based on their lemma, or
+    # lemma + inflection, so we test both.
+    # The KnownMorphsExporterDialog automatically checks which of
+    # those options should be used depending on whether the
+    # 'evaluate_morph_lemma' option is enabled in AnkiMorphsConfig.
+    ################################################################
+    pytest.param(
+        FakeEnvironmentParams(
+            actual_col="some_studied_lemmas_collection",
+            expected_col="some_studied_lemmas_collection",
+            config=config_lemma_evaluation_lemma_extra_fields,
+            am_db="some_studied_lemmas.db",
+        ),
+        True,
+        id="exporting_lemmas",
+    ),
+    pytest.param(
+        FakeEnvironmentParams(
+            actual_col="some_studied_lemmas_collection",
+            expected_col="some_studied_lemmas_collection",
+            config=config_inflection_evaluation,
+            am_db="some_studied_lemmas.db",
+        ),
+        False,
+        id="exporting_inflections",
+    ),
+]
 
 
 @pytest.mark.parametrize(
     "fake_environment_fixture, only_store_lemma",
-    [
-        (case_exporting_lemmas_params, True),
-        (case_exporting_inflections_params, False),
-    ],
+    test_cases,
     indirect=["fake_environment_fixture"],
 )
 def test_known_morphs_exporter(  # pylint:disable=unused-argument

@@ -9,7 +9,7 @@ from anki.consts import CARD_TYPE_NEW
 from anki.notes import Note
 from aqt import mw
 from aqt.operations import QueryOp
-from aqt.qt import QKeySequence, QMessageBox, Qt  # pylint:disable=no-name-in-module
+from aqt.qt import QKeySequence, Qt  # pylint:disable=no-name-in-module
 from aqt.reviewer import Reviewer
 from aqt.utils import tooltip
 
@@ -55,11 +55,6 @@ def am_next_card() -> None:
     assert mw is not None
     assert mw.reviewer is not None
 
-    if mw.col.sched.version < 3:
-        _show_scheduler_version_error()
-        mw.moveToState("overview")
-        return
-
     am_config = AnkiMorphsConfig()
     skipped_cards = SkippedCards()
 
@@ -93,7 +88,7 @@ def _get_next_card_background(
         mw.taskman.run_on_main(
             partial(
                 mw.progress.update,
-                label=f"Skipping {skipped_cards.total_skipped_cards} cards",
+                label=f"Skipping {skipped_cards.total_cards_skipped} cards",
             )
         )
 
@@ -116,7 +111,7 @@ def _get_next_card_background(
             break  # The undo stack is dirty, we cannot merge undo entries.
 
         if reviewer.card.type != CARD_TYPE_NEW:
-            break
+            break  # we only want to skip new cards
 
         note: Note = reviewer.card.note()
         am_config_filter = ankimorphs_config.get_matching_modify_filter(note)
@@ -200,7 +195,7 @@ def _show_card(
         print("AnkiMorphs: mw.reviewer.card is None!")
 
     if am_config.skip_show_num_of_skipped_cards:
-        if skipped_cards.total_skipped_cards > 0:
+        if skipped_cards.total_cards_skipped > 0:
             skipped_cards.show_tooltip_of_skipped_cards()
 
 
@@ -273,10 +268,8 @@ def _set_card_as_known_and_skip(am_config: AnkiMorphsConfig) -> None:
 
     mw.col.merge_undo_entries(set_known_and_skip_undo.last_step)
 
-    # update seen morphs table with this card's morphs
-    am_db = AnkiMorphsDB()
-    am_db.update_seen_morphs_today_single_card(card.id)
-    am_db.con.close()
+    with AnkiMorphsDB() as am_db:
+        am_db.update_seen_morphs_today_single_card(card.id)
 
     if am_config.skip_show_num_of_skipped_cards:
         tooltip("Set card as known and skipped")
@@ -328,24 +321,6 @@ def am_reviewer_shortcut_keys(
     return keys
 
 
-def _show_scheduler_version_error() -> None:
-    assert mw is not None
-
-    title = "AnkiMorphs Error"
-    text = (
-        f"You are currently using the <b>V{mw.col.sched_ver()}</b> scheduler.<br>"
-        f"AnkiMorphs only works on the V3 scheduler.<br>"
-        f"To start using the V3 scheduler go to:<br>"
-        f" Tools -> Preferences -> 'Review' tab -> Check 'V3 scheduler'"
-    )
-    critical_box = QMessageBox(mw)
-    critical_box.setWindowTitle(title)
-    critical_box.setIcon(QMessageBox.Icon.Critical)
-    critical_box.setStandardButtons(QMessageBox.StandardButton.Ok)
-    critical_box.setText(text)
-    critical_box.exec()
-
-
 def _on_failure(
     error: Exception | CardQueueEmptyException | CancelledOperationException,
 ) -> None:
@@ -365,16 +340,16 @@ def _on_failure(
 
 class SkippedCards:
     __slots__ = (
-        "skipped_known_cards",
-        "skipped_already_seen_morphs_cards",
-        "total_skipped_cards",
+        "skipped_cards_with_no_unknowns",
+        "skipped_cards_with_already_seen_morphs",
+        "total_cards_skipped",
         "did_skip_card",
     )
 
     def __init__(self) -> None:
-        self.skipped_known_cards = 0
-        self.skipped_already_seen_morphs_cards = 0
-        self.total_skipped_cards = 0
+        self.skipped_cards_with_no_unknowns = 0
+        self.skipped_cards_with_already_seen_morphs = 0
+        self.total_cards_skipped = 0
         self.did_skip_card = False
 
     def process_skip_conditions_of_card(
@@ -390,47 +365,59 @@ class SkippedCards:
         known_automatically: bool = note.has_tag(am_config.tag_known_automatically)
         known_manually: bool = note.has_tag(am_config.tag_known_manually)
         known_tag: bool = known_automatically or known_manually
+        fresh_tag: bool = note.has_tag(am_config.tag_fresh)
 
         if learn_now_tag:
             self.did_skip_card = False
+
         elif known_tag:
-            if am_config.skip_only_known_morphs_cards:
-                self.skipped_known_cards += 1
+            if am_config.skip_no_unknown_morphs:
+                self.skipped_cards_with_no_unknowns += 1
                 self.did_skip_card = True
+
+        elif fresh_tag:  # the fresh tag is mutually exclusive with the known tag
+            if am_config.skip_when_contains_fresh_morphs:
+                card_unknown_morphs_raw = am_db.get_card_morphs(
+                    card_id=card_id,
+                    search_unknowns=True,
+                    only_lemma=am_config.evaluate_morph_lemma,
+                )
+                if card_unknown_morphs_raw is None:
+                    self.skipped_cards_with_no_unknowns += 1
+                    self.did_skip_card = True
+
         elif am_config.skip_unknown_morph_seen_today_cards:
             morphs_already_seen_morphs_today: set[str] = (
                 am_db.get_all_morphs_seen_today(
                     only_lemma=am_config.evaluate_morph_lemma
                 )
             )
-            card_unknown_morphs_raw: set[tuple[str, str]] | None = (
-                am_db.get_card_morphs(
-                    card_id,
-                    search_unknowns=True,
-                    only_lemma=am_config.evaluate_morph_lemma,
-                )
+            card_unknown_morphs_raw = am_db.get_card_morphs(
+                card_id=card_id,
+                search_unknowns=True,
+                only_lemma=am_config.evaluate_morph_lemma,
             )
-
             if card_unknown_morphs_raw is not None:
                 card_unknown_morphs: set[str] = {
                     morph_raw[0] + morph_raw[1] for morph_raw in card_unknown_morphs_raw
                 }
                 if card_unknown_morphs.issubset(morphs_already_seen_morphs_today):
-                    self.skipped_already_seen_morphs_cards += 1
+                    self.skipped_cards_with_already_seen_morphs += 1
                     self.did_skip_card = True
 
-        self.total_skipped_cards = (
-            self.skipped_known_cards + self.skipped_already_seen_morphs_cards
+        self.total_cards_skipped = (
+            self.skipped_cards_with_no_unknowns
+            + self.skipped_cards_with_already_seen_morphs
         )
 
     def show_tooltip_of_skipped_cards(self) -> None:
         skipped_string = ""
 
-        if self.skipped_known_cards > 0:
-            skipped_string += f"Skipped <b>{self.skipped_known_cards}</b> cards with only known morphs"
-        if self.skipped_already_seen_morphs_cards > 0:
+        if self.skipped_cards_with_no_unknowns > 0:
+            skipped_string += f"Skipped <b>{self.skipped_cards_with_no_unknowns}</b> cards with no unknown morphs"
+        if self.skipped_cards_with_already_seen_morphs > 0:
             if skipped_string != "":
                 skipped_string += "<br>"
-            skipped_string += f"Skipped <b>{self.skipped_already_seen_morphs_cards}</b> cards with morphs already seen today"
+            skipped_string += f"Skipped <b>{self.skipped_cards_with_already_seen_morphs}</b> cards with morphs already seen today"
 
         tooltip(skipped_string, parent=mw)
