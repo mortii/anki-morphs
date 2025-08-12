@@ -39,3 +39,12 @@ This is what the default $$\large D_{\text{target}}^{\text{all}}$$ looks like:
 
 And the default $$\large D_{\text{target}}^{\text{learning}}$$ looks like this:
 ![learning_target_diff.png](../../../img/learning_target_diff.png)
+
+
+## Sorting Cards in the Exact Same Order as a Priority File
+
+If you only want to sort the cards based on the order of a priority file, disable all the
+weights except for $$W_{\text{total}}^{\text{unknown}}$$. This can be especially useful
+if you are using a [study plan](https://mortii.github.io/anki-morphs/user_guide/usage/generators.html#study-plan-generator).
+
+![only_unknown_weight_active.png](../../../img/only_unknown_weight_active.png)

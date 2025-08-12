@@ -11,7 +11,7 @@ mortii, Vilhelm-Ian, xofm31, Jcuhfehl, schiozzone, Tartee, wolearyc, mdraves91, 
 ### Docs contribution
 
 Matt Vs Japan, mortii, Vilhelm-Ian, cocowash, xuiqzy, xofm31, zeroeightysix, wolearyc, Celebes, RobHelgeson,
-nathanielvirgo.
+nathanielvirgo, BenjaminBrandtner.
 
 ### Bugs reports, feature requests, or other helpful guidance
 
@@ -19,7 +19,7 @@ Vilhelm-Ian, CodeWithMa, ashprice, aleksejrs, HQYang1979, soliviantar, buster-bl
 cocowash, asayake-b5, quietmansoath, MichaelPetre, xofm31, knoebelja, xuiqzy, Jcuhfehl, fuquasteve, pallas42, syfgk,
 jahnke, jsteel44, iwouldrathernotusegithub, tanhoaian01, drkthomp, Kirchheim, zeroeightysix, Gardengul, wolearyc,
 Pedrubik2000, RyanMcEntire, BobvanSchendel, khanguyenwk, buqamura, Rct567, rwmpelstilzchen, bie-zheng, IncontinentCell,
-mdraves91, dae, AtilioA.
+mdraves91, dae, AtilioA, BenjaminBrandtner.
 
 ### MorphMan (v5.0-qt6-alpha.1)
 
