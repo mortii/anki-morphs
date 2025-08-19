@@ -1,6 +1,10 @@
 name: Lint and Test
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '19 2 * * *'
 
 jobs:
   build:
