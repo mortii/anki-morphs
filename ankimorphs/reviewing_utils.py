@@ -3,6 +3,7 @@ from __future__ import annotations
 from functools import partial
 from typing import Callable
 
+from anki import errors as anki_errors
 from anki.cards import Card
 from anki.collection import UndoStatus
 from anki.consts import CARD_TYPE_NEW
@@ -19,10 +20,10 @@ from .ankimorphs_db import AnkiMorphsDB
 from .browser_utils import browse_same_morphs
 from .exceptions import CancelledOperationException, CardQueueEmptyException
 
-SET_KNOWN_AND_SKIP_UNDO = "Set known and skip"
-ANKIMORPHS_UNDO = "AnkiMorphs custom undo"
+SET_KNOWN_AND_SKIP_UNDO_STRING = "Set known and skip"
+ANKIMORPHS_CUSTOM_UNDO_STRING = "AnkiMorphs custom undo"
 valid_undo_merge_targets: set[str] = {""}
-set_known_and_skip_undo: UndoStatus | None = None
+set_known_and_skip_undo_status: UndoStatus | None = None
 
 
 def init_undo_targets() -> None:
@@ -79,8 +80,8 @@ def _get_next_card_background(
     am_db = AnkiMorphsDB()
 
     while True:
-        # If a break occurs in this loop it means 'show the card'
-        # If a card makes it to the end it is buried/skipped
+        # breaking out of this loop means the card will be shown.
+        # reaching the end without breaking means the card is buried (skipped).
 
         if mw.progress.want_cancel():  # user clicked 'x'
             raise CancelledOperationException
@@ -108,7 +109,7 @@ def _get_next_card_background(
             raise CardQueueEmptyException  # handled in _on_failure()
 
         if undo_status.redo != "":
-            break  # The undo stack is dirty, we cannot merge undo entries.
+            break  # the undo stack is dirty, we cannot merge undo entries.
 
         if reviewer.card.type != CARD_TYPE_NEW:
             break  # we only want to skip new cards
@@ -119,15 +120,21 @@ def _get_next_card_background(
         if am_config_filter is None:
             break  # card did not match any (note type and tags) set in the settings GUI
 
-        skipped_cards.process_skip_conditions_of_card(
-            am_config, am_db, note=note, card_id=reviewer.card.id
-        )
-
-        if not skipped_cards.did_skip_card:
+        if not skipped_cards.should_skip_card(
+            am_config=am_config, am_db=am_db, note=note, card_id=reviewer.card.id
+        ):
             break
 
         mw.col.sched.buryCards([reviewer.card.id], manual=False)
-        mw.col.merge_undo_entries(undo_status.last_step)
+
+        try:
+            mw.col.merge_undo_entries(undo_status.last_step)
+        except anki_errors.InvalidInput:
+            # if we can't merge into the undo stack due to unusual entries
+            # (e.g. unbury all cards button pressed), then we create
+            # a custom entry point instead of crashing anki
+            mw.col.add_custom_undo_entry(ANKIMORPHS_CUSTOM_UNDO_STRING)
+            undo_status = mw.col.undo_status()
 
     am_db.con.close()
 
@@ -144,25 +151,21 @@ def _get_valid_undo_status() -> UndoStatus:
     # user undid the previous operation and the undo stack is now
     # 'dirty', which means we cannot merge undo entries--you get
     # an error if you try.
-    #
-    # The new anki undo system only works on the v3 scheduler which
-    # means we can stop supporting the v2 scheduler and just display
-    # an error message if it is used.
     ################################################################
     assert mw is not None
 
     undo_status = mw.col.undo_status()
 
-    if undo_status.undo == SET_KNOWN_AND_SKIP_UNDO:
+    if undo_status.undo == SET_KNOWN_AND_SKIP_UNDO_STRING:
         # The undo stack has been altered, so we cannot use
         # the normal 'last_step' as a merge point, we have
         # to use set_known_and_skip_undo last_step instead.
         # See comment in set_card_as_known_and_skip for more info
-        assert set_known_and_skip_undo is not None
-        undo_status = set_known_and_skip_undo
+        assert set_known_and_skip_undo_status is not None
+        undo_status = set_known_and_skip_undo_status
     elif undo_status.undo not in valid_undo_merge_targets:
         # We have to create a custom undo_targets that can be merged into.
-        mw.col.add_custom_undo_entry(ANKIMORPHS_UNDO)
+        mw.col.add_custom_undo_entry(ANKIMORPHS_CUSTOM_UNDO_STRING)
         undo_status = mw.col.undo_status()
 
     return undo_status
@@ -240,7 +243,7 @@ def _set_card_as_known_and_skip(am_config: AnkiMorphsConfig) -> None:
     # variable--to keep track of where the entries were merged into,
     # so we can merge into this point later in am_next_card.
     ################################################################
-    global set_known_and_skip_undo
+    global set_known_and_skip_undo_status
 
     assert mw is not None
     assert mw.reviewer is not None
@@ -258,15 +261,15 @@ def _set_card_as_known_and_skip(am_config: AnkiMorphsConfig) -> None:
         tooltip("Card is not in the 'new'-queue")
         return
 
-    mw.col.add_custom_undo_entry(SET_KNOWN_AND_SKIP_UNDO)
-    set_known_and_skip_undo = mw.col.undo_status()
+    mw.col.add_custom_undo_entry(SET_KNOWN_AND_SKIP_UNDO_STRING)
+    set_known_and_skip_undo_status = mw.col.undo_status()
 
     mw.col.sched.buryCards([card.id], manual=False)
 
     note.add_tag(am_config.tag_known_manually)
     mw.col.update_note(note)
 
-    mw.col.merge_undo_entries(set_known_and_skip_undo.last_step)
+    mw.col.merge_undo_entries(set_known_and_skip_undo_status.last_step)
 
     with AnkiMorphsDB() as am_db:
         am_db.update_seen_morphs_today_single_card(card.id)
@@ -343,24 +346,20 @@ class SkippedCards:
         "skipped_cards_with_no_unknowns",
         "skipped_cards_with_already_seen_morphs",
         "total_cards_skipped",
-        "did_skip_card",
     )
 
     def __init__(self) -> None:
         self.skipped_cards_with_no_unknowns = 0
         self.skipped_cards_with_already_seen_morphs = 0
         self.total_cards_skipped = 0
-        self.did_skip_card = False
 
-    def process_skip_conditions_of_card(
+    def should_skip_card(  # pylint:disable=too-many-return-statements
         self,
         am_config: AnkiMorphsConfig,
         am_db: AnkiMorphsDB,
         note: Note,
         card_id: int,
-    ) -> None:
-        self.did_skip_card = False
-
+    ) -> bool:
         learn_now_tag: bool = note.has_tag(am_config.tag_learn_card_now)
         known_automatically: bool = note.has_tag(am_config.tag_known_automatically)
         known_manually: bool = note.has_tag(am_config.tag_known_manually)
@@ -368,25 +367,21 @@ class SkippedCards:
         fresh_tag: bool = note.has_tag(am_config.tag_fresh)
 
         if learn_now_tag:
-            self.did_skip_card = False
+            # the user manually chose this card for review, don't skip
+            return False
 
-        elif known_tag:
+        if known_tag:
+            # this is the simplest case; the 'known' tag is only applied
+            # if every single morph is known, so don't need to
+            # consider fresh morphs here
             if am_config.skip_no_unknown_morphs:
-                self.skipped_cards_with_no_unknowns += 1
-                self.did_skip_card = True
+                self._will_skip_no_unknowns()
+                return True
+            return False
 
-        elif fresh_tag:  # the fresh tag is mutually exclusive with the known tag
-            if am_config.skip_when_contains_fresh_morphs:
-                card_unknown_morphs_raw = am_db.get_card_morphs(
-                    card_id=card_id,
-                    search_unknowns=True,
-                    only_lemma=am_config.evaluate_morph_lemma,
-                )
-                if card_unknown_morphs_raw is None:
-                    self.skipped_cards_with_no_unknowns += 1
-                    self.did_skip_card = True
-
-        elif am_config.skip_unknown_morph_seen_today_cards:
+        if am_config.skip_unknown_morph_seen_today_cards:
+            # this is the ultimate 'I don't care about fresh morphs'
+            # setting, so we don't check for those in this case
             morphs_already_seen_morphs_today: set[str] = (
                 am_db.get_all_morphs_seen_today(
                     only_lemma=am_config.evaluate_morph_lemma
@@ -402,9 +397,36 @@ class SkippedCards:
                     morph_raw[0] + morph_raw[1] for morph_raw in card_unknown_morphs_raw
                 }
                 if card_unknown_morphs.issubset(morphs_already_seen_morphs_today):
-                    self.skipped_cards_with_already_seen_morphs += 1
-                    self.did_skip_card = True
+                    self._will_skip_already_seen()
+                    return True
+                return False
 
+        if fresh_tag:
+            # note: the fresh tag is mutually exclusive with the known tag
+            if (
+                am_config.skip_no_unknown_morphs
+                and am_config.skip_when_contains_fresh_morphs
+            ):
+                card_unknown_morphs_raw = am_db.get_card_morphs(
+                    card_id=card_id,
+                    search_unknowns=True,
+                    only_lemma=am_config.evaluate_morph_lemma,
+                )
+                if card_unknown_morphs_raw is None:
+                    self._will_skip_no_unknowns()
+                    return True
+
+        return False
+
+    def _will_skip_no_unknowns(self) -> None:
+        self.skipped_cards_with_no_unknowns += 1
+        self._update_total_skipped()
+
+    def _will_skip_already_seen(self) -> None:
+        self.skipped_cards_with_already_seen_morphs += 1
+        self._update_total_skipped()
+
+    def _update_total_skipped(self) -> None:
         self.total_cards_skipped = (
             self.skipped_cards_with_no_unknowns
             + self.skipped_cards_with_already_seen_morphs

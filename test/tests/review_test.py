@@ -1,9 +1,9 @@
 from functools import partial
 from test.fake_configs import (
-    config_dont_skip_contains_fresh_morphs,
+    config_disabled_skip_no_unknown_morphs,
+    config_dont_skip_fresh_morphs,
     config_inflection_evaluation,
     config_lemma_evaluation_lemma_extra_fields,
-    config_skip_no_unknown_morphs_disabled,
 )
 from test.fake_db import FakeDB
 from test.fake_environment_module import (  # pylint:disable=unused-import
@@ -122,10 +122,10 @@ def test_custom_review(  # pylint:disable=unused-argument
 
 test_cases_morph_status = [
     ################################################################
-    #               CASE: SKIP ONLY KNOWN AND FRESH
+    #               CASE: SKIP ONLY KNOWN OR FRESH
     ################################################################
-    # Test if cards with only known or fresh morphs will
-    # be skipped, which is the default settings
+    # Test if cards with only known or fresh morphs are skipped,
+    # which is the default settings
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
@@ -137,31 +137,30 @@ test_cases_morph_status = [
         id="skip_known_and_fresh",
     ),
     ################################################################
-    #               CASE: DON'T ONLY KNOWN
+    #               CASE: DISABLE SKIP NO UNKNOWN MORPHS
     ################################################################
-    # Test if cards with only known morphs don't get skipped if we
-    # disable "ConfigKeys.SKIP_ONLY_KNOWN_MORPHS_CARDS"
+    # Test if cards are skipped when we disable:
+    #   "ConfigKeys.SKIP_ONLY_KNOWN_MORPHS_CARDS"
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
             actual_col="card_handling_collection",
-            config=config_skip_no_unknown_morphs_disabled,
+            config=config_disabled_skip_no_unknown_morphs,
             am_db="card_handling_collection.db",
         ),
         [1736763242955, 1736763365474, 1736763249205],
         id="dont_skip_known",
     ),
     ################################################################
-    #               CASE: DON'T SKIP ONLY KNOWN AND FRESH
+    #               CASE: DON'T SKIP FRESH MORPHS
     ################################################################
-    # Test if cards with only known and fresh morphs will
-    # not be skipped if we disable
-    # "ConfigKeys.SKIP_ONLY_KNOWN_OR_FRESH_MORPHS_CARDS"
+    # Test if cards with fresh morphs are skipped if we activate
+    # "ConfigKeys.SKIP_DONT_WHEN_CONTAINS_FRESH_MORPHS"
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
             actual_col="card_handling_collection",
-            config=config_dont_skip_contains_fresh_morphs,
+            config=config_dont_skip_fresh_morphs,
             am_db="card_handling_collection.db",
         ),
         [1736763242955, 1736763249205],

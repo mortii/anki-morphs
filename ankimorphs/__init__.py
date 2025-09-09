@@ -692,20 +692,6 @@ def test_function() -> None:
     assert mw is not None
     assert mw.col.db is not None
 
-    # am_config = AnkiMorphsConfig()
-    # title = "AnkiMorphs Error"
-    # body = (
-    #     'Clicking "Yes" will remove the following tags from all cards:'
-    #     "<ul>"
-    #     f"<li> {am_config.tag_known_automatically}"
-    #     f"<li> {am_config.tag_ready}"
-    #     f"<li> {am_config.tag_not_ready}"
-    #     f"<li> {am_config.tag_fresh}"
-    #     "</ul>"
-    # )
-
-    # message_box_utils.show_error_box(title=title, body=body, parent=mw)
-
     # with AnkiMorphsDB() as am_db:
     #     print("Seen_Morphs:")
     #     am_db.print_table("Seen_Morphs")

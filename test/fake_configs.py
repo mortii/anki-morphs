@@ -111,24 +111,24 @@ config_offset_lemma_enabled[ConfigKeys.RECALC_OFFSET_NEW_CARDS] = True
 
 
 ################################################################
-#          config_dont_skip_contains_fresh_morphs
+#               config_dont_skip_fresh_morphs
 ################################################################
 # Used with: `card_handling_collection.anki2`.
 ################################################################
 # fmt: off
-config_dont_skip_contains_fresh_morphs = copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
-config_dont_skip_contains_fresh_morphs[ConfigKeys.SKIP_DONT_WHEN_CONTAINS_FRESH_MORPHS] = True
-config_dont_skip_contains_fresh_morphs[ConfigKeys.SKIP_WHEN_CONTAINS_FRESH_MORPHS] = False
+config_dont_skip_fresh_morphs = copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
+config_dont_skip_fresh_morphs[ConfigKeys.SKIP_DONT_WHEN_CONTAINS_FRESH_MORPHS] = True
+config_dont_skip_fresh_morphs[ConfigKeys.SKIP_WHEN_CONTAINS_FRESH_MORPHS] = False
 # fmt: on
 
 ################################################################
-#             config_skip_known_disabled
+#             config_disabled_skip_no_unknown_morphs
 ################################################################
 # Used with: `card_handling_collection.anki2`.
 ################################################################
 # fmt: off
-config_skip_no_unknown_morphs_disabled = copy.deepcopy(config_dont_skip_contains_fresh_morphs)
-config_skip_no_unknown_morphs_disabled[ConfigKeys.SKIP_NO_UNKNOWN_MORPHS] = False
+config_disabled_skip_no_unknown_morphs = copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
+config_disabled_skip_no_unknown_morphs[ConfigKeys.SKIP_NO_UNKNOWN_MORPHS] = False
 # fmt: on
 
 ################################################################
