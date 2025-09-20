@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-import shutil
+import tempfile
 import zipfile
 from collections.abc import Iterator
 from pathlib import Path
@@ -73,29 +73,23 @@ def extract_vtt_text(file_path: Path) -> list[str]:
 def extract_epub_text(epub_path: Path) -> list[str]:
     assert mw is not None
 
-    # Create a temporary directory to store unzipped contents
-    temp_dir: str = "temp_unzipped_epub"  # relative directory
-
-    if os.path.exists(temp_dir):
-        shutil.rmtree(temp_dir)
-
-    with zipfile.ZipFile(epub_path) as epub:
-        epub.extractall(temp_dir)
-
-    text_content: list[str] = []
-
     # Use a generator to yield text lines for better memory efficiency
-    def extract_text() -> Iterator[list[str]]:
-        for _root, _, _files in os.walk(temp_dir):
+    def extract_text(_temp_dir: str) -> Iterator[list[str]]:
+        for _root, _, _files in os.walk(_temp_dir):
             for file in filter(lambda f: f.endswith((".xhtml", ".html")), _files):
                 file_path = Path(_root, file)
                 yield extract_html_text(file_path)
 
-    for batch in extract_text():
-        text_content.extend(batch)
+    # Create an auto-cleaning temporary directory
+    with tempfile.TemporaryDirectory() as temp_dir:
+        with zipfile.ZipFile(epub_path) as epub:
+            epub.extractall(temp_dir)
+            text_content: list[str] = []
 
-    shutil.rmtree(temp_dir)
-    return text_content
+            for batch in extract_text(temp_dir):
+                text_content.extend(batch)
+
+            return text_content
 
 
 def extract_html_text(file_path: Path) -> list[str]:
