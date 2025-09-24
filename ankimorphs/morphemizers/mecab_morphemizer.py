@@ -18,7 +18,8 @@ class MecabMorphemizer(Morphemizer):
 
     def get_morphemes(self, sentences: list[str]) -> Iterator[list[Morpheme]]:
         for sentence in sentences:
-            # Remove simple spaces that could be added by other add-ons and break the parsing.
+            # Remove simple spaces that could be added by other add-ons because
+            # they can lead to parsing errors.
             if space_char_regex.search(sentence):
                 sentence = space_char_regex.sub("", sentence)
             yield mecab_wrapper.get_morphemes_mecab(sentence)
