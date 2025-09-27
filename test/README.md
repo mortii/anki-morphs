@@ -121,7 +121,10 @@ Current card collections (test/data/card_collections):
 - `move_to_end_morphs_known_or_fresh.anki2`
   - the base of this collection is `card_handling_collection.anki2`, that has been recalced with
   the config `config_move_to_end_morphs_known_or_fresh`
-
+- `card_stability_collection.anki2`
+  - contains ~250 cards from a real and mature collection, same filters as `big_japanese_collection`,
+- `card_interval_collection.ank2`
+  - same as `card_stability_collection.anki2` but recalced without `USE_STABILITY_FOR_KNOWN_THRESHOLD`
 
 ## Engineering and adding collections
 

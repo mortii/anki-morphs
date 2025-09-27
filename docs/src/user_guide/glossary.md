@@ -55,7 +55,7 @@ an inflection. Here's a simple example table showing different morphs for the ve
 </tr>
 <tr>
     <td>break</td>
-    <td>broke</td>
+    <td>breaks</td>
 </tr>
 <tr>
     <td>break</td>
@@ -64,6 +64,10 @@ an inflection. Here's a simple example table showing different morphs for the ve
 <tr>
     <td>break</td>
     <td>broke</td>
+</tr>
+<tr>
+    <td>break</td>
+    <td>broken</td>
 </tr>
 </table>
 

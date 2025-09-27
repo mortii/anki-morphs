@@ -34,6 +34,7 @@ class GeneralTab(SettingsTab):
         self._raw_config_key_to_check_box: dict[str, QCheckBox] = {
             RawConfigKeys.RECALC_ON_SYNC: self.ui.recalcBeforeSyncCheckBox,
             RawConfigKeys.READ_KNOWN_MORPHS_FOLDER: self.ui.recalcReadKnownMorphsFolderCheckBox,
+            RawConfigKeys.USE_STABILITY_FOR_KNOWN_THRESHOLD: self.ui.useStabilityThresholdForKnownMorphsCheckBox,
             RawConfigKeys.HIDE_RECALC_TOOLBAR: self.ui.hideRecalcCheckBox,
             RawConfigKeys.HIDE_LEMMA_TOOLBAR: self.ui.hideLemmaCheckBox,
             RawConfigKeys.HIDE_INFLECTION_TOOLBAR: self.ui.hideInflectionCheckBox,

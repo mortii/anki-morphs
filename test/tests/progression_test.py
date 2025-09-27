@@ -19,14 +19,14 @@ from ankimorphs.progression.progression_window import ProgressionWindow
 ################################################################
 
 case_big_japanese_collection_params = FakeEnvironmentParams(
-    actual_col="big_japanese_collection",
-    expected_col="big_japanese_collection",
+    initial_col="big_japanese_collection",
+    result_col="big_japanese_collection",
     am_db="big_japanese_collection.db",
 )
 
 case_some_studied_japanese_params = FakeEnvironmentParams(
-    actual_col="some_studied_japanese_collection",
-    expected_col="some_studied_japanese_collection",
+    initial_col="some_studied_japanese_collection",
+    result_col="some_studied_japanese_collection",
     am_db="some_studied_japanese.db",
 )
 

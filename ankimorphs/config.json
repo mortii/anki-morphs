@@ -92,5 +92,6 @@
   "tag_ready": "am-ready",
   "tag_suspended_automatically": "am-suspended-automatically",
   "toolbar_stats_use_known": false,
-  "toolbar_stats_use_seen": true
+  "toolbar_stats_use_seen": true,
+  "use_stability_for_known_threshold": false
 }

@@ -97,6 +97,7 @@ class RawConfigKeys:
     RECALC_NUMBER_OF_MORPHS_TO_OFFSET = "recalc_number_of_morphs_to_offset"
     RECALC_MOVE_NEW_CARDS_TO_THE_END = "recalc_move_new_cards_to_the_end"
     READ_KNOWN_MORPHS_FOLDER = "read_known_morphs_folder"
+    USE_STABILITY_FOR_KNOWN_THRESHOLD = "use_stability_for_known_threshold"
     TOOLBAR_STATS_USE_KNOWN = "toolbar_stats_use_known"
     TOOLBAR_STATS_USE_SEEN = "toolbar_stats_use_seen"
     EXTRA_FIELDS_DISPLAY_INFLECTIONS = "extra_fields_display_inflections"
@@ -370,6 +371,11 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many
             )
             self.read_known_morphs_folder: bool = self._get_config_item(
                 key=RawConfigKeys.READ_KNOWN_MORPHS_FOLDER,
+                expected_type=bool,
+                use_default=is_default,
+            )
+            self.use_stability_for_known_threshold: bool = self._get_config_item(
+                key=RawConfigKeys.USE_STABILITY_FOR_KNOWN_THRESHOLD,
                 expected_type=bool,
                 use_default=is_default,
             )

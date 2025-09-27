@@ -24,6 +24,8 @@ repos:
               docs/src/img/learn-now.mp4|
               docs/src/img/adding-extra-fields.mp4|
               test/data/card_collections/big_japanese_collection.anki2|
+              test/data/card_collections/card_stability_collection.anki2|
+              test/data/card_collections/card_interval_collection.anki2|
               test/data/am_dbs/big_japanese_collection.db|
           )$
       - id: check-case-conflict

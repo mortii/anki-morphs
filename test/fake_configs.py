@@ -71,7 +71,6 @@ config_known_morphs_enabled[ConfigKeys.PREPROCESS_CUSTOM_CHARACTERS_TO_IGNORE] =
 )
 # fmt: on
 
-
 ################################################################
 #        config_lemma_evaluation_lemma_extra_fields
 ################################################################
@@ -168,6 +167,32 @@ config_big_japanese_collection_filter = config_big_japanese_collection[ConfigKey
 config_big_japanese_collection_filter[FilterKeys.NOTE_TYPE] = "japanese_sub2srs"
 config_big_japanese_collection_filter[FilterKeys.FIELD] = "Japanese"
 config_big_japanese_collection_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "AnkiMorphs: Japanese"
+# fmt: on
+
+
+################################################################
+#          config_use_stability_for_known_threshold
+################################################################
+# Matches `card_stability_collection.anki2`.
+################################################################
+# fmt: off
+config_use_stability_for_known_threshold = copy.deepcopy(default_config_dict)
+config_use_stability_for_known_threshold[ConfigKeys.USE_STABILITY_FOR_KNOWN_THRESHOLD] = True
+
+config_use_stability_for_known_threshold_filter = config_use_stability_for_known_threshold[ConfigKeys.FILTERS][0]
+config_use_stability_for_known_threshold_filter[FilterKeys.NOTE_TYPE] = "japanese_sub2srs"
+config_use_stability_for_known_threshold_filter[FilterKeys.FIELD] = "Japanese"
+config_use_stability_for_known_threshold_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "AnkiMorphs: Japanese"
+# fmt: on
+
+################################################################
+#          config_use_interval_for_known_threshold
+################################################################
+# Matches `card_interval_collection.anki2`.
+################################################################
+# fmt: off
+config_use_interval_for_known_threshold = copy.deepcopy(config_use_stability_for_known_threshold)
+config_use_interval_for_known_threshold[ConfigKeys.USE_STABILITY_FOR_KNOWN_THRESHOLD] = False
 # fmt: on
 
 

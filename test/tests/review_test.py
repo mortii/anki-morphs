@@ -61,7 +61,7 @@ test_cases_morph_infection = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="lemma_evaluation_lemma_extra_fields_collection",
+            initial_col="lemma_evaluation_lemma_extra_fields_collection",
             config=config_lemma_evaluation_lemma_extra_fields,
             am_db="lemma_evaluation_lemma_extra_fields.db",
         ),
@@ -77,7 +77,7 @@ test_cases_morph_infection = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="lemma_evaluation_lemma_extra_fields_collection",
+            initial_col="lemma_evaluation_lemma_extra_fields_collection",
             config=config_inflection_evaluation,
             am_db="lemma_evaluation_lemma_extra_fields.db",
         ),
@@ -129,7 +129,7 @@ test_cases_morph_status = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="card_handling_collection",
+            initial_col="card_handling_collection",
             config=config_lemma_evaluation_lemma_extra_fields,
             am_db="card_handling_collection.db",
         ),
@@ -144,7 +144,7 @@ test_cases_morph_status = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="card_handling_collection",
+            initial_col="card_handling_collection",
             config=config_disabled_skip_no_unknown_morphs,
             am_db="card_handling_collection.db",
         ),
@@ -159,7 +159,7 @@ test_cases_morph_status = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="card_handling_collection",
+            initial_col="card_handling_collection",
             config=config_dont_skip_fresh_morphs,
             am_db="card_handling_collection.db",
         ),
