@@ -71,6 +71,16 @@ config_known_morphs_enabled[ConfigKeys.PREPROCESS_CUSTOM_CHARACTERS_TO_IGNORE] =
 )
 # fmt: on
 
+################################################################
+#             config_use_stability_for_known_threshold
+################################################################
+# Matches `known-morphs-collection.anki2`.
+################################################################
+# fmt: off
+config_use_stability_for_known_threshold = copy.deepcopy(default_config_dict)
+config_use_stability_for_known_threshold[ConfigKeys.USE_STABILITY_FOR_KNOWN_THRESHOLD] = True
+# fmt: on
+
 
 ################################################################
 #        config_lemma_evaluation_lemma_extra_fields

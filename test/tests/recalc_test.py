@@ -9,6 +9,7 @@ from test.fake_configs import (
     config_default_note_type,
     config_ignore_names_txt_enabled,
     config_known_morphs_enabled,
+    config_use_stability_for_known_threshold,
     config_lemma_evaluation_lemma_extra_fields,
     config_max_morph_priority,
     config_move_to_end_morphs_known,
@@ -131,6 +132,19 @@ test_cases_with_success = [
             config=config_known_morphs_enabled,
         ),
         id="known_morphs_enabled",
+    ),
+    ################################################################
+    #               CASE: USE_STABILITY_FOR_KNOWN_THRESHOLD ENABLED
+    ################################################################
+    # Config contains "use_stability_for_known_threshold": true,
+    ################################################################
+    pytest.param(
+        FakeEnvironmentParams(
+            actual_col="stability_post_treatment",
+            expected_col="stability_post_treatment",
+            config=config_use_stability_for_known_threshold
+        ),
+        id="use_stability_for_known_threshold",
     ),
     ################################################################
     #               CASE: IGNORE NAMES ENABLED

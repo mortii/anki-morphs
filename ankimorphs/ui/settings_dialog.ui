@@ -158,6 +158,11 @@
                <string>Read files in 'known-morphs' folder and register morphs as known</string>
               </property>
              </widget>
+             <widget class="QCheckBox" name="useStabilityThresholdForKnownMorphsFolderCheckBox">
+              <property name="text">
+               <string>Use stability threshold instead of interval to consider morphs as known. Useful when different decks Desired Retentions are set.</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>

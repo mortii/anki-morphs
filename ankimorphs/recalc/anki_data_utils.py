@@ -22,6 +22,7 @@ class AnkiDBRowData:
     __slots__ = (
         "card_id",
         "card_interval",
+        "card_stability",
         "card_type",
         "note_id",
         "note_fields",
@@ -35,22 +36,26 @@ class AnkiDBRowData:
         assert isinstance(data_row[1], int)
         self.card_interval: int = data_row[1]
 
-        assert isinstance(data_row[2], int)
-        self.card_type: int = data_row[2]
+        assert isinstance(data_row[2], float)
+        self.card_stability: float = data_row[2]
 
-        assert isinstance(data_row[4], int)
-        self.note_id: int = data_row[4]
+        assert isinstance(data_row[3], int)
+        self.card_type: int = data_row[3]
 
-        assert isinstance(data_row[5], str)
-        self.note_fields: str = data_row[5]
+        assert isinstance(data_row[5], int)
+        self.note_id: int = data_row[5]
 
         assert isinstance(data_row[6], str)
-        self.note_tags: str = data_row[6]
+        self.note_fields: str = data_row[6]
+
+        assert isinstance(data_row[7], str)
+        self.note_tags: str = data_row[7]
 
 
 class AnkiCardData:  # pylint:disable=too-many-instance-attributes
     __slots__ = (
         "interval",
+        "stability",
         "type",
         "expression",
         "automatically_known_tag",
@@ -86,6 +91,7 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         not_ready_tag = am_config.tag_not_ready in tags_list
 
         self.interval = anki_row_data.card_interval
+        self.stability = anki_row_data.card_stability
         self.type = anki_row_data.card_type
         self.expression = expression
         self.automatically_known_tag = automatically_known_tag
@@ -207,7 +213,7 @@ def _get_anki_data(
 
     result: list[Sequence[Any]] = mw.col.db.all(
         """
-        SELECT cards.id, cards.ivl, cards.type, cards.queue, notes.id, notes.flds, notes.tags
+        SELECT cards.id, cards.ivl, COALESCE(json_extract(cards.data, '$.s'), 0.0), cards.type, cards.queue, notes.id, notes.flds, notes.tags
         FROM cards
         INNER JOIN notes ON
             cards.nid = notes.id
