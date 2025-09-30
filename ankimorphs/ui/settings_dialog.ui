@@ -160,7 +160,7 @@
              </widget>
              <widget class="QCheckBox" name="useStabilityThresholdForKnownMorphsFolderCheckBox">
               <property name="text">
-               <string>Use stability threshold instead of interval to consider morphs as known. Useful when different decks Desired Retentions are set.</string>
+               <string>Use stability threshold instead of interval.</string>
               </property>
              </widget>
             </item>

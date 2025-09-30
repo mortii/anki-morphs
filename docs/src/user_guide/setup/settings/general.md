@@ -13,6 +13,15 @@
 
 * **Read files in 'known-morphs' folder and register morphs as known**:  
   Import known morphs from the `known-morphs` folder. Read more in [Settings Known Morphs](../setting-known-morphs.md).
+* **Use stability threshold instead of interval**:
+  With the introduction of FSRS cards are now described with "Stability", which is defined as the interval when the
+  Desired Retention is set to 90%. For example, if your Desired Retention is 90%, 1d interval means 1d stability.
+  For 80%, a 1d stability might be equal to 2d interval, but it depends on your parameters.
+  By checking this option, AnkiMorphs will use stability instead of interval. **Make sure to use FSRS** since SM2, 
+  the default scheduler, doesn't compute stability. 
+
+  This option is useful when you want have different DR in different decks that AnkiMorphs read, it avoid setting morphs
+  as known if the DR being low means the interval growing too fast.
 
 * **Automatically Recalc before Anki sync**:  
   Recalc automatically runs before Anki syncs your card collection.

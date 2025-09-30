@@ -968,7 +968,7 @@ class Ui_SettingsDialog(object):
         self.label_16.setText(_translate("SettingsDialog", "Morphs are considered known when they have a learning interval of"))
         self.label_17.setText(_translate("SettingsDialog", "days or more"))
         self.recalcReadKnownMorphsFolderCheckBox.setText(_translate("SettingsDialog", "Read files in \'known-morphs\' folder and register morphs as known"))
-        self.useStabilityThresholdForKnownMorphsFolderCheckBox.setText(_translate("SettingsDialog", "Use stability threshold instead of interval to consider morphs as known. Useful when different decks Desired Retentions are set."))
+        self.useStabilityThresholdForKnownMorphsFolderCheckBox.setText(_translate("SettingsDialog", "Use stability threshold instead of interval."))
         self.groupBox_2.setTitle(_translate("SettingsDialog", "On Sync"))
         self.recalcBeforeSyncCheckBox.setText(_translate("SettingsDialog", "Automatically Recalc before Anki sync"))
         self.groupBox_10.setTitle(_translate("SettingsDialog", "Toolbar"))
