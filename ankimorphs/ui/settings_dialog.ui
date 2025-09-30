@@ -153,14 +153,16 @@
              </layout>
             </item>
             <item>
+             <widget class="QCheckBox" name="useStabilityThresholdForKnownMorphsCheckBox">
+              <property name="text">
+               <string>Use FSRS card stability instead of card interval for known threshold</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QCheckBox" name="recalcReadKnownMorphsFolderCheckBox">
               <property name="text">
                <string>Read files in 'known-morphs' folder and register morphs as known</string>
-              </property>
-             </widget>
-             <widget class="QCheckBox" name="useStabilityThresholdForKnownMorphsFolderCheckBox">
-              <property name="text">
-               <string>Use stability threshold instead of interval.</string>
               </property>
              </widget>
             </item>

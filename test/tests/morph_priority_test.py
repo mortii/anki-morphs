@@ -92,15 +92,15 @@ def test_morph_priority_with_priority_file(  # pylint:disable=unused-argument
 # frequencies.
 ################################################################
 case_collection_frequency_lemma_params = FakeEnvironmentParams(
-    actual_col="lemma_evaluation_lemma_extra_fields_collection",
-    expected_col="lemma_evaluation_lemma_extra_fields_collection",
+    initial_col="lemma_evaluation_lemma_extra_fields_collection",
+    result_col="lemma_evaluation_lemma_extra_fields_collection",
     config=config_lemma_evaluation,
     am_db="lemma_evaluation_lemma_extra_fields.db",
 )
 
 case_collection_frequency_inflection_params = FakeEnvironmentParams(
-    actual_col="lemma_evaluation_lemma_extra_fields_collection",
-    expected_col="lemma_evaluation_lemma_extra_fields_collection",
+    initial_col="lemma_evaluation_lemma_extra_fields_collection",
+    result_col="lemma_evaluation_lemma_extra_fields_collection",
     config=config_inflection_evaluation,
     am_db="lemma_evaluation_lemma_extra_fields.db",
 )

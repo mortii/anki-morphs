@@ -92,24 +92,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
                 max_value=card_amount,
             )
             card_data: AnkiCardData = cards_data_dict[card_id]
-
-            if card_data.automatically_known_tag or card_data.manually_known_tag:
-                highest_interval = am_config.interval_for_known_morphs
-            elif card_data.type == 0:  # 0: new
-                # With potentially stability taken into account, we need to be sure we won't consider set Stability=1
-                # in case where the card would still be new.
-                highest_interval = 0
-            elif card_data.type == 1:  # 1: learning
-                # cards in the 'learning' state have an interval of zero, but we don't
-                # want to treat them as 'unknown', so we change the value manually.
-                highest_interval = 1
-            else:
-                # Checking if the card is not "new" anymore is important so we don't allocate a "0" if stability is in [0,1).
-                if not am_config.use_stability_for_known_threshold:
-                    highest_interval = card_data.interval
-                else:
-                    # Stability being a float, we floor it to get an integer value of "secured" interval
-                    highest_interval = max(1, math.floor(card_data.stability))
+            card_memory_strength = _get_card_memory_strength(am_config, card_data)
 
             card_table_data.append(
                 {
@@ -130,7 +113,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
                         "lemma": morph.lemma,
                         "inflection": morph.inflection,
                         "highest_lemma_learning_interval": None,  # updates later
-                        "highest_inflection_learning_interval": highest_interval,
+                        "highest_inflection_learning_interval": card_memory_strength,
                     }
                 )
                 card_morph_map_table_data.append(
@@ -141,7 +124,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
                     }
                 )
 
-    if am_config.read_known_morphs_folder is True:
+    if am_config.read_known_morphs_folder:
         progress_utils.background_update_progress(label="Importing known morphs")
         morph_table_data += _get_morphs_from_files(am_config)
 
@@ -154,6 +137,29 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
     am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
     # am_db.print_table("Morphs")
     am_db.con.close()
+
+
+def _get_card_memory_strength(
+    am_config: AnkiMorphsConfig, card_data: AnkiCardData
+) -> int:
+    if card_data.automatically_known_tag or card_data.manually_known_tag:
+        return am_config.interval_for_known_morphs
+
+    if card_data.type == 0:  # 0: new
+        # force a zero value as an early exit and to prevent edge cases.
+        return 0
+
+    if card_data.type == 1:  # 1: learning
+        # cards in the 'learning' state have an interval of zero, but we don't
+        # want to treat them as 'unknown', so we change the value manually.
+        return 1
+
+    if am_config.use_stability_for_known_threshold:
+        # Stability being a float, we floor it to get an integer value of "secured" interval, and we
+        # give a minimum stability of 1 since the card is not new
+        return max(1, math.floor(card_data.stability))
+
+    return card_data.interval
 
 
 def _get_morphs_from_files(am_config: AnkiMorphsConfig) -> list[dict[str, Any]]:

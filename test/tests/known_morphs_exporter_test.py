@@ -33,8 +33,8 @@ test_cases = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="some_studied_lemmas_collection",
-            expected_col="some_studied_lemmas_collection",
+            initial_col="some_studied_lemmas_collection",
+            result_col="some_studied_lemmas_collection",
             config=config_lemma_evaluation_lemma_extra_fields,
             am_db="some_studied_lemmas.db",
         ),
@@ -43,8 +43,8 @@ test_cases = [
     ),
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="some_studied_lemmas_collection",
-            expected_col="some_studied_lemmas_collection",
+            initial_col="some_studied_lemmas_collection",
+            result_col="some_studied_lemmas_collection",
             config=config_inflection_evaluation,
             am_db="some_studied_lemmas.db",
         ),

@@ -9,7 +9,6 @@ from test.fake_configs import (
     config_default_note_type,
     config_ignore_names_txt_enabled,
     config_known_morphs_enabled,
-    config_use_stability_for_known_threshold,
     config_lemma_evaluation_lemma_extra_fields,
     config_max_morph_priority,
     config_move_to_end_morphs_known,
@@ -18,6 +17,8 @@ from test.fake_configs import (
     config_offset_lemma_enabled,
     config_suspend_morphs_known,
     config_suspend_morphs_known_or_fresh,
+    config_use_interval_for_known_threshold,
+    config_use_stability_for_known_threshold,
     config_wrong_field_name,
     config_wrong_morph_priority,
     config_wrong_morphemizer_description,
@@ -65,8 +66,8 @@ test_cases_with_success = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="lemma_evaluation_lemma_extra_fields_collection",
-            expected_col="lemma_evaluation_lemma_extra_fields_collection",
+            initial_col="lemma_evaluation_lemma_extra_fields_collection",
+            result_col="lemma_evaluation_lemma_extra_fields_collection",
             config=config_lemma_evaluation_lemma_extra_fields,
         ),
         id="same_lemma_and_inflection_scores",
@@ -83,8 +84,8 @@ test_cases_with_success = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="some_studied_lemmas_collection",
-            expected_col="some_studied_lemmas_collection",
+            initial_col="some_studied_lemmas_collection",
+            result_col="some_studied_lemmas_collection",
             config=config_lemma_evaluation_lemma_extra_fields,
         ),
         id="inflections_are_known",
@@ -99,8 +100,8 @@ test_cases_with_success = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="offset_new_cards_inflection_collection",
-            expected_col="offset_new_cards_inflection_collection",
+            initial_col="offset_new_cards_inflection_collection",
+            result_col="offset_new_cards_inflection_collection",
             config=config_offset_inflection_enabled,
         ),
         id="offset_new_cards_inflection",
@@ -114,8 +115,8 @@ test_cases_with_success = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="offset_new_cards_lemma_collection",
-            expected_col="offset_new_cards_lemma_collection",
+            initial_col="offset_new_cards_lemma_collection",
+            result_col="offset_new_cards_lemma_collection",
             config=config_offset_lemma_enabled,
         ),
         id="offset_new_cards_lemma",
@@ -127,24 +128,37 @@ test_cases_with_success = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="known_morphs_collection",
-            expected_col="known_morphs_collection",
+            initial_col="known_morphs_collection",
+            result_col="known_morphs_collection",
             config=config_known_morphs_enabled,
         ),
         id="known_morphs_enabled",
     ),
     ################################################################
-    #               CASE: USE_STABILITY_FOR_KNOWN_THRESHOLD ENABLED
+    #       CASE: USE_STABILITY_FOR_KNOWN_THRESHOLD ENABLED
     ################################################################
     # Config contains "use_stability_for_known_threshold": true,
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="stability_post_treatment",
-            expected_col="stability_post_treatment",
-            config=config_use_stability_for_known_threshold
+            initial_col="card_stability_collection",
+            result_col="card_stability_collection",
+            config=config_use_stability_for_known_threshold,
         ),
         id="use_stability_for_known_threshold",
+    ),
+    ################################################################
+    #       CASE: USE_INTERVAL_FOR_KNOWN_THRESHOLD ENABLED
+    ################################################################
+    # Config contains "use_stability_for_known_threshold": false,
+    ################################################################
+    pytest.param(
+        FakeEnvironmentParams(
+            initial_col="card_stability_collection",
+            result_col="card_interval_collection",
+            config=config_use_interval_for_known_threshold,
+        ),
+        id="use_interval_for_known_threshold",
     ),
     ################################################################
     #               CASE: IGNORE NAMES ENABLED
@@ -153,8 +167,8 @@ test_cases_with_success = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="ignore_names_txt_collection",
-            expected_col="ignore_names_txt_collection",
+            initial_col="ignore_names_txt_collection",
+            result_col="ignore_names_txt_collection",
             config=config_ignore_names_txt_enabled,
         ),
         id="ignore_names_txt_enabled",
@@ -167,8 +181,8 @@ test_cases_with_success = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="big_japanese_collection",
-            expected_col="big_japanese_collection",
+            initial_col="big_japanese_collection",
+            result_col="big_japanese_collection",
             config=config_big_japanese_collection,
         ),
         id="big_japanese_collection",
@@ -182,8 +196,8 @@ test_cases_with_success = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="max_morph_priority_collection",
-            expected_col="max_morph_priority_collection",
+            initial_col="max_morph_priority_collection",
+            result_col="max_morph_priority_collection",
             config=config_max_morph_priority,
         ),
         id="max_morph_priority",
@@ -196,8 +210,8 @@ test_cases_with_success = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="card_handling_collection",
-            expected_col="suspend_all_morphs_known",
+            initial_col="card_handling_collection",
+            result_col="suspend_all_morphs_known",
             config=config_suspend_morphs_known,
         ),
         id="suspend_all_morphs_known",
@@ -210,8 +224,8 @@ test_cases_with_success = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="card_handling_collection",
-            expected_col="suspend_morphs_known_or_fresh",
+            initial_col="card_handling_collection",
+            result_col="suspend_morphs_known_or_fresh",
             config=config_suspend_morphs_known_or_fresh,
         ),
         id="suspend_all_morphs_known_or_fresh",
@@ -225,8 +239,8 @@ test_cases_with_success = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="card_handling_collection",
-            expected_col="move_to_end_morphs_known",
+            initial_col="card_handling_collection",
+            result_col="move_to_end_morphs_known",
             config=config_move_to_end_morphs_known,
         ),
         id="move_to_end_morphs_known",
@@ -239,8 +253,8 @@ test_cases_with_success = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="card_handling_collection",
-            expected_col="move_to_end_morphs_known_or_fresh",
+            initial_col="card_handling_collection",
+            result_col="move_to_end_morphs_known_or_fresh",
             config=config_move_to_end_morphs_known_or_fresh,
         ),
         id="move_to_end_morphs_known_or_fresh",
@@ -266,10 +280,10 @@ def test_recalc(  # pylint:disable=too-many-locals
 
     text_preprocessing.update_translation_table()  # updates custom characters to ignore
 
-    actual_collection = fake_environment_fixture.mock_mw.col
-    expected_collection = fake_environment_fixture.expected_collection
+    initial_collection = fake_environment_fixture.mock_mw.col
+    result_collection = fake_environment_fixture.result_collection
 
-    model_manager: ModelManager = ModelManager(actual_collection)
+    model_manager: ModelManager = ModelManager(initial_collection)
     note_type_dict: NotetypeDict | None = model_manager.by_name(
         fake_environment_fixture.config["filters"][0]["note_type"]
     )
@@ -302,19 +316,19 @@ def test_recalc(  # pylint:disable=too-many-locals
     # pprint(fake_environment_fixture.config)
     # print()
 
-    expected_collection_cards: Sequence[int] = expected_collection.find_cards("")
-    actual_collection_cards: Sequence[int] = actual_collection.find_cards("")
-    assert len(expected_collection_cards) > 0
-    assert len(expected_collection_cards) == len(actual_collection_cards)
+    result_collection_cards: Sequence[int] = result_collection.find_cards("")
+    initial_collection_cards: Sequence[int] = initial_collection.find_cards("")
+    assert len(result_collection_cards) > 0
+    assert len(result_collection_cards) == len(initial_collection_cards)
 
-    for card_id in expected_collection_cards:
+    for card_id in result_collection_cards:
         # print(f"card_id: {card_id}")
         card_id = CardId(card_id)
 
-        actual_card: Card = actual_collection.get_card(card_id)
+        actual_card: Card = initial_collection.get_card(card_id)
         actual_note: Note = actual_card.note()
 
-        expected_card: Card = expected_collection.get_card(card_id)
+        expected_card: Card = result_collection.get_card(card_id)
         expected_note: Note = expected_card.note()
 
         # for field, pos in field_positions.items():

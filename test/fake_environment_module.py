@@ -56,15 +56,15 @@ from ankimorphs.recalc import anki_data_utils, caching, recalc_main
 class FakeEnvironmentParams:
     def __init__(  # pylint:disable=too-many-arguments
         self,
-        actual_col: str | None = None,
-        expected_col: str | None = None,
+        initial_col: str | None = None,
+        result_col: str | None = None,
         config: dict[str, Any] | None = None,
         am_db: str | None = None,
         priority_files_dir: str | None = None,
         known_morphs_dir: str | None = None,
     ):
-        self.actual_col = actual_col
-        self.expected_col = expected_col
+        self.initial_col = initial_col
+        self.result_col = result_col
         self.config = config
         self.am_db = am_db
         self.priority_files_dir = priority_files_dir
@@ -80,16 +80,16 @@ class FakeEnvironment:
         config: dict[str, Any],
         priority_files_dir: str,
         known_morphs_dir: str,
-        actual_collection: Collection,
-        expected_collection: Collection,
+        initial_collection: Collection,
+        result_collection: Collection,
     ) -> None:
         self.mock_mw = mock_mw
         self.mock_db = mock_db
         self.config = config
         self.priority_files_dir = priority_files_dir
         self.known_morphs_dir = known_morphs_dir
-        self.actual_collection = actual_collection
-        self.expected_collection = expected_collection
+        self.initial_collection = initial_collection
+        self.result_collection = result_collection
 
 
 @pytest.fixture(scope="function")
@@ -102,15 +102,15 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals
 
     # fmt: off
     try:
-        _actual_col_name: str = request.param.actual_col or "ignore_names_txt_collection"
-        _expected_col_name: str = request.param.expected_col or _actual_col_name
+        _initial_col_name: str = request.param.initial_col or "ignore_names_txt_collection"
+        _result_col_name: str = request.param.result_col or _initial_col_name
         _config_data: dict[str, Any] = request.param.config or default_config_dict
         _am_db_name: str = request.param.am_db or "empty_skeleton.db"
         _priority_files_dir: str = request.param.priority_files_dir or "correct_outputs"
         _known_morphs_dir: str = request.param.known_morphs_dir or "known-morphs-valid"
 
-        assert isinstance(_actual_col_name, str)
-        assert isinstance(_expected_col_name, str)
+        assert isinstance(_initial_col_name, str)
+        assert isinstance(_result_col_name, str)
         assert isinstance(_config_data, dict)
         assert isinstance(_am_db_name, str)
         assert isinstance(_priority_files_dir, str)
@@ -120,11 +120,11 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals
         print('Missing "@pytest.mark.parametrize"')
         raise _error
 
-    path_original_actual_col = Path(PATH_CARD_COLLECTIONS, f"{_actual_col_name}.anki2")
-    path_duplicate_actual_col = Path(PATH_TEMP_CARD_COLLECTIONS, f"duplicate_pre_{_actual_col_name}.anki2")
+    path_original_initial_col = Path(PATH_CARD_COLLECTIONS, f"{_initial_col_name}.anki2")
+    path_duplicate_initial_col = Path(PATH_TEMP_CARD_COLLECTIONS, f"duplicate_pre_{_initial_col_name}.anki2")
 
-    path_original_expected_col = Path(PATH_CARD_COLLECTIONS, f"{_expected_col_name}.anki2")
-    path_duplicate_expected_col = Path(PATH_TEMP_CARD_COLLECTIONS, f"duplicate_post_{_expected_col_name}.anki2")
+    path_original_result_col = Path(PATH_CARD_COLLECTIONS, f"{_result_col_name}.anki2")
+    path_duplicate_result_col = Path(PATH_TEMP_CARD_COLLECTIONS, f"duplicate_post_{_result_col_name}.anki2")
 
     test_db_original_path = Path(PATH_TESTS_DATA_DBS, _am_db_name)
     # fmt: on
@@ -134,11 +134,11 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals
     os.makedirs(PATH_TEMP_CARD_COLLECTIONS, exist_ok=True)
 
     # If the file already exists, it will be replaced
-    shutil.copyfile(path_original_actual_col, path_duplicate_actual_col)
-    shutil.copyfile(path_original_expected_col, path_duplicate_expected_col)
+    shutil.copyfile(path_original_initial_col, path_duplicate_initial_col)
+    shutil.copyfile(path_original_result_col, path_duplicate_result_col)
     shutil.copyfile(test_db_original_path, PATH_DB_COPY)
 
-    mock_mw = create_mock_mw(path_duplicate_actual_col, _config_data)
+    mock_mw = create_mock_mw(path_duplicate_initial_col, _config_data)
     mw_patches = create_mw_patches(mock_mw)
     for mw_patch in mw_patches:
         mw_patch.start()
@@ -163,8 +163,8 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals
                 config=_config_data,
                 known_morphs_dir=_known_morphs_dir,
                 priority_files_dir=_priority_files_dir,
-                actual_collection=mock_mw.col,
-                expected_collection=Collection(str(path_duplicate_expected_col)),
+                initial_collection=mock_mw.col,
+                result_collection=Collection(str(path_duplicate_result_col)),
             )
 
         except anki.errors.DBError:

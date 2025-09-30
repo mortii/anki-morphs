@@ -62,7 +62,6 @@
   "preprocess_ignore_slim_round_bracket_contents": false,
   "preprocess_ignore_suspended_cards_content": false,
   "read_known_morphs_folder": false,
-  "use_stability_for_known_threshold": false,
   "recalc_due_offset": 500000,
   "recalc_move_new_cards_to_the_end": "Never",
   "recalc_number_of_morphs_to_offset": 100,
@@ -93,5 +92,6 @@
   "tag_ready": "am-ready",
   "tag_suspended_automatically": "am-suspended-automatically",
   "toolbar_stats_use_known": false,
-  "toolbar_stats_use_seen": true
+  "toolbar_stats_use_seen": true,
+  "use_stability_for_known_threshold": false
 }

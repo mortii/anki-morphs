@@ -6,7 +6,7 @@
 For these settings to make sense you have to read the [scoring algorithm](../../../user_guide/usage/recalc.md#scoring-algorithm)
 section first.
 
-**Weights**:
+## Weights
 
 * **Total priority of all morphs**:  
   The $$\large W_{\text{total}}^{\text{all}}$$ weight in [$$\mathbf{W_P}$$](../../../user_guide/usage/recalc.md#insignificance)
@@ -24,9 +24,8 @@ section first.
 * **Target difference of learning morphs**:  
   The $$\large W_{\text{target}}^{\text{learning}}$$ weight in [$$\mathbf{W_D}$$](../../../user_guide/usage/recalc.md#deviation)
 
-<br>
 
-**Morph Targets**:
+## Morph Targets
 
 These are explained in the [scoring algorithm: deviation](../../../user_guide/usage/recalc.md#deviation) section.
 

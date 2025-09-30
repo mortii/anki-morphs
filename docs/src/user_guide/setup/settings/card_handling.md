@@ -9,7 +9,7 @@ new.
 
 To overcome this problem and speed up the learning process, we can use the options found here.
 
-**When Encountering Cards (skip = bury)**:
+## When Encountering Cards (skip = bury)
 
 * **Skip cards that have no unknown morphs**:  
   If AnkiMorph has determined that there are no unknown morphs on the card, then it will be buried and skipped.
@@ -32,7 +32,7 @@ To overcome this problem and speed up the learning process, we can use the optio
   ![skipped_cards.png](../../../img/skipped_cards.png)
 
 
-**On Recalc**:
+## On Recalc
 * **Suspend new cards:**:  
   This option suspends certain new cards, which can prevent having to skip the same
   cards at the start of every session. These cards are are given the [suspended automatically tag](tags.md).
