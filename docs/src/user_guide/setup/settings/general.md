@@ -26,6 +26,9 @@
   This option is useful when you want have different DR in different decks that AnkiMorphs read, it avoid setting morphs
   as known if the DR being low means the interval growing too fast.
 
+  To read more on this topic, please refer to the official
+  [Anki's documentation about FSRS](https://faqs.ankiweb.net/what-spaced-repetition-algorithm.html#fsrs)
+
 * **Read files in 'known-morphs' folder and register morphs as known**:  
   Import known morphs from the `known-morphs` folder. Read more in [Settings Known Morphs](../setting-known-morphs.md).
 
