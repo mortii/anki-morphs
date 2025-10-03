@@ -19,7 +19,7 @@ Vilhelm-Ian, CodeWithMa, ashprice, aleksejrs, HQYang1979, soliviantar, buster-bl
 cocowash, asayake-b5, quietmansoath, MichaelPetre, xofm31, knoebelja, xuiqzy, Jcuhfehl, fuquasteve, pallas42, syfgk,
 jahnke, jsteel44, iwouldrathernotusegithub, tanhoaian01, drkthomp, Kirchheim, zeroeightysix, Gardengul, wolearyc,
 Pedrubik2000, RyanMcEntire, BobvanSchendel, khanguyenwk, buqamura, Rct567, rwmpelstilzchen, bie-zheng, IncontinentCell,
-mdraves91, dae, AtilioA, BenjaminBrandtner.
+mdraves91, dae, AtilioA, BenjaminBrandtner, JSchoreels.
 
 ### MorphMan (v5.0-qt6-alpha.1)
 

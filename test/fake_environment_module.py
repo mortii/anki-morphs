@@ -46,7 +46,6 @@ from ankimorphs.generators import (
     priority_file_generator,
     readability_report_generator,
     study_plan_generator,
-    text_extractors,
 )
 from ankimorphs.morphemizers import spacy_wrapper
 from ankimorphs.progression import progression_utils, progression_window
@@ -218,7 +217,6 @@ def create_mw_patches(mock_mw: AnkiQt) -> list[Any]:
         mock.patch.object(known_morphs_exporter, "mw", mock_mw),
         mock.patch.object(ankimorphs_extra_settings, "mw", mock_mw),
         mock.patch.object(generators_output_dialog, "mw", mock_mw),
-        mock.patch.object(text_extractors, "mw", mock_mw),
     ]
 
 

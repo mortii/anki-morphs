@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import os
-import shutil
+import re
+import tempfile
 import zipfile
 from collections.abc import Iterator
 from pathlib import Path
 
-import anki
-from aqt import mw
+from anki import utils as anki_utils
 
 
 def extract_ass_text(file_path: Path) -> list[str]:
@@ -71,31 +71,30 @@ def extract_vtt_text(file_path: Path) -> list[str]:
 
 
 def extract_epub_text(epub_path: Path) -> list[str]:
-    assert mw is not None
 
-    # Create a temporary directory to store unzipped contents
-    temp_dir: str = "temp_unzipped_epub"  # relative directory
-
-    if os.path.exists(temp_dir):
-        shutil.rmtree(temp_dir)
-
-    with zipfile.ZipFile(epub_path) as epub:
-        epub.extractall(temp_dir)
-
-    text_content: list[str] = []
-
-    # Use a generator to yield text lines for better memory efficiency
-    def extract_text() -> Iterator[list[str]]:
-        for _root, _, _files in os.walk(temp_dir):
+    # use a generator to yield text lines for better memory efficiency
+    def extract_text_chunks(_temp_dir: str) -> Iterator[list[str]]:
+        for _root, _, _files in os.walk(_temp_dir):
             for file in filter(lambda f: f.endswith((".xhtml", ".html")), _files):
                 file_path = Path(_root, file)
-                yield extract_html_text(file_path)
+                file_text = extract_html_text(file_path)[0]
+                # Text found in epub files may lack clear paragraph boundaries,
+                # which can cause morphemizer input buffer overflows.
+                # To prevent this, we split on CJK punctuation.
+                _chunk = re.split(r"(?<=[。！？])", file_text)
+                yield [s.strip() for s in _chunk if s.strip()]
 
-    for batch in extract_text():
-        text_content.extend(batch)
+    # creates an auto-cleaning temp dir allowed by the operating system,
+    # otherwise we can get lack of privilege errors.
+    with tempfile.TemporaryDirectory() as temp_dir:
+        with zipfile.ZipFile(epub_path) as epub:
+            epub.extractall(temp_dir)
+            text_content: list[str] = []
 
-    shutil.rmtree(temp_dir)
-    return text_content
+            for chunk in extract_text_chunks(temp_dir):
+                text_content.extend(chunk)
+
+            return text_content
 
 
 def extract_html_text(file_path: Path) -> list[str]:
@@ -104,7 +103,7 @@ def extract_html_text(file_path: Path) -> list[str]:
     """
     with open(file_path, encoding="utf-8") as file:
         content = file.read()
-    content = anki.utils.strip_html(content)
+    content = anki_utils.strip_html(content)
     return [content]
 
 
