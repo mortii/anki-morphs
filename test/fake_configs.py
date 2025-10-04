@@ -16,7 +16,8 @@ with open(DEFAULT_CONFIG_PATH, encoding="utf-8") as _file:
 
 default_config_filter = default_config_dict[ConfigKeys.FILTERS][0]
 default_config_filter[FilterKeys.NOTE_TYPE] = "Basic"
-default_config_filter[FilterKeys.FIELD] = "Front"
+default_config_filter[FilterKeys.READ_FIELD] = "Front"
+default_config_filter[FilterKeys.MODIFY_FIELD] = "Front"
 default_config_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = (
     "AnkiMorphs: Simple Space Splitter"
 )
@@ -165,7 +166,8 @@ config_big_japanese_collection[ConfigKeys.PREPROCESS_IGNORE_SLIM_ROUND_BRACKET_C
 
 config_big_japanese_collection_filter = config_big_japanese_collection[ConfigKeys.FILTERS][0]
 config_big_japanese_collection_filter[FilterKeys.NOTE_TYPE] = "japanese_sub2srs"
-config_big_japanese_collection_filter[FilterKeys.FIELD] = "Japanese"
+config_big_japanese_collection_filter[FilterKeys.READ_FIELD] = "Japanese"
+config_big_japanese_collection_filter[FilterKeys.MODIFY_FIELD] = "Japanese"
 config_big_japanese_collection_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "AnkiMorphs: Japanese"
 # fmt: on
 
@@ -267,7 +269,8 @@ config_wrong_note_type[ConfigKeys.FILTERS][0][
 # Works with any arbitrary collection and db
 ################################################################
 config_wrong_field_name = copy.deepcopy(default_config_dict)
-config_wrong_field_name[ConfigKeys.FILTERS][0][FilterKeys.FIELD] = "random_wrong_value"
+config_wrong_field_name[ConfigKeys.FILTERS][0][FilterKeys.READ_FIELD] = "random_wrong_value"
+config_wrong_field_name[ConfigKeys.FILTERS][0][FilterKeys.MODIFY_FIELD] = "random_wrong_value"
 
 
 ################################################################
@@ -309,7 +312,8 @@ config_default_note_type[ConfigKeys.FILTERS][0][
 # Works with any arbitrary collection and db
 ################################################################
 config_default_field = copy.deepcopy(default_config_dict)
-config_default_field[ConfigKeys.FILTERS][0][FilterKeys.FIELD] = am_globals.NONE_OPTION
+config_default_field[ConfigKeys.FILTERS][0][FilterKeys.READ_FIELD] = am_globals.NONE_OPTION
+config_default_field[ConfigKeys.FILTERS][0][FilterKeys.MODIFY_FIELD] = am_globals.NONE_OPTION
 
 
 ################################################################

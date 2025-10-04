@@ -46,7 +46,9 @@ FilterTypeAlias = dict[str, Union[str, bool, int, dict[str, str], None]]
 class RawConfigFilterKeys:
     NOTE_TYPE = "note_type"
     TAGS = "tags"
-    FIELD = "field"
+    FIELD = "field"  # deprecated, kept for backward compatibility
+    READ_FIELD = "read_field"
+    MODIFY_FIELD = "modify_field"
     MORPHEMIZER_DESCRIPTION = "morphemizer_description"
     MORPH_PRIORITY_SELECTION = "morph_priority_selection"
     READ = "read"
@@ -153,9 +155,22 @@ class AnkiMorphsConfigFilter:  # pylint:disable=too-many-instance-attributes
             self.tags: dict[str, str] = self._get_filter_item(
                 key=RawConfigFilterKeys.TAGS, expected_type=dict
             )
-            self.field: str = self._get_filter_item(
-                key=RawConfigFilterKeys.FIELD, expected_type=str
-            )
+
+            # Backward compatibility: if old 'field' exists but not new fields, use it for both
+            if RawConfigFilterKeys.FIELD in self._filter and RawConfigFilterKeys.READ_FIELD not in self._filter:
+                old_field = self._filter[RawConfigFilterKeys.FIELD]
+                self.read_field: str = old_field
+                self.modify_field: str = old_field
+                self.field: str = old_field  # Keep for any legacy code
+            else:
+                self.read_field: str = self._get_filter_item(
+                    key=RawConfigFilterKeys.READ_FIELD, expected_type=str
+                )
+                self.modify_field: str = self._get_filter_item(
+                    key=RawConfigFilterKeys.MODIFY_FIELD, expected_type=str
+                )
+                self.field: str = self.read_field  # Keep for backward compatibility
+
             self.morphemizer_description: str = self._get_filter_item(
                 key=RawConfigFilterKeys.MORPHEMIZER_DESCRIPTION, expected_type=str
             )
