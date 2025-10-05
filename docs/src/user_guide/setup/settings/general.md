@@ -17,6 +17,9 @@
   determines the [L and I numbers](../../installation/changes-to-anki.md#toolbar).
 
 * **Use FSRS card stability instead of card interval for known threshold**:  
+
+  > **Note**: make sure you have FSRS enabled when using this option
+
   By default, AnkiMorphs determines whether a morph is "known" based on the card’s review interval (how many days until
   you next see the card). With this option enabled, it instead uses the
   [**FSRS stability**](https://faqs.ankiweb.net/what-spaced-repetition-algorithm.html#fsrs) value: how many days it will
@@ -33,8 +36,6 @@
 
   This interval discrepancy can cause misleading "known" values for morphs. Using stability avoids this problem, since it
   reflects actual memory strength independent of DR.
-
-  > **Note**: make sure you have FSRS enabled when using this option
 
 * **Read files in 'known-morphs' folder and register morphs as known**:  
   Import known morphs from the `known-morphs` folder. Read more in [Settings Known Morphs](../setting-known-morphs.md).

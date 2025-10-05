@@ -1,32 +1,159 @@
 # Tests
 
-AnkiMorphs uses a combinations of unnittest and pytest.
+The testing framework is `Pytest` with these plugins:
+- [pytest-qt](https://pypi.org/project/pytest-qt/): allows for writing tests for PyQt5, PyQt6, PySide2 and PySide6 applications.
+- [pytest-xvfb](https://pypi.org/project/pytest-xvfb/): allows tests to be run without windows popping up during GUI tests or on systems without a display (like a CI).
+- [pytest-expect](https://pypi.org/project/pytest-expect/): stores test expectations by saving the set of failing tests, allowing them to be marked as xfail when running them in the future.
+- [pytest-sugar](https://pypi.org/project/pytest-sugar/): showing failures and errors instantly, adding a progress bar, and making the output look better.
+- [pytest-randomly](https://pypi.org/project/pytest-randomly/): randomly order tests and control random seed.
 
-https://docs.python.org/3/library/unittest.mock.html
+Some default options are set in the `pyproject.toml` file under the `[tool.pytest.ini_options]` section.
 
-## Guides
+## Running tests
 
-* [official pytest docs](https://docs.pytest.org/en/7.1.x/getting-started.html)
-* [realpython pytest guide](https://realpython.com/pytest-python-testing/)
-* [realpython Mocking External Libraries](https://realpython.com/testing-third-party-apis-with-mocks/)
-* [realpython Python Mock Object Library](https://realpython.com/python-mock-library/)
+From the project root folder you can run tests with the command `pytest`, and it will automatically gather and run all
+the tests found in the `tests` directory.
 
-## Pytest Add-ons
+You can restrict the tests to a specific file by appending the path(s) to the command, e.g:
+```
+pytest test/tests/recalc_test.py test/tests/review_test.py
+```
 
-### pytest-qt
+You can also add "tags" to specific tests and run all the tests that have those tags. This is done by adding the
+decorator `@pytest.mark.{tag}`, e.g. `@pytest.mark.external_morphemizers`, and you can then run those tests with the
+command:
+```
+pytest -m external_morphemizers
+```
 
-* [official docs](https://pytest-qt.readthedocs.io/en/latest/intro.html)
-* [Troubleshooting](https://pytest-qt.readthedocs.io/en/latest/troubleshooting.html)
+> **Note**: the "tag" also has to be added to the "markers" list in `pyproject.toml` because we run tests with the
+> `--strict-markers` argument.
 
-pytest-qt is a pytest plugin that allows programmers to write tests for PyQt5, PyQt6, PySide2 and PySide6 applications.
+You can specify how many fails the tests should abort after with the `--maxfail` argument, e.g:
+```
+pytest --maxfail=10
+```
 
-### pytest-xvfb
+The `pytest-randomly` plugin runs the tests in a random order based on a seed. You can specify the seed:
+```
+pytest --randomly-seed=84903385
+```
 
-* [pypi docs](https://pypi.org/project/pytest-xvfb/)
+You can also rerun the last used seed:
+```
+pytest --randomly-seed=last
+```
 
-With Xvfb and the plugin installed, your testsuite automatically runs with Xvfb. This allows tests to be run without
-windows popping up during GUI tests or on systems without a display (like a CI).
+### Test coverage
 
-This is necessary for tests to work on GitHub actions.
+Run: `pytest --cov=ankimorphs --cov-report html` and click on `index.html` in `htmlcov/`
 
 
+## Card collections
+
+Note:
+- all of these collections have all the extra fields selected
+- the extra fields contain inflections unless stated otherwise
+- morphs are evaluated based on inflections unless stated otherwise
+- morphs priority is 'Collection Frequency' unless stated otherwise
+
+Current card collections (test/data/card_collections):
+- `lemma_evaluation_lemma_extra_fields_collection.anki2`
+    - contains two "known" cards ("the", "man"), and then 9 cards with 4 lemmas and 9 inflections.
+      this is used for testing if the inflections are given the scores of their respective lemmas and
+      the inflections are skipped on review.
+    - the extra fields contain lemmas
+    - morphs are evaluated based on lemma
+    - morphemizer: 'spaCy: en_core_web_sm'
+- `some_studied_lemmas_collection.anki2`
+    - duplicate of `lemma_evaluation_lemma_extra_fields_collection.anki2`, but one card for each lemma
+      has been studied, so the other cards that have those lemmas should contain no unknowns.
+    - the extra fields contain lemmas
+    - morphs are evaluated based on lemma
+    - morphemizer: 'spaCy: en_core_web_sm'
+- `big_japanese_collection.anki2`
+    - monolithic card collection (https://github.com/mortii/anki-decks)
+    - morphemizer: 'Ankimorphs Japanese'
+- `ignore_names_txt_collection.anki2`
+    - Contains one card that has two names, one of which is found in names.txt
+    - morphemizer: 'AnkiMorphs: Language w/ Spaces'
+- `known-morphs-collection.anki2`
+    - contains one card with 7 morphs, 6 of which are found in the 'known-morphs-valid' directory
+    - morphemizer: 'AnkiMorphs: Language w/ Spaces'
+- `offset_new_cards_inflection_collection.anki2`
+    - Contains two cards, both with "hello".
+    - `recalc_offset_new_cards` config option enabled
+    - morphemizer: 'AnkiMorphs: Language w/ Spaces'
+- `offset_new_cards_lemma_collection.anki2`
+    - duplicate of `lemma_evaluation_lemma_extra_fields_collection.anki2`, but has uses the `recalc_offset_new_cards`
+      config option enabled
+    - the extra fields contain lemmas
+    - morphs are evaluated based on lemma
+    - morphemizer: 'spaCy: en_core_web_sm'
+- `some_studied_japanese_collection.anki2`
+    - contains three cards:
+        - one that has the tag 'am-known-manually'
+        - one with a learning interval of 1 day
+        - one with a learning interval of 30+ days
+    - morphemizer: 'Ankimorphs Japanese'
+- `max_morph_priority_collection.anki2`
+    - contains two cards, and uses the priority file `ja_core_news_sm_freq_inflection_min_occurrence.csv`. One card
+      has a morph that is found in the priority file, the other card does not, which should give it a max morph priority value.
+    - morphemizer: 'spaCy: ja_core_news_sm'
+- `card_handling_collection.anki2`
+    - contains 6 cards:
+        - 3 known, not new cards
+        - 1 fresh, not new card
+        - 1 with only known or fresh morphs, new card
+        - 1 with known, fresh, and one unknown morph, new card
+    - creating an evergreen collection that has fresh morphs is surprisingly difficult, because the
+      due date of the card actually depends on the timestamp of card creation. To make this problem go away
+      you can set the date of your system back a couple of months and then create the cards.
+- `suspend_all_morphs_known.anki2`
+    - the base of this collection is `card_handling_collection.anki2`, that has been recalced with
+      the config `config_suspend_morphs_known`
+- `suspend_morphs_known_or_fresh.anki2`
+    - the base of this collection is `card_handling_collection.anki2`, that has been recalced with
+      the config `config_suspend_morphs_known_or_fresh`
+- `move_to_end_morphs_known.anki2`
+    - the base of this collection is `card_handling_collection.anki2`, that has been recalced with
+      the config `config_move_to_end_morphs_known`
+- `move_to_end_morphs_known_or_fresh.anki2`
+    - the base of this collection is `card_handling_collection.anki2`, that has been recalced with
+      the config `config_move_to_end_morphs_known_or_fresh`
+- `card_stability_collection.anki2`
+    - contains ~100 cards from a real and mature collection, same filters as `big_japanese_collection`,
+- `card_interval_collection.ank2`
+    - same as `card_stability_collection.anki2` but recalced without `USE_STABILITY_FOR_KNOWN_THRESHOLD`
+
+## Engineering and adding collections
+
+1. create a new anki profile
+2. (optional) create a new deck
+3. (optional) create a new note type
+4. add cards and change the ankimorphs settings to fit the use case
+6. recalc
+7. exit anki/close the profile
+8. extract the `collection.anki2` file from the profile directory and rename it to something relevant to the use case
+  and place the renamed collection file in `test/data/card_collections`
+9. repeat this process for the `ankimorphs.db` if the tests require it, and move it to `test/data/am_dbs`
+10. create a new fake config in `test/fake_configs.py` and make any necessary adjustments to have it match the settings
+  used when you previously ran recalc.
+
+## Investigating collections
+
+Basically reverse the steps in the section above, i.e:
+1. extract the collection file you are interested in
+2. rename the collection to `collection.anki2`
+3. place the file in the profile folder of a new anki profile
+4. open the anki profile and the cards should be available for viewing
+
+
+## Priority files
+
+The priority files found in `correct_outputs` are generated with the following settings:
+- all the file formats selected
+- none of the preprocess options selected
+- occurrences column is always added
+- when comprehension is selected the target is always `90%`
+- when minimum occurrence is used the target is always `1`

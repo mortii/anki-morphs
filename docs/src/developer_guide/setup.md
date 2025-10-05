@@ -2,21 +2,14 @@
 
 ## Linux
 
-1. **Installing python 3.9**:
-
-   Anki (very unfortunately) uses python 3.9. This is considered a dead version of python, so it can't be installed
-   automatically by most package managers. To install 3.9 on a debian system you can do
-   something [like this](https://askubuntu.com/questions/1318846/how-do-i-install-python-3-9/1318849#1318849).
-   Alternatively you can use [pyenv](https://github.com/pyenv/pyenv).
-
-   The reason we want to install python 3.9 is that we need to make sure the dev-environment matches the real-world Anki
-   environment--if we use newer versions of python then things might work fine in the dev environment, but Anki crashes
-   as soon as we leave it because the python code is too new (this has happened multiple times).
+1. **Installing python 3.13**:  
+   The latest version of Anki uses python 3.13, and we need our dev environment to match the prod environment in order
+   to catch any bugs that are exclusive to those particular set of dependencies.
 
    When this command succeeds:
    ```
-   $ python3.9 --version
-   Python 3.9.[x]
+   $ python3.13 --version
+   Python 3.13.[x]
    ```
    then you are ready move on to the next step.
 2. **Setting up the dev environment:**
@@ -25,8 +18,8 @@
    global environment (your pc) because you might end up with package conflicts or accidentally downgrading packages,
    etc; a virtual environment also makes sure the dependencies are consistent for all developers.
     ``` bash
-    python3.9 -m pip install --upgrade pip virtualenv
-    python3.9 -m virtualenv venv
+    python3.13 -m pip install --upgrade pip virtualenv
+    python3.13 -m virtualenv venv
     source venv/bin/activate  # <--- this activates the virtual environment
     python -m pip install --upgrade pip
     python -m pip install -r requirements.txt
@@ -40,7 +33,7 @@
 2. **Set the project python interpreter** to be `anki-morphs/venv/bin/python` to get your IDE to recognize the packages
    installed above.
 
-3. **Create a soft symbolic link** from the cloned repo to the anki add-ons folder so anki starts using the cloned
+3. **Create a soft symbolic link** from the cloned repo to the anki add-ons folder so anki starts using the dev
    AnkiMorphs:
    ``` bash
    ln -s ~/path/to/cloned/repo/anki-morphs/ankimorphs  ~/.local/share/Anki2/addons21/ankimorphs
@@ -53,7 +46,7 @@
 
    You can run it manually with the command:
    ``` bash
-   pre-commit run --a
+   pre-commit run -a
    ```
    If you want to make an intermediate commit without caring about pre-commit running successfully you can use the
    `--no-verify` flag, e.g.

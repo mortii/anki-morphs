@@ -21,7 +21,7 @@ To display latex equations and environments install [mdbook-katex](https://githu
 cargo install mdbook-katex
 ```
 
-Launch mdbook from the MorphMan repo with the command:
+Launch mdbook from the AnkiMorphs directory with the command:
 ``` bash
 mdbook serve docs/ --open
 ```
