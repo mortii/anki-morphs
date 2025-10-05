@@ -62,6 +62,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         self.create_morph_table()
         self.create_cards_table()
         self.create_card_morph_map_table()
+        self.create_card_scoring_morph_map_table()
         self.create_seen_morph_table()
 
     def create_cards_table(self) -> None:
@@ -84,6 +85,22 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             self.con.execute(
                 """
                     CREATE TABLE IF NOT EXISTS Card_Morph_Map
+                    (
+                        card_id INTEGER,
+                        morph_lemma TEXT,
+                        morph_inflection TEXT,
+                        FOREIGN KEY(card_id) REFERENCES card(id),
+                        FOREIGN KEY(morph_lemma, morph_inflection) REFERENCES morph(lemma, inflection)
+                        PRIMARY KEY(card_id, morph_lemma, morph_inflection)
+                    )
+                    """
+            )
+
+    def create_card_scoring_morph_map_table(self) -> None:
+        with self.con:
+            self.con.execute(
+                """
+                    CREATE TABLE IF NOT EXISTS Card_Scoring_Morph_Map
                     (
                         card_id INTEGER,
                         morph_lemma TEXT,
@@ -171,6 +188,22 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             self.con.executemany(
                 """
                     INSERT OR IGNORE INTO Card_Morph_Map VALUES
+                    (
+                       :card_id,
+                       :morph_lemma,
+                       :morph_inflection
+                    )
+                    """,
+                card_morph_list,
+            )
+
+    def insert_many_into_card_scoring_morph_map_table(
+        self, card_morph_list: list[dict[str, int | str | bool]]
+    ) -> None:
+        with self.con:
+            self.con.executemany(
+                """
+                    INSERT OR IGNORE INTO Card_Scoring_Morph_Map VALUES
                     (
                        :card_id,
                        :morph_lemma,
@@ -469,6 +502,68 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         return card_morph_map_cache
 
+    def get_card_scoring_morph_map_cache(
+        self, evaluate_inflection: bool
+    ) -> dict[int, list[Morpheme]]:
+        """
+        Returns sentence morphs (from modify_field) with intervals looked up from
+        knowledge morphs (from read_field). Used when read_field != modify_field.
+        """
+        card_scoring_morph_map_cache: dict[int, list[Morpheme]] = {}
+
+        if evaluate_inflection:
+            # Match on exact lemma + inflection
+            # Morphs that don't exist in knowledge base get interval 0
+            query = """
+                SELECT
+                    Card_Scoring_Morph_Map.card_id,
+                    Card_Scoring_Morph_Map.morph_lemma,
+                    Card_Scoring_Morph_Map.morph_inflection,
+                    COALESCE(Morphs.highest_lemma_learning_interval, 0),
+                    COALESCE(Morphs.highest_inflection_learning_interval, 0)
+                FROM Card_Scoring_Morph_Map
+                LEFT JOIN Morphs ON
+                    Card_Scoring_Morph_Map.morph_lemma = Morphs.lemma AND
+                    Card_Scoring_Morph_Map.morph_inflection = Morphs.inflection
+                ORDER BY Card_Scoring_Morph_Map.morph_lemma, Card_Scoring_Morph_Map.morph_inflection
+            """
+        else:
+            # Match on lemma only, use max interval for that lemma
+            # This allows any inflection of a known lemma to count as known
+            query = """
+                SELECT
+                    Card_Scoring_Morph_Map.card_id,
+                    Card_Scoring_Morph_Map.morph_lemma,
+                    Card_Scoring_Morph_Map.morph_inflection,
+                    COALESCE(lemma_intervals.interval, 0),
+                    COALESCE(lemma_intervals.interval, 0)
+                FROM Card_Scoring_Morph_Map
+                LEFT JOIN (
+                    SELECT lemma, MAX(highest_lemma_learning_interval) as interval
+                    FROM Morphs
+                    GROUP BY lemma
+                ) AS lemma_intervals ON Card_Scoring_Morph_Map.morph_lemma = lemma_intervals.lemma
+                ORDER BY Card_Scoring_Morph_Map.morph_lemma, Card_Scoring_Morph_Map.morph_inflection
+            """
+
+        card_scoring_morph_map_cache_raw = self.con.execute(query).fetchall()
+
+        for row in card_scoring_morph_map_cache_raw:
+            card_id = row[0]
+            morph = Morpheme(
+                lemma=row[1],
+                inflection=row[2],
+                highest_lemma_learning_interval=row[3],
+                highest_inflection_learning_interval=row[4],
+            )
+
+            if card_id not in card_scoring_morph_map_cache:
+                card_scoring_morph_map_cache[card_id] = [morph]
+            else:
+                card_scoring_morph_map_cache[card_id].append(morph)
+
+        return card_scoring_morph_map_cache
+
     def get_am_cards_data_dict(
         self,
         note_type_id: NotetypeId | None,
@@ -603,6 +698,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             self.con.execute("DROP TABLE IF EXISTS Cards;")
             self.con.execute("DROP TABLE IF EXISTS Morphs;")
             self.con.execute("DROP TABLE IF EXISTS Card_Morph_Map;")
+            self.con.execute("DROP TABLE IF EXISTS Card_Scoring_Morph_Map;")
             self.con.execute("DROP TABLE IF EXISTS Seen_Morphs;")
 
     @staticmethod

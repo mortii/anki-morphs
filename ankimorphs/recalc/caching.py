@@ -42,6 +42,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
     card_table_data: list[dict[str, Any]] = []
     morph_table_data: list[dict[str, Any]] = []
     card_morph_map_table_data: list[dict[str, Any]] = []
+    card_scoring_morph_map_table_data: list[dict[str, Any]] = []
 
     # We only want to cache the morphs on the note-filters that have 'read' enabled
     for config_filter in read_enabled_config_filters:
@@ -49,6 +50,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
             anki_data_utils.create_card_data_dict(
                 am_config,
                 config_filter,
+                field_name=config_filter.read_field,
             )
         )
         card_amount = len(cards_data_dict)
@@ -124,6 +126,65 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
                     }
                 )
 
+    # Cache scoring morphs from modify_field if different from read_field
+    for config_filter in read_enabled_config_filters:
+        if config_filter.read_field == config_filter.modify_field:
+            continue  # Skip if fields are the same - already cached above
+
+        # Extract morphs from modify_field for difficulty scoring
+        cards_data_dict: dict[int, AnkiCardData] = (
+            anki_data_utils.create_card_data_dict(
+                am_config,
+                config_filter,
+                field_name=config_filter.modify_field,
+            )
+        )
+        card_amount = len(cards_data_dict)
+
+        all_text: list[str] = []
+        all_keys: list[int] = []
+
+        for key, _card_data in cards_data_dict.items():
+            expression = get_processed_text(am_config, _card_data.expression.lower())
+            all_text.append(expression)
+            all_keys.append(key)
+
+        morphemizer = morphemizer_utils.get_morphemizer_by_description(
+            config_filter.morphemizer_description
+        )
+        assert morphemizer is not None
+
+        for index, processed_morphs in enumerate(
+            morphemizer.get_processed_morphs(am_config, all_text)
+        ):
+            progress_utils.background_update_progress_potentially_cancel(
+                label=f"Extracting scoring morphs from<br>{config_filter.note_type} {config_filter.modify_field}<br>card: {index} of {card_amount}",
+                counter=index,
+                max_value=card_amount,
+            )
+            key = all_keys[index]
+            cards_data_dict[key].morphs = set(processed_morphs)
+
+        for counter, card_id in enumerate(cards_data_dict):
+            progress_utils.background_update_progress_potentially_cancel(
+                label=f"Caching scoring morphs for {config_filter.note_type}<br>card: {counter} of {card_amount}",
+                counter=counter,
+                max_value=card_amount,
+            )
+            card_data: AnkiCardData = cards_data_dict[card_id]
+
+            if card_data.morphs is None:
+                continue
+
+            for morph in card_data.morphs:
+                card_scoring_morph_map_table_data.append(
+                    {
+                        "card_id": card_id,
+                        "morph_lemma": morph.lemma,
+                        "morph_inflection": morph.inflection,
+                    }
+                )
+
     if am_config.read_known_morphs_folder:
         progress_utils.background_update_progress(label="Importing known morphs")
         morph_table_data += _get_morphs_from_files(am_config)
@@ -135,6 +196,7 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
     am_db.insert_many_into_morph_table(morph_table_data)
     am_db.insert_many_into_card_table(card_table_data)
     am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
+    am_db.insert_many_into_card_scoring_morph_map_table(card_scoring_morph_map_table_data)
     # am_db.print_table("Morphs")
     am_db.con.close()
 

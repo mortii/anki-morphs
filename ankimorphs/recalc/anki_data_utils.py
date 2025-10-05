@@ -139,6 +139,7 @@ class AnkiMorphsCardData:
 def create_card_data_dict(
     am_config: AnkiMorphsConfig,
     config_filter: AnkiMorphsConfigFilter,
+    field_name: str,
 ) -> dict[int, AnkiCardData]:
     assert mw is not None
 
@@ -153,7 +154,7 @@ def create_card_data_dict(
     note_type_dict: NotetypeDict | None = mw.col.models.get(note_type_id)
     assert note_type_dict is not None
     existing_field_names: list[str] = model_manager.field_names(note_type_dict)
-    field_index: int = existing_field_names.index(config_filter.field)
+    field_index: int = existing_field_names.index(field_name)
 
     for anki_row_data in _get_anki_data(am_config, note_type_id, tags).values():
         card_data = AnkiCardData(

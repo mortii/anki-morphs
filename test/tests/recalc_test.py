@@ -15,6 +15,8 @@ from test.fake_configs import (
     config_move_to_end_morphs_known_or_fresh,
     config_offset_inflection_enabled,
     config_offset_lemma_enabled,
+    config_separate_read_modify_fields_inflection,
+    config_separate_read_modify_fields_lemma,
     config_suspend_morphs_known,
     config_suspend_morphs_known_or_fresh,
     config_use_interval_for_known_threshold,
@@ -258,6 +260,35 @@ test_cases_with_success = [
             config=config_move_to_end_morphs_known_or_fresh,
         ),
         id="move_to_end_morphs_known_or_fresh",
+    ),
+    ################################################################
+    #         CASE: SEPARATE READ AND MODIFY FIELDS (LEMMA)
+    ################################################################
+    # Tests separate read_field and modify_field functionality.
+    # read_field (Expression): tracks knowledge of target words
+    # modify_field (Sentence): evaluates difficulty based on full sentence
+    # This allows knowing a target word while sentence still has unknowns
+    ################################################################
+    pytest.param(
+        FakeEnvironmentParams(
+            actual_col="separate_read_modify_fields_lemma_collection",
+            expected_col="separate_read_modify_fields_lemma_collection",
+            config=config_separate_read_modify_fields_lemma,
+        ),
+        id="separate_read_modify_fields_lemma",
+    ),
+    ################################################################
+    #      CASE: SEPARATE READ AND MODIFY FIELDS (INFLECTION)
+    ################################################################
+    # Same as lemma version but evaluates by exact inflection match
+    ################################################################
+    pytest.param(
+        FakeEnvironmentParams(
+            actual_col="separate_read_modify_fields_inflection_collection",
+            expected_col="separate_read_modify_fields_inflection_collection",
+            config=config_separate_read_modify_fields_inflection,
+        ),
+        id="separate_read_modify_fields_inflection",
     ),
 ]
 

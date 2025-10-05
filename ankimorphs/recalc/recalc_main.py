@@ -168,6 +168,17 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
     am_db = AnkiMorphsDB()
     model_manager: ModelManager = mw.col.models
     card_morph_map_cache: dict[int, list[Morpheme]] = am_db.get_card_morph_map_cache()
+
+    # Load scoring cache only if any filter uses separate read/modify fields
+    needs_scoring_cache = any(
+        f.read_field != f.modify_field for f in modify_enabled_config_filters
+    )
+    card_scoring_morph_map_cache: dict[int, list[Morpheme]] | None = (
+        am_db.get_card_scoring_morph_map_cache(am_config.evaluate_morph_inflection)
+        if needs_scoring_cache
+        else None
+    )
+
     handled_cards: dict[CardId, None] = {}  # we only care about the key lookup
     modified_cards: dict[CardId, Card] = {}
     modified_notes: list[Note] = []
@@ -219,10 +230,18 @@ def _update_cards_and_notes(  # pylint:disable=too-many-locals, too-many-stateme
             original_fields: list[str] = note.fields.copy()
             original_tags: list[str] = note.tags.copy()
 
+            # Use scoring cache if read_field != modify_field, otherwise use knowledge cache
+            morph_cache = (
+                card_scoring_morph_map_cache
+                if config_filter.read_field != config_filter.modify_field
+                and card_scoring_morph_map_cache is not None
+                else card_morph_map_cache
+            )
+
             cards_morph_metrics = CardMorphsMetrics(
                 am_config,
                 card_id,
-                card_morph_map_cache,
+                morph_cache,
                 morph_priorities,
             )
 

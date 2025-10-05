@@ -101,6 +101,50 @@ config_inflection_evaluation[ConfigKeys.EVALUATE_MORPH_LEMMA] = False
 
 
 ################################################################
+#         config_separate_read_modify_fields_lemma
+################################################################
+# Tests separate read_field and modify_field functionality.
+# read_field: extracts target morphs for knowledge tracking
+# modify_field: extracts sentence morphs for difficulty scoring
+# Evaluates by lemma (any inflection of known lemma counts)
+################################################################
+# fmt: off
+config_separate_read_modify_fields_lemma = copy.deepcopy(default_config_dict)
+config_separate_read_modify_fields_lemma[ConfigKeys.EVALUATE_MORPH_INFLECTION] = False
+config_separate_read_modify_fields_lemma[ConfigKeys.EVALUATE_MORPH_LEMMA] = True
+config_separate_read_modify_fields_lemma[ConfigKeys.EXTRA_FIELDS_DISPLAY_LEMMAS] = True
+config_separate_read_modify_fields_lemma[ConfigKeys.EXTRA_FIELDS_DISPLAY_INFLECTIONS] = False
+
+config_separate_read_modify_fields_lemma[ConfigKeys.FILTERS][0][
+    FilterKeys.NOTE_TYPE
+] = "Lapis"
+config_separate_read_modify_fields_lemma[ConfigKeys.FILTERS][0][
+    FilterKeys.READ_FIELD
+] = "Expression"
+config_separate_read_modify_fields_lemma[ConfigKeys.FILTERS][0][
+    FilterKeys.MODIFY_FIELD
+] = "Sentence"
+config_separate_read_modify_fields_lemma[ConfigKeys.FILTERS][0][
+    FilterKeys.MORPHEMIZER_DESCRIPTION
+] = "spaCy: ja_core_news_sm"
+# fmt: on
+
+
+################################################################
+#      config_separate_read_modify_fields_inflection
+################################################################
+# Same as lemma version but evaluates by exact inflection
+################################################################
+# fmt: off
+config_separate_read_modify_fields_inflection = copy.deepcopy(config_separate_read_modify_fields_lemma)
+config_separate_read_modify_fields_inflection[ConfigKeys.EVALUATE_MORPH_INFLECTION] = True
+config_separate_read_modify_fields_inflection[ConfigKeys.EVALUATE_MORPH_LEMMA] = False
+config_separate_read_modify_fields_inflection[ConfigKeys.EXTRA_FIELDS_DISPLAY_LEMMAS] = False
+config_separate_read_modify_fields_inflection[ConfigKeys.EXTRA_FIELDS_DISPLAY_INFLECTIONS] = True
+# fmt: on
+
+
+################################################################
 #             config_offset_lemma_enabled
 ################################################################
 # Matches `offset_new_cards_lemma_collection.anki2`.
