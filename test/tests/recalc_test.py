@@ -271,8 +271,8 @@ test_cases_with_success = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="separate_read_modify_fields_lemma_collection",
-            expected_col="separate_read_modify_fields_lemma_collection",
+            initial_col="separate_read_modify_fields_lemma_collection",
+            result_col="separate_read_modify_fields_lemma_collection",
             config=config_separate_read_modify_fields_lemma,
         ),
         id="separate_read_modify_fields_lemma",
@@ -284,8 +284,8 @@ test_cases_with_success = [
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
-            actual_col="separate_read_modify_fields_inflection_collection",
-            expected_col="separate_read_modify_fields_inflection_collection",
+            initial_col="separate_read_modify_fields_inflection_collection",
+            result_col="separate_read_modify_fields_inflection_collection",
             config=config_separate_read_modify_fields_inflection,
         ),
         id="separate_read_modify_fields_inflection",

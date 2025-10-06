@@ -227,7 +227,8 @@ config_use_stability_for_known_threshold[ConfigKeys.USE_STABILITY_FOR_KNOWN_THRE
 
 config_use_stability_for_known_threshold_filter = config_use_stability_for_known_threshold[ConfigKeys.FILTERS][0]
 config_use_stability_for_known_threshold_filter[FilterKeys.NOTE_TYPE] = "japanese_sub2srs"
-config_use_stability_for_known_threshold_filter[FilterKeys.FIELD] = "Japanese"
+config_use_stability_for_known_threshold_filter[FilterKeys.READ_FIELD] = "Japanese"
+config_use_stability_for_known_threshold_filter[FilterKeys.MODIFY_FIELD] = "Japanese"
 config_use_stability_for_known_threshold_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "AnkiMorphs: Japanese"
 # fmt: on
 
