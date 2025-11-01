@@ -26,7 +26,7 @@ _control_chars_re = re.compile("[\x00-\x1f\x7f-\x9f]")
 _wide_alpha_num_rx = re.compile(r"[０-９Ａ-Ｚａ-ｚ]")
 
 _mecab_encoding: str | None = None
-_mecab_complete_cmd: str | None = None
+_mecab_complete_cmd: str | None = None  # pylint: disable=invalid-name
 _mecab_base_cmd: list[str] | None = None
 _mecab_windows_startupinfo: Any | None = None
 _mecab_args = [

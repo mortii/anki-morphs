@@ -13,6 +13,8 @@ from anki.utils import is_win
 from aqt import mw
 from aqt.package import venv_binary
 
+# pylint: disable=invalid-name
+
 updated_python_path: bool = False
 testing_environment: bool = False
 successful_import: bool = False
@@ -24,6 +26,7 @@ _SpacyLanguage: Any = None  #  spacy.language
 _SpacyTokenizer: Any = None  # spacy.tokenizer
 _SpacyDoc: Any = None  #  spacy.tokens.doc
 
+# pylint: enable=invalid-name
 
 # spaCy does not have a cli to query available languages or models, so we hardcode it.
 available_langs_and_models: dict[str, list[str]] = {

@@ -52,6 +52,8 @@ STATUS_LEARNING = "learning"
 STATUS_UNKNOWN = "unknown"
 STATUS_UNDEFINED = "undefined"
 
+# pylint: disable=invalid-name
 config_broken: bool = False
 new_config_found: bool = False
 shown_config_warning: bool = False
+# pylint: enable=invalid-name
