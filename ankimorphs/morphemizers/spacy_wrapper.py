@@ -174,7 +174,11 @@ def create_spacy_venv() -> None:
     shutil.rmtree(spacy_venv_path, ignore_errors=True)
 
     python_path: str | None = venv_binary("python")
-    assert python_path is not None
+
+    if python_path is None:
+        raise ValueError(
+            "Anki API error. Install Anki from the official website to avoid this issue."
+        )
 
     subprocess.run([python_path, "-m", "venv", spacy_venv_path], check=True)
 
