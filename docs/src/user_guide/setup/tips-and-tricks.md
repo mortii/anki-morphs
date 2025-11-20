@@ -14,3 +14,8 @@ There are a couple of ways to revert the changes AnkiMorphs has made to your car
 - Restore from a previous backup you made.
 - If you only want to revert how AnkiMorphs sorted the cards, then you can do the following:    
   `Browse -> Card State -> New cards -> Select all (Ctrl + A) -> Forget -> Restore original position where possible`
+
+### Using Yomitan frequency dictionaries
+
+If you want to sort your cards using Yomitan-format frequency dictionaries, you can use this cool tool:
+[https://github.com/NaabZer/anki-morph-frequency-prio](https://github.com/NaabZer/anki-morph-frequency-prio)
