@@ -12,7 +12,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 install mdbook:
 ``` bash
-cargo install mdbook
+cargo install mdbook --version 0.4.52
 ```
 
 To display latex equations and environments install [mdbook-katex](https://github.com/lzanini/mdbook-katex) with the command:
