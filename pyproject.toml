@@ -14,15 +14,6 @@ strict = true
 files = ["ankimorphs", "test"]
 exclude = ["ankimorphs/ui/", "test/data"]
 
-[tool.pyright]
-typeCheckingMode = "basic"
-reportMissingImports = true
-reportOptionalMemberAccess = false
-reportIncompatibleMethodOverride = false
-reportAttributeAccessIssue = false
-reportInvalidTypeForm = false
-exclude = ["ankimorphs/ui/", "test/data"]
-
 [tool.pylint]
 
 [tool.pylint."MESSAGES CONTROL"]
@@ -46,6 +37,15 @@ ignore-docstrings = true
 ignore-imports = true
 ignore-signatures = true
 min-similarity-lines = 7
+
+[tool.pyright]
+typeCheckingMode = "basic"
+reportMissingImports = true
+reportOptionalMemberAccess = false
+reportIncompatibleMethodOverride = false
+reportAttributeAccessIssue = false
+reportInvalidTypeForm = false
+exclude = ["ankimorphs/ui/", "test/data"]
 
 # Docs: https://docs.pytest.org/en/7.1.x/reference/reference.html#ini-options-ref
 [tool.pytest.ini_options]
