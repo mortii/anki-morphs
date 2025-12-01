@@ -60,6 +60,7 @@ class TagSelectionDialog(QDialog):  # pylint:disable=too-many-instance-attribute
 
     def set_selected_tags_and_row(self, selected_tags: str, row: int) -> None:
         assert mw is not None
+        assert mw.col is not None
         global user_changed_check_state
         user_changed_check_state = False
 

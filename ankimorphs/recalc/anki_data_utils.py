@@ -141,6 +141,7 @@ def create_card_data_dict(
     config_filter: AnkiMorphsConfigFilter,
 ) -> dict[int, AnkiCardData]:
     assert mw is not None
+    assert mw.col is not None
 
     model_manager: ModelManager = mw.col.models
     tag_manager = TagManager(mw.col)

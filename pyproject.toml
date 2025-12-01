@@ -4,12 +4,15 @@ skip_gitignore = "True"
 line_length = "88"
 
 [tool.mypy]
-warn_return_any = "True"
-warn_unused_configs = "True"
-ignore_missing_imports = "True"
+mypy_path = ["."]
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
 follow_imports = "silent"
 disable_error_code = ["method-assign"]
-strict = "True"
+strict = true
+files = ["ankimorphs", "test"]
+exclude = ["ankimorphs/ui/", "test/data"]
 
 [tool.pylint]
 
@@ -34,6 +37,16 @@ ignore-docstrings = true
 ignore-imports = true
 ignore-signatures = true
 min-similarity-lines = 7
+
+# optional VSCode typchecker
+[tool.pyright]
+typeCheckingMode = "basic"
+reportMissingImports = true
+reportOptionalMemberAccess = false
+reportIncompatibleMethodOverride = false
+reportAttributeAccessIssue = false
+reportInvalidTypeForm = false
+exclude = ["ankimorphs/ui/", "test/data"]
 
 # Docs: https://docs.pytest.org/en/7.1.x/reference/reference.html#ini-options-ref
 [tool.pytest.ini_options]
