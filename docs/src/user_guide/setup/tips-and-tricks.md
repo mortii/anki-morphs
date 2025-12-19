@@ -13,7 +13,7 @@ There are a couple of ways to revert the changes AnkiMorphs has made to your car
 
 - Restore from a previous backup you made.
 - If you only want to revert how AnkiMorphs sorted the cards, then you can do the following:    
-  `Browse -> Card State -> New cards -> Select all (Ctrl + A) -> Forget -> Restore original position where possible`
+  `Browse -> Card State -> New cards -> Select all (Ctrl + A) -> Reset... -> Restore original position where possible`
 
 ### Using Yomitan frequency dictionaries
 
