@@ -1,6 +1,6 @@
 anki==25.9.2
 aqt==25.9.2
-black==25.11.0
+black==26.3.1
 ca_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ca_core_news_sm-3.8.0/ca_core_news_sm-3.8.0-py3-none-any.whl
 csv-diff==1.2
 da_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/da_core_news_sm-3.8.0/da_core_news_sm-3.8.0-py3-none-any.whl
