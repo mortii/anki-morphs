@@ -50,7 +50,7 @@ repos:
         files: '^test/tests'
       - id: requirements-txt-fixer
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.2
     hooks:
       - id: codespell
         exclude: |
@@ -65,7 +65,7 @@ repos:
       - id: python-use-type-annotations
       - id: python-check-mock-methods
   - repo: https://github.com/pappasam/toml-sort
-    rev: v0.24.3
+    rev: v0.24.4
     hooks:
       - id: toml-sort-fix
   - repo: https://github.com/asottile/pyupgrade
@@ -75,17 +75,17 @@ repos:
         args: [--py39-plus]
         files: 'ankimorphs/|^test/'
   - repo: https://github.com/pycqa/isort
-    rev: 7.0.0
+    rev: 8.0.1
     hooks:
       - id: isort
         name: isort (python)
         files: 'ankimorphs/|^test/'
   - repo: https://github.com/jendrikseipp/vulture
-    rev: v2.14
+    rev: v2.16
     hooks:
       - id: vulture
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.19.0
+    rev: v1.23.1
     hooks:
       - id: zizmor
         files: '.github/workflows/.*\.yml$'
