@@ -28,7 +28,7 @@ PyQt6-Qt6==6.6.1  # used by anki, newer versions can cause crashes in prod
 PyQt6-WebEngine==6.6.0  # used by anki, newer versions can cause crashes in prod
 PyQt6-WebEngine-Qt6==6.6.0  # used by anki, newer versions can cause crashes in prod
 PyQt6_sip==13.6.0  # used by anki, newer versions can cause crashes in prod
-pytest==9.0.2
+pytest==9.0.3
 pytest-cov==7.1.0
 pytest-expect==1.1.0
 pytest-qt==4.5.0
