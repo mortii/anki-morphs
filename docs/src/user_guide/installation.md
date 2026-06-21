@@ -36,6 +36,23 @@ morphemizers. Below are the currently supported morphemizers:
 </details>
 
 <details>
+  <summary>Arabic morphemizers</summary>
+
+> Arabic support is provided via CAMeL Tools (NYU Abu Dhabi), which includes dedicated morphological databases for:
+>
+> - **Modern Standard Arabic** (`calima-msa-r13`)
+> - **Egyptian Arabic** (`calima-egy-r13`)
+> - **Gulf Arabic** (`calima-glf-01`)
+>
+> CAMeL Tools provides proper lemmatization — so `الكتاب` and `كتاب` are correctly recognized as the same lemma.
+>
+> Install via `Tools → AnkiMorphs → CAMeL Tools Manager`. See the [full installation guide](installation/installing-camel-tools.md) for details.
+>
+> **Note:** CAMeL Tools requires Python 3.11 or newer, plus `cmake` and `boost` (Linux/macOS) or Rust at build time.
+
+</details>
+
+<details>
   <summary>Morphemizers for other languages</summary>
 
 > For other languages you can [install spaCy](installation/installing-spacy.md), which currently supports:

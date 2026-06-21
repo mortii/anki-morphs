@@ -5,18 +5,19 @@ import pytest
 
 import ankimorphs.morphemizers.morphemizer
 from ankimorphs.morpheme import Morpheme
-from ankimorphs.morphemizers import spacy_wrapper
+from ankimorphs.morphemizers import camel_wrapper, spacy_wrapper
 from ankimorphs.morphemizers.morphemizer_utils import get_morphemizer_by_description
 
 
 @pytest.fixture(scope="function")
 def _fake_environment_fixture() -> Iterator[None]:
-    patch_testing_variable = mock.patch.object(
-        spacy_wrapper, "testing_environment", True
-    )
-    patch_testing_variable.start()
+    patch_spacy = mock.patch.object(spacy_wrapper, "testing_environment", True)
+    patch_camel = mock.patch.object(camel_wrapper, "testing_environment", True)
+    patch_spacy.start()
+    patch_camel.start()
     yield
-    patch_testing_variable.stop()
+    patch_spacy.stop()
+    patch_camel.stop()
     # this resets the morphemizers for the future tests
     ankimorphs.morphemizers.morphemizer_utils.available_morphemizers = None
 

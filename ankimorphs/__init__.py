@@ -52,12 +52,13 @@ from . import (
 )
 from .ankimorphs_config import AnkiMorphsConfig, AnkiMorphsConfigFilter
 from .ankimorphs_db import AnkiMorphsDB
+from .camel_manager import CamelManagerDialog
 from .extra_settings import ankimorphs_extra_settings, extra_settings_keys
 from .extra_settings.ankimorphs_extra_settings import AnkiMorphsExtraSettings
 from .generators.generators_window import GeneratorWindow
 from .highlighting.highlight_just_in_time import highlight_morphs_jit
 from .known_morphs_exporter import KnownMorphsExporterDialog
-from .morphemizers import spacy_wrapper
+from .morphemizers import camel_wrapper, spacy_wrapper
 from .progression.progression_window import ProgressionWindow
 from .recalc import recalc_main
 from .settings import settings_dialog
@@ -92,6 +93,7 @@ def main() -> None:
     gui_hooks.profile_did_open.append(replace_card_reviewer)
     gui_hooks.profile_did_open.append(text_preprocessing.update_translation_table)
     gui_hooks.profile_did_open.append(spacy_wrapper.maybe_delete_spacy_venv)
+    gui_hooks.profile_did_open.append(camel_wrapper.maybe_delete_camel_venv)
     gui_hooks.profile_did_open.append(maybe_show_version_warning_wrapper)
 
     gui_hooks.sync_will_start.append(recalc_on_sync)
@@ -230,6 +232,10 @@ def register_addon_dialogs() -> None:
         name=am_globals.SPACY_MANAGER_DIALOG_NAME,
         creator=SpacyManagerDialog,
     )
+    aqt.dialogs.register_dialog(
+        name=am_globals.CAMEL_MANAGER_DIALOG_NAME,
+        creator=CamelManagerDialog,
+    )
 
 
 def redraw_toolbar() -> None:
@@ -254,6 +260,7 @@ def init_tool_menu_and_actions() -> None:
     progression_action = create_progression_dialog_action(am_config)
     known_morphs_exporter_action = create_known_morphs_exporter_action(am_config)
     spacy_manager_action = create_spacy_manager_dialog_action()
+    camel_manager_action = create_camel_manager_dialog_action()
     reset_tags_action = create_tag_reset_action()
     guide_action = create_guide_action()
     changelog_action = create_changelog_action()
@@ -265,6 +272,7 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu.addAction(progression_action)
     am_tool_menu.addAction(known_morphs_exporter_action)
     am_tool_menu.addAction(spacy_manager_action)
+    am_tool_menu.addAction(camel_manager_action)
     am_tool_menu.addAction(reset_tags_action)
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
@@ -671,6 +679,17 @@ def create_spacy_manager_dialog_action() -> QAction:
         partial(
             aqt.dialogs.open,
             name=am_globals.SPACY_MANAGER_DIALOG_NAME,
+        )
+    )
+    return action
+
+
+def create_camel_manager_dialog_action() -> QAction:
+    action = QAction("&CAMeL Tools Manager", mw)
+    action.triggered.connect(
+        partial(
+            aqt.dialogs.open,
+            name=am_globals.CAMEL_MANAGER_DIALOG_NAME,
         )
     )
     return action

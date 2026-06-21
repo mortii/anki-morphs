@@ -20,6 +20,7 @@ GENERATOR_DIALOG_NAME: str = "am_generator_dialog"
 PROGRESSION_DIALOG_NAME: str = "am_progression_dialog"
 KNOWN_MORPHS_EXPORTER_DIALOG_NAME: str = "am_known_morphs_exporter_dialog"
 SPACY_MANAGER_DIALOG_NAME: str = "am_spacy_manager_dialog"
+CAMEL_MANAGER_DIALOG_NAME: str = "am_camel_manager_dialog"
 
 # The static names of the extra fields
 EXTRA_FIELD_ALL_MORPHS: str = "am-all-morphs"

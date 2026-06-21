@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from ..morphemizers import spacy_wrapper
+from ..morphemizers import camel_wrapper, spacy_wrapper
+from ..morphemizers.camel_morphemizer import CamelMorphemizer
 from ..morphemizers.jieba_morphemizer import JiebaMorphemizer
 from ..morphemizers.mecab_morphemizer import MecabMorphemizer
 from ..morphemizers.morphemizer import Morphemizer
@@ -31,6 +32,10 @@ def get_all_morphemizers() -> list[Morphemizer]:
         spacy_wrapper.load_spacy_modules()
         for spacy_model in spacy_wrapper.get_installed_models():
             available_morphemizers.append(SpacyMorphemizer(spacy_model))
+
+        camel_wrapper.load_camel_modules()
+        for db_name in camel_wrapper.get_installed_databases():
+            available_morphemizers.append(CamelMorphemizer(db_name))
 
         # update the 'names to morphemizers' dict while we are at it
         for morphemizer in available_morphemizers:

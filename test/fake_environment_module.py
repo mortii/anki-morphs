@@ -47,7 +47,7 @@ from ankimorphs.generators import (
     readability_report_generator,
     study_plan_generator,
 )
-from ankimorphs.morphemizers import spacy_wrapper
+from ankimorphs.morphemizers import camel_wrapper, spacy_wrapper
 from ankimorphs.progression import progression_utils, progression_window
 from ankimorphs.recalc import anki_data_utils, caching, recalc_main
 
@@ -239,6 +239,7 @@ def create_misc_patches(_priority_files_dir: str, _known_morphs_dir: str) -> lis
         # tooltip tries to do gui stuff which breaks test
         mock.patch.object(reviewing_utils, "tooltip", mock.Mock(spec=aqt.utils.tooltip)),
         mock.patch.object(spacy_wrapper, "testing_environment", True),
+        mock.patch.object(camel_wrapper, "testing_environment", True),
         mock.patch.object(ankimorphs_globals, "PRIORITY_FILES_DIR_NAME", _priority_files_dir),
         mock.patch.object(ankimorphs_globals, "KNOWN_MORPHS_DIR_NAME", _known_morphs_dir),
     ]

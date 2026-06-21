@@ -10,6 +10,7 @@ from ..ui.known_morphs_exporter_dialog_ui import Ui_KnownMorphsExporterDialog
 from ..ui.progression_window_ui import Ui_ProgressionWindow
 from . import extra_settings_keys as keys  # pylint:disable=no-name-in-module
 from .extra_settings_keys import (
+    CamelManagerWindowKeys,
     FileFormatsKeys,
     GeneratorsOutputKeys,
     GeneratorsWindowKeys,
@@ -81,6 +82,13 @@ class AnkiMorphsExtraSettings(QSettings):
         # fmt: off
         self.beginGroup(keys.Dialogs.SPACY_MANAGER_WINDOW)
         self.setValue(SpacyManagerWindowKeys.WINDOW_GEOMETRY, geometry)
+        self.endGroup()
+        # fmt: on
+
+    def camel_manager_window_settings(self, geometry: QByteArray) -> None:
+        # fmt: off
+        self.beginGroup(keys.Dialogs.CAMEL_MANAGER_WINDOW)
+        self.setValue(CamelManagerWindowKeys.WINDOW_GEOMETRY, geometry)
         self.endGroup()
         # fmt: on
 

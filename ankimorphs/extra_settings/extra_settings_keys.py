@@ -6,6 +6,7 @@ class Dialogs:
     GENERATORS_WINDOW = "generators_window"
     KNOWN_MORPHS_EXPORTER = "known_morphs_exporter"
     SPACY_MANAGER_WINDOW = "spacy_manager_window"
+    CAMEL_MANAGER_WINDOW = "camel_manager_window"
     PROGRESSION_WINDOW = "progression_window"
     GENERATOR_OUTPUT_PRIORITY_FILE = "generator_output_priority_file"
     GENERATOR_OUTPUT_STUDY_PLAN = "generator_output_study_plan"
@@ -51,6 +52,10 @@ class KnownMorphsExporterKeys:
 
 
 class SpacyManagerWindowKeys:
+    WINDOW_GEOMETRY = "window_geometry"
+
+
+class CamelManagerWindowKeys:
     WINDOW_GEOMETRY = "window_geometry"
 
 

@@ -8,6 +8,7 @@
 - [Glossary](user_guide/glossary.md)
 - [Installation](user_guide/installation.md)
   - [Installing spaCy](user_guide/installation/installing-spacy.md)
+  - [Installing CAMeL Tools](user_guide/installation/installing-camel-tools.md)
   - [Changes To Anki](user_guide/installation/changes-to-anki.md)
 - [Setup](user_guide/setup.md)
   - [Decks](user_guide/setup/decks.md)
