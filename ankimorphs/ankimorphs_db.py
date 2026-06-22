@@ -227,8 +227,12 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             )
 
     def get_card_morphs(
-        self, card_id: int, search_unknowns: bool = False, only_lemma: bool = False
-    ) -> set[tuple[str, str]] | None:
+        self,
+        card_id: int,
+        max_learning_interval: int | None = None,
+        min_learning_interval: int | None = None,
+        only_lemma: bool = False,
+    ) -> set[tuple[str, str]]:
         """
         Returns a set of tuples (lemma, inflection)
         """
@@ -236,28 +240,30 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         if only_lemma:
             raw_base_card_morphs = self._get_card_morph_lemma_and_lemma(
-                card_id, search_unknowns
+                card_id, min_learning_interval, max_learning_interval
             )
         else:
             raw_base_card_morphs = self._get_card_morph_lemma_and_inflection(
-                card_id, search_unknowns
+                card_id, min_learning_interval, max_learning_interval
             )
 
         for card_morph in raw_base_card_morphs:
             morphs.add((card_morph[0], card_morph[1]))
 
-        if len(morphs) == 0:
-            return None
-
         return morphs
 
     def _get_card_morph_lemma_and_inflection(
-        self, card_id: int, search_unknowns: bool
+        self,
+        card_id: int,
+        min_learning_interval: int | None = None,
+        max_learning_interval: int | None = None,
     ) -> list[str]:
         where_query_string = "WHERE Card_Morph_Map.card_id = ?"
 
-        if search_unknowns:
-            where_query_string += " AND Morphs.highest_inflection_learning_interval = 0"
+        if min_learning_interval is not None:
+            where_query_string += f" AND Morphs.highest_inflection_learning_interval >= {min_learning_interval}"
+        if max_learning_interval is not None:
+            where_query_string += f" AND Morphs.highest_inflection_learning_interval <= {max_learning_interval}"
 
         with self.con:
             card_morphs = self.con.execute(
@@ -273,12 +279,17 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         return card_morphs
 
     def _get_card_morph_lemma_and_lemma(
-        self, card_id: int, search_unknowns: bool
+        self,
+        card_id: int,
+        min_learning_interval: int | None = None,
+        max_learning_interval: int | None = None,
     ) -> list[str]:
         where_query_string = "WHERE Card_Morph_Map.card_id = ?"
 
-        if search_unknowns:
-            where_query_string += " AND Morphs.highest_lemma_learning_interval = 0"
+        if min_learning_interval is not None:
+            where_query_string += f" AND Morphs.highest_inflection_learning_interval >= {min_learning_interval}"
+        if max_learning_interval is not None:
+            where_query_string += f" AND Morphs.highest_inflection_learning_interval <= {max_learning_interval}"
 
         with self.con:
             card_morphs = self.con.execute(
@@ -298,16 +309,16 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         card_id: CardId,
         search_unknowns: bool = False,
         search_lemma_only: bool = False,
-    ) -> set[CardId] | None:
+    ) -> set[CardId]:
         # The "where_query_string" is a necessary hack to overcome the sqlite problem
         # of not allowing variable length parameters
 
         card_ids: set[CardId] = set()
-        card_morphs: set[tuple[str, str]] | None = self.get_card_morphs(
+        card_morphs: set[tuple[str, str]] = self.get_card_morphs(
             card_id, search_unknowns
         )
-        if card_morphs is None:
-            return None
+        if len(card_morphs) == 0:
+            return card_ids
 
         if search_lemma_only:
             where_query_string = "WHERE" + "".join(
@@ -333,9 +344,6 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
             for card_id_raw in raw_card_ids:
                 card_ids.add(CardId(card_id_raw[0]))
-
-        if len(card_ids) == 0:
-            return None
 
         return card_ids
 

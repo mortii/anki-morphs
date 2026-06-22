@@ -1,7 +1,6 @@
+import copy
 from functools import partial
 from test.fake_configs import (
-    config_disabled_skip_no_unknown_morphs,
-    config_dont_skip_fresh_morphs,
     config_inflection_evaluation,
     config_lemma_evaluation_lemma_extra_fields,
 )
@@ -16,8 +15,8 @@ import pytest
 from anki.consts import CardQueue
 from aqt.reviewer import Reviewer
 
-from ankimorphs import reviewing_utils
-from ankimorphs.ankimorphs_config import AnkiMorphsConfig
+from ankimorphs import insert_seen_morphs, reviewing_utils
+from ankimorphs.ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.reviewing_utils import SkippedCards
 
@@ -148,7 +147,10 @@ test_cases_morph_status = [
     pytest.param(
         FakeEnvironmentParams(
             initial_col="card_handling_collection",
-            config=config_disabled_skip_no_unknown_morphs,
+            config=copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
+            | {
+                RawConfigKeys.SKIP_NO_UNKNOWN_MORPHS: False,
+            },
             am_db="card_handling_collection.db",
         ),
         [1736763242955, 1736763365474, 1736763249205],
@@ -164,12 +166,77 @@ test_cases_morph_status = [
     pytest.param(
         FakeEnvironmentParams(
             initial_col="card_handling_collection",
-            config=config_dont_skip_fresh_morphs,
+            config=copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
+            | {
+                RawConfigKeys.SKIP_DONT_WHEN_CONTAINS_FRESH_MORPHS: True,
+                RawConfigKeys.SKIP_WHEN_ALL_FRESH_MORPHS_SEEN_TODAY: False,
+                RawConfigKeys.SKIP_WHEN_CONTAINS_FRESH_MORPHS: False,
+            },
             am_db="card_handling_collection.db",
         ),
         [1736763242955, 1736763249205],
         marks=pytest.mark.spacy,
         id="dont_skip_known_or_fresh",
+    ),
+    ###############################################################
+    #               CASE: SKIP FRESH MORPHS SEEN TODAY
+    ################################################################
+    # Test if cards with fresh morphs are skipped already seen today
+    ################################################################
+    pytest.param(
+        FakeEnvironmentParams(
+            initial_col="fresh_skip_collection",
+            config=copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
+            | {
+                RawConfigKeys.SKIP_DONT_WHEN_CONTAINS_FRESH_MORPHS: False,
+                RawConfigKeys.SKIP_WHEN_ALL_FRESH_MORPHS_SEEN_TODAY: True,
+                RawConfigKeys.SKIP_WHEN_CONTAINS_FRESH_MORPHS: False,
+            },
+            am_db="fresh_skip_collection.db",
+        ),
+        [1784810971407, 1784810794920],
+        marks=pytest.mark.spacy,
+        id="skip_when_fresh_already_seen_today",
+    ),
+    ###############################################################
+    #               CASE: DON'T SKIP FRESH MORPHS V2
+    ################################################################
+    # Test if cards with fresh morphs are NOT skipped
+    ################################################################
+    pytest.param(
+        FakeEnvironmentParams(
+            initial_col="fresh_skip_collection",
+            config=copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
+            | {
+                RawConfigKeys.SKIP_DONT_WHEN_CONTAINS_FRESH_MORPHS: True,
+                RawConfigKeys.SKIP_WHEN_ALL_FRESH_MORPHS_SEEN_TODAY: False,
+                RawConfigKeys.SKIP_WHEN_CONTAINS_FRESH_MORPHS: False,
+            },
+            am_db="fresh_skip_collection.db",
+        ),
+        [1784810971407, 1784812132312],
+        marks=pytest.mark.spacy,
+        id="dont_skip_fresh_morphs_v2",
+    ),
+    ###############################################################
+    #               CASE: SKIP FRESH MORPHS V2
+    ################################################################
+    # Test if cards with fresh morphs are skipped
+    ################################################################
+    pytest.param(
+        FakeEnvironmentParams(
+            initial_col="fresh_skip_collection",
+            config=copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
+            | {
+                RawConfigKeys.SKIP_DONT_WHEN_CONTAINS_FRESH_MORPHS: False,
+                RawConfigKeys.SKIP_WHEN_ALL_FRESH_MORPHS_SEEN_TODAY: False,
+                RawConfigKeys.SKIP_WHEN_CONTAINS_FRESH_MORPHS: True,
+            },
+            am_db="fresh_skip_collection.db",
+        ),
+        [1784810794920],
+        marks=pytest.mark.spacy,
+        id="skip_fresh_morphs_v2",
     ),
 ]
 
@@ -186,6 +253,9 @@ def test_morph_status_skip(  # pylint:disable=unused-argument
 ) -> None:
     mock_mw, _ = mocked_reviewer_and_db
 
+    # print("fake env config")
+    # pprint.pprint(fake_environment_fixture.config)
+
     for expected_card_id in expected_results:
         mock_mw.reviewer.nextCard()
         actual_card_id = mock_mw.reviewer.card.id
@@ -195,3 +265,4 @@ def test_morph_status_skip(  # pylint:disable=unused-argument
 
         # Press 'good'
         mock_mw.col.sched.answerCard(mock_mw.reviewer.card, ease=3)
+        insert_seen_morphs(mock_mw.reviewer, mock_mw.reviewer.card, 3)

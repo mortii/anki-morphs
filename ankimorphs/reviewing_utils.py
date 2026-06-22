@@ -18,7 +18,11 @@ from . import ankimorphs_config
 from .ankimorphs_config import AnkiMorphsConfig
 from .ankimorphs_db import AnkiMorphsDB
 from .browser_utils import browse_same_morphs
-from .exceptions import CancelledOperationException, CardQueueEmptyException
+from .exceptions import (
+    CancelledOperationException,
+    CardQueueEmptyException,
+    UncaughtSkipBranchError,
+)
 
 SET_KNOWN_AND_SKIP_UNDO_STRING = "Set known and skip"
 ANKIMORPHS_CUSTOM_UNDO_STRING = "AnkiMorphs custom undo"
@@ -345,101 +349,181 @@ class SkippedCards:
     __slots__ = (
         "skipped_cards_with_no_unknowns",
         "skipped_cards_with_already_seen_morphs",
-        "total_cards_skipped",
     )
 
     def __init__(self) -> None:
         self.skipped_cards_with_no_unknowns = 0
         self.skipped_cards_with_already_seen_morphs = 0
-        self.total_cards_skipped = 0
 
-    def should_skip_card(  # pylint:disable=too-many-return-statements
+    @staticmethod
+    def _get_unknown_morphs(
+        am_config: AnkiMorphsConfig, am_db: AnkiMorphsDB, card_id: int
+    ) -> set[str]:
+        raw = am_db.get_card_morphs(
+            card_id=card_id,
+            max_learning_interval=0,
+            only_lemma=am_config.evaluate_morph_lemma,
+        )
+        return {m[0] + m[1] for m in raw}
+
+    @staticmethod
+    def _get_all_fresh_morphs(
+        am_config: AnkiMorphsConfig, am_db: AnkiMorphsDB, card_id: int
+    ) -> set[str]:
+        raw = am_db.get_card_morphs(
+            card_id=card_id,
+            min_learning_interval=1,
+            max_learning_interval=am_config.interval_for_known_morphs - 1,
+            only_lemma=am_config.evaluate_morph_lemma,
+        )
+        return {m[0] + m[1] for m in raw}
+
+    @staticmethod
+    def _get_seen_today(am_config: AnkiMorphsConfig, am_db: AnkiMorphsDB) -> set[str]:
+        return am_db.get_all_morphs_seen_today(
+            only_lemma=am_config.evaluate_morph_lemma
+        )
+
+    @staticmethod
+    def _has_known_tag(am_config: AnkiMorphsConfig, note: Note) -> bool:
+        return bool(
+            note.has_tag(am_config.tag_known_automatically)
+            or note.has_tag(am_config.tag_known_manually)
+        )
+
+    def should_skip_card(
         self,
         am_config: AnkiMorphsConfig,
         am_db: AnkiMorphsDB,
         note: Note,
         card_id: int,
     ) -> bool:
-        learn_now_tag: bool = note.has_tag(am_config.tag_learn_card_now)
-        known_automatically: bool = note.has_tag(am_config.tag_known_automatically)
-        known_manually: bool = note.has_tag(am_config.tag_known_manually)
-        known_tag: bool = known_automatically or known_manually
-        fresh_tag: bool = note.has_tag(am_config.tag_fresh)
 
-        if learn_now_tag:
-            # the user manually chose this card for review, don't skip
+        # 0. Global override: the user manually chose this card for review, don't skip.
+        if note.has_tag(am_config.tag_learn_card_now):
             return False
 
-        if known_tag:
-            # this is the simplest case; the 'known' tag is only applied
-            # if every single morph is known, so don't need to
-            # consider fresh morphs here
-            if am_config.skip_no_unknown_morphs:
+        # 1. Global override: skip if unknown morphs already seen today.
+        # (this is the ultimate 'I don't care about fresh morphs' setting,
+        # so fresh morphs are not considered in this case)
+        # After this point: either this setting is off, or the card's
+        # unknown morphs are NOT all already seen today.
+        if self._should_skip_unknown_seen_today(am_config, am_db, card_id):
+            self._will_skip_already_seen()
+            return True
+
+        # 2. No-unknown-morphs policy: if the user disabled this, nothing
+        # below applies, so bail out immediately.
+        if not am_config.skip_no_unknown_morphs:
+            return False
+
+        # After this point: skip_no_unknown_morphs IS enabled.
+
+        # the 'known' tag is only applied if every single morph is known,
+        # so fresh morphs don't need to be considered here.
+        # After this point: card is NOT tagged 'known' (i.e. it has at
+        # least one non-known morph, fresh or unknown).
+        if self._has_known_tag(am_config, note):
+            self._will_skip_no_unknowns()
+            return True
+
+        # 3. Fresh-morph policies only apply to cards tagged 'fresh'.
+        # After this point: card IS tagged 'fresh', is NOT tagged 'known',
+        # was NOT caught by the unknown-seen-today override, and
+        # skip_no_unknown_morphs IS enabled.
+        if not note.has_tag(am_config.tag_fresh):
+            return False
+
+        # this contains the remaining decision tree
+        return self._should_skip_fresh_card(am_config, am_db, card_id)
+
+    def _should_skip_unknown_seen_today(
+        self,
+        am_config: AnkiMorphsConfig,
+        am_db: AnkiMorphsDB,
+        card_id: int,
+    ) -> bool:
+        # setting disabled entirely: never skip on this basis
+        if not am_config.skip_unknown_morph_seen_today_cards:
+            return False
+
+        unknown = self._get_unknown_morphs(am_config, am_db, card_id)
+        seen = self._get_seen_today(am_config, am_db)
+
+        # skip only if there ARE unknown morphs, and all of them
+        # have already been seen today (e.g. via an earlier card)
+        if len(unknown) > 0 and unknown.issubset(seen):
+            return True
+
+        return False
+
+    def _should_skip_fresh_card(
+        self,
+        am_config: AnkiMorphsConfig,
+        am_db: AnkiMorphsDB,
+        card_id: int,
+    ) -> bool:
+        # Precondition (guaranteed by should_skip_card before this is called):
+        # card is tagged 'fresh', not tagged 'known', skip_no_unknown_morphs
+        # is enabled, and it wasn't already skipped by the unknown-seen-today
+        # override above. Exactly one of the three policies below should be
+        # active at a time (enforced by the config UI).
+        unknown = self._get_unknown_morphs(am_config, am_db, card_id)
+
+        # policy A: skip any fresh-tagged card as long as it has
+        # no unknown morphs at all (fresh morphs are ignored)
+        if am_config.skip_when_contains_fresh_morphs:
+            if len(unknown) == 0:
                 self._will_skip_no_unknowns()
                 return True
             return False
 
-        if am_config.skip_unknown_morph_seen_today_cards:
-            # this is the ultimate 'I don't care about fresh morphs'
-            # setting, so we don't check for those in this case
-            morphs_already_seen_morphs_today: set[str] = (
-                am_db.get_all_morphs_seen_today(
-                    only_lemma=am_config.evaluate_morph_lemma
-                )
-            )
-            card_unknown_morphs_raw = am_db.get_card_morphs(
-                card_id=card_id,
-                search_unknowns=True,
-                only_lemma=am_config.evaluate_morph_lemma,
-            )
-            if card_unknown_morphs_raw is not None:
-                card_unknown_morphs: set[str] = {
-                    morph_raw[0] + morph_raw[1] for morph_raw in card_unknown_morphs_raw
-                }
-                if card_unknown_morphs.issubset(morphs_already_seen_morphs_today):
-                    self._will_skip_already_seen()
-                    return True
+        # policy B: skip only if there are no unknown morphs AND
+        # every fresh morph on the card has already been seen today.
+        # After this point (if policy B is active): card has at least
+        # one unknown morph, OR at least one fresh morph not yet seen today.
+        if am_config.skip_when_all_fresh_morphs_seen_today:
+            if len(unknown) > 0:
                 return False
 
-        if fresh_tag:
-            # note: the fresh tag is mutually exclusive with the known tag
-            if (
-                am_config.skip_no_unknown_morphs
-                and am_config.skip_when_contains_fresh_morphs
-            ):
-                card_unknown_morphs_raw = am_db.get_card_morphs(
-                    card_id=card_id,
-                    search_unknowns=True,
-                    only_lemma=am_config.evaluate_morph_lemma,
-                )
-                if card_unknown_morphs_raw is None:
-                    self._will_skip_no_unknowns()
-                    return True
+            seen = self._get_seen_today(am_config, am_db)
+            fresh_morphs = self._get_all_fresh_morphs(am_config, am_db, card_id)
 
-        return False
+            if len(fresh_morphs) > 0 and fresh_morphs.issubset(seen):
+                self._will_skip_already_seen()
+                return True
+
+            return False
+
+        # policy C: user explicitly opted out of skipping fresh-morph cards
+        if am_config.skip_dont_when_contains_fresh_morphs:
+            return False
+
+        # none of the fresh-morph policies matched — this should be
+        # impossible if the config UI only allows one policy at a time
+        raise UncaughtSkipBranchError("Uncaught 'should skip branch' error.")
 
     def _will_skip_no_unknowns(self) -> None:
         self.skipped_cards_with_no_unknowns += 1
-        self._update_total_skipped()
 
     def _will_skip_already_seen(self) -> None:
         self.skipped_cards_with_already_seen_morphs += 1
-        self._update_total_skipped()
 
-    def _update_total_skipped(self) -> None:
-        self.total_cards_skipped = (
+    @property
+    def total_cards_skipped(self) -> int:
+        return (
             self.skipped_cards_with_no_unknowns
             + self.skipped_cards_with_already_seen_morphs
         )
 
     def show_tooltip_of_skipped_cards(self) -> None:
-        skipped_string = ""
-
+        parts = []
         if self.skipped_cards_with_no_unknowns > 0:
-            skipped_string += f"Skipped <b>{self.skipped_cards_with_no_unknowns}</b> cards with no unknown morphs"
+            parts.append(
+                f"Skipped <b>{self.skipped_cards_with_no_unknowns}</b> cards with no unknown morphs"
+            )
         if self.skipped_cards_with_already_seen_morphs > 0:
-            if skipped_string != "":
-                skipped_string += "<br>"
-            skipped_string += f"Skipped <b>{self.skipped_cards_with_already_seen_morphs}</b> cards with morphs already seen today"
-
-        tooltip(skipped_string, parent=mw)
+            parts.append(
+                f"Skipped <b>{self.skipped_cards_with_already_seen_morphs}</b> cards with morphs already seen today"
+            )
+        tooltip("<br>".join(parts), parent=mw)

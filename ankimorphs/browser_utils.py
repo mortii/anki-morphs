@@ -85,7 +85,7 @@ def browse_same_morphs(  # pylint:disable=too-many-arguments
         )
         return
 
-    card_ids: set[CardId] | None
+    card_ids: set[CardId]
 
     # These branches are simplified by the fact that we have not exhaustively
     # added all combinations of known/unknown and inflection/lemma.
@@ -113,7 +113,7 @@ def browse_same_morphs(  # pylint:disable=too-many-arguments
         card_ids = am_db.get_ids_of_cards_with_same_morphs(card_id)
         error_text = "No morphs"
 
-    if card_ids is None:
+    if len(card_ids) == 0:
         tooltip(error_text)
         return
 

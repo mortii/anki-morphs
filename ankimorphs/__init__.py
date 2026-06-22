@@ -713,12 +713,14 @@ def test_function() -> None:
     assert mw is not None
     assert mw.col.db is not None
 
-    # with AnkiMorphsDB() as am_db:
-    #     print("Seen_Morphs:")
-    #     am_db.print_table("Seen_Morphs")
-    #
-    #     print("Morphs:")
-    #     am_db.print_table("Morphs")
+    # cids = mw.col.find_cards("introduced:1")
+    # mw.col.db.execute(f"delete from revlog where cid in ({','.join(map(str, cids))})")
+    # mw.col.save()
+
+    with AnkiMorphsDB() as am_db:
+        print("Seen_Morphs:")
+        am_db.print_table("Seen_Morphs")
+        # am_db.drop_seen_morphs_table()
 
     # print(f"card: {Card}")
     # mid: NotetypeId = card.note().mid

@@ -45,6 +45,7 @@ class CardHandlingTab(SettingsTab):
 
         self._raw_config_key_to_radio_button: dict[str, QRadioButton] = {
             RawConfigKeys.SKIP_DONT_WHEN_CONTAINS_FRESH_MORPHS: self.ui.skipDontWhenFreshMorphsRadioButton,
+            RawConfigKeys.SKIP_WHEN_ALL_FRESH_MORPHS_SEEN_TODAY: self.ui.skipWhenAllFreshMorphsSeenRadioButton,
             RawConfigKeys.SKIP_WHEN_CONTAINS_FRESH_MORPHS: self.ui.skipEvenWithFreshMorphsRadioButton,
         }
 

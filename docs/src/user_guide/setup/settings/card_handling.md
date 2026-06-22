@@ -15,11 +15,15 @@ To overcome this problem and speed up the learning process, we can use the optio
   If AnkiMorph has determined that there are no unknown morphs on the card, then it will be buried and skipped.
   
     * **Don't skip if they contain fresh morphs**:  
-      Choose this if you want to study more [fresh/recently learned morphs](../../glossary.md#fresh-morphs).
+      Choose this if you want to keep studying cards with [fresh/recently learned morphs](../../glossary.md#fresh-morphs),
+      even if you've already reviewed those same morphs earlier today.
+ 
+    * **Skip if all fresh morphs have already been seen today**:  
+      Choose this if you don't want to keep re-studying the same [fresh/recently learned morphs](../../glossary.md#fresh-morphs) multiple times a day.
+      A card is skipped once every fresh morph it contains has already been reviewed today.
 
     * **Skip even if they contain fresh morphs**:  
-      Choose this if you want maximum efficiency and you don't feel the need to reinforce 
-      [fresh/recently learned morphs](../../glossary.md#fresh-morphs).
+      Choose this if you want maximum efficiency and don't feel the need to reinforce [fresh/recently learned morphs](../../glossary.md#fresh-morphs) at all.
       
 
 * **Skip cards that have unknown morphs already seen today**:  

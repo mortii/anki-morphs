@@ -2,7 +2,8 @@
 
 The testing framework is `Pytest` with these plugins:
 - [pytest-qt](https://pypi.org/project/pytest-qt/): allows for writing tests for PyQt5, PyQt6, PySide2 and PySide6 applications.
-- [pytest-xvfb](https://pypi.org/project/pytest-xvfb/): allows tests to be run without windows popping up during GUI tests or on systems without a display (like a CI).
+- [pytest-xvfb](https://pypi.org/project/pytest-xvfb/): allows tests to be run without windows popping up during GUI tests or on x11 systems without a display (like a CI).
+- [pytest-env](https://pypi.org/project/pytest-env/): sets an environment variable so windows don't pop up during testing for wayland systems.
 - [pytest-expect](https://pypi.org/project/pytest-expect/): stores test expectations by saving the set of failing tests, allowing them to be marked as xfail when running them in the future.
 - [pytest-sugar](https://pypi.org/project/pytest-sugar/): showing failures and errors instantly, adding a progress bar, and making the output look better.
 - [pytest-randomly](https://pypi.org/project/pytest-randomly/): randomly order tests and control random seed.
@@ -125,6 +126,12 @@ Current card collections (test/data/card_collections):
     - contains ~100 cards from a real and mature collection, same filters as `big_japanese_collection`,
 - `card_interval_collection.ank2`
     - same as `card_stability_collection.anki2` but recalced without `USE_STABILITY_FOR_KNOWN_THRESHOLD`
+- `fresh_skip_collection.ank2`
+  - contains some known, fresh, and unknown cards. Used for testing if fresh morphs are skipped when already seen today.
+  - the extra fields contain lemmas
+  - morphs are evaluated based on lemma
+  - morphemizer: 'spaCy: en_core_web_sm'
+  
 
 ## Engineering and adding collections
 

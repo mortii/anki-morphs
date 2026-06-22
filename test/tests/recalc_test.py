@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from collections.abc import Sequence
 from test.fake_configs import (
     config_big_japanese_collection,
@@ -7,22 +8,15 @@ from test.fake_configs import (
     config_default_morph_priority,
     config_default_morphemizer,
     config_default_note_type,
-    config_ignore_names_txt_enabled,
     config_known_morphs_enabled,
     config_lemma_evaluation_lemma_extra_fields,
     config_max_morph_priority,
-    config_move_to_end_morphs_known,
-    config_move_to_end_morphs_known_or_fresh,
-    config_offset_inflection_enabled,
-    config_offset_lemma_enabled,
-    config_suspend_morphs_known,
-    config_suspend_morphs_known_or_fresh,
-    config_use_interval_for_known_threshold,
     config_use_stability_for_known_threshold,
     config_wrong_field_name,
     config_wrong_morph_priority,
     config_wrong_morphemizer_description,
     config_wrong_note_type,
+    default_config_dict,
 )
 from test.fake_environment_module import (  # pylint:disable=unused-import
     FakeEnvironment,
@@ -35,7 +29,7 @@ import pytest
 from ankimorphs import ankimorphs_config
 from ankimorphs import ankimorphs_globals as am_globals
 from ankimorphs import text_preprocessing
-from ankimorphs.ankimorphs_config import RawConfigFilterKeys
+from ankimorphs.ankimorphs_config import RawConfigFilterKeys, RawConfigKeys
 from ankimorphs.exceptions import (
     AnkiFieldNotFound,
     AnkiNoteTypeNotFound,
@@ -103,7 +97,10 @@ test_cases_with_success = [
         FakeEnvironmentParams(
             initial_col="offset_new_cards_inflection_collection",
             result_col="offset_new_cards_inflection_collection",
-            config=config_offset_inflection_enabled,
+            config=copy.deepcopy(default_config_dict)
+            | {
+                RawConfigKeys.RECALC_OFFSET_NEW_CARDS: True,
+            },
         ),
         id="offset_new_cards_inflection",
     ),
@@ -118,7 +115,10 @@ test_cases_with_success = [
         FakeEnvironmentParams(
             initial_col="offset_new_cards_lemma_collection",
             result_col="offset_new_cards_lemma_collection",
-            config=config_offset_lemma_enabled,
+            config=copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
+            | {
+                RawConfigKeys.RECALC_OFFSET_NEW_CARDS: True,
+            },
         ),
         marks=pytest.mark.spacy,
         id="offset_new_cards_lemma",
@@ -153,13 +153,16 @@ test_cases_with_success = [
     ################################################################
     #       CASE: USE_INTERVAL_FOR_KNOWN_THRESHOLD ENABLED
     ################################################################
-    # Config contains "use_stability_for_known_threshold": false,
+    # use regular interval instead of stability for known threshold
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
             initial_col="card_stability_collection",
             result_col="card_interval_collection",
-            config=config_use_interval_for_known_threshold,
+            config=copy.deepcopy(config_use_stability_for_known_threshold)
+            | {
+                RawConfigKeys.USE_STABILITY_FOR_KNOWN_THRESHOLD: False,
+            },
         ),
         marks=pytest.mark.mecab,
         id="use_interval_for_known_threshold",
@@ -167,13 +170,16 @@ test_cases_with_success = [
     ################################################################
     #               CASE: IGNORE NAMES ENABLED
     ################################################################
-    # Config contains "preprocess_ignore_names_textfile": true,
+    # ignore names found in the names.txt file
     ################################################################
     pytest.param(
         FakeEnvironmentParams(
             initial_col="ignore_names_txt_collection",
             result_col="ignore_names_txt_collection",
-            config=config_ignore_names_txt_enabled,
+            config=copy.deepcopy(default_config_dict)
+            | {
+                RawConfigKeys.PREPROCESS_IGNORE_NAMES_TEXTFILE: True,
+            },
         ),
         id="ignore_names_txt_enabled",
     ),
@@ -218,7 +224,10 @@ test_cases_with_success = [
         FakeEnvironmentParams(
             initial_col="card_handling_collection",
             result_col="suspend_all_morphs_known",
-            config=config_suspend_morphs_known,
+            config=copy.deepcopy(default_config_dict)
+            | {
+                RawConfigKeys.RECALC_SUSPEND_NEW_CARDS: am_globals.ONLY_KNOWN_OPTION,
+            },
         ),
         id="suspend_all_morphs_known",
     ),
@@ -232,7 +241,10 @@ test_cases_with_success = [
         FakeEnvironmentParams(
             initial_col="card_handling_collection",
             result_col="suspend_morphs_known_or_fresh",
-            config=config_suspend_morphs_known_or_fresh,
+            config=copy.deepcopy(default_config_dict)
+            | {
+                RawConfigKeys.RECALC_SUSPEND_NEW_CARDS: am_globals.ONLY_KNOWN_OR_FRESH_OPTION,
+            },
         ),
         id="suspend_all_morphs_known_or_fresh",
     ),
@@ -247,7 +259,10 @@ test_cases_with_success = [
         FakeEnvironmentParams(
             initial_col="card_handling_collection",
             result_col="move_to_end_morphs_known",
-            config=config_move_to_end_morphs_known,
+            config=copy.deepcopy(default_config_dict)
+            | {
+                RawConfigKeys.RECALC_MOVE_NEW_CARDS_TO_THE_END: am_globals.ONLY_KNOWN_OPTION,
+            },
         ),
         id="move_to_end_morphs_known",
     ),
@@ -261,7 +276,10 @@ test_cases_with_success = [
         FakeEnvironmentParams(
             initial_col="card_handling_collection",
             result_col="move_to_end_morphs_known_or_fresh",
-            config=config_move_to_end_morphs_known_or_fresh,
+            config=copy.deepcopy(default_config_dict)
+            | {
+                RawConfigKeys.RECALC_MOVE_NEW_CARDS_TO_THE_END: am_globals.ONLY_KNOWN_OR_FRESH_OPTION,
+            },
         ),
         id="move_to_end_morphs_known_or_fresh",
     ),

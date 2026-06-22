@@ -69,3 +69,7 @@ class UnicodeException(Exception):
 
     def __init__(self, path: Path):
         self.path: str = str(path)
+
+
+class UncaughtSkipBranchError(Exception):
+    """Raised when should_skip_card() falls through all known branches."""

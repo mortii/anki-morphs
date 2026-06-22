@@ -100,58 +100,6 @@ config_inflection_evaluation[ConfigKeys.EVALUATE_MORPH_LEMMA] = False
 
 
 ################################################################
-#             config_offset_lemma_enabled
-################################################################
-# Matches `offset_new_cards_lemma_collection.anki2`.
-# Evaluates morphs by lemma.
-################################################################
-config_offset_lemma_enabled = copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
-config_offset_lemma_enabled[ConfigKeys.RECALC_OFFSET_NEW_CARDS] = True
-
-
-################################################################
-#               config_dont_skip_fresh_morphs
-################################################################
-# Used with: `card_handling_collection.anki2`.
-################################################################
-# fmt: off
-config_dont_skip_fresh_morphs = copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
-config_dont_skip_fresh_morphs[ConfigKeys.SKIP_DONT_WHEN_CONTAINS_FRESH_MORPHS] = True
-config_dont_skip_fresh_morphs[ConfigKeys.SKIP_WHEN_CONTAINS_FRESH_MORPHS] = False
-# fmt: on
-
-################################################################
-#             config_disabled_skip_no_unknown_morphs
-################################################################
-# Used with: `card_handling_collection.anki2`.
-################################################################
-# fmt: off
-config_disabled_skip_no_unknown_morphs = copy.deepcopy(config_lemma_evaluation_lemma_extra_fields)
-config_disabled_skip_no_unknown_morphs[ConfigKeys.SKIP_NO_UNKNOWN_MORPHS] = False
-# fmt: on
-
-################################################################
-#             config_offset_inflection_enabled
-################################################################
-# Matches `offset_new_cards_inflection_collection.anki2`.
-# Evaluates morphs by inflection.
-################################################################
-# fmt: off
-config_offset_inflection_enabled = copy.deepcopy(default_config_dict)
-config_offset_inflection_enabled[ConfigKeys.RECALC_OFFSET_NEW_CARDS] = True
-# fmt: on
-
-
-################################################################
-#            config_ignore_names_txt_enabled
-################################################################
-# Matches "ignore_names_txt_collection.anki2".
-################################################################
-config_ignore_names_txt_enabled = copy.deepcopy(default_config_dict)
-config_ignore_names_txt_enabled[ConfigKeys.PREPROCESS_IGNORE_NAMES_TEXTFILE] = True
-
-
-################################################################
 #             config_big_japanese_collection
 ################################################################
 # Matches `big_japanese_collection.anki2`
@@ -185,16 +133,6 @@ config_use_stability_for_known_threshold_filter[FilterKeys.FIELD] = "Japanese"
 config_use_stability_for_known_threshold_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "AnkiMorphs: Japanese"
 # fmt: on
 
-################################################################
-#          config_use_interval_for_known_threshold
-################################################################
-# Matches `card_interval_collection.anki2`.
-################################################################
-# fmt: off
-config_use_interval_for_known_threshold = copy.deepcopy(config_use_stability_for_known_threshold)
-config_use_interval_for_known_threshold[ConfigKeys.USE_STABILITY_FOR_KNOWN_THRESHOLD] = False
-# fmt: on
-
 
 ################################################################
 #                 config_max_morph_priority
@@ -206,47 +144,6 @@ config_max_morph_priority = copy.deepcopy(default_config_dict)
 config_max_morph_priority_filter = config_max_morph_priority[ConfigKeys.FILTERS][0]
 config_max_morph_priority_filter[FilterKeys.MORPHEMIZER_DESCRIPTION] = "spaCy: ja_core_news_sm"
 config_max_morph_priority_filter[FilterKeys.MORPH_PRIORITY_SELECTION] = "ja_core_news_sm_freq_inflection_min_occurrence.csv"
-# fmt: on
-
-################################################################
-#               config_suspend_morphs_known
-################################################################
-# Matches `suspend_all_morphs_known.anki2`
-################################################################
-# fmt: off
-config_suspend_morphs_known = copy.deepcopy(default_config_dict)
-config_suspend_morphs_known[ConfigKeys.RECALC_SUSPEND_NEW_CARDS] = am_globals.ONLY_KNOWN_OPTION
-# fmt: on
-
-################################################################
-#            config_suspend_morphs_known_or_fresh
-################################################################
-# Matches `suspend_morphs_known_or_fresh.anki2`
-################################################################
-# fmt: off
-config_suspend_morphs_known_or_fresh = copy.deepcopy(default_config_dict)
-config_suspend_morphs_known_or_fresh[ConfigKeys.RECALC_SUSPEND_NEW_CARDS] = am_globals.ONLY_KNOWN_OR_FRESH_OPTION
-# fmt: on
-
-
-################################################################
-#              config_move_to_end_morphs_known
-################################################################
-# Matches `move_to_end_morphs_known.anki2`
-################################################################
-# fmt: off
-config_move_to_end_morphs_known = copy.deepcopy(default_config_dict)
-config_move_to_end_morphs_known[ConfigKeys.RECALC_MOVE_NEW_CARDS_TO_THE_END] = am_globals.ONLY_KNOWN_OPTION
-# fmt: on
-
-################################################################
-#            config_move_to_end_morphs_known_or_fresh
-################################################################
-# Matches `move_to_end_morphs_known_or_fresh.anki2`
-################################################################
-# fmt: off
-config_move_to_end_morphs_known_or_fresh = copy.deepcopy(default_config_dict)
-config_move_to_end_morphs_known_or_fresh[ConfigKeys.RECALC_MOVE_NEW_CARDS_TO_THE_END] = am_globals.ONLY_KNOWN_OR_FRESH_OPTION
 # fmt: on
 
 
@@ -332,14 +229,3 @@ config_default_morphemizer = copy.deepcopy(default_config_dict)
 config_default_morphemizer[ConfigKeys.FILTERS][0][
     FilterKeys.MORPHEMIZER_DESCRIPTION
 ] = am_globals.NONE_OPTION
-
-################################################################
-#             config_ignoring_custom_characters
-################################################################
-# Works with any arbitrary collection and db
-################################################################
-config_ignoring_custom_characters = copy.deepcopy(default_config_dict)
-config_ignoring_custom_characters[ConfigKeys.PREPROCESS_IGNORE_CUSTOM_CHARACTERS] = True
-config_ignoring_custom_characters[ConfigKeys.PREPROCESS_CUSTOM_CHARACTERS_TO_IGNORE] = (
-    ",.?"
-)

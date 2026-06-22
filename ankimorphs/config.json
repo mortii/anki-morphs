@@ -83,6 +83,7 @@
   "skip_no_unknown_morphs": true,
   "skip_show_num_of_skipped_cards": true,
   "skip_unknown_morph_seen_today_cards": true,
+  "skip_when_all_fresh_morphs_seen_today": false,
   "skip_when_contains_fresh_morphs": true,
   "tag_fresh": "am-fresh-morphs",
   "tag_known_automatically": "am-known-automatically",

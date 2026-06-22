@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from test.fake_configs import config_ignoring_custom_characters
+import copy
+from test.fake_configs import default_config_dict
 from test.fake_environment_module import (  # pylint:disable=unused-import
     FakeEnvironment,
     FakeEnvironmentParams,
@@ -10,7 +11,7 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 import pytest
 
 from ankimorphs import text_preprocessing
-from ankimorphs.ankimorphs_config import AnkiMorphsConfig
+from ankimorphs.ankimorphs_config import AnkiMorphsConfig, RawConfigKeys
 
 default_fake_environment = FakeEnvironmentParams()
 
@@ -76,31 +77,26 @@ def test_preprocessing_square_brackets(  # pylint:disable=unused-argument
     assert processed_text == correct_output
 
 
-################################################################
-#               CASE: IGNORING CUSTOM CHARACTERS
-################################################################
-# Config contains has 'PREPROCESS_IGNORE_CUSTOM_CHARACTERS' = True,
-# and 'PREPROCESS_CUSTOM_CHARACTERS_TO_IGNORE' = ",.?"
-# Database choice is arbitrary.
-# Collection choice is arbitrary
-################################################################
-case_ignoring_custom_characters_params = FakeEnvironmentParams(
-    config=config_ignoring_custom_characters,
-)
-
-
 @pytest.mark.parametrize(
     "fake_environment_fixture, input_text, correct_output",
     [
-        (
-            case_ignoring_custom_characters_params,
+        pytest.param(
+            FakeEnvironmentParams(
+                config=copy.deepcopy(default_config_dict)
+                | {
+                    RawConfigKeys.PREPROCESS_IGNORE_CUSTOM_CHARACTERS: True,
+                    RawConfigKeys.PREPROCESS_CUSTOM_CHARACTERS_TO_IGNORE: ",.?",
+                },
+            ),
             "world,.?",
             "world",
+            id="preprocess_custom_chars",
         ),
-        (
-            default_fake_environment,
+        pytest.param(
+            FakeEnvironmentParams(),
             "world,.?",
             "world,.?",
+            id="no_preprocess",
         ),
     ],
     indirect=["fake_environment_fixture"],

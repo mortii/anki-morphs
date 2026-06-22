@@ -77,6 +77,7 @@ class RawConfigKeys:
     SHORTCUT_KNOWN_MORPHS_EXPORTER = "shortcut_known_morphs_exporter"
     SKIP_NO_UNKNOWN_MORPHS = "skip_no_unknown_morphs"
     SKIP_DONT_WHEN_CONTAINS_FRESH_MORPHS = "skip_dont_when_contains_fresh_morphs"
+    SKIP_WHEN_ALL_FRESH_MORPHS_SEEN_TODAY = "skip_when_all_fresh_morphs_seen_today"
     SKIP_WHEN_CONTAINS_FRESH_MORPHS = "skip_when_contains_fresh_morphs"
     SKIP_UNKNOWN_MORPH_SEEN_TODAY_CARDS = "skip_unknown_morph_seen_today_cards"
     SKIP_SHOW_NUM_OF_SKIPPED_CARDS = "skip_show_num_of_skipped_cards"
@@ -287,6 +288,11 @@ class AnkiMorphsConfig:  # pylint:disable=too-many-instance-attributes, too-many
             )
             self.skip_dont_when_contains_fresh_morphs: bool = self._get_config_item(
                 key=RawConfigKeys.SKIP_DONT_WHEN_CONTAINS_FRESH_MORPHS,
+                expected_type=bool,
+                use_default=is_default,
+            )
+            self.skip_when_all_fresh_morphs_seen_today: bool = self._get_config_item(
+                key=RawConfigKeys.SKIP_WHEN_ALL_FRESH_MORPHS_SEEN_TODAY,
                 expected_type=bool,
                 use_default=is_default,
             )
