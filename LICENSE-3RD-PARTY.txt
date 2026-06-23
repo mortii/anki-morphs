@@ -29,7 +29,8 @@ The following third party libraries are used in this project, and these are thei
     - The MIT License (MIT)
 - zhon
     - The MIT License (MIT)
-
+- camel-tools
+    - The MIT License (MIT)
 
 =================================================================================
                     GNU AFFERO GENERAL PUBLIC LICENSE

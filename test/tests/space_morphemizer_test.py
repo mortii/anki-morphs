@@ -1,25 +1,11 @@
-from collections.abc import Iterator
-from unittest import mock
+from test.fake_environment_module import (  # pylint:disable=unused-import
+    fake_environment_fixture,
+)
 
 import pytest
 
-import ankimorphs.morphemizers.morphemizer
 from ankimorphs.morpheme import Morpheme
-from ankimorphs.morphemizers import camel_wrapper, spacy_wrapper
 from ankimorphs.morphemizers.morphemizer_utils import get_morphemizer_by_description
-
-
-@pytest.fixture(scope="function")
-def _fake_environment_fixture() -> Iterator[None]:
-    patch_spacy = mock.patch.object(spacy_wrapper, "testing_environment", True)
-    patch_camel = mock.patch.object(camel_wrapper, "testing_environment", True)
-    patch_spacy.start()
-    patch_camel.start()
-    yield
-    patch_spacy.stop()
-    patch_camel.stop()
-    # this resets the morphemizers for the future tests
-    ankimorphs.morphemizers.morphemizer_utils.available_morphemizers = None
 
 
 @pytest.mark.parametrize(
@@ -59,8 +45,8 @@ def _fake_environment_fixture() -> Iterator[None]:
         ),
     ],
 )
-def test_simple_space_splitters(
-    _fake_environment_fixture: None,
+def test_simple_space_splitters(  # pylint:disable=unused-argument
+    fake_environment_fixture: None,
     morphemizer_description: str,
     sentence: str,
     correct_morphs: set[Morpheme],

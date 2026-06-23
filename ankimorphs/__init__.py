@@ -21,6 +21,7 @@ import aqt
 from anki import hooks
 from anki.cards import Card
 from anki.collection import OpChangesAfterUndo
+from anki.utils import is_win
 from aqt import gui_hooks, mw
 from aqt.browser.browser import Browser
 from aqt.overview import Overview
@@ -272,7 +273,8 @@ def init_tool_menu_and_actions() -> None:
     am_tool_menu.addAction(progression_action)
     am_tool_menu.addAction(known_morphs_exporter_action)
     am_tool_menu.addAction(spacy_manager_action)
-    am_tool_menu.addAction(camel_manager_action)
+    if not is_win:  # not supported on windows
+        am_tool_menu.addAction(camel_manager_action)
     am_tool_menu.addAction(reset_tags_action)
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)

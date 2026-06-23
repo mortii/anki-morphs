@@ -8,6 +8,7 @@ exclude: |
       ankimorphs/ui/.*|
       test/data/morphemizers/.*|
   )$
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -49,6 +50,7 @@ repos:
       - id: name-tests-test
         files: '^test/tests'
       - id: requirements-txt-fixer
+
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.2
     hooks:
@@ -58,37 +60,44 @@ repos:
               test/.*|
               docs/src/priority_files/.*|
           )$
+
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
       - id: python-check-blanket-type-ignore
       - id: python-use-type-annotations
       - id: python-check-mock-methods
+
   - repo: https://github.com/pappasam/toml-sort
     rev: v0.24.4
     hooks:
       - id: toml-sort-fix
+
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.21.2
     hooks:
       - id: pyupgrade
         args: [--py39-plus]
         files: 'ankimorphs/|^test/'
+
   - repo: https://github.com/pycqa/isort
     rev: 8.0.1
     hooks:
       - id: isort
         name: isort (python)
         files: 'ankimorphs/|^test/'
+
   - repo: https://github.com/jendrikseipp/vulture
     rev: v2.16
     hooks:
       - id: vulture
+
   - repo: https://github.com/woodruffw/zizmor-pre-commit
     rev: v1.23.1
     hooks:
       - id: zizmor
         files: '.github/workflows/.*\.yml$'
+
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.20.2
     hooks:
@@ -96,6 +105,7 @@ repos:
         args: [ --no-incremental ]
         files: ^(ankimorphs|test)/
         pass_filenames: true
+
   - repo: local
     hooks:
       - id: pylint
@@ -105,15 +115,17 @@ repos:
         require_serial: true
         types: [ python ]
         files: 'ankimorphs/|^test/'
+
       - id: black
         name: black
         entry: black
         language: system
         types: [ python ]
         files: 'ankimorphs/|^test/'
+
       - id: pytest
-        name: pytest
-        entry: pytest
+        name: pytest core (no external morphemizers)
+        entry: pytest -m "not (mecab or jieba or camel or spacy)"
         language: system
         pass_filenames: false
         always_run: true

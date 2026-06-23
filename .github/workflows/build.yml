@@ -3,6 +3,7 @@ name: Lint and Test
 on:
   push:
   pull_request:
+  workflow_dispatch:
   schedule:
     - cron: '19 2 * * *'
 
@@ -11,72 +12,107 @@ jobs:
     permissions:
       actions: write
     runs-on: ${{ matrix.os }}
+
     strategy:
       matrix:
-        python_version: [3.13]
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        python_version: [ 3.13 ]
+        os: [ ubuntu-latest, macOS-latest, windows-latest ]
       fail-fast: false
+
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        persist-credentials: false
-    - name: Setup headless display  # installs libraries necessary to run a Qt desktop environment on linux runners
-      uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0
-      with:
-        qt: true
-    - name: Set up Python
-      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
-      with:
-        python-version:  ${{ matrix.python_version }}
-    - name: Install CAMeL Tools build dependencies  # CAMeL Tools needs cmake + boost on Linux/macOS (https://github.com/CAMeL-Lab/camel_tools#installation)
-      shell: bash
-      run: |
-        if [ "${{ runner.os }}" = "Linux" ]; then
-          sudo apt-get update
-          sudo apt-get install -y cmake libboost-all-dev
-        elif [ "${{ runner.os }}" = "macOS" ]; then
-          brew install cmake boost
-        fi
-        # Windows: no extra system build dependencies are required per the CAMeL Tools docs.
-    - name: Install dependencies
-      shell: bash
-      run: |
-        python -m pip install --upgrade pip virtualenv
-        python -m virtualenv pyenv
+      - name: Setup checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
-        if [ "${{ runner.os }}" = "Windows" ]; then
-          source pyenv/Scripts/activate
-        else
-          source pyenv/bin/activate
-        fi
+      - name: Setup headless Qt  # installs libraries necessary to run a Qt desktop environment on linux runners
+        uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0
+        with:
+          qt: true
 
-        python -m pip install --upgrade pip
-        if [ "${{ runner.os }}" = "Windows" ]; then
-          # The CAMeL Tools docs require the PyTorch wheel index on Windows:
-          # https://github.com/CAMeL-Lab/camel_tools#installation
-          python -m pip install -r requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
-        else
+      - name: Setup python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version:  ${{ matrix.python_version }}
+
+      - name: Setup python venv
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip virtualenv
+          python -m virtualenv pyenv
+
+      - name: Install python deps
+        shell: bash
+        run: |
+
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            source pyenv/Scripts/activate
+          else
+            source pyenv/bin/activate
+          fi
+
+          python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
-        fi
-    - name: Install CAMeL Tools morphology databases  # required for the Arabic morphemizer tests; ~116 MB total (40.5 + 67.3 + 8.0)
-      shell: bash
-      run: |
-        if [ "${{ runner.os }}" = "Windows" ]; then
-          source pyenv/Scripts/activate
-        else
-          source pyenv/bin/activate
-        fi
 
-        python -m camel_tools.cli.camel_data --install morphology-db-msa-r13
-        python -m camel_tools.cli.camel_data --install morphology-db-egy-r13
-        python -m camel_tools.cli.camel_data --install morphology-db-glf-01
+      - name: Install spaCy models
+        shell: bash
+        run: |
 
-    - name: Lint & Test
-      shell: bash
-      run: |
-        if [ "${{ runner.os }}" = "Windows" ]; then
-          source pyenv/Scripts/activate
-        else
-          source pyenv/bin/activate
-        fi
-        pre-commit run --all-files
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            source pyenv/Scripts/activate
+          else
+            source pyenv/bin/activate
+          fi
+
+          ./setup-spacy-models.sh
+
+      - name: Install CAMeL packages (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            source pyenv/Scripts/activate
+          else
+            source pyenv/bin/activate
+          fi
+
+          ./setup-camel-packages.sh
+
+      - name: Run pre-commit (misc checks & core tests)
+        shell: bash
+        run: |
+
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            source pyenv/Scripts/activate
+          else
+            source pyenv/bin/activate
+          fi
+
+          pre-commit run --all-files
+
+      - name: Run full test suite (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            source pyenv/Scripts/activate
+          else
+            source pyenv/bin/activate
+          fi
+
+          pytest
+
+      - name: Run full test suite (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            source pyenv/Scripts/activate
+          else
+            source pyenv/bin/activate
+          fi
+
+          pytest -m "not camel"

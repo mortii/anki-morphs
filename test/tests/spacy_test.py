@@ -1,12 +1,9 @@
-import json
-import os
-from collections.abc import Iterator
-from unittest import mock
+from test.fake_environment_module import (  # pylint:disable=unused-import
+    fake_environment_fixture,
+)
 
-import aqt
 import pytest
 
-from ankimorphs import ankimorphs_config
 from ankimorphs.ankimorphs_config import AnkiMorphsConfig
 from ankimorphs.morpheme import Morpheme
 from ankimorphs.morphemizers import spacy_wrapper
@@ -20,37 +17,7 @@ class SpacyMorph:
         self.part_of_speech = part_of_speech
 
 
-@pytest.fixture(
-    scope="module"  # module-scope: created and destroyed once per module. Cached.
-)
-def fake_environment_fixture() -> Iterator[None]:
-    # print("fake environment initiated")
-
-    _config_data = None
-    with open("ankimorphs/config.json", encoding="utf-8") as file:
-        _config_data = json.load(file)
-
-    mock_mw = mock.Mock(spec=aqt.mw)  # can use any mw to spec
-    mock_mw.pm.profileFolder.return_value = os.path.join("test", "data")
-    mock_mw.addonManager.getConfig.return_value = _config_data
-
-    patch_config_mw = mock.patch.object(ankimorphs_config, "mw", mock_mw)
-    patch_spacy_wrapper_mw = mock.patch.object(spacy_wrapper, "mw", mock_mw)
-    patch_testing_variable = mock.patch.object(
-        spacy_wrapper, "testing_environment", True
-    )
-
-    patch_config_mw.start()
-    patch_spacy_wrapper_mw.start()
-    patch_testing_variable.start()
-
-    yield
-
-    patch_config_mw.stop()
-    patch_spacy_wrapper_mw.stop()
-    patch_testing_variable.stop()
-
-
+@pytest.mark.spacy
 @pytest.mark.parametrize(
     "spacy_model_name, sentence, expected_spacy_morphs, expected_am_morphs",
     [

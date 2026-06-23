@@ -11,7 +11,6 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 from test.test_globals import (
     PATH_TESTS_DATA,
     PATH_TESTS_DATA_CORRECT_OUTPUTS,
-    PATH_TESTS_DATA_TESTS_OUTPUTS,
 )
 from test.tests.morph_priority_test import default_fake_environment_params
 from typing import Any
@@ -35,77 +34,86 @@ from ankimorphs.generators.generators_window import GeneratorWindow
 @pytest.mark.parametrize(
     "fake_environment_fixture, input_dir, morphemizer_description, only_store_lemma, comprehension_cutoff, expected_output_file",
     [
-        (
+        pytest.param(
             default_fake_environment_params,
             "ja_subs",
             "spaCy: ja_core_news_sm",
             True,
             True,
             "ja_core_news_sm_freq_lemma_comprehension.csv",
+            marks=pytest.mark.spacy,
         ),
-        (
+        pytest.param(
             default_fake_environment_params,
             "ja_subs",
             "spaCy: ja_core_news_sm",
             True,
             False,
             "ja_core_news_sm_freq_lemma_min_occurrence.csv",
+            marks=pytest.mark.spacy,
         ),
-        (
+        pytest.param(
             default_fake_environment_params,
             "ja_subs",
             "spaCy: ja_core_news_sm",
             False,
             True,
             "ja_core_news_sm_freq_inflection_comprehension.csv",
+            marks=pytest.mark.spacy,
         ),
-        (
+        pytest.param(
             default_fake_environment_params,
             "ja_subs",
             "spaCy: ja_core_news_sm",
             False,
             False,
             "ja_core_news_sm_freq_inflection_min_occurrence.csv",
+            marks=pytest.mark.spacy,
         ),
-        (
+        pytest.param(
             default_fake_environment_params,
             "ja_subs",
             "AnkiMorphs: Japanese",
             True,
             True,
             "mecab_freq_lemma_comprehension.csv",
+            marks=pytest.mark.mecab,
         ),
-        (
+        pytest.param(
             default_fake_environment_params,
             "ja_subs",
             "AnkiMorphs: Japanese",
             True,
             False,
             "mecab_freq_lemma_min_occurrence.csv",
+            marks=pytest.mark.mecab,
         ),
-        (
+        pytest.param(
             default_fake_environment_params,
             "ja_subs",
             "AnkiMorphs: Japanese",
             False,
             True,
             "mecab_freq_inflection_comprehension.csv",
+            marks=pytest.mark.mecab,
         ),
-        (
+        pytest.param(
             default_fake_environment_params,
             "ja_subs",
             "AnkiMorphs: Japanese",
             False,
             False,
             "mecab_freq_inflection_min_occurrence.csv",
+            marks=pytest.mark.mecab,
         ),
-        (
+        pytest.param(
             default_fake_environment_params,
             "html_files",
             "spaCy: en_core_web_sm",
             False,
             False,
             "html_inflection_min_occurrence.csv",
+            marks=pytest.mark.spacy,
         ),
         # This test is disabled because the parsing is inconsistent across operating systems
         # (
@@ -116,35 +124,39 @@ from ankimorphs.generators.generators_window import GeneratorWindow
         #     False,
         #     "epub_inflection_min_occurrence.csv",
         # ),
-        (
+        pytest.param(
             default_fake_environment_params,
             "txt_files",
             "spaCy: en_core_web_sm",
             False,
             False,
             "txt_inflection_min_occurrence.csv",
+            marks=pytest.mark.spacy,
         ),
-        (
+        pytest.param(
             default_fake_environment_params,
             "ass_files",
             "AnkiMorphs: Japanese",
             False,
             False,
             "ass_inflection_min_occurrence.csv",
+            marks=pytest.mark.mecab,
         ),
-        (
+        pytest.param(
             default_fake_environment_params,
             "vtt_files",
             "spaCy: en_core_web_sm",
             False,
             False,
             "vtt_inflection_min_occurrence.csv",
+            marks=pytest.mark.spacy,
         ),
     ],
     indirect=["fake_environment_fixture"],
 )
 def test_priority_file_generator(  # pylint:disable=unused-argument, too-many-arguments
     fake_environment_fixture: FakeEnvironment,
+    tmp_path: Path,  # pytest fixture that creates temp dir, persists for 3 invocations.
     input_dir: str,
     morphemizer_description: str,
     only_store_lemma: bool,
@@ -160,7 +172,7 @@ def test_priority_file_generator(  # pylint:disable=unused-argument, too-many-ar
 
     # input_folder = Path(PATH_TESTS_DATA, "ja_subs")
     input_folder = Path(PATH_TESTS_DATA, input_dir)
-    test_output_file = Path(PATH_TESTS_DATA_TESTS_OUTPUTS, "test_output_file.csv")
+    test_output_file = Path(tmp_path, "test_output_file.csv")
 
     expected_output_file_path = Path(
         PATH_TESTS_DATA_CORRECT_OUTPUTS,
@@ -236,6 +248,7 @@ case_some_studied_japanese_lemmas = FakeEnvironmentParams(
 )
 
 
+@pytest.mark.mecab
 @pytest.mark.parametrize(
     "fake_environment_fixture, unique_known_number, unique_known_percent, total_known_number, total_known_percent",
     [
@@ -313,6 +326,7 @@ def test_readability_report(  # pylint:disable=too-many-arguments, unused-argume
     assert _item.text() == total_known_percent
 
 
+@pytest.mark.mecab
 @pytest.mark.parametrize(
     "fake_environment_fixture, only_store_lemma, expected_output_file",
     [
@@ -327,6 +341,7 @@ def test_readability_report(  # pylint:disable=too-many-arguments, unused-argume
 )
 def test_study_plan_generator(  # pylint:disable=unused-argument, too-many-locals
     fake_environment_fixture: FakeEnvironment,
+    tmp_path: Path,  # pytest fixture that creates temp dir, persists for 3 invocations.
     only_store_lemma: bool,
     expected_output_file: str,
     qtbot: Any,
@@ -334,9 +349,7 @@ def test_study_plan_generator(  # pylint:disable=unused-argument, too-many-local
     gw = GeneratorWindow()
 
     input_folder = Path(PATH_TESTS_DATA, "ja_subs")
-    test_output_file = Path(
-        PATH_TESTS_DATA_TESTS_OUTPUTS, "mecab_study_plan_test_output.csv"
-    )
+    test_output_file = Path(tmp_path, "mecab_study_plan_test_output.csv")
 
     expected_output_file_path = Path(
         PATH_TESTS_DATA_CORRECT_OUTPUTS,

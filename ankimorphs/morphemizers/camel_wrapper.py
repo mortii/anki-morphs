@@ -37,6 +37,39 @@ _DB_TO_PACKAGE: dict[str, str] = {
 }
 
 
+def _camel_environment() -> dict[str, str]:
+    env = os.environ.copy()
+
+    env.setdefault(
+        "CAMELTOOLS_DATA",
+        str(_get_am_camel_venv_data_path()),
+    )
+
+    if platform.machine() == "arm64":
+        env["CMAKE_OSX_ARCHITECTURES"] = "arm64"
+
+    return env
+
+
+def _configure_camel_environment() -> None:
+    os.environ.update(_camel_environment())
+
+
+def _get_am_camel_venv_python() -> Path:
+    if is_win:
+        return Path(_get_am_camel_venv_path(), "Scripts", "python.exe")
+    return Path(_get_am_camel_venv_path(), "bin", "python")
+
+
+def _get_am_camel_venv_path() -> Path:
+    python_version = f"{sys.version_info.major}_{sys.version_info.minor}"
+    return Path(mw.pm.addonFolder(), f"camel-venv-python-{python_version}")
+
+
+def _get_am_camel_venv_data_path() -> Path:
+    return Path(_get_am_camel_venv_path(), "camel_tools_data")
+
+
 def load_camel_modules() -> None:
     global updated_python_path
     global successful_import
@@ -46,13 +79,19 @@ def load_camel_modules() -> None:
     if not updated_python_path and not testing_environment:
         assert mw is not None
 
-        camel_path = _get_am_camel_venv_path()
+        camel_venv_path = _get_am_camel_venv_path()
+        if not camel_venv_path.exists():
+            return
+
+        _configure_camel_environment()
 
         if is_win is True:
-            camel_site_packages_path = os.path.join(camel_path, "Lib", "site-packages")
+            camel_site_packages_path = os.path.join(
+                camel_venv_path, "Lib", "site-packages"
+            )
         else:
             camel_site_packages_path = os.path.join(
-                camel_path,
+                camel_venv_path,
                 "lib",
                 f"python{sys.version_info.major}.{sys.version_info.minor}",
                 "site-packages",
@@ -77,30 +116,21 @@ def load_camel_modules() -> None:
 
 
 def get_installed_databases() -> list[str]:
+    installed: list[str] = []
+
     if not successful_import:
-        return []
+        return installed
 
     assert _camel_MorphologyDB is not None
 
-    installed = []
     for db_name in available_databases:
         try:
             _camel_MorphologyDB.builtin_db(db_name, flags="a")
             installed.append(db_name)
-        except Exception:  # pylint:disable=broad-except
+        except FileNotFoundError:
             pass
+
     return installed
-
-
-def _get_am_camel_venv_python() -> str:
-    if is_win:
-        return os.path.join(_get_am_camel_venv_path(), "Scripts", "python.exe")
-    return os.path.join(_get_am_camel_venv_path(), "bin", "python")
-
-
-def _get_am_camel_venv_path() -> str:
-    python_version = f"{sys.version_info.major}_{sys.version_info.minor}"
-    return os.path.join(mw.pm.addonFolder(), f"camel-venv-python-{python_version}")
 
 
 def create_camel_venv() -> None:
@@ -109,13 +139,15 @@ def create_camel_venv() -> None:
     shutil.rmtree(camel_venv_path, ignore_errors=True)
 
     python_path: str | None = venv_binary("python")
-
     if python_path is None:
         raise ValueError(
             "Anki API error. Install Anki from the official website to avoid this issue."
         )
 
     subprocess.run([python_path, "-m", "venv", camel_venv_path], check=True)
+
+    # create the data dir to prevent a crash (bug in camel tools)
+    _get_am_camel_venv_data_path().mkdir()
 
     if is_win:
         camel_venv_python = os.path.join(camel_venv_path, "Scripts", "python.exe")
@@ -136,26 +168,22 @@ def create_camel_venv() -> None:
         check=True,
     )
 
+    _configure_camel_environment()
     env = os.environ.copy()
-    if platform.machine() == "arm64":
-        env["CMAKE_OSX_ARCHITECTURES"] = "arm64"
-
-    install_command = [
-        camel_venv_python,
-        "-m",
-        "pip",
-        "install",
-        "--upgrade",
-        "camel-tools",
-    ]
-    if is_win:
-        # The CAMeL Tools docs require the PyTorch wheel index on Windows:
-        # https://github.com/CAMeL-Lab/camel_tools#installation
-        install_command += ["-f", "https://download.pytorch.org/whl/torch_stable.html"]
 
     subprocess.run(
-        install_command,
+        [
+            camel_venv_python,
+            "-m",
+            "pip",
+            "install",
+            "--no-cache-dir",
+            "--upgrade",
+            "camel-tools",
+        ],
         check=True,
+        text=True,
+        capture_output=True,
         env=env,
     )
 
@@ -181,9 +209,8 @@ def install_database(db_name: str) -> None:
         raise ValueError(f"Unknown database: {db_name}")
 
     camel_venv_python = _get_am_camel_venv_python()
-
     env = os.environ.copy()
-    # camel_data stores data in ~/.camel_tools by default; respect CAMELTOOLS_DATA if set
+
     subprocess.run(
         [
             camel_venv_python,

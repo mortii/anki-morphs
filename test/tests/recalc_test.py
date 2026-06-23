@@ -69,6 +69,7 @@ test_cases_with_success = [
             result_col="lemma_evaluation_lemma_extra_fields_collection",
             config=config_lemma_evaluation_lemma_extra_fields,
         ),
+        marks=pytest.mark.spacy,
         id="same_lemma_and_inflection_scores",
     ),
     ################################################################
@@ -87,6 +88,7 @@ test_cases_with_success = [
             result_col="some_studied_lemmas_collection",
             config=config_lemma_evaluation_lemma_extra_fields,
         ),
+        marks=pytest.mark.spacy,
         id="inflections_are_known",
     ),
     ################################################################
@@ -118,6 +120,7 @@ test_cases_with_success = [
             result_col="offset_new_cards_lemma_collection",
             config=config_offset_lemma_enabled,
         ),
+        marks=pytest.mark.spacy,
         id="offset_new_cards_lemma",
     ),
     ################################################################
@@ -144,6 +147,7 @@ test_cases_with_success = [
             result_col="card_stability_collection",
             config=config_use_stability_for_known_threshold,
         ),
+        marks=pytest.mark.mecab,
         id="use_stability_for_known_threshold",
     ),
     ################################################################
@@ -157,6 +161,7 @@ test_cases_with_success = [
             result_col="card_interval_collection",
             config=config_use_interval_for_known_threshold,
         ),
+        marks=pytest.mark.mecab,
         id="use_interval_for_known_threshold",
     ),
     ################################################################
@@ -184,6 +189,7 @@ test_cases_with_success = [
             result_col="big_japanese_collection",
             config=config_big_japanese_collection,
         ),
+        marks=pytest.mark.mecab,
         id="big_japanese_collection",
     ),
     ################################################################
@@ -199,6 +205,7 @@ test_cases_with_success = [
             result_col="max_morph_priority_collection",
             config=config_max_morph_priority,
         ),
+        marks=pytest.mark.spacy,
         id="max_morph_priority",
     ),
     ################################################################
@@ -265,7 +272,6 @@ test_cases_with_success = [
 # test with a fixture receiving the values before passing them to a test"
 # - https://docs.pytest.org/en/7.1.x/example/parametrize.html#indirect-parametrization
 # This means that we run the fixture AND the test function for each parameter.
-@pytest.mark.external_morphemizers
 @pytest.mark.parametrize(
     "fake_environment_fixture",
     test_cases_with_success,

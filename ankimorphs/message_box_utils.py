@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+from typing import Any
+
 from aqt.qt import (  # pylint:disable=no-name-in-module
+    QDialog,
+    QDialogButtonBox,
     QMessageBox,
+    QPlainTextEdit,
     QPushButton,
     QStyle,
     Qt,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -70,15 +76,23 @@ def show_discard_message_box(title: str, body: str, parent: QWidget) -> bool:
     return False
 
 
-def show_error_box(title: str, body: str, parent: QWidget) -> int:
-    critical_box = QMessageBox(parent)
-    critical_box.setWindowTitle(title)
-    critical_box.setIcon(QMessageBox.Icon.Critical)
-    critical_box.setStandardButtons(QMessageBox.StandardButton.Ok)
-    critical_box.setText(body)
-    critical_box.setTextFormat(Qt.TextFormat.RichText)
-    answer: int = critical_box.exec()
-    return answer
+def show_error_box(title: str, body: str, parent: QWidget | None = None) -> Any:
+    dialog = QDialog(parent)
+    dialog.setWindowTitle(title)
+    dialog.resize(350, 200)
+
+    layout = QVBoxLayout(dialog)
+
+    text = QPlainTextEdit()
+    text.setReadOnly(True)
+    text.setPlainText(body)
+    layout.addWidget(text)
+
+    buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+    buttons.accepted.connect(dialog.accept)
+    layout.addWidget(buttons)
+
+    return dialog.exec()
 
 
 def confirm_new_extra_fields_selection(parent: QWidget) -> bool:

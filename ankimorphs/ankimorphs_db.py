@@ -25,12 +25,17 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
     # therefore, we need a many-to-many db structure:
     # Cards -> Card_Morph_Map <- Morphs
 
+    test_db_path: Path | None = None
+
     def __init__(self, db_path: Path | None = None) -> None:
         """
         db_path is used for swapping dbs during testing
         """
         assert mw is not None
         assert mw.pm is not None
+
+        if db_path is None:
+            db_path = self.test_db_path
 
         if db_path is None:
             db_path = Path(mw.pm.profileFolder(), "ankimorphs.db")

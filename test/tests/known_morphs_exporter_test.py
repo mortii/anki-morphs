@@ -13,7 +13,6 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 )
 from test.test_globals import (
     PATH_TESTS_DATA_CORRECT_OUTPUTS,
-    PATH_TESTS_DATA_TESTS_OUTPUTS,
 )
 from typing import Any
 
@@ -39,6 +38,7 @@ test_cases = [
             am_db="some_studied_lemmas.db",
         ),
         True,
+        marks=pytest.mark.spacy,
         id="exporting_lemmas",
     ),
     pytest.param(
@@ -49,6 +49,7 @@ test_cases = [
             am_db="some_studied_lemmas.db",
         ),
         False,
+        marks=pytest.mark.spacy,
         id="exporting_inflections",
     ),
 ]
@@ -61,6 +62,7 @@ test_cases = [
 )
 def test_known_morphs_exporter(  # pylint:disable=unused-argument
     fake_environment_fixture: FakeEnvironment,
+    tmp_path: Path,  # pytest fixture that creates temp dir, persists for 3 invocations.
     only_store_lemma: bool,
     qtbot: Any,
 ) -> None:
@@ -76,8 +78,10 @@ def test_known_morphs_exporter(  # pylint:disable=unused-argument
         _file_name,
     )
 
+    output_dir = tmp_path / "output"
+
     # sets the output dir
-    exporter_dialog.ui.outputLineEdit.setText(str(PATH_TESTS_DATA_TESTS_OUTPUTS))
+    exporter_dialog.ui.outputLineEdit.setText(str(output_dir))
 
     # both 'correct_output' files have the occurrence column
     exporter_dialog.ui.addOccurrencesColumnCheckBox.setChecked(True)
@@ -85,9 +89,12 @@ def test_known_morphs_exporter(  # pylint:disable=unused-argument
     exporter_dialog._background_export_known_morphs()
 
     # the exported file has a dynamic name (includes datetime of creation), so we
-    # have to retrieve it dynamically. The output dir should only contain one
-    # file so this is pretty easy
-    test_output_file = list(PATH_TESTS_DATA_TESTS_OUTPUTS.iterdir())[0]
+    # have to retrieve it dynamically.
+
+    csv_files = list(output_dir.glob("*.csv"))
+    assert csv_files
+
+    test_output_file = max(csv_files, key=lambda p: p.stat().st_mtime)
 
     test_utils.assert_csv_files_are_identical(
         correct_output_file=correct_output_file, test_output_file=test_output_file

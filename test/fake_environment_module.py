@@ -7,14 +7,10 @@ import sys
 from collections.abc import Iterator
 from pathlib import Path
 from test.fake_configs import default_config_dict
-from test.fake_db import FakeDB
 from test.test_globals import (
     PATH_CARD_COLLECTIONS,
-    PATH_DB_COPY,
     PATH_FAKE_MORPHEMIZERS,
-    PATH_TEMP_CARD_COLLECTIONS,
     PATH_TESTS_DATA_DBS,
-    PATH_TESTS_DATA_TESTS_OUTPUTS,
 )
 from typing import Any
 from unittest import mock
@@ -38,6 +34,7 @@ from ankimorphs import (
     progress_utils,
     reviewing_utils,
 )
+from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.extra_settings import ankimorphs_extra_settings
 from ankimorphs.generators import (
     generators_output_dialog,
@@ -48,7 +45,7 @@ from ankimorphs.generators import (
     study_plan_generator,
 )
 from ankimorphs.morphemizers import camel_wrapper, spacy_wrapper
-from ankimorphs.progression import progression_utils, progression_window
+from ankimorphs.progression import progression_window
 from ankimorphs.recalc import anki_data_utils, caching, recalc_main
 
 
@@ -75,7 +72,7 @@ class FakeEnvironment:
     def __init__(  # pylint:disable=too-many-arguments
         self,
         mock_mw: mock.Mock,
-        mock_db: FakeDB,
+        mock_db: AnkiMorphsDB,
         config: dict[str, Any],
         priority_files_dir: str,
         known_morphs_dir: str,
@@ -94,6 +91,7 @@ class FakeEnvironment:
 @pytest.fixture(scope="function")
 def fake_environment_fixture(  # pylint:disable=too-many-locals
     request: SubRequest,
+    tmp_path: Path,  # pytest fixture that creates temp dir, persists for 3 invocations.
 ) -> Iterator[FakeEnvironment | None]:
     # Sending arguments to a fixture requires a somewhat hacky
     # approach of using the "request" fixture as an input, which
@@ -101,41 +99,39 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals
 
     # fmt: off
     try:
-        _initial_col_name: str = request.param.initial_col or "ignore_names_txt_collection"
-        _result_col_name: str = request.param.result_col or _initial_col_name
-        _config_data: dict[str, Any] = request.param.config or default_config_dict
-        _am_db_name: str = request.param.am_db or "empty_skeleton.db"
-        _priority_files_dir: str = request.param.priority_files_dir or "correct_outputs"
-        _known_morphs_dir: str = request.param.known_morphs_dir or "known-morphs-valid"
+        params: FakeEnvironmentParams = request.param
+    except AttributeError:
+        params = FakeEnvironmentParams()
 
-        assert isinstance(_initial_col_name, str)
-        assert isinstance(_result_col_name, str)
-        assert isinstance(_config_data, dict)
-        assert isinstance(_am_db_name, str)
-        assert isinstance(_priority_files_dir, str)
-        assert isinstance(_known_morphs_dir, str)
+    _initial_col_name: str = params.initial_col or "ignore_names_txt_collection"
+    _result_col_name: str = params.result_col or _initial_col_name
+    _config_data: dict[str, Any] = params.config or default_config_dict
+    _am_db_name: str = params.am_db or "empty_skeleton.db"
+    _priority_files_dir: str = params.priority_files_dir or "correct_outputs"
+    _known_morphs_dir: str = params.known_morphs_dir or "known-morphs-valid"
 
-    except AttributeError as _error:
-        print('Missing "@pytest.mark.parametrize"')
-        raise _error
+    assert isinstance(_initial_col_name, str)
+    assert isinstance(_result_col_name, str)
+    assert isinstance(_config_data, dict)
+    assert isinstance(_am_db_name, str)
+    assert isinstance(_priority_files_dir, str)
+    assert isinstance(_known_morphs_dir, str)
+
 
     path_original_initial_col = Path(PATH_CARD_COLLECTIONS, f"{_initial_col_name}.anki2")
-    path_duplicate_initial_col = Path(PATH_TEMP_CARD_COLLECTIONS, f"duplicate_pre_{_initial_col_name}.anki2")
+    path_duplicate_initial_col = tmp_path / f"duplicate_pre_{_initial_col_name}.anki2"
 
     path_original_result_col = Path(PATH_CARD_COLLECTIONS, f"{_result_col_name}.anki2")
-    path_duplicate_result_col = Path(PATH_TEMP_CARD_COLLECTIONS, f"duplicate_post_{_result_col_name}.anki2")
+    path_duplicate_result_col = tmp_path / f"duplicate_post_{_result_col_name}.anki2"
+    # # fmt: on
 
     test_db_original_path = Path(PATH_TESTS_DATA_DBS, _am_db_name)
-    # fmt: on
+    path_db_copy = tmp_path / "temp_copied.db"
+    AnkiMorphsDB.test_db_path = path_db_copy
 
-    # create destination dirs
-    os.makedirs(PATH_TESTS_DATA_TESTS_OUTPUTS, exist_ok=True)
-    os.makedirs(PATH_TEMP_CARD_COLLECTIONS, exist_ok=True)
-
-    # If the file already exists, it will be replaced
     shutil.copyfile(path_original_initial_col, path_duplicate_initial_col)
     shutil.copyfile(path_original_result_col, path_duplicate_result_col)
-    shutil.copyfile(test_db_original_path, PATH_DB_COPY)
+    shutil.copyfile(test_db_original_path, path_db_copy)
 
     mock_mw = create_mock_mw(path_duplicate_initial_col, _config_data)
     mw_patches = create_mw_patches(mock_mw)
@@ -143,16 +139,12 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals
         mw_patch.start()
 
     # 'mw' has to be patched before we can before we can create db instances
-    am_db_patches = create_am_db_patches()
-    for am_db_patch in am_db_patches:
-        am_db_patch.start()
-
     misc_patches = create_misc_patches(_priority_files_dir, _known_morphs_dir)
     for misc_patch in misc_patches:
         misc_patch.start()
 
     sys.path.append(str(PATH_FAKE_MORPHEMIZERS))
-    mock_db = FakeDB()
+    mock_db = AnkiMorphsDB()
 
     try:
         try:
@@ -175,7 +167,7 @@ def fake_environment_fixture(  # pylint:disable=too-many-locals
         post_test_teardown(
             mock_db=mock_db,
             mock_mw=mock_mw,
-            patches=mw_patches + am_db_patches + misc_patches,
+            patches=mw_patches + misc_patches,
         )
 
 
@@ -220,19 +212,6 @@ def create_mw_patches(mock_mw: AnkiQt) -> list[Any]:
     ]
 
 
-def create_am_db_patches() -> list[Any]:
-    return [
-        mock.patch.object(reviewing_utils, "AnkiMorphsDB", FakeDB),
-        mock.patch.object(recalc_main, "AnkiMorphsDB", FakeDB),
-        mock.patch.object(caching, "AnkiMorphsDB", FakeDB),
-        mock.patch.object(readability_report_generator, "AnkiMorphsDB", FakeDB),
-        mock.patch.object(study_plan_generator, "AnkiMorphsDB", FakeDB),
-        mock.patch.object(progression_window, "AnkiMorphsDB", FakeDB),
-        mock.patch.object(progression_utils, "AnkiMorphsDB", FakeDB),
-        mock.patch.object(known_morphs_exporter, "AnkiMorphsDB", FakeDB),
-    ]
-
-
 def create_misc_patches(_priority_files_dir: str, _known_morphs_dir: str) -> list[Any]:
     # fmt: off
     return [
@@ -247,7 +226,7 @@ def create_misc_patches(_priority_files_dir: str, _known_morphs_dir: str) -> lis
 
 
 def post_test_teardown(
-    mock_db: FakeDB,
+    mock_db: AnkiMorphsDB,
     mock_mw: AnkiQt,
     patches: list[Any],
 ) -> None:
@@ -261,7 +240,3 @@ def post_test_teardown(
     gc.collect()
 
     sys.path.remove(str(PATH_FAKE_MORPHEMIZERS))
-
-    Path.unlink(PATH_DB_COPY, missing_ok=True)
-    shutil.rmtree(PATH_TEMP_CARD_COLLECTIONS, ignore_errors=True)
-    shutil.rmtree(PATH_TESTS_DATA_TESTS_OUTPUTS, ignore_errors=True)

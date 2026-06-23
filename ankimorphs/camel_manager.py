@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 import sys
 from typing import Callable
 
@@ -162,7 +163,7 @@ class CamelManagerDialog(QDialog):
                 parent=self,
             )
 
-        mw.progress.start(label=f"Downloading & Installing {display_name}")
+        mw.progress.start(label=f"Downloading & Installing:\n{display_name}")
         operation = QueryOp(
             parent=self,
             op=lambda _: camel_wrapper.install_database(db_name),
@@ -232,11 +233,18 @@ class CamelManagerDialog(QDialog):
 
     def _on_failure(self, failure: Exception) -> None:
         mw.progress.finish()
-        message_box_utils.show_error_box(
-            title="Error",
-            body=f"{failure}",
-            parent=self,
-        )
+
+        if isinstance(failure, subprocess.CalledProcessError):
+            message_box_utils.show_error_box(
+                title="CAMeL Installation Error", body=failure.stderr, parent=self
+            )
+
+        else:
+            message_box_utils.show_error_box(
+                title="CAMeL Installation Error",
+                body=f"{failure}",
+                parent=self,
+            )
 
     def closeWithCallback(  # pylint:disable=invalid-name
         self, callback: Callable[[], None]

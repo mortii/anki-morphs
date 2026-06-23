@@ -1,36 +1,16 @@
-import os
-import sys
-from collections.abc import Iterator
-from test.test_globals import PATH_TESTS_DATA
-from unittest import mock
+from test.fake_environment_module import (  # pylint:disable=unused-import
+    fake_environment_fixture,
+)
 
 import pytest
 
 from ankimorphs.morpheme import Morpheme
-from ankimorphs.morphemizers import camel_wrapper, spacy_wrapper
 from ankimorphs.morphemizers.morphemizer_utils import get_morphemizer_by_description
 
 
-@pytest.fixture(
-    scope="module"  # module-scope: created and destroyed once per module. Cached.
-)
-def _fake_environment_fixture() -> Iterator[None]:
-    patch_spacy = mock.patch.object(spacy_wrapper, "testing_environment", True)
-    patch_camel = mock.patch.object(camel_wrapper, "testing_environment", True)
-    fake_morphemizers_path = os.path.join(PATH_TESTS_DATA, "morphemizers")
-
-    sys.path.append(fake_morphemizers_path)
-    patch_spacy.start()
-    patch_camel.start()
-    yield
-    patch_spacy.stop()
-    patch_camel.stop()
-    sys.path.remove(fake_morphemizers_path)
-
-
-@pytest.mark.external_morphemizers
+@pytest.mark.mecab
 def test_mecab_morpheme_generation(  # pylint:disable=unused-argument
-    _fake_environment_fixture: None,
+    fake_environment_fixture: None,
 ) -> None:
     morphemizer = get_morphemizer_by_description("AnkiMorphs: Japanese")
     assert morphemizer is not None
@@ -55,9 +35,9 @@ def test_mecab_morpheme_generation(  # pylint:disable=unused-argument
         assert morph in correct_morphs
 
 
-@pytest.mark.external_morphemizers
+@pytest.mark.jieba
 def test_jieba_morpheme_generation(  # pylint:disable=unused-argument
-    _fake_environment_fixture: None,
+    fake_environment_fixture: None,
 ) -> None:
     morphemizer = get_morphemizer_by_description("AnkiMorphs: Chinese")
     assert morphemizer is not None

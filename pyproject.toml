@@ -87,9 +87,12 @@ addopts = "--strict-markers --durations=5 --maxfail=1000000"
 # markers: whitelist custom markers
 # example with: pytest -m slow
 markers = [
+  "spacy",
+  "camel",
+  "mecab",
+  "jieba",
   "slow",
   "recalc",
-  "external_morphemizers",
   "should_cause_exception",
   "debug"
 ]

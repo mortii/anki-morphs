@@ -1,49 +1,15 @@
-import json
-import os
-from collections.abc import Iterator
+from test.fake_environment_module import (  # pylint:disable=unused-import
+    fake_environment_fixture,
+)
 from unittest import mock
 
-import aqt
 import pytest
 
-from ankimorphs import ankimorphs_config, name_file_utils
+from ankimorphs import name_file_utils
 from ankimorphs.ankimorphs_config import AnkiMorphsConfig
 from ankimorphs.morpheme import Morpheme
 from ankimorphs.morphemizers import camel_wrapper
 from ankimorphs.morphemizers.camel_morphemizer import CamelMorphemizer
-
-
-@pytest.fixture(
-    scope="module"  # module-scope: created and destroyed once per module. Cached.
-)
-def fake_environment_fixture() -> Iterator[None]:
-    _config_data = None
-    with open("ankimorphs/config.json", encoding="utf-8") as file:
-        _config_data = json.load(file)
-
-    mock_mw = mock.Mock(spec=aqt.mw)
-    mock_mw.pm.profileFolder.return_value = os.path.join("test", "data")
-    mock_mw.addonManager.getConfig.return_value = _config_data
-
-    patch_config_mw = mock.patch.object(ankimorphs_config, "mw", mock_mw)
-    patch_camel_wrapper_mw = mock.patch.object(camel_wrapper, "mw", mock_mw)
-    # name_file_utils.mw is used by the ignore-names-textfile branch
-    patch_name_file_utils_mw = mock.patch.object(name_file_utils, "mw", mock_mw)
-    patch_testing_variable = mock.patch.object(
-        camel_wrapper, "testing_environment", True
-    )
-
-    patch_config_mw.start()
-    patch_camel_wrapper_mw.start()
-    patch_name_file_utils_mw.start()
-    patch_testing_variable.start()
-
-    yield
-
-    patch_config_mw.stop()
-    patch_camel_wrapper_mw.stop()
-    patch_name_file_utils_mw.stop()
-    patch_testing_variable.stop()
 
 
 def _process(
@@ -60,8 +26,6 @@ def _process(
     pass on an environment that can't actually exercise the code.
     """
     camel_wrapper.load_camel_modules()
-    if not camel_wrapper.successful_import:
-        pytest.skip("CAMeL Tools is not installed")
 
     morphemizer = CamelMorphemizer(db_name)
     am_config = AnkiMorphsConfig()
@@ -72,6 +36,7 @@ def _process(
     return next(morphemizer.get_processed_morphs(am_config, [sentence]))
 
 
+@pytest.mark.camel
 @pytest.mark.parametrize(
     "db_name, sentence, expected_am_morphs",
     [
@@ -116,9 +81,6 @@ def test_camel(  # pylint:disable=unused-argument
 ) -> None:
     camel_wrapper.load_camel_modules()
 
-    if not camel_wrapper.successful_import:
-        pytest.skip("CAMeL Tools is not installed")
-
     morphemizer = CamelMorphemizer(db_name)
 
     am_config = AnkiMorphsConfig()
@@ -142,6 +104,7 @@ def test_camel(  # pylint:disable=unused-argument
         )
 
 
+@pytest.mark.camel
 @pytest.mark.parametrize(
     "db_name", ["calima-msa-r13", "calima-egy-r13", "calima-glf-01"]
 )
@@ -159,9 +122,6 @@ def test_camel_oov_token_does_not_crash(  # pylint:disable=unused-argument
     # try/except re.error safety net. Either alone prevents the crash; this test
     # guards both. The token below is exactly the input that reproduced the crash.
     camel_wrapper.load_camel_modules()
-
-    if not camel_wrapper.successful_import:
-        pytest.skip("CAMeL Tools is not installed")
 
     morphemizer = CamelMorphemizer(db_name)
     am_config = AnkiMorphsConfig()
@@ -188,6 +148,7 @@ def test_camel_oov_token_does_not_crash(  # pylint:disable=unused-argument
 # the analyzer, matching the approach used in spacy_test.py).
 
 
+@pytest.mark.camel
 def test_camel_excluded_pos_and_source_are_skipped(  # pylint:disable=unused-argument
     fake_environment_fixture: None,
 ) -> None:
@@ -195,11 +156,11 @@ def test_camel_excluded_pos_and_source_are_skipped(  # pylint:disable=unused-arg
     # (FOREIGN/foreign) are filtered out via excluded_pos / excluded_sources,
     # while the real Arabic word survives.
     processed = _process("calima-msa-r13", "كتاب 5 . hello")
-
     inflections = [morph.inflection for morph in processed]
     assert inflections == ["كتاب"]
 
 
+@pytest.mark.camel
 def test_camel_ignore_names_morphemizer_skips_proper_nouns(  # pylint:disable=unused-argument
     fake_environment_fixture: None,
 ) -> None:
@@ -215,6 +176,7 @@ def test_camel_ignore_names_morphemizer_skips_proper_nouns(  # pylint:disable=un
     assert [m.inflection for m in without_names] == ["كتاب"]
 
 
+@pytest.mark.camel
 def test_camel_ignore_numbers_skips_noun_num(  # pylint:disable=unused-argument
     fake_environment_fixture: None,
 ) -> None:
@@ -230,6 +192,7 @@ def test_camel_ignore_numbers_skips_noun_num(  # pylint:disable=unused-argument
     )
 
 
+@pytest.mark.camel
 def test_camel_ignore_names_textfile_removes_listed_words(  # pylint:disable=unused-argument
     fake_environment_fixture: None,
 ) -> None:
@@ -243,6 +206,7 @@ def test_camel_ignore_names_textfile_removes_listed_words(  # pylint:disable=unu
     assert [m.inflection for m in processed] == ["كتاب"]
 
 
+@pytest.mark.camel
 def test_camel_word_with_no_analysis_is_skipped(  # pylint:disable=unused-argument
     fake_environment_fixture: None,
 ) -> None:
@@ -255,6 +219,7 @@ def test_camel_word_with_no_analysis_is_skipped(  # pylint:disable=unused-argume
     assert "زقمثبخ" not in inflections
 
 
+@pytest.mark.camel
 def test_camel_lemma_and_pos_are_populated(  # pylint:disable=unused-argument
     fake_environment_fixture: None,
 ) -> None:
