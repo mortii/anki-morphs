@@ -140,8 +140,21 @@ def create_camel_venv() -> None:
     if platform.machine() == "arm64":
         env["CMAKE_OSX_ARCHITECTURES"] = "arm64"
 
+    install_command = [
+        camel_venv_python,
+        "-m",
+        "pip",
+        "install",
+        "--upgrade",
+        "camel-tools",
+    ]
+    if is_win:
+        # The CAMeL Tools docs require the PyTorch wheel index on Windows:
+        # https://github.com/CAMeL-Lab/camel_tools#installation
+        install_command += ["-f", "https://download.pytorch.org/whl/torch_stable.html"]
+
     subprocess.run(
-        [camel_venv_python, "-m", "pip", "install", "--upgrade", "camel-tools"],
+        install_command,
         check=True,
         env=env,
     )
@@ -172,7 +185,13 @@ def install_database(db_name: str) -> None:
     env = os.environ.copy()
     # camel_data stores data in ~/.camel_tools by default; respect CAMELTOOLS_DATA if set
     subprocess.run(
-        [camel_venv_python, "-m", "camel_tools.cli.camel_data", "--install", package_name],
+        [
+            camel_venv_python,
+            "-m",
+            "camel_tools.cli.camel_data",
+            "--install",
+            package_name,
+        ],
         check=True,
         env=env,
     )

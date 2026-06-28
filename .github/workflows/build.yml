@@ -28,6 +28,16 @@ jobs:
       uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
       with:
         python-version:  ${{ matrix.python_version }}
+    - name: Install CAMeL Tools build dependencies  # CAMeL Tools needs cmake + boost on Linux/macOS (https://github.com/CAMeL-Lab/camel_tools#installation)
+      shell: bash
+      run: |
+        if [ "${{ runner.os }}" = "Linux" ]; then
+          sudo apt-get update
+          sudo apt-get install -y cmake libboost-all-dev
+        elif [ "${{ runner.os }}" = "macOS" ]; then
+          brew install cmake boost
+        fi
+        # Windows: no extra system build dependencies are required per the CAMeL Tools docs.
     - name: Install dependencies
       shell: bash
       run: |
@@ -41,7 +51,25 @@ jobs:
         fi
 
         python -m pip install --upgrade pip
-        python -m pip install -r requirements.txt
+        if [ "${{ runner.os }}" = "Windows" ]; then
+          # The CAMeL Tools docs require the PyTorch wheel index on Windows:
+          # https://github.com/CAMeL-Lab/camel_tools#installation
+          python -m pip install -r requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
+        else
+          python -m pip install -r requirements.txt
+        fi
+    - name: Install CAMeL Tools morphology databases  # required for the Arabic morphemizer tests; ~116 MB total (40.5 + 67.3 + 8.0)
+      shell: bash
+      run: |
+        if [ "${{ runner.os }}" = "Windows" ]; then
+          source pyenv/Scripts/activate
+        else
+          source pyenv/bin/activate
+        fi
+
+        python -m camel_tools.cli.camel_data --install morphology-db-msa-r13
+        python -m camel_tools.cli.camel_data --install morphology-db-egy-r13
+        python -m camel_tools.cli.camel_data --install morphology-db-glf-01
 
     - name: Lint & Test
       shell: bash

@@ -48,7 +48,9 @@ morphemizers. Below are the currently supported morphemizers:
 >
 > Install via `Tools → AnkiMorphs → CAMeL Tools Manager`. See the [full installation guide](installation/installing-camel-tools.md) for details.
 >
-> **Note:** CAMeL Tools requires Python 3.11 or newer, plus `cmake` and `boost` (Linux/macOS) or Rust at build time.
+> **Note:** CAMeL Tools requires Python 3.11–3.14 (64-bit) and the Rust compiler. On Linux/macOS it also
+> needs `cmake` and `boost` installed beforehand. See the
+> [full installation guide](installation/installing-camel-tools.md) for the complete, per-platform requirements.
 
 </details>
 

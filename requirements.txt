@@ -2,6 +2,7 @@ anki==25.9.2
 aqt==25.9.2
 black==26.3.1
 ca_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/ca_core_news_sm-3.8.0/ca_core_news_sm-3.8.0-py3-none-any.whl
+camel-tools==1.6.0
 csv-diff==1.2
 da_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/da_core_news_sm-3.8.0/da_core_news_sm-3.8.0-py3-none-any.whl
 de_core_news_md @ https://github.com/explosion/spacy-models/releases/download/de_core_news_md-3.8.0/de_core_news_md-3.8.0-py3-none-any.whl
