@@ -36,7 +36,7 @@ morphemizers. Below are the currently supported morphemizers:
 </details>
 
 <details>
-  <summary>Arabic morphemizers</summary>
+  <summary>Arabic morphemizers (Linux/macOS)</summary>
 
 > Arabic support is provided via CAMeL Tools (NYU Abu Dhabi), which includes dedicated morphological databases for:
 >
@@ -46,11 +46,7 @@ morphemizers. Below are the currently supported morphemizers:
 >
 > CAMeL Tools provides proper lemmatization — so `الكتاب` and `كتاب` are correctly recognized as the same lemma.
 >
-> Install via `Tools → AnkiMorphs → CAMeL Tools Manager`. See the [full installation guide](installation/installing-camel-tools.md) for details.
->
-> **Note:** CAMeL Tools requires Python 3.11–3.14 (64-bit) and the Rust compiler. On Linux/macOS it also
-> needs `cmake` and `boost` installed beforehand. See the
-> [full installation guide](installation/installing-camel-tools.md) for the complete, per-platform requirements.
+> See the [full installation guide](installation/installing-camel-tools.md) for details.
 
 </details>
 
