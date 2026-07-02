@@ -6,12 +6,13 @@ know, and I'll add you ;)
 
 ### Code contribution
 
-mortii, Vilhelm-Ian, xofm31, Jcuhfehl, schiozzone, Tartee, wolearyc, mdraves91, hans, RobHelgeson, JSchoreels, Rct567.
+mortii, Vilhelm-Ian, xofm31, Jcuhfehl, schiozzone, Tartee, wolearyc, mdraves91, hans, RobHelgeson, JSchoreels, Rct567,
+circle3451.
 
 ### Docs contribution
 
 Matt Vs Japan, mortii, Vilhelm-Ian, cocowash, xuiqzy, xofm31, zeroeightysix, wolearyc, Celebes, RobHelgeson,
-nathanielvirgo, BenjaminBrandtner, RezeScarlet.
+nathanielvirgo, BenjaminBrandtner, RezeScarlet, circle3451.
 
 ### Bugs reports, feature requests, or other helpful guidance
 
