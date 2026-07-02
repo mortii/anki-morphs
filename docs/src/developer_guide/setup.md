@@ -24,6 +24,14 @@
     python -m pip install --upgrade pip
     python -m pip install -r requirements.txt
     pre-commit install
+   
+   # use this command if you want/need spaCy models
+   . setup-spacy-models.sh 
+   
+   # use this command if you want/need CAMeL databases
+   # note: only works on linux and macOS
+   . setup-camel-packages.sh
+   
     ```
  
    Also install `Xvfb` on your system, e.g.: `sudo apt-get install xvfb`, this prevents windows popping up when `pre-commit` runs `pytest`.

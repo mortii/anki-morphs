@@ -61,7 +61,7 @@ We also need to update the `styling` section to specify which colors we want the
 
 ## Changing Your Card Styling
 
-![styling.png](../../../img/styling.png)
+![styling.png](../../img/styling.png)
 
 You can pick and choose among these; if you only want unknown morphs to be highlighted, and you don't care about
 dark-mode, then only adding the first line would be enough. You can also change the colors to anything you want.

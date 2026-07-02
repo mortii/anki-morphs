@@ -1,15 +1,14 @@
 # Qt Designer
 
-Creating dialogs with Qt Designer can make the process much easier than doing it by hand. Install it into the virtual
-environment:
+Creating dialogs with Qt Designer is often much easier than building them by hand. Installing Qt Designer via `pip` can
+cause dependency conflicts, so it's recommended to install the standalone version instead:
 
 ```bash
-source venv/bin/activate
-python -m pip install pyqt6 pyqt6-tools
+sudo apt install qt6-tools-dev-tools
 ```
 Start Qt Designer with the command:
 ```bash
-./designer-venv/lib/python3.13/site-packages/qt6_applications/Qt/bin/designer
+/usr/lib/qt6/bin/designer
 ```
 
 Convert ui file to python:
