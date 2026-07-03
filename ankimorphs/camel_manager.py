@@ -235,12 +235,12 @@ class CamelManagerDialog(QDialog):
         mw.progress.finish()
 
         if isinstance(failure, subprocess.CalledProcessError):
-            message_box_utils.show_error_box(
+            message_box_utils.show_long_output_error_box(
                 title="CAMeL Installation Error", body=failure.stderr, parent=self
             )
 
         else:
-            message_box_utils.show_error_box(
+            message_box_utils.show_long_output_error_box(
                 title="CAMeL Installation Error",
                 body=f"{failure}",
                 parent=self,

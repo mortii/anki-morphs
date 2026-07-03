@@ -76,7 +76,20 @@ def show_discard_message_box(title: str, body: str, parent: QWidget) -> bool:
     return False
 
 
-def show_error_box(title: str, body: str, parent: QWidget | None = None) -> Any:
+def show_error_box(title: str, body: str, parent: QWidget) -> int:
+    critical_box = QMessageBox(parent)
+    critical_box.setWindowTitle(title)
+    critical_box.setIcon(QMessageBox.Icon.Critical)
+    critical_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+    critical_box.setText(body)
+    critical_box.setTextFormat(Qt.TextFormat.RichText)
+    answer: int = critical_box.exec()
+    return answer
+
+
+def show_long_output_error_box(
+    title: str, body: str, parent: QWidget | None = None
+) -> Any:
     dialog = QDialog(parent)
     dialog.setWindowTitle(title)
     dialog.resize(350, 200)

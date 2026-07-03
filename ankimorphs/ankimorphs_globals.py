@@ -5,7 +5,7 @@ that file and not here.
 """
 
 # Semantic Versioning https://semver.org/
-__version__ = "6.1.2"
+__version__ = "6.2.0"
 
 DEV_MODE: bool = False
 
