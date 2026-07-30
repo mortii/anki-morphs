@@ -15,9 +15,11 @@ class JiebaMorphemizer(Morphemizer):
     def init_successful(self) -> bool:
         return jieba_wrapper.successful_import
 
-    def get_morphemes(self, sentences: list[str]) -> Iterator[list[Morpheme]]:
-        for sentence in sentences:
-            yield jieba_wrapper.get_morphemes_jieba(sentence)
+    def get_morphemes(
+        self, items: list[tuple[str, int]]
+    ) -> Iterator[tuple[list[Morpheme], int]]:
+        for sentence, key in items:
+            yield jieba_wrapper.get_morphemes_jieba(sentence), key
 
     def get_description(self) -> str:
         return "AnkiMorphs: Chinese"

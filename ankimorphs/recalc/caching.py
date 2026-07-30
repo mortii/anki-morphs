@@ -18,111 +18,38 @@ from . import anki_data_utils
 from .anki_data_utils import AnkiCardData
 
 
-def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-many-statements
+def cache_anki_data(
     am_config: AnkiMorphsConfig,
     read_enabled_config_filters: list[AnkiMorphsConfigFilter],
 ) -> None:
-    # Extracting morphs from cards is expensive, so caching them yields a significant
-    # performance gain.
-    #
-    # Note: this function is a monstrosity, but at some point it's better to have
-    # most of the logic in the same function in a way that gives a better overview
-    # of all the things that are happening. Refactoring this into even smaller pieces
-    # will in effect lead to spaghetti code.
-
+    """
+    Extracting morphs from cards is expensive, so caching them yields a significant
+    performance gain.
+    """
     assert mw is not None
 
-    # Rebuilding the entire ankimorphs db every time is faster and much simpler than
-    # updating it since we can bulk queries to the anki db.
     am_db = AnkiMorphsDB()
-    am_db.drop_all_tables()
+    am_db.drop_all_tables()  # dropping all tables is much faster and simpler than updating
     am_db.create_all_tables()
 
-    # These lists contain data that will be inserted into ankimorphs.db
     card_table_data: list[dict[str, Any]] = []
     morph_table_data: list[dict[str, Any]] = []
     card_morph_map_table_data: list[dict[str, Any]] = []
 
     # We only want to cache the morphs on the note-filters that have 'read' enabled
     for config_filter in read_enabled_config_filters:
-        cards_data_dict: dict[int, AnkiCardData] = (
-            anki_data_utils.create_card_data_dict(
-                am_config,
-                config_filter,
-            )
+        cards_data_dict = anki_data_utils.create_card_data_dict(
+            am_config, config_filter
         )
-        card_amount = len(cards_data_dict)
-
-        # Batching the text makes spacy much faster, so we flatten the data into the all_text list.
-        # To get back to the card_id for every entry in the all_text list, we create a separate list with the keys.
-        # These two lists have to be synchronized, i.e., the indexes align, that way they can be used for lookup later.
-        all_text: list[str] = []
-        all_keys: list[int] = []
-
-        for key, _card_data in cards_data_dict.items():
-            # Some spaCy models label all capitalized words as proper nouns,
-            # which is pretty bad. To prevent this, we lower case everything.
-            # This in turn makes some models not label proper nouns correctly,
-            # but this is preferable because we also have the 'Mark as Name'
-            # feature that can be used in that case.
-            expression = get_processed_text(am_config, _card_data.expression.lower())
-            all_text.append(expression)
-            all_keys.append(key)
-
-        morphemizer = morphemizer_utils.get_morphemizer_by_description(
-            config_filter.morphemizer_description
+        _extract_and_assign_morphs(am_config, config_filter, cards_data_dict)
+        _append_card_and_morph_data(
+            am_config,
+            config_filter,
+            cards_data_dict,
+            card_table_data,
+            morph_table_data,
+            card_morph_map_table_data,
         )
-        assert morphemizer is not None
-
-        for index, processed_morphs in enumerate(
-            morphemizer.get_processed_morphs(am_config, all_text)
-        ):
-            progress_utils.background_update_progress_potentially_cancel(
-                label=f"Extracting morphs from<br>{config_filter.note_type} cards<br>card: {index} of {card_amount}",
-                counter=index,
-                max_value=card_amount,
-            )
-            key = all_keys[index]
-            cards_data_dict[key].morphs = set(processed_morphs)
-
-        for counter, card_id in enumerate(cards_data_dict):
-            progress_utils.background_update_progress_potentially_cancel(
-                label=f"Caching {config_filter.note_type} cards<br>card: {counter} of {card_amount}",
-                counter=counter,
-                max_value=card_amount,
-            )
-            card_data: AnkiCardData = cards_data_dict[card_id]
-            card_memory_strength = _get_card_memory_strength(am_config, card_data)
-
-            card_table_data.append(
-                {
-                    "card_id": card_id,
-                    "note_id": card_data.note_id,
-                    "note_type_id": card_data.note_type_id,
-                    "card_type": card_data.type,
-                    "tags": card_data.tags,
-                }
-            )
-
-            if card_data.morphs is None:
-                continue
-
-            for morph in card_data.morphs:
-                morph_table_data.append(
-                    {
-                        "lemma": morph.lemma,
-                        "inflection": morph.inflection,
-                        "highest_lemma_learning_interval": None,  # updates later
-                        "highest_inflection_learning_interval": card_memory_strength,
-                    }
-                )
-                card_morph_map_table_data.append(
-                    {
-                        "card_id": card_id,
-                        "morph_lemma": morph.lemma,
-                        "morph_inflection": morph.inflection,
-                    }
-                )
 
     if am_config.read_known_morphs_folder:
         progress_utils.background_update_progress(label="Importing known morphs")
@@ -135,8 +62,95 @@ def cache_anki_data(  # pylint:disable=too-many-locals, too-many-branches, too-m
     am_db.insert_many_into_morph_table(morph_table_data)
     am_db.insert_many_into_card_table(card_table_data)
     am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
-    # am_db.print_table("Morphs")
     am_db.con.close()
+
+
+def _extract_and_assign_morphs(
+    am_config: AnkiMorphsConfig,
+    config_filter: AnkiMorphsConfigFilter,
+    cards_data_dict: dict[int, AnkiCardData],
+) -> None:
+    """
+    Batches all card expressions for this filter, runs them through the
+    configured morphemizer, and writes the resulting morphs back onto
+    each card's data.
+    """
+    card_amount = len(cards_data_dict)
+
+    # str is first because that is the order spacy receives it
+    all_items: list[tuple[str, int]] = [
+        (get_processed_text(am_config, card_data.expression.lower()), key)
+        for key, card_data in cards_data_dict.items()
+    ]
+
+    morphemizer = morphemizer_utils.get_morphemizer_by_description(
+        config_filter.morphemizer_description
+    )
+    assert morphemizer is not None
+
+    for index, (processed_morphs, key) in enumerate(
+        morphemizer.get_processed_morphs(am_config, all_items)
+    ):
+        progress_utils.background_update_progress_potentially_cancel(
+            label=f"Extracting morphs from<br>{config_filter.note_type} cards<br>card: {index} of {card_amount}",
+            counter=index,
+            max_value=card_amount,
+        )
+        cards_data_dict[key].morphs = set(processed_morphs)
+
+
+def _append_card_and_morph_data(  # pylint:disable=too-many-arguments)
+    am_config: AnkiMorphsConfig,
+    config_filter: AnkiMorphsConfigFilter,
+    cards_data_dict: dict[int, AnkiCardData],
+    card_table_data: list[dict[str, Any]],
+    morph_table_data: list[dict[str, Any]],
+    card_morph_map_table_data: list[dict[str, Any]],
+) -> None:
+    """
+    Builds the row dicts for the card table and the morph/card-morph-map
+    tables from the (now morph-annotated) cards_data_dict.
+    """
+    card_amount = len(cards_data_dict)
+
+    for counter, (card_id, card_data) in enumerate(cards_data_dict.items()):
+        progress_utils.background_update_progress_potentially_cancel(
+            label=f"Caching {config_filter.note_type} cards<br>card: {counter} of {card_amount}",
+            counter=counter,
+            max_value=card_amount,
+        )
+
+        card_table_data.append(
+            {
+                "card_id": card_id,
+                "note_id": card_data.note_id,
+                "note_type_id": card_data.note_type_id,
+                "card_type": card_data.type,
+                "tags": card_data.tags,
+            }
+        )
+
+        if card_data.morphs is None:
+            continue
+
+        card_memory_strength = _get_card_memory_strength(am_config, card_data)
+
+        for morph in card_data.morphs:
+            morph_table_data.append(
+                {
+                    "lemma": morph.lemma,
+                    "inflection": morph.inflection,
+                    "highest_lemma_learning_interval": None,  # updates later
+                    "highest_inflection_learning_interval": card_memory_strength,
+                }
+            )
+            card_morph_map_table_data.append(
+                {
+                    "card_id": card_id,
+                    "morph_lemma": morph.lemma,
+                    "morph_inflection": morph.inflection,
+                }
+            )
 
 
 def _get_card_memory_strength(

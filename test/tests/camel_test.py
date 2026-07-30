@@ -33,7 +33,9 @@ def _process(
     am_config.preprocess_ignore_numbers = ignore_numbers
     am_config.preprocess_ignore_names_textfile = ignore_names_textfile
 
-    return next(morphemizer.get_processed_morphs(am_config, [sentence]))
+    morphs, _ = next(morphemizer.get_processed_morphs(am_config, [(sentence, -1)]))
+
+    return morphs
 
 
 @pytest.mark.camel
@@ -86,8 +88,8 @@ def test_camel(  # pylint:disable=unused-argument
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
 
-    processed_morphs: list[Morpheme] = next(
-        morphemizer.get_processed_morphs(am_config, [sentence])
+    processed_morphs, _ = next(
+        morphemizer.get_processed_morphs(am_config, [(sentence, -1)])
     )
 
     assert len(processed_morphs) == len(expected_am_morphs)
@@ -131,8 +133,8 @@ def test_camel_oov_token_does_not_crash(  # pylint:disable=unused-argument
     sentence = "البيت ا\\ المدرسة"
 
     # Must not raise (previously raised re.error mid-iteration).
-    processed_morphs: list[Morpheme] = next(
-        morphemizer.get_processed_morphs(am_config, [sentence])
+    processed_morphs, _ = next(
+        morphemizer.get_processed_morphs(am_config, [(sentence, -1)])
     )
 
     # The OOV backslash token is skipped; the surrounding real words survive.

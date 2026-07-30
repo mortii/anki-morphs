@@ -561,8 +561,9 @@ def test_spacy(  # pylint:disable=unused-argument
 
     am_config = AnkiMorphsConfig()
     am_config.preprocess_ignore_names_morphemizer = True
-    processed_morphs: list[Morpheme] = next(
-        morphemizer.get_processed_morphs(am_config, [sentence.lower()])
+
+    processed_morphs, _ = next(
+        morphemizer.get_processed_morphs(am_config, [(sentence.lower(), 0)])
     )
 
     # print(f"processes morphs: {len(processed_morphs)}")

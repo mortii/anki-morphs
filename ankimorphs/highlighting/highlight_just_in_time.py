@@ -92,8 +92,8 @@ def _get_morph_meta_for_text(
     clean_text = _dehtml(field_text, am_config, True)
 
     # we only need to first item of the iterator since we only have one sentence,
-    morphs: list[Morpheme] = next(
-        morphemizer.get_processed_morphs(am_config, sentences=[clean_text])
+    morphs, _ = next(
+        morphemizer.get_processed_morphs(am_config, items=[(clean_text, -1)])
     )
 
     if not morphs:

@@ -20,18 +20,17 @@ class SpacyMorphemizer(Morphemizer):
         self.excluded_pos = {"X", "SPACE", "SYM", "PUNCT"}
 
     def get_processed_morphs(
-        self, am_config: AnkiMorphsConfig, sentences: list[str]
-    ) -> Iterator[list[Morpheme]]:
+        self, am_config: AnkiMorphsConfig, items: list[tuple[str, int]]
+    ) -> Iterator[tuple[list[Morpheme], int]]:
 
         # creating nlp objects is very expensive so we do it lazily here (cached)
         nlp: Any = spacy_wrapper.get_nlp(self.spacy_model)
 
-        for doc in nlp.pipe(sentences):
+        for doc, key in nlp.pipe(items, as_tuples=True):
             morphs: list[Morpheme] = []
 
             # doc: spacy.tokens.Doc
             for w in doc:
-
                 if w.pos_ in self.excluded_pos:
                     continue
 
@@ -55,13 +54,15 @@ class SpacyMorphemizer(Morphemizer):
             if am_config.preprocess_ignore_names_textfile:
                 morphs = text_preprocessing.remove_names_textfile(morphs)
 
-            yield morphs
+            yield morphs, key
 
-    def get_morphemes(self, sentences: list[str]) -> Iterator[list[Morpheme]]:
+    def get_morphemes(
+        self, items: list[tuple[str, int]]
+    ) -> Iterator[tuple[list[Morpheme], int]]:
         """
         Use 'get_processed_morphs()' instead of this
         """
-        yield []
+        yield [], 0
 
     def init_successful(self) -> bool:
         return spacy_wrapper.successful_import

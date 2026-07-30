@@ -537,7 +537,7 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         # Reverse the values, the lower the priority number is, the more it is prioritized.
         # Note: we can use a shortcut of providing the same priority (index) for both
         # the lemma and the inflection since we generate the intermediate lists from
-        # scratch every recalc, so which ever ends up being used will have the correct value.
+        # scratch every recalc, so whichever ends up being used will have the correct value.
         for index, key in enumerate(morphs_sorted_amount):
             morph_priorities[key] = index
             # print(f"key: {key}, index: {index}")

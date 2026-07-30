@@ -28,7 +28,7 @@ def test_mecab_morpheme_generation(  # pylint:disable=unused-argument
         Morpheme("ない", "ない"),
     }
 
-    extracted_morphs = next(morphemizer.get_morphemes([sentence]))
+    extracted_morphs, _ = next(morphemizer.get_morphemes([(sentence, -1)]))
     assert len(extracted_morphs) == 9
 
     for morph in extracted_morphs:
@@ -53,7 +53,7 @@ def test_jieba_morpheme_generation(  # pylint:disable=unused-argument
         Morpheme("请", "请"),
     }
 
-    extracted_morphs = next(morphemizer.get_morphemes([sentence]))
+    extracted_morphs, _ = next(morphemizer.get_morphemes([(sentence, -1)]))
     assert len(extracted_morphs) == 7
 
     for morph in extracted_morphs:
@@ -67,7 +67,7 @@ def test_jieba_morpheme_generation(  # pylint:disable=unused-argument
         Morpheme("跳", "跳"),
     }
 
-    extracted_morphs = next(morphemizer.get_morphemes([sentence]))
+    extracted_morphs, _ = next(morphemizer.get_morphemes([(sentence, -1)]))
     assert len(extracted_morphs) == 4
 
     for morph in extracted_morphs:

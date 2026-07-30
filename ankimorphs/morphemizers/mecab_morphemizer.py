@@ -16,13 +16,13 @@ class MecabMorphemizer(Morphemizer):
     def init_successful(self) -> bool:
         return mecab_wrapper.successful_import
 
-    def get_morphemes(self, sentences: list[str]) -> Iterator[list[Morpheme]]:
-        for sentence in sentences:
-            # Remove simple spaces that could be added by other add-ons because
-            # they can lead to parsing errors.
+    def get_morphemes(
+        self, items: list[tuple[str, int]]
+    ) -> Iterator[tuple[list[Morpheme], int]]:
+        for sentence, key in items:
             if space_char_regex.search(sentence):
                 sentence = space_char_regex.sub("", sentence)
-            yield mecab_wrapper.get_morphemes_mecab(sentence)
+            yield mecab_wrapper.get_morphemes_mecab(sentence), key
 
     def get_description(self) -> str:
         return "AnkiMorphs: Japanese"

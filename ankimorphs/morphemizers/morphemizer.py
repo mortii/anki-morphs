@@ -22,17 +22,19 @@ class Morphemizer(ABC):
         """
 
     def get_processed_morphs(
-        self, am_config: AnkiMorphsConfig, sentences: list[str]
-    ) -> Iterator[list[Morpheme]]:
-        for morphs in self.get_morphemes(sentences):
+        self, am_config: AnkiMorphsConfig, items: list[tuple[str, int]]
+    ) -> Iterator[tuple[list[Morpheme], int]]:
+        for morphs, key in self.get_morphemes(items):
             if am_config.preprocess_ignore_names_morphemizer:
                 morphs = self.remove_names_morphemizer(morphs)
             if am_config.preprocess_ignore_names_textfile:
                 morphs = text_preprocessing.remove_names_textfile(morphs)
-            yield morphs
+            yield morphs, key
 
     @abstractmethod
-    def get_morphemes(self, sentences: list[str]) -> Iterator[list[Morpheme]]:
+    def get_morphemes(
+        self, items: list[tuple[str, int]]
+    ) -> Iterator[tuple[list[Morpheme], int]]:
         pass
 
     @staticmethod

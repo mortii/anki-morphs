@@ -289,7 +289,10 @@ def get_morph_occurrences(
 ) -> dict[str, MorphOccurrence]:
     morph_occurrences: dict[str, MorphOccurrence] = {}
 
-    for processed_morphs in morphemizer.get_processed_morphs(mock_am_config, all_lines):
+    # hack the input tuple since we don't need it
+    for processed_morphs, _ in morphemizer.get_processed_morphs(
+        mock_am_config, [(line, -1) for line in all_lines]
+    ):
         for morph in processed_morphs:
             key = morph.lemma + morph.inflection
             if key in morph_occurrences:

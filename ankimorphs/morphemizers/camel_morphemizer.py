@@ -20,11 +20,11 @@ class CamelMorphemizer(Morphemizer):
         self.excluded_sources = {"punc", "digit", "foreign"}
 
     def get_processed_morphs(
-        self, am_config: AnkiMorphsConfig, sentences: list[str]
-    ) -> Iterator[list[Morpheme]]:
+        self, am_config: AnkiMorphsConfig, items: list[tuple[str, int]]
+    ) -> Iterator[tuple[list[Morpheme], int]]:
         analyzer = camel_wrapper.get_analyzer(self.db_name)
 
-        for sentence in sentences:
+        for sentence, key in items:
             morphs: list[Morpheme] = []
 
             for word in sentence.split():
@@ -65,13 +65,15 @@ class CamelMorphemizer(Morphemizer):
             if am_config.preprocess_ignore_names_textfile:
                 morphs = text_preprocessing.remove_names_textfile(morphs)
 
-            yield morphs
+            yield morphs, key
 
-    def get_morphemes(self, sentences: list[str]) -> Iterator[list[Morpheme]]:
+    def get_morphemes(
+        self, items: list[tuple[str, int]]
+    ) -> Iterator[tuple[list[Morpheme], int]]:
         """
         Use 'get_processed_morphs()' instead of this
         """
-        yield []
+        yield [], 0
 
     def init_successful(self) -> bool:
         return camel_wrapper.successful_import

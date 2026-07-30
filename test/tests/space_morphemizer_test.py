@@ -54,7 +54,7 @@ def test_simple_space_splitters(  # pylint:disable=unused-argument
     morphemizer = get_morphemizer_by_description(morphemizer_description)
     assert morphemizer is not None
 
-    extracted_morphs = next(morphemizer.get_morphemes([sentence]))
+    extracted_morphs, _ = next(morphemizer.get_morphemes([(sentence, -1)]))
     assert len(extracted_morphs) == len(correct_morphs)
 
     for morph in extracted_morphs:
