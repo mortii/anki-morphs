@@ -21,7 +21,7 @@ cocowash, asayake-b5, quietmansoath, MichaelPetre, xofm31, knoebelja, xuiqzy, Jc
 jahnke, jsteel44, iwouldrathernotusegithub, tanhoaian01, drkthomp, Kirchheim, zeroeightysix, Gardengul, wolearyc,
 Pedrubik2000, RyanMcEntire, BobvanSchendel, khanguyenwk, buqamura, Rct567, rwmpelstilzchen, bie-zheng, IncontinentCell,
 mdraves91, dae, AtilioA, BenjaminBrandtner, JSchoreels, weirdalsuperfan, NaabZer, JCFDGG, ryuk4real, QinSisuo, Clahane,
-Thiago-Morais, JMare.
+Thiago-Morais, JMare, Shootertrex.
 
 ### MorphMan (v5.0-qt6-alpha.1)
 
