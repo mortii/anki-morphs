@@ -1,8 +1,8 @@
-anki==25.9.4
-aqt==25.9.4
+anki==26.5
+aqt==26.5
 black==26.5.1
 csv-diff==1.2
-pre-commit==4.6.0
+pre-commit==4.6.1
 pylint==4.0.6
 PyQt6==6.6.1  # used by anki, newer versions can cause crashes in prod
 PyQt6-Qt6==6.6.1  # used by anki, newer versions can cause crashes in prod
