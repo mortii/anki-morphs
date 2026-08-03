@@ -97,7 +97,7 @@ When clicking the `Generate Priority File` or `Generate Study Plan` buttons you 
 
 ![generator-output-dialog.png](../../img/generator-output-dialog.png)
 
-The output file is automatically set to be in the [anki profile folder](../glossary.md#profile-folder)`/priority-files/` folder. Any priority
+The output file is automatically set to be in the [[anki profile folder](../glossary.md#profile-folder)]`/priority-files/` folder. Any priority
 files or study plans that are placed in this folder can be selected in the 
 [note filter: morph priority settings](../setup/settings/note-filter.md#morph-priority).
 
