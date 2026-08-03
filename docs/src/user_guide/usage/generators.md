@@ -97,7 +97,7 @@ When clicking the `Generate Priority File` or `Generate Study Plan` buttons you 
 
 ![generator-output-dialog.png](../../img/generator-output-dialog.png)
 
-The output file is automatically set to be in the [[anki profile folder](../../glossary.md#profile-folder)]`/priority-files/` folder. Any priority
+The output file is automatically set to be in the [anki profile folder](../glossary.md#profile-folder)`/priority-files/` folder. Any priority
 files or study plans that are placed in this folder can be selected in the 
 [note filter: morph priority settings](../setup/settings/note-filter.md#morph-priority).
 
@@ -169,7 +169,7 @@ The study plan generator basically does this:
 The resulting file can be used in the [note filter: morph priority settings](../setup/settings/note-filter.md#morph-priority)
 like any other priority file.
 
-> **Note**: that only the data from the `Morph-Lemma`, and `Morph-Lnflection` columns are read 
+> **Note**: that only the data from the `Morph-Lemma`, and `Morph-Inflection` columns are read 
 by AnkiMorphs, so you can delete or modify the other columns if you want.
 
 
