@@ -18,7 +18,7 @@ your **learning progress** and the **quality of your card collection** with resp
 Since progression is measured with respect to [morph priorities](../setup/prioritizing.md), we must first decide how 
 morph priorities should be determined. In an identical manner to [note filters](../setup/settings/note-filter.md#morph-priority), you can either use the morph 
 frequencies of your card collection (`Collection frequency`) or you can designate a custom `.csv` file that contains this 
-information. Any `.csv` file located in the folder [anki profile folder](../glossary.md#profile-folder)`/priority-files/` is available for selection. 
+information. Any `.csv` file located in the folder [[anki profile folder](../glossary.md#profile-folder)]`/priority-files/` is available for selection. 
 
 ### Options
 
