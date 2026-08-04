@@ -12,7 +12,7 @@ circle3451.
 ### Docs contribution
 
 Matt Vs Japan, mortii, Vilhelm-Ian, cocowash, xuiqzy, xofm31, zeroeightysix, wolearyc, Celebes, RobHelgeson,
-nathanielvirgo, BenjaminBrandtner, RezeScarlet, circle3451.
+nathanielvirgo, BenjaminBrandtner, RezeScarlet, circle3451, octomurp.
 
 ### Bugs reports, feature requests, or other helpful guidance
 
