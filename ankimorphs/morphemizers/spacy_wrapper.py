@@ -202,9 +202,21 @@ def create_spacy_venv() -> None:
         check=True,
     )
 
-    # six is necessary for some models
+    # Install spaCy and upgrade dependencies that are known to cause issues:
+    # - 'six' is required by some spaCy models.
+    # - 'click' is a CLI dependency that currently isn't resolved correctly
+    #   upstream, so we install it explicitly.
     subprocess.run(
-        [spacy_venv_python, "-m", "pip", "install", "--upgrade", "spacy", "six"],
+        [
+            spacy_venv_python,
+            "-m",
+            "pip",
+            "install",
+            "--upgrade",
+            "spacy",
+            "six",
+            "click",
+        ],
         check=True,
     )
 
