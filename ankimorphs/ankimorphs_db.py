@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import functools
 import sqlite3
-from collections import Counter
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -442,6 +441,9 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
     def get_card_morph_map_cache(self) -> dict[int, list[Morpheme]]:
         card_morph_map_cache: dict[int, list[Morpheme]] = {}
 
+        # the same morph is on many cards, and sharing one object per morph
+        interned_morphs: dict[tuple[str, str], Morpheme] = {}
+
         # Sorting the morphs (ORDER BY) is crucial to avoid bugs
         card_morph_map_cache_raw = self.con.execute(
             """
@@ -455,12 +457,17 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
 
         for row in card_morph_map_cache_raw:
             card_id = row[0]
-            morph = Morpheme(
-                lemma=row[1],
-                inflection=row[2],
-                highest_lemma_learning_interval=row[3],
-                highest_inflection_learning_interval=row[4],
-            )
+            morph_key = (row[1], row[2])
+            morph = interned_morphs.get(morph_key)
+
+            if morph is None:
+                morph = Morpheme(
+                    lemma=row[1],
+                    inflection=row[2],
+                    highest_lemma_learning_interval=row[3],
+                    highest_inflection_learning_interval=row[4],
+                )
+                interned_morphs[morph_key] = morph
 
             if card_id not in card_morph_map_cache:
                 card_morph_map_cache[card_id] = [morph]
@@ -510,37 +517,40 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
     def get_morph_priorities_from_collection(
         self, only_lemma_priorities: bool
     ) -> dict[tuple[str, str], int]:
-        # Sorting the morphs (ORDER BY) is crucial to avoid bugs
-        morphs_query = self.con.execute(
-            """
-            SELECT morph_lemma, morph_inflection
-            FROM Card_Morph_Map
-            ORDER BY morph_lemma, morph_inflection
-            """,
-        ).fetchall()
-
-        intermediate_morph_list = []
-
+        # ties are broken alphabetically, which is the order Counter.most_common()
+        # produced here before, so the priorities stay deterministic
         if only_lemma_priorities:
-            for lemma, _ in morphs_query:
-                intermediate_morph_list.append((lemma, lemma))
+            morphs_sorted_by_amount: list[tuple[str, str]] = [
+                (lemma, lemma)
+                for lemma, _occurrences in self.con.execute(
+                    """
+                    SELECT morph_lemma, COUNT(*) AS occurrences
+                    FROM Card_Morph_Map
+                    GROUP BY morph_lemma
+                    ORDER BY occurrences DESC, morph_lemma
+                    """,
+                ).fetchall()
+            ]
         else:
-            for lemma, inflection in morphs_query:
-                intermediate_morph_list.append((lemma, inflection))
-
-        morphs_sorted_amount: dict[tuple[str, str], int] = dict(
-            Counter(intermediate_morph_list).most_common()
-        )
-
-        morph_priorities: dict[tuple[str, str], int] = {}
+            morphs_sorted_by_amount = [
+                (lemma, inflection)
+                for lemma, inflection, _occurrences in self.con.execute(
+                    """
+                    SELECT morph_lemma, morph_inflection, COUNT(*) AS occurrences
+                    FROM Card_Morph_Map
+                    GROUP BY morph_lemma, morph_inflection
+                    ORDER BY occurrences DESC, morph_lemma, morph_inflection
+                    """,
+                ).fetchall()
+            ]
 
         # Reverse the values, the lower the priority number is, the more it is prioritized.
         # Note: we can use a shortcut of providing the same priority (index) for both
         # the lemma and the inflection since we generate the intermediate lists from
         # scratch every recalc, so whichever ends up being used will have the correct value.
-        for index, key in enumerate(morphs_sorted_amount):
-            morph_priorities[key] = index
-            # print(f"key: {key}, index: {index}")
+        morph_priorities: dict[tuple[str, str], int] = {
+            key: index for index, key in enumerate(morphs_sorted_by_amount)
+        }
 
         return morph_priorities
 
