@@ -55,6 +55,8 @@ def cache_anki_data(
         progress_utils.background_update_progress(label="Importing known morphs")
         morph_table_data += _get_morphs_from_files(am_config)
 
+    morph_table_data = _deduplicate_morphs(morph_table_data)
+
     progress_utils.background_update_progress(label="Updating learning intervals")
     _update_learning_intervals(am_config, morph_table_data)
 
@@ -151,6 +153,27 @@ def _append_card_and_morph_data(  # pylint:disable=too-many-arguments)
                     "morph_inflection": morph.inflection,
                 }
             )
+
+
+def _deduplicate_morphs(
+    morph_table_data: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    # the Morphs table only keeps one row per (lemma, inflection) with the
+    # highest interval anyway, so collapsing here just saves sqlite the upserts
+    deduplicated_morphs: dict[tuple[str, str], dict[str, Any]] = {}
+
+    for morph_data_dict in morph_table_data:
+        key = (morph_data_dict["lemma"], morph_data_dict["inflection"])
+        existing = deduplicated_morphs.get(key)
+
+        if (
+            existing is None
+            or morph_data_dict["highest_inflection_learning_interval"]
+            > existing["highest_inflection_learning_interval"]
+        ):
+            deduplicated_morphs[key] = morph_data_dict
+
+    return list(deduplicated_morphs.values())
 
 
 def _get_card_memory_strength(
