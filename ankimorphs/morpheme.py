@@ -46,12 +46,7 @@ class Morpheme:
 
     def __eq__(self, other: object) -> bool:
         assert isinstance(other, Morpheme)
-        return all(
-            [
-                self.lemma == other.lemma,
-                self.inflection == other.inflection,
-            ]
-        )
+        return self.lemma == other.lemma and self.inflection == other.inflection
 
     def __hash__(self) -> int:
         return hash((self.lemma, self.inflection))

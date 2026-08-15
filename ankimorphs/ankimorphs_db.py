@@ -386,6 +386,23 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             assert isinstance(highest_learning_interval, int)
             return highest_learning_interval
 
+    def get_all_highest_inflection_learning_intervals(
+        self,
+    ) -> dict[tuple[str, str], int]:
+        with self.con:
+            return {(row[0], row[1]): row[2] for row in self.con.execute("""
+                    SELECT lemma, inflection, highest_inflection_learning_interval
+                    FROM Morphs
+                    """).fetchall()}
+
+    def get_all_highest_lemma_learning_intervals(self) -> dict[str, int]:
+        with self.con:
+            return {row[0]: row[1] for row in self.con.execute("""
+                    SELECT lemma, MAX(highest_lemma_learning_interval)
+                    FROM Morphs
+                    GROUP BY lemma
+                    """).fetchall()}
+
     def get_morph_inflections_learning_statuses(self) -> dict[str, str]:
         morph_status_dict: dict[str, str] = {}
         am_config = AnkiMorphsConfig()

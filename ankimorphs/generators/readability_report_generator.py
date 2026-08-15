@@ -80,10 +80,15 @@ def _populate_tables_with_report(
     # the global report will be presented as a "Total" file in the table
     global_report_morph_stats = FileMorphsStats()
 
+    # loaded once here instead of one query per morph per file
+    highest_learning_intervals = generators_utils.get_highest_learning_intervals(
+        am_config, am_db
+    )
+
     for row, input_file in enumerate(input_files):
         file_morphs = morph_occurrences_by_file[input_file]
         file_morphs_stats = generators_utils.get_morph_stats_from_file(
-            am_config, am_db, file_morphs
+            am_config, highest_learning_intervals, file_morphs
         )
         global_report_morph_stats += file_morphs_stats
 
