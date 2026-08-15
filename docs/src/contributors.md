@@ -7,7 +7,7 @@ know, and I'll add you ;)
 ### Code contribution
 
 mortii, Vilhelm-Ian, xofm31, Jcuhfehl, schiozzone, Tartee, wolearyc, mdraves91, hans, RobHelgeson, JSchoreels, Rct567,
-circle3451.
+circle3451, pierspad.
 
 ### Docs contribution
 
