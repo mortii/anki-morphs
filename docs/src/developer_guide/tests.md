@@ -107,9 +107,6 @@ Current card collections (test/data/card_collections):
         - 1 fresh, not new card
         - 1 with only known or fresh morphs, new card
         - 1 with known, fresh, and one unknown morph, new card
-    - creating an evergreen collection that has fresh morphs is surprisingly difficult, because the
-      due date of the card actually depends on the timestamp of card creation. To make this problem go away
-      you can set the date of your system back a couple of months and then create the cards.
 - `suspend_all_morphs_known.anki2`
     - the base of this collection is `card_handling_collection.anki2`, that has been recalced with
       the config `config_suspend_morphs_known`
@@ -139,13 +136,18 @@ Current card collections (test/data/card_collections):
 2. (optional) create a new deck
 3. (optional) create a new note type
 4. add cards and change the ankimorphs settings to fit the use case
-6. recalc
-7. exit anki/close the profile
-8. extract the `collection.anki2` file from the profile directory and rename it to something relevant to the use case
+5. recalc
+6. exit anki/close the profile
+7. extract the `collection.anki2` file from the profile directory and rename it to something relevant to the use case
   and place the renamed collection file in `test/data/card_collections`
-9. repeat this process for the `ankimorphs.db` if the tests require it, and move it to `test/data/am_dbs`
-10. create a new fake config in `test/fake_configs.py` and make any necessary adjustments to have it match the settings
+8. repeat this process for the `ankimorphs.db` if the tests require it, and move it to `test/data/am_dbs`
+9. create a new fake config in `test/fake_configs.py` and make any necessary adjustments to have it match the settings
   used when you previously ran recalc.
+
+### Evergreen Collections
+Creating an evergreen collection (deterministic ordering) which has fresh morphs is surprisingly difficult, because the
+due date of the card actually depends on the timestamp of card creation. To make this problem go away
+you can set the date of your system back a couple of months and then create the cards.
 
 ## Investigating collections
 
