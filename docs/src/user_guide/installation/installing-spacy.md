@@ -18,6 +18,13 @@ which will take you to the `spaCy manager` window:
   - macOS: `~/Library/Application Support/Anki2/addons21/spacy-venv-python-<version>`
   - Linux: `~/.local/share/Anki2/addons21/spacy-venv-python-<version>`
 
+  > **Note**: on Anki 26.04 and later (self-contained builds), AnkiMorphs needs a Python interpreter
+  > to create this folder. If your system already has a Python matching Anki's version, or `uv`, it
+  > is reused and nothing extra is downloaded. Otherwise AnkiMorphs downloads `uv` and a standalone
+  > Python (~60 MB total) into `addons21/ankimorphs-python-bootstrap` automatically. That folder is
+  > shared by spaCy and CAMeL Tools, is not removed by "Purge", and can be deleted manually after
+  > purging both.
+
   After the installation is complete you have to restart Anki before you can install any models.
 
 * **Install Model**:  
