@@ -11,7 +11,9 @@ from ankimorphs.morphemizers.python_binary import get_python_binary
 def test_launcher_build_uses_the_anki_venv(monkeypatch: pytest.MonkeyPatch) -> None:
     # anki 25.09 and earlier ran from a uv-managed venv
     launcher_python = "/home/user/.local/share/AnkiProgramFiles/.venv/bin/python"
-    monkeypatch.setattr(aqt.package, "venv_binary", lambda cmd: launcher_python)
+    monkeypatch.setattr(
+        aqt.package, "venv_binary", lambda cmd: launcher_python, raising=False
+    )
     assert get_python_binary() == launcher_python
 
 
