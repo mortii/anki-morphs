@@ -206,7 +206,10 @@ def _download(url: str) -> bytes:
     try:
         client = HttpClient()
         response = client.get(url)
-        return client.stream_content(response)
+        # the annotation matters: mypy runs without anki installed in ci,
+        # where stream_content would otherwise resolve to Any
+        archive: bytes = client.stream_content(response)
+        return archive
     except Exception as error:  # pylint:disable=broad-exception-caught
         raise RuntimeError(
             f"Downloading {url} failed. Check your internet connection and try again."

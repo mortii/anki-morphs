@@ -77,7 +77,7 @@ def test_checksum_mismatch_aborts(
         uv_bootstrap.ensure_uv()
 
     # nothing may be written when verification fails
-    assert list(tmp_path.rglob("*")) == []
+    assert not list(tmp_path.rglob("*"))
 
 
 def test_extracts_uv_from_tarball(
@@ -105,9 +105,7 @@ def test_extracts_uv_from_tarball(
         assert os.access(uv_path, os.X_OK)
 
 
-def test_extracts_uv_from_zip(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_extracts_uv_from_zip(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     binary = b"fake uv binary"
     archive = _zip_with_uv(binary)
 
@@ -171,7 +169,7 @@ def test_create_managed_venv_prefers_native_python(
     captured: dict[str, Any] = {}
 
     def _fake_run(
-        command: list[str], **kwargs: Any
+        command: list[str], **_kwargs: Any
     ) -> subprocess.CompletedProcess[str]:
         captured["command"] = command
         return subprocess.CompletedProcess(command, 0)
@@ -198,7 +196,7 @@ def test_create_managed_venv_falls_back_to_uv_when_native_venv_fails(
     commands: list[list[str]] = []
 
     def _fake_run(
-        command: list[str], **kwargs: Any
+        command: list[str], **_kwargs: Any
     ) -> subprocess.CompletedProcess[str]:
         commands.append(command)
         if command[0] == "/usr/bin/python3.13":
@@ -284,7 +282,7 @@ def test_find_native_uv_version_gate(
     monkeypatch: pytest.MonkeyPatch, version_output: str, expected_path: str | None
 ) -> None:
     def _fake_run(
-        command: list[str], **kwargs: Any
+        command: list[str], **_kwargs: Any
     ) -> subprocess.CompletedProcess[str]:
         assert command == ["/native/uv", "--version"]
         return subprocess.CompletedProcess(command, 0, stdout=version_output)
@@ -326,7 +324,7 @@ def test_find_native_python_verifies_version_and_arch(
     )
 
     def _fake_run(
-        command: list[str], **kwargs: Any
+        command: list[str], **_kwargs: Any
     ) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(command, 0, stdout=probe_output)
 
