@@ -207,8 +207,6 @@ def create_spacy_venv() -> None:
 
     # Install spaCy and upgrade dependencies that are known to cause issues:
     # - 'six' is required by some spaCy models.
-    # - 'click' is a CLI dependency that currently isn't resolved correctly
-    #   upstream, so we install it explicitly.
     subprocess.run(
         [
             spacy_venv_python,
@@ -218,7 +216,6 @@ def create_spacy_venv() -> None:
             "--upgrade",
             "spacy",
             "six",
-            "click",
         ],
         check=True,
     )
