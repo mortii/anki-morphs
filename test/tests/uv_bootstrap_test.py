@@ -9,6 +9,7 @@ import sys
 import tarfile
 import zipfile
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -156,7 +157,7 @@ def test_create_managed_venv_downloads_uv_when_nothing_is_native(
         "--managed-python",
         "--no-config",
         "--python",
-        f"{sys.version_info.major}.{sys.version_info.minor}",
+        uv_bootstrap._uv_python_request(),
         venv_path,
     ]
     assert captured["env"]["UV_PYTHON_INSTALL_DIR"] == str(tmp_path / "python")
@@ -300,28 +301,41 @@ def test_find_native_uv_without_uv_on_the_system(
     assert uv_bootstrap._find_native_uv() is None
 
 
+# what a regular CPython matching the running process prints when probed
+_MATCHING_PROBE = (
+    str(sys.version_info.major),
+    str(sys.version_info.minor),
+    platform.machine(),
+    "cpython",
+    "0",
+)
+
+
 @pytest.mark.parametrize(
-    "major_offset, minor_offset, machine, expected_match",
+    "probe_lines, expected_match",
     [
-        (0, 0, platform.machine(), True),
-        (0, 1, platform.machine(), False),  # wrong minor version
-        (1, 0, platform.machine(), False),  # wrong major version
-        (0, 0, "mismatched-arch", False),  # e.g. arm64 python for x86_64 anki
+        (_MATCHING_PROBE, True),
+        # wrong minor version
+        (
+            (_MATCHING_PROBE[0], str(sys.version_info.minor + 1)) + _MATCHING_PROBE[2:],
+            False,
+        ),
+        # wrong major version
+        ((str(sys.version_info.major + 1),) + _MATCHING_PROBE[1:], False),
+        # e.g. an arm64 python while anki runs as x86_64 under rosetta
+        (_MATCHING_PROBE[:2] + ("mismatched-arch",) + _MATCHING_PROBE[3:], False),
+        # pypy venvs would select incompatible wheels
+        (_MATCHING_PROBE[:3] + ("pypy", "0"), False),
+        # free-threaded builds use incompatible cp3XXt wheels
+        (_MATCHING_PROBE[:4] + ("1",), False),
     ],
 )
-def test_find_native_python_verifies_version_and_arch(
+def test_find_native_python_verifies_version_arch_and_implementation(
     monkeypatch: pytest.MonkeyPatch,
-    major_offset: int,
-    minor_offset: int,
-    machine: str,
+    probe_lines: tuple[str, ...],
     expected_match: bool,
 ) -> None:
-    probe_output = (
-        f"{sys.version_info.major + major_offset}\n"
-        f"{sys.version_info.minor + minor_offset}\n"
-        f"{machine}\n"
-        "/usr/bin/python-resolved\n"
-    )
+    probe_output = "\n".join([*probe_lines, "/usr/bin/python-resolved"]) + "\n"
 
     def _fake_run(
         command: list[str], **_kwargs: Any
@@ -342,3 +356,55 @@ def test_find_native_python_without_candidates(
 ) -> None:
     monkeypatch.setattr(uv_bootstrap, "_which", lambda command: None)
     assert uv_bootstrap._find_native_python() is None
+
+
+@pytest.mark.parametrize(
+    "platform_name, machine, expected_request",
+    [
+        ("darwin", "arm64", "cpython-3.13-macos-aarch64-none"),
+        ("darwin", "x86_64", "cpython-3.13-macos-x86_64-none"),
+        ("win32", "AMD64", "cpython-3.13-windows-x86_64-none"),
+        ("win32", "ARM64", "cpython-3.13-windows-aarch64-none"),
+        ("linux", "x86_64", "cpython-3.13-linux-x86_64-gnu"),
+        ("linux", "aarch64", "cpython-3.13-linux-aarch64-gnu"),
+    ],
+)
+def test_uv_python_request_is_arch_qualified(
+    monkeypatch: pytest.MonkeyPatch,
+    platform_name: str,
+    machine: str,
+    expected_request: str,
+) -> None:
+    monkeypatch.setattr(sys, "platform", platform_name)
+    monkeypatch.setattr(sys, "version_info", SimpleNamespace(major=3, minor=13))
+    monkeypatch.setattr(platform, "machine", lambda: machine)
+
+    assert uv_bootstrap._uv_python_request() == expected_request
+
+
+def test_archive_without_uv_member_raises(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    buffer = io.BytesIO()
+    with tarfile.open(fileobj=buffer, mode="w:gz") as tar_file:
+        member = tarfile.TarInfo(name="uv-x86_64-unknown-linux-gnu/README.md")
+        member.size = 0
+        tar_file.addfile(member, io.BytesIO(b""))
+    archive = buffer.getvalue()
+
+    monkeypatch.setattr(uv_bootstrap, "_bootstrap_dir", lambda: tmp_path)
+    monkeypatch.setattr(
+        uv_bootstrap,
+        "_uv_asset",
+        lambda platform_name, machine: (
+            "uv-x86_64-unknown-linux-gnu.tar.gz",
+            hashlib.sha256(archive).hexdigest(),
+        ),
+    )
+    monkeypatch.setattr(uv_bootstrap, "_download", lambda url: archive)
+
+    with pytest.raises(RuntimeError, match="did not contain a uv binary"):
+        uv_bootstrap.ensure_uv()
+
+    # no binary and no leftover temp file may exist anywhere
+    assert not [path for path in tmp_path.rglob("*") if path.is_file()]

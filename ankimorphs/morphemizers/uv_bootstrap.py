@@ -28,6 +28,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import tempfile
 import zipfile
 from pathlib import Path
 
@@ -136,14 +137,16 @@ def _find_native_uv() -> str | None:
 
 def _probe_python(argv_prefix: list[str]) -> str | None:
     """
-    Returns the interpreter's path if it matches the python version and
-    architecture of the anki process, otherwise None.
+    Returns the interpreter's path if it is a regular CPython matching the
+    python version and architecture of the anki process, otherwise None.
     """
     probe_code = (
-        "import platform, sys\n"
+        "import platform, sys, sysconfig\n"
         "print(sys.version_info.major)\n"
         "print(sys.version_info.minor)\n"
         "print(platform.machine())\n"
+        "print(sys.implementation.name)\n"
+        "print(sysconfig.get_config_var('Py_GIL_DISABLED') or 0)\n"
         "print(sys.executable)\n"
     )
     try:
@@ -158,15 +161,19 @@ def _probe_python(argv_prefix: list[str]) -> str | None:
         return None
 
     lines = result.stdout.splitlines()
-    if len(lines) < 4:
+    if len(lines) < 6:
         return None
-    if lines[0] != str(sys.version_info.major):
+
+    expected = [
+        str(sys.version_info.major),
+        str(sys.version_info.minor),
+        platform.machine(),
+        "cpython",  # pypy venvs would select wheels anki cannot import
+        "0",  # free-threaded builds use incompatible cp3XXt wheels
+    ]
+    if lines[:5] != expected:
         return None
-    if lines[1] != str(sys.version_info.minor):
-        return None
-    if lines[2] != platform.machine():
-        return None
-    return lines[3].strip() or None
+    return lines[5].strip() or None
 
 
 def _find_native_python() -> str | None:
@@ -242,13 +249,19 @@ def _extract_uv_binary(archive: bytes, asset_name: str, destination: Path) -> No
             f"The downloaded archive {asset_name} did not contain a uv binary."
         )
 
-    # write to a temp file and rename so interrupted installs never leave a
-    # half-written binary behind
-    temp_destination = destination.with_suffix(".tmp")
-    temp_destination.write_bytes(binary)
-    if not is_win:
-        temp_destination.chmod(0o755)
-    os.replace(temp_destination, destination)
+    # write to a unique temp file and rename into place so interrupted or
+    # concurrent installs never leave a half-written binary behind
+    temp_fd, temp_name = tempfile.mkstemp(dir=destination.parent, suffix=".tmp")
+    temp_destination = Path(temp_name)
+    try:
+        with os.fdopen(temp_fd, "wb") as temp_file:
+            temp_file.write(binary)
+        if not is_win:
+            temp_destination.chmod(0o755)
+        os.replace(temp_destination, destination)
+    finally:
+        # gone already unless writing or renaming failed
+        temp_destination.unlink(missing_ok=True)
 
 
 def ensure_uv() -> str:
@@ -269,6 +282,26 @@ def ensure_uv() -> str:
     uv_path.parent.mkdir(parents=True, exist_ok=True)
     _extract_uv_binary(archive, asset_name, uv_path)
     return str(uv_path)
+
+
+def _uv_python_request() -> str:
+    """
+    An architecture-qualified python request (e.g. 'cpython-3.13-macos-
+    aarch64-none') instead of a bare '3.13', so that uv provisions an
+    interpreter matching the anki process even when the uv binary itself
+    runs under a different architecture (e.g. a native arm64 uv while anki
+    is an intel build running under rosetta).
+    """
+    python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    machine = platform.machine().lower()
+    arch = {"amd64": "x86_64", "arm64": "aarch64"}.get(machine, machine)
+    if sys.platform == "darwin":
+        os_name, libc = "macos", "none"
+    elif sys.platform == "win32":
+        os_name, libc = "windows", "none"
+    else:
+        os_name, libc = "linux", "gnu"
+    return f"cpython-{python_version}-{os_name}-{arch}-{libc}"
 
 
 def create_managed_venv(venv_path: str) -> None:
@@ -311,7 +344,7 @@ def create_managed_venv(venv_path: str) -> None:
             "--managed-python",
             "--no-config",
             "--python",
-            f"{sys.version_info.major}.{sys.version_info.minor}",
+            _uv_python_request(),
             venv_path,
         ],
         check=True,
