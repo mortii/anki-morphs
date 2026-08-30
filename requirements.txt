@@ -1,9 +1,9 @@
-anki==25.9.4
-aqt==25.9.4
+anki==26.8.1
+aqt==26.8.1
 black==26.5.1
 csv-diff==1.2
-pre-commit==4.6.0
-pylint==4.0.6
+pre-commit==4.6.2
+pylint==4.0.7
 PyQt6==6.6.1  # used by anki, newer versions can cause crashes in prod
 PyQt6-Qt6==6.6.1  # used by anki, newer versions can cause crashes in prod
 PyQt6-WebEngine==6.6.0  # used by anki, newer versions can cause crashes in prod
@@ -18,4 +18,4 @@ pytest-randomly==4.1.0
 pytest-sugar==1.1.1
 pytest-xvfb==3.1.1
 six==1.17.0  # some spacy package is missing this from their requirements
-spacy==3.8.14
+spacy==3.8.16
