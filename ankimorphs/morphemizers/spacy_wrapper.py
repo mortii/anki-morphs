@@ -11,7 +11,8 @@ from typing import Any
 
 from anki.utils import is_win
 from aqt import mw
-from aqt.package import venv_binary
+
+from .python_binary import get_python_binary
 
 # pylint: disable=invalid-name
 
@@ -173,11 +174,13 @@ def create_spacy_venv() -> None:
     # delete in case it already exists from previously failed attempts
     shutil.rmtree(spacy_venv_path, ignore_errors=True)
 
-    python_path: str | None = venv_binary("python")
+    python_path: str | None = get_python_binary()
 
     if python_path is None:
         raise ValueError(
-            "Anki API error. Install Anki from the official website to avoid this issue."
+            "Could not find a python interpreter to create the spaCy environment"
+            " with. Anki 26.x is distributed as a self-contained app that does not"
+            " include one, so installing spaCy currently requires Anki 25.09.x."
         )
 
     subprocess.run([python_path, "-m", "venv", spacy_venv_path], check=True)
