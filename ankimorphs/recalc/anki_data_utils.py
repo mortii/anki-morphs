@@ -66,6 +66,7 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         "note_id",
         "note_type_id",
         "morphs",
+        "expression_hash",
     )
 
     def __init__(  # pylint:disable=too-many-arguments
@@ -104,6 +105,7 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
 
         # this is set later in the caching process
         self.morphs: set[Morpheme] | None = None
+        self.expression_hash: int | None = None
 
 
 class AnkiMorphsCardData:
