@@ -459,32 +459,41 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         card_morph_map_cache: dict[int, list[Morpheme]] = {}
 
         # the same morph is on many cards, and sharing one object per morph
-        interned_morphs: dict[tuple[str, str], Morpheme] = {}
+        interned_morphs: dict[tuple[str, str], Morpheme] = {
+            (row[0], row[1]): Morpheme(
+                lemma=row[0],
+                inflection=row[1],
+                highest_lemma_learning_interval=row[2],
+                highest_inflection_learning_interval=row[3],
+            )
+            for row in self.con.execute(
+                """
+                SELECT lemma, inflection, highest_lemma_learning_interval, highest_inflection_learning_interval
+                FROM Morphs
+                """,
+            ).fetchall()
+        }
 
         # Sorting the morphs (ORDER BY) is crucial to avoid bugs
+        #
+        # The map table is read on its own rather than joined with Morphs: its
+        # primary key already is (card_id, morph_lemma, morph_inflection), so
+        # this order comes straight from the index, and a row with no matching
+        # morph is skipped below just as the inner join dropped it.
         card_morph_map_cache_raw = self.con.execute(
             """
-            SELECT Card_Morph_Map.card_id, Morphs.lemma, Morphs.inflection, Morphs.highest_lemma_learning_interval, Morphs.highest_inflection_learning_interval
+            SELECT card_id, morph_lemma, morph_inflection
             FROM Card_Morph_Map
-            INNER JOIN Morphs ON
-                Card_Morph_Map.morph_lemma = Morphs.lemma AND Card_Morph_Map.morph_inflection = Morphs.inflection
-            ORDER BY Morphs.lemma, Morphs.inflection
+            ORDER BY card_id, morph_lemma, morph_inflection
             """,
         ).fetchall()
 
         for row in card_morph_map_cache_raw:
             card_id = row[0]
-            morph_key = (row[1], row[2])
-            morph = interned_morphs.get(morph_key)
+            morph = interned_morphs.get((row[1], row[2]))
 
             if morph is None:
-                morph = Morpheme(
-                    lemma=row[1],
-                    inflection=row[2],
-                    highest_lemma_learning_interval=row[3],
-                    highest_inflection_learning_interval=row[4],
-                )
-                interned_morphs[morph_key] = morph
+                continue
 
             if card_id not in card_morph_map_cache:
                 card_morph_map_cache[card_id] = [morph]
