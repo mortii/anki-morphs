@@ -31,17 +31,3 @@ def dump_collection(collection: Collection) -> list[Any]:
             )
         )
     return dump
-
-
-def recalc_until_the_collection_stops_changing(collection: Collection) -> list[Any]:
-    recalc()
-    previous = dump_collection(collection)
-
-    for _ in range(6):
-        recalc()
-        current = dump_collection(collection)
-        if current == previous:
-            return current
-        previous = current
-
-    raise AssertionError("recalc never reached a fixed point")

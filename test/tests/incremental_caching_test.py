@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import copy
+import shutil
 from collections.abc import Callable
+from pathlib import Path
 from test.fake_configs import config_known_morphs_enabled, default_config_dict
 from test.fake_environment_module import (  # pylint:disable=unused-import
     FakeEnvironment,
@@ -11,13 +13,13 @@ from test.fake_environment_module import (  # pylint:disable=unused-import
 from test.recalc_helpers import (
     dump_collection,
     recalc,
-    recalc_until_the_collection_stops_changing,
 )
 from typing import Any
 from unittest import mock
 
 import pytest
 
+from ankimorphs import ankimorphs_db
 from ankimorphs import ankimorphs_globals as am_globals
 from ankimorphs import name_file_utils, text_preprocessing
 from ankimorphs.ankimorphs_config import RawConfigFilterKeys, RawConfigKeys
@@ -81,15 +83,28 @@ def _dump_am_db() -> dict[str, list[Any]]:
     return dump
 
 
-def _assert_reusing_the_cache_matches_a_full_rebuild(collection: Collection) -> None:
-    reused_collection = recalc_until_the_collection_stops_changing(collection)
+def _assert_reusing_the_cache_matches_a_full_rebuild(fixture: FakeEnvironment) -> None:
+    collection = fixture.mock_mw.col
+    collection_path = Path(
+        collection.db.scalar(
+            "SELECT file FROM pragma_database_list WHERE name = 'main'"
+        )
+    )
+    snapshot_path = collection_path.with_suffix(".snapshot.anki2")
+    collection.close()
+    shutil.copyfile(collection_path, snapshot_path)
+    fixture.mock_mw.col = Collection(str(collection_path))
+
+    recalc()
+    reused_collection = dump_collection(fixture.mock_mw.col)
     reused_db = _dump_am_db()
 
+    fixture.mock_mw.col.close()
+    shutil.copyfile(snapshot_path, collection_path)
+    fixture.mock_mw.col = Collection(str(collection_path))
     _discard_the_cached_morphs()
     recalc()
-    rebuilt_collection = dump_collection(collection)
-    _discard_the_cached_morphs()
-    recalc()
+    rebuilt_collection = dump_collection(fixture.mock_mw.col)
     rebuilt_db = _dump_am_db()
 
     assert reused_collection == rebuilt_collection
@@ -240,9 +255,9 @@ def test_reusing_the_cached_morphs_matches_a_full_rebuild(  # pylint:disable=unu
         fake_environment_fixture
     )
 
-    recalc_until_the_collection_stops_changing(collection)
+    recalc()
     mutation(collection, config, fake_environment_fixture)
-    _assert_reusing_the_cache_matches_a_full_rebuild(collection)
+    _assert_reusing_the_cache_matches_a_full_rebuild(fake_environment_fixture)
 
 
 @pytest.mark.parametrize(
@@ -259,9 +274,9 @@ def test_reusing_the_cached_morphs_matches_a_full_rebuild_with_mecab(  # pylint:
     ] = _JAPANESE_MORPHEMIZER
     fake_environment_fixture.mock_mw.addonManager.getConfig.return_value = config
 
-    recalc_until_the_collection_stops_changing(collection)
+    recalc()
     _the_expression_changed(collection, config, fake_environment_fixture)
-    _assert_reusing_the_cache_matches_a_full_rebuild(collection)
+    _assert_reusing_the_cache_matches_a_full_rebuild(fake_environment_fixture)
 
 
 def _spy_on_the_morphemizer(description: str = _SPACE_MORPHEMIZER) -> Any:
@@ -370,9 +385,9 @@ def test_a_card_that_moves_to_a_filter_with_another_morphemizer_is_reextracted( 
     config[RawConfigKeys.FILTERS].append(reversed_filter)
     fake_environment_fixture.mock_mw.addonManager.getConfig.return_value = config
 
-    recalc_until_the_collection_stops_changing(collection)
+    recalc()
     _a_note_changed_note_type(collection, config, fake_environment_fixture)
-    _assert_reusing_the_cache_matches_a_full_rebuild(collection)
+    _assert_reusing_the_cache_matches_a_full_rebuild(fake_environment_fixture)
 
 
 @pytest.mark.parametrize("fake_environment_fixture", [_COLLECTION], indirect=True)
@@ -389,9 +404,9 @@ def test_a_card_that_moves_to_a_filter_reading_another_field_is_reextracted(  # 
     config[RawConfigKeys.FILTERS].append(reversed_filter)
     fake_environment_fixture.mock_mw.addonManager.getConfig.return_value = config
 
-    recalc_until_the_collection_stops_changing(collection)
+    recalc()
     _a_note_changed_note_type(collection, config, fake_environment_fixture)
-    _assert_reusing_the_cache_matches_a_full_rebuild(collection)
+    _assert_reusing_the_cache_matches_a_full_rebuild(fake_environment_fixture)
 
 
 @pytest.mark.parametrize("fake_environment_fixture", [_COLLECTION], indirect=True)
@@ -511,29 +526,49 @@ def test_two_filters_reading_different_fields_keep_the_morphs_of_both(  # pylint
     )
 
     _an_overlapping_filter_was_added(collection, config, fake_environment_fixture)
-    recalc_until_the_collection_stops_changing(collection)
+    recalc()
     _the_expression_changed(collection, config, fake_environment_fixture)
-    _assert_reusing_the_cache_matches_a_full_rebuild(collection)
+    _assert_reusing_the_cache_matches_a_full_rebuild(fake_environment_fixture)
 
 
 @pytest.mark.parametrize("fake_environment_fixture", [_COLLECTION], indirect=True)
-def test_morphs_seen_today_are_cleared_by_every_recalc(  # pylint:disable=unused-argument
+def test_recalc_rebuilds_morphs_seen_today_from_the_updated_card_morph_map(  # pylint:disable=unused-argument
     fake_environment_fixture: FakeEnvironment,
 ) -> None:
-    _start_with_a_config_no_other_test_shares(fake_environment_fixture)
+    collection, _config = _start_with_a_config_no_other_test_shares(
+        fake_environment_fixture
+    )
     recalc()
 
+    card_id = sorted(collection.find_cards(""))[0]
     am_db = AnkiMorphsDB()
+    expected = am_db.con.execute(
+        """
+        SELECT morph_lemma, morph_inflection
+        FROM Card_Morph_Map
+        WHERE card_id = ?
+        """,
+        (card_id,),
+    ).fetchall()
+    assert expected
     with am_db.con:
-        am_db.con.execute("INSERT OR IGNORE INTO Seen_Morphs VALUES ('a', 'a')")
+        am_db.con.execute("INSERT OR IGNORE INTO Seen_Morphs VALUES ('stale', 'stale')")
     am_db.con.close()
 
-    recalc()
+    with (
+        mock.patch.object(
+            AnkiMorphsDB, "get_new_cards_seen_today", return_value=[card_id]
+        ),
+        mock.patch.object(
+            ankimorphs_db, "get_names_from_file_as_morphs", return_value=[]
+        ),
+    ):
+        recalc()
 
     am_db = AnkiMorphsDB()
     seen = am_db.con.execute("SELECT * FROM Seen_Morphs").fetchall()
     am_db.con.close()
-    assert not seen
+    assert sorted(seen) == sorted(expected)
 
 
 @pytest.mark.parametrize(
@@ -565,10 +600,10 @@ def test_the_card_morph_map_is_identical_to_a_full_rebuild(  # pylint:disable=un
     collection, config = _start_with_a_config_no_other_test_shares(
         fake_environment_fixture
     )
-    recalc_until_the_collection_stops_changing(collection)
+    recalc()
 
     _a_note_was_added(collection, config, fake_environment_fixture)
-    recalc_until_the_collection_stops_changing(collection)
+    recalc()
     reused = _dump_am_db()["Card_Morph_Map"]
 
     _discard_the_cached_morphs()
@@ -583,7 +618,7 @@ def test_an_interrupted_recalc_does_not_leave_a_cache_that_is_believed_valid(  #
     collection, config = _start_with_a_config_no_other_test_shares(
         fake_environment_fixture
     )
-    recalc_until_the_collection_stops_changing(collection)
+    recalc()
     expected = _dump_am_db()
 
     _the_expression_changed(collection, config, fake_environment_fixture)
@@ -599,7 +634,7 @@ def test_an_interrupted_recalc_does_not_leave_a_cache_that_is_believed_valid(  #
     am_db.con.close()
     assert signature is None
 
-    recalc_until_the_collection_stops_changing(collection)
+    recalc()
     reused = _dump_am_db()
 
     _discard_the_cached_morphs()
@@ -666,7 +701,7 @@ def test_ignoring_suspended_cards_is_not_part_of_the_extraction_signature(  # py
     recalc()
 
     config[RawConfigKeys.PREPROCESS_IGNORE_SUSPENDED_CARDS_CONTENT] = True
-    _assert_reusing_the_cache_matches_a_full_rebuild(collection)
+    _assert_reusing_the_cache_matches_a_full_rebuild(fake_environment_fixture)
 
     config[RawConfigKeys.PREPROCESS_IGNORE_SUSPENDED_CARDS_CONTENT] = False
-    _assert_reusing_the_cache_matches_a_full_rebuild(collection)
+    _assert_reusing_the_cache_matches_a_full_rebuild(fake_environment_fixture)
