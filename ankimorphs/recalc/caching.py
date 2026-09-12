@@ -49,10 +49,6 @@ def cache_anki_data(
     # interrupted recalc leaves no signature and the next one rebuilds
     am_db.set_extraction_signature(None)
 
-    # recalc has always started the "morphs seen today" over
-    am_db.drop_seen_morphs_table()
-    am_db.create_seen_morph_table()
-
     cached_expression_hashes: dict[int, int] = am_db.get_expression_hashes()
 
     card_table_data: list[dict[str, Any]] = []
@@ -102,6 +98,9 @@ def cache_anki_data(
     am_db.replace_morph_table(morph_table_data)
     am_db.set_extraction_signature(extraction_signature)
     am_db.con.close()
+
+    # Card_Morph_Map may have changed, so refresh today's seen morphs from it.
+    AnkiMorphsDB.rebuild_seen_morphs_today_background()
 
 
 def _cached_morphs_are_reusable(

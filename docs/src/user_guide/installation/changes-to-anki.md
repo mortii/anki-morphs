@@ -265,3 +265,14 @@ You can find info about the options here:
 * [spaCy Manager](../installation/installing-spacy.md)
 * [Known Morphs Exporter](../usage/known-morphs-exporter.md)
 * [Reset Tags](../usage/reset_tags.md)
+* [Reset Database](#reset-database)
+
+### Reset Database
+
+If you suspect the cached morph data is incorrect, go to `Tools` -> `AnkiMorphs` ->
+`Reset Database` and confirm the reset. This clears the AnkiMorphs database, including
+cached morphs and today's seen morphs. Your Anki cards, review history, settings,
+known-morphs files, and priority files are kept.
+
+Run [Recalc](../usage/recalc.md) afterwards to rebuild the database before studying.
+The first recalc after a reset extracts morphs from all cards included by your read-enabled note filters.

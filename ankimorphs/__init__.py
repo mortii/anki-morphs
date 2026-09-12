@@ -24,6 +24,7 @@ from anki.collection import OpChangesAfterUndo
 from anki.utils import is_win
 from aqt import gui_hooks, mw
 from aqt.browser.browser import Browser
+from aqt.operations import QueryOp
 from aqt.overview import Overview
 from aqt.qt import (  # pylint:disable=no-name-in-module
     QAction,
@@ -263,6 +264,7 @@ def init_tool_menu_and_actions() -> None:
     spacy_manager_action = create_spacy_manager_dialog_action()
     camel_manager_action = create_camel_manager_dialog_action()
     reset_tags_action = create_tag_reset_action()
+    reset_database_action = create_database_reset_action()
     guide_action = create_guide_action()
     changelog_action = create_changelog_action()
 
@@ -276,6 +278,7 @@ def init_tool_menu_and_actions() -> None:
     if not is_win:  # not supported on windows
         am_tool_menu.addAction(camel_manager_action)
     am_tool_menu.addAction(reset_tags_action)
+    am_tool_menu.addAction(reset_database_action)
     am_tool_menu.addAction(guide_action)
     am_tool_menu.addAction(changelog_action)
 
@@ -514,6 +517,40 @@ def reset_am_tags() -> None:
         tags_and_queue_utils.reset_am_tags(parent=mw)
 
 
+def reset_database() -> None:
+    assert mw is not None
+
+    if not message_box_utils.show_warning_box(
+        "Reset Database?",
+        "This will clear the AnkiMorphs database. Your Anki cards, review history, "
+        "settings, and files will be kept.<br><br>"
+        "Run Recalc afterwards to rebuild the database before studying.",
+        parent=mw,
+    ):
+        return
+
+    QueryOp(
+        parent=mw,
+        op=lambda _: _reset_database_background(),
+        success=lambda _: _on_database_reset(),
+    ).with_progress().run_in_background()
+
+
+def _reset_database_background() -> None:
+    with AnkiMorphsDB() as am_db:
+        am_db.drop_all_tables()
+        am_db.create_all_tables()
+
+
+def _on_database_reset() -> None:
+    global _updated_seen_morphs_for_profile
+    assert mw is not None
+
+    _updated_seen_morphs_for_profile = False
+    mw.toolbar.draw()
+    tooltip("Database reset. Run Recalc before studying.", parent=mw)
+
+
 def create_am_tool_menu() -> QMenu:
     assert mw is not None
     am_tool_menu = QMenu("AnkiMorphs", mw)
@@ -542,6 +579,12 @@ def create_settings_action(am_config: AnkiMorphsConfig) -> QAction:
 def create_tag_reset_action() -> QAction:
     action = QAction("&Reset Tags", mw)
     action.triggered.connect(reset_am_tags)
+    return action
+
+
+def create_database_reset_action() -> QAction:
+    action = QAction("&Reset Database", mw)
+    action.triggered.connect(reset_database)
     return action
 
 
