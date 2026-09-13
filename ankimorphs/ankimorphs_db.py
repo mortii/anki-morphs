@@ -148,6 +148,18 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             self.con.execute("SELECT card_id, expression_hash FROM Cards").fetchall()
         )
 
+    def has_current_cards_schema(self) -> bool:
+        columns = self.con.execute("PRAGMA table_info(Cards)").fetchall()
+        return [column[1] for column in columns] == [
+            "card_id",
+            "note_id",
+            "note_type_id",
+            "card_type",
+            "tags",
+            "expression_hash",
+            "memory_strength",
+        ]
+
     def replace_card_table(self, card_list: list[dict[str, Any]]) -> None:
         with self.con:
             self.con.execute("DELETE FROM Cards")
