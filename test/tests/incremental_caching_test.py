@@ -352,7 +352,6 @@ def test_a_database_from_an_older_ankimorphs_version_is_rebuilt(  # pylint:disab
 
     am_db = AnkiMorphsDB()
     with am_db.con:
-        am_db.con.execute("DROP TABLE IF EXISTS Extraction_Signature")
         am_db.con.execute("DROP TABLE IF EXISTS Cards")
         am_db.con.execute("""
             CREATE TABLE Cards

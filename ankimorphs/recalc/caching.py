@@ -108,6 +108,9 @@ def _cached_morphs_are_reusable(
     extraction_signature: str,
     read_enabled_config_filters: list[AnkiMorphsConfigFilter],
 ) -> bool:
+    if not am_db.has_current_cards_schema():
+        return False
+
     if am_db.get_extraction_signature() != extraction_signature:
         return False
 
