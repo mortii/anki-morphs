@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 from typing import Any
 
+import anki.utils
 from aqt import mw
 
 from .. import ankimorphs_globals as am_globals
@@ -17,6 +18,7 @@ from ..morphemizers import morphemizer_utils
 from ..text_preprocessing import get_processed_text
 from . import anki_data_utils
 from .anki_data_utils import AnkiCardData
+from .extraction_sources import NoteSourceKey, get_expression_hash, make_source_key
 
 
 def cache_anki_data(
@@ -37,7 +39,7 @@ def cache_anki_data(
         am_config, read_enabled_config_filters
     )
     cached_morphs_are_reusable = _cached_morphs_are_reusable(
-        am_db, extraction_signature, read_enabled_config_filters
+        am_db, extraction_signature
     )
 
     if not cached_morphs_are_reusable:
@@ -49,40 +51,45 @@ def cache_anki_data(
     # interrupted recalc leaves no signature and the next one rebuilds
     am_db.set_extraction_signature(None)
 
-    cached_expression_hashes: dict[int, int] = am_db.get_expression_hashes()
+    cached_source_hashes: dict[NoteSourceKey, int] = am_db.get_source_hashes()
+    card_table_data, source_work, source_assignments = _collect_source_work(
+        am_config, read_enabled_config_filters
+    )
 
-    card_table_data: list[dict[str, Any]] = []
-    card_morph_map_table_data: list[dict[str, Any]] = []
-    orphaned_card_ids: set[int] = set(cached_expression_hashes)
-    reextracted_card_ids: set[int] = set()
-
-    # We only want to cache the morphs on the note-filters that have 'read' enabled
-    for config_filter in read_enabled_config_filters:
-        cards_data_dict = anki_data_utils.create_card_data_dict(
-            am_config, config_filter
-        )
-        orphaned_card_ids.difference_update(cards_data_dict)
-        reextracted_card_ids.update(
-            _extract_and_assign_morphs(
-                am_config, config_filter, cards_data_dict, cached_expression_hashes
-            )
-        )
-        _append_card_and_morph_data(
-            am_config,
-            config_filter,
-            cards_data_dict,
-            card_table_data,
-            card_morph_map_table_data,
-        )
+    current_source_hashes = {
+        key: get_expression_hash(key[1], expression)
+        for key, (_config_filter, expression) in source_work.items()
+    }
+    changed_source_keys = {
+        key
+        for key, expression_hash in current_source_hashes.items()
+        if cached_source_hashes.get(key) != expression_hash
+    }
+    orphaned_source_keys = set(cached_source_hashes) - set(current_source_hashes)
+    source_morph_rows = _extract_source_morphs(
+        am_config, source_work, changed_source_keys
+    )
 
     progress_utils.background_update_progress(label="Saving to ankimorphs.db")
-    am_db.replace_card_table(card_table_data)
-
-    # these still hold the morphs of the previous recalc
-    if cached_morphs_are_reusable:
-        am_db.delete_card_morphs(orphaned_card_ids | reextracted_card_ids)
-
-    am_db.insert_many_into_card_morph_map_table(card_morph_map_table_data)
+    am_db.replace_card_table(list(card_table_data.values()))
+    am_db.delete_note_source_morphs(orphaned_source_keys | changed_source_keys)
+    am_db.replace_note_sources(
+        [
+            {
+                "note_id": note_id,
+                "source_key": source_key,
+                "expression_hash": expression_hash,
+            }
+            for (note_id, source_key), expression_hash in current_source_hashes.items()
+        ]
+    )
+    am_db.insert_note_source_morphs(source_morph_rows)
+    am_db.materialize_card_morph_map(
+        [
+            {"card_id": card_id, "note_id": note_id, "source_key": source_key}
+            for card_id, note_id, source_key in source_assignments
+        ]
+    )
 
     morph_table_data: list[dict[str, Any]] = am_db.get_morphs_with_highest_intervals()
 
@@ -103,18 +110,89 @@ def cache_anki_data(
     AnkiMorphsDB.rebuild_seen_morphs_today_background()
 
 
+def _collect_source_work(
+    am_config: AnkiMorphsConfig,
+    config_filters: list[AnkiMorphsConfigFilter],
+) -> tuple[
+    dict[int, dict[str, Any]],
+    dict[NoteSourceKey, tuple[AnkiMorphsConfigFilter, str]],
+    set[tuple[int, int, str]],
+]:
+    card_table_data: dict[int, dict[str, Any]] = {}
+    source_work: dict[NoteSourceKey, tuple[AnkiMorphsConfigFilter, str]] = {}
+    assignments: set[tuple[int, int, str]] = set()
+    anki_data_cache: dict[
+        tuple[int, tuple[str, ...], tuple[str, ...]],
+        dict[int, anki_data_utils.AnkiDBRowData],
+    ] = {}
+
+    for config_filter in config_filters:
+        anki_data = _get_filter_anki_data(am_config, config_filter, anki_data_cache)
+        cards = anki_data_utils.create_card_data_dict(
+            am_config, config_filter, anki_data
+        )
+        source_key = make_source_key(config_filter)
+        for card_id, card_data in cards.items():
+            note_source_key = (card_data.note_id, source_key)
+            previous = source_work.get(note_source_key)
+            if previous is not None:
+                assert previous[1] == card_data.expression_field
+            else:
+                source_work[note_source_key] = (
+                    config_filter,
+                    card_data.expression_field,
+                )
+
+            assignments.add((card_id, card_data.note_id, source_key))
+            card_table_data.setdefault(
+                card_id,
+                {
+                    "card_id": card_id,
+                    "note_id": card_data.note_id,
+                    "note_type_id": card_data.note_type_id,
+                    "card_type": card_data.type,
+                    "tags": card_data.tags,
+                    "memory_strength": _get_card_memory_strength(am_config, card_data),
+                },
+            )
+
+    return card_table_data, source_work, assignments
+
+
+def _get_filter_anki_data(
+    am_config: AnkiMorphsConfig,
+    config_filter: AnkiMorphsConfigFilter,
+    cache: dict[
+        tuple[int, tuple[str, ...], tuple[str, ...]],
+        dict[int, anki_data_utils.AnkiDBRowData],
+    ],
+) -> dict[int, anki_data_utils.AnkiDBRowData]:
+    assert mw is not None
+    note_type_id = mw.col.models.id_for_name(config_filter.note_type)
+    assert note_type_id is not None
+    key = (
+        int(note_type_id),
+        tuple(config_filter.tags["include"]),
+        tuple(config_filter.tags["exclude"]),
+    )
+    if key not in cache:
+        cache[key] = anki_data_utils._get_anki_data(  # pylint:disable=protected-access
+            am_config, note_type_id, config_filter.tags
+        )
+    return cache[key]
+
+
 def _cached_morphs_are_reusable(
     am_db: AnkiMorphsDB,
     extraction_signature: str,
-    read_enabled_config_filters: list[AnkiMorphsConfigFilter],
 ) -> bool:
-    if not am_db.has_current_cards_schema():
+    if not am_db.has_current_extraction_schema():
         return False
 
     if am_db.get_extraction_signature() != extraction_signature:
         return False
 
-    return _every_card_has_one_source_of_morphs(read_enabled_config_filters)
+    return True
 
 
 def _get_morph_extraction_signature(
@@ -144,134 +222,62 @@ def _get_morph_extraction_signature(
     return hashlib.blake2b(repr(signature_parts).encode("utf-8")).hexdigest()
 
 
-def _every_card_has_one_source_of_morphs(
-    read_enabled_config_filters: list[AnkiMorphsConfigFilter],
-) -> bool:
-    """
-    Overlapping note filters are fine as long as they read the same field with
-    the same morphemizer. When they don't, a card's morphs are the union of
-    several sources, which one hash per card cannot describe.
-    """
-    morph_sources_of_note_type: dict[str, set[tuple[str, str]]] = {}
-
-    for config_filter in read_enabled_config_filters:
-        morph_sources_of_note_type.setdefault(config_filter.note_type, set()).add(
-            (config_filter.field, config_filter.morphemizer_description)
-        )
-
-    return all(
-        len(morph_sources) == 1 for morph_sources in morph_sources_of_note_type.values()
-    )
-
-
-def _get_expression_hash(config_filter: AnkiMorphsConfigFilter, expression: str) -> int:
-    """
-    Covers the filter the text was read through, not only the text: a note can
-    move to a filter with a different morphemizer while keeping its text.
-    """
-    source = (
-        f"{config_filter.field}\x1f{config_filter.morphemizer_description}\x1f"
-        f"{expression}"
-    )
-    return int.from_bytes(
-        hashlib.blake2b(source.encode("utf-8"), digest_size=8).digest(),
-        byteorder="big",
-        signed=True,
-    )
-
-
-def _extract_and_assign_morphs(
+def _extract_source_morphs(
     am_config: AnkiMorphsConfig,
-    config_filter: AnkiMorphsConfigFilter,
-    cards_data_dict: dict[int, AnkiCardData],
-    cached_expression_hashes: dict[int, int],
-) -> list[int]:
-    """
-    Batches the card expressions for this filter, runs them through the
-    configured morphemizer, and writes the resulting morphs back onto
-    each card's data. Cards whose expression hash still matches are left out of
-    the batch and keep the morphs a previous recalc extracted.
+    source_work: dict[NoteSourceKey, tuple[AnkiMorphsConfigFilter, str]],
+    changed_source_keys: set[NoteSourceKey],
+) -> list[dict[str, Any]]:
+    grouped: dict[str, dict[str, list[NoteSourceKey]]] = {}
+    for source_key in changed_source_keys:
+        config_filter, expression_field = source_work[source_key]
+        expression = anki.utils.strip_html(expression_field.replace("<br>", "\n"))
+        processed_text = get_processed_text(am_config, expression.lower())
+        if not processed_text.strip():
+            continue
+        grouped.setdefault(config_filter.morphemizer_description, {}).setdefault(
+            processed_text, []
+        ).append(source_key)
 
-    Returns: the ids of the cards that were extracted again
-    """
-    # str is first because that is the order spacy receives it
-    items_to_extract: list[tuple[str, int]] = []
+    rows: list[dict[str, Any]] = []
+    for morphemizer_description, text_sources in grouped.items():
+        rows.extend(
+            _extract_morphemizer_group(am_config, morphemizer_description, text_sources)
+        )
+    return rows
 
-    for key, card_data in cards_data_dict.items():
-        expression_hash = _get_expression_hash(config_filter, card_data.expression)
-        card_data.expression_hash = expression_hash
 
-        if cached_expression_hashes.get(key) != expression_hash:
-            items_to_extract.append(
-                (get_processed_text(am_config, card_data.expression.lower()), key)
-            )
-
-    card_amount = len(items_to_extract)
-
-    if card_amount == 0:
-        return []
-
+def _extract_morphemizer_group(
+    am_config: AnkiMorphsConfig,
+    morphemizer_description: str,
+    text_sources: dict[str, list[NoteSourceKey]],
+) -> list[dict[str, Any]]:
     morphemizer = morphemizer_utils.get_morphemizer_by_description(
-        config_filter.morphemizer_description
+        morphemizer_description
     )
     assert morphemizer is not None
+    texts = list(text_sources)
+    items = [(text, index) for index, text in enumerate(texts)]
+    rows: list[dict[str, Any]] = []
 
-    for index, (processed_morphs, key) in enumerate(
-        morphemizer.get_processed_morphs(am_config, items_to_extract)
+    for counter, (processed_morphs, index) in enumerate(
+        morphemizer.get_processed_morphs(am_config, items)
     ):
         progress_utils.background_update_progress_potentially_cancel(
-            label=f"Extracting morphs from<br>{config_filter.note_type} cards<br>card: {index} of {card_amount}",
-            counter=index,
-            max_value=card_amount,
-        )
-        cards_data_dict[key].morphs = set(processed_morphs)
-
-    return [key for _processed_text, key in items_to_extract]
-
-
-def _append_card_and_morph_data(
-    am_config: AnkiMorphsConfig,
-    config_filter: AnkiMorphsConfigFilter,
-    cards_data_dict: dict[int, AnkiCardData],
-    card_table_data: list[dict[str, Any]],
-    card_morph_map_table_data: list[dict[str, Any]],
-) -> None:
-    """
-    Builds the row dicts for the card table and the morph/card-morph-map
-    tables from the (now morph-annotated) cards_data_dict.
-    """
-    card_amount = len(cards_data_dict)
-
-    for counter, (card_id, card_data) in enumerate(cards_data_dict.items()):
-        progress_utils.background_update_progress_potentially_cancel(
-            label=f"Caching {config_filter.note_type} cards<br>card: {counter} of {card_amount}",
+            label=f"Extracting morphs with<br>{morphemizer_description}<br>text: {counter} of {len(items)}",
             counter=counter,
-            max_value=card_amount,
+            max_value=len(items),
         )
-
-        card_table_data.append(
-            {
-                "card_id": card_id,
-                "note_id": card_data.note_id,
-                "note_type_id": card_data.note_type_id,
-                "card_type": card_data.type,
-                "tags": card_data.tags,
-                "expression_hash": card_data.expression_hash,
-                "memory_strength": _get_card_memory_strength(am_config, card_data),
-            }
-        )
-
-        if card_data.morphs is None:
-            continue
-
-        for morph in card_data.morphs:
-            card_morph_map_table_data.append(
+        for note_id, extraction_source_key in text_sources[texts[index]]:
+            rows.extend(
                 {
-                    "card_id": card_id,
+                    "note_id": note_id,
+                    "source_key": extraction_source_key,
                     "morph_lemma": morph.lemma,
                     "morph_inflection": morph.inflection,
                 }
+                for morph in processed_morphs
             )
+    return rows
 
 
 def _deduplicate_morphs(

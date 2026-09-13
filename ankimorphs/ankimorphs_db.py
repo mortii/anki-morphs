@@ -68,6 +68,8 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
         self.create_card_morph_map_table()
         self.create_seen_morph_table()
         self.create_extraction_signature_table()
+        self.create_note_sources_table()
+        self.create_note_source_morph_map_table()
 
     def create_cards_table(self) -> None:
         with self.con:
@@ -79,8 +81,32 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                         note_type_id INTEGER,
                         card_type INTEGER,
                         tags TEXT,
-                        expression_hash INTEGER,
                         memory_strength INTEGER
+                    )
+                    """)
+
+    def create_note_sources_table(self) -> None:
+        with self.con:
+            self.con.execute("""
+                    CREATE TABLE IF NOT EXISTS Note_Sources
+                    (
+                        note_id INTEGER NOT NULL,
+                        source_key TEXT NOT NULL,
+                        expression_hash INTEGER NOT NULL,
+                        PRIMARY KEY(note_id, source_key)
+                    )
+                    """)
+
+    def create_note_source_morph_map_table(self) -> None:
+        with self.con:
+            self.con.execute("""
+                    CREATE TABLE IF NOT EXISTS Note_Source_Morph_Map
+                    (
+                        note_id INTEGER NOT NULL,
+                        source_key TEXT NOT NULL,
+                        morph_lemma TEXT NOT NULL,
+                        morph_inflection TEXT NOT NULL,
+                        PRIMARY KEY(note_id, source_key, morph_lemma, morph_inflection)
                     )
                     """)
 
@@ -143,22 +169,37 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                     "INSERT INTO Extraction_Signature VALUES (?)", (signature,)
                 )
 
-    def get_expression_hashes(self) -> dict[int, int]:
-        return dict(
-            self.con.execute("SELECT card_id, expression_hash FROM Cards").fetchall()
-        )
+    def get_source_hashes(self) -> dict[tuple[int, str], int]:
+        return {
+            (row[0], row[1]): row[2]
+            for row in self.con.execute(
+                "SELECT note_id, source_key, expression_hash FROM Note_Sources"
+            ).fetchall()
+        }
 
-    def has_current_cards_schema(self) -> bool:
-        columns = self.con.execute("PRAGMA table_info(Cards)").fetchall()
-        return [column[1] for column in columns] == [
-            "card_id",
-            "note_id",
-            "note_type_id",
-            "card_type",
-            "tags",
-            "expression_hash",
-            "memory_strength",
-        ]
+    def has_current_extraction_schema(self) -> bool:
+        expected_columns = {
+            "Cards": [
+                "card_id",
+                "note_id",
+                "note_type_id",
+                "card_type",
+                "tags",
+                "memory_strength",
+            ],
+            "Note_Sources": ["note_id", "source_key", "expression_hash"],
+            "Note_Source_Morph_Map": [
+                "note_id",
+                "source_key",
+                "morph_lemma",
+                "morph_inflection",
+            ],
+        }
+        return all(
+            [row[1] for row in self.con.execute(f"PRAGMA table_info({table})")]
+            == columns
+            for table, columns in expected_columns.items()
+        )
 
     def replace_card_table(self, card_list: list[dict[str, Any]]) -> None:
         with self.con:
@@ -172,19 +213,74 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                        :note_type_id,
                        :card_type,
                        :tags,
-                       :expression_hash,
                        :memory_strength
                     )
                     """,
                 card_list,
             )
 
-    def delete_card_morphs(self, card_ids: Iterable[int]) -> None:
+    def replace_note_sources(self, source_list: list[dict[str, Any]]) -> None:
+        with self.con:
+            self.con.execute("DELETE FROM Note_Sources")
+            self.con.executemany(
+                """
+                INSERT INTO Note_Sources VALUES
+                (:note_id, :source_key, :expression_hash)
+                """,
+                source_list,
+            )
+
+    def delete_note_source_morphs(self, source_keys: Iterable[tuple[int, str]]) -> None:
         with self.con:
             self.con.executemany(
-                "DELETE FROM Card_Morph_Map WHERE card_id = ?",
-                ((card_id,) for card_id in card_ids),
+                """
+                DELETE FROM Note_Source_Morph_Map
+                WHERE note_id = ? AND source_key = ?
+                """,
+                source_keys,
             )
+
+    def insert_note_source_morphs(self, morph_list: list[dict[str, Any]]) -> None:
+        with self.con:
+            self.con.executemany(
+                """
+                INSERT OR IGNORE INTO Note_Source_Morph_Map VALUES
+                (:note_id, :source_key, :morph_lemma, :morph_inflection)
+                """,
+                morph_list,
+            )
+
+    def materialize_card_morph_map(self, assignments: list[dict[str, Any]]) -> None:
+        with self.con:
+            self.con.execute("DELETE FROM Card_Morph_Map")
+            self.con.execute("DROP TABLE IF EXISTS temp.Current_Source_Assignments")
+            self.con.execute("""
+                CREATE TEMP TABLE Current_Source_Assignments
+                (
+                    card_id INTEGER NOT NULL,
+                    note_id INTEGER NOT NULL,
+                    source_key TEXT NOT NULL
+                )
+                """)
+            self.con.executemany(
+                """
+                INSERT INTO Current_Source_Assignments VALUES
+                (:card_id, :note_id, :source_key)
+                """,
+                assignments,
+            )
+            self.con.execute("""
+                INSERT OR IGNORE INTO Card_Morph_Map
+                SELECT
+                    assignments.card_id,
+                    source_morphs.morph_lemma,
+                    source_morphs.morph_inflection
+                FROM Current_Source_Assignments AS assignments
+                INNER JOIN Note_Source_Morph_Map AS source_morphs
+                    ON source_morphs.note_id = assignments.note_id
+                    AND source_morphs.source_key = assignments.source_key
+                """)
+            self.con.execute("DROP TABLE Current_Source_Assignments")
 
     def get_morphs_with_highest_intervals(self) -> list[dict[str, Any]]:
         with self.con:
@@ -237,22 +333,6 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
                     WHERE highest_inflection_learning_interval < :highest_inflection_learning_interval
                 """,
                 morph_list,
-            )
-
-    def insert_many_into_card_morph_map_table(
-        self, card_morph_list: list[dict[str, int | str | bool]]
-    ) -> None:
-        with self.con:
-            self.con.executemany(
-                """
-                    INSERT OR IGNORE INTO Card_Morph_Map VALUES
-                    (
-                       :card_id,
-                       :morph_lemma,
-                       :morph_inflection
-                    )
-                    """,
-                card_morph_list,
             )
 
     def get_readable_card_morphs(self, card_id: int) -> list[tuple[str, str]]:
@@ -720,6 +800,8 @@ class AnkiMorphsDB:  # pylint:disable=too-many-public-methods
             self.con.execute("DROP TABLE IF EXISTS Card_Morph_Map;")
             self.con.execute("DROP TABLE IF EXISTS Seen_Morphs;")
             self.con.execute("DROP TABLE IF EXISTS Extraction_Signature;")
+            self.con.execute("DROP TABLE IF EXISTS Note_Source_Morph_Map;")
+            self.con.execute("DROP TABLE IF EXISTS Note_Sources;")
 
     @staticmethod
     def drop_seen_morphs_table() -> None:

@@ -17,6 +17,7 @@ from test.recalc_helpers import (
 from typing import Any
 from unittest import mock
 
+import anki.utils
 import pytest
 
 from ankimorphs import ankimorphs_db
@@ -25,6 +26,7 @@ from ankimorphs import name_file_utils, text_preprocessing
 from ankimorphs.ankimorphs_config import RawConfigFilterKeys, RawConfigKeys
 from ankimorphs.ankimorphs_db import AnkiMorphsDB
 from ankimorphs.morphemizers import morphemizer_utils
+from ankimorphs.recalc import anki_data_utils
 
 from anki.collection import Collection  # isort:skip  pylint:disable=wrong-import-order
 from anki.notes import NoteId  # isort:skip  pylint:disable=wrong-import-order
@@ -77,7 +79,13 @@ def _dump_am_db() -> dict[str, list[Any]]:
     am_db = AnkiMorphsDB()
     dump = {
         table: sorted(am_db.con.execute(f"SELECT * FROM {table}").fetchall())
-        for table in ("Cards", "Morphs", "Card_Morph_Map")
+        for table in (
+            "Cards",
+            "Morphs",
+            "Card_Morph_Map",
+            "Note_Sources",
+            "Note_Source_Morph_Map",
+        )
     }
     am_db.con.close()
     return dump
@@ -340,9 +348,30 @@ def test_changing_the_names_file_reextracts_every_card(  # pylint:disable=unused
             assert _extracted_expressions(spy)
 
 
+@pytest.mark.parametrize(
+    ("legacy_version", "card_columns", "has_signature"),
+    [
+        (
+            "6.3.4",
+            "card_id INTEGER PRIMARY KEY ASC, note_id INTEGER, "
+            "note_type_id INTEGER, card_type INTEGER, tags TEXT",
+            False,
+        ),
+        (
+            "6.4.0",
+            "card_id INTEGER PRIMARY KEY ASC, note_id INTEGER, "
+            "note_type_id INTEGER, card_type INTEGER, tags TEXT, "
+            "expression_hash INTEGER, memory_strength INTEGER",
+            True,
+        ),
+    ],
+)
 @pytest.mark.parametrize("fake_environment_fixture", [_COLLECTION], indirect=True)
-def test_a_database_from_an_older_ankimorphs_version_is_rebuilt(  # pylint:disable=unused-argument
+def test_a_released_database_schema_is_rebuilt_without_errors(
     fake_environment_fixture: FakeEnvironment,
+    legacy_version: str,
+    card_columns: str,
+    has_signature: bool,
 ) -> None:
     collection, _config = _start_with_a_config_no_other_test_shares(
         fake_environment_fixture
@@ -353,21 +382,20 @@ def test_a_database_from_an_older_ankimorphs_version_is_rebuilt(  # pylint:disab
     am_db = AnkiMorphsDB()
     with am_db.con:
         am_db.con.execute("DROP TABLE IF EXISTS Cards")
-        am_db.con.execute("""
-            CREATE TABLE Cards
-            (
-                card_id INTEGER PRIMARY KEY ASC,
-                note_id INTEGER,
-                note_type_id INTEGER,
-                card_type INTEGER,
-                fields TEXT,
-                tags TEXT
-            )
-            """)
+        am_db.con.execute("DROP TABLE IF EXISTS Note_Sources")
+        am_db.con.execute("DROP TABLE IF EXISTS Note_Source_Morph_Map")
+        am_db.con.execute(f"CREATE TABLE Cards ({card_columns})")
+        if not has_signature:
+            am_db.con.execute("DROP TABLE IF EXISTS Extraction_Signature")
     am_db.con.close()
 
-    recalc()
+    with _spy_on_the_morphemizer() as spy:
+        recalc()
+        assert _extracted_expressions(spy), legacy_version
     assert dump_collection(collection) == expected
+    with AnkiMorphsDB() as rebuilt_db:
+        assert rebuilt_db.has_current_extraction_schema()
+        assert rebuilt_db.get_source_hashes()
 
 
 @pytest.mark.parametrize("fake_environment_fixture", [_COLLECTION], indirect=True)
@@ -497,7 +525,7 @@ def test_a_card_leaving_its_note_filter_leaves_no_morphs_behind(  # pylint:disab
 
 
 @pytest.mark.parametrize("fake_environment_fixture", [_COLLECTION], indirect=True)
-def test_overlapping_filters_on_one_note_type_disable_the_cache(  # pylint:disable=unused-argument
+def test_overlapping_filters_on_one_note_type_reuse_each_source(  # pylint:disable=unused-argument
     fake_environment_fixture: FakeEnvironment,
 ) -> None:
     _collection, config = _start_with_a_config_no_other_test_shares(
@@ -508,12 +536,85 @@ def test_overlapping_filters_on_one_note_type_disable_the_cache(  # pylint:disab
     _an_overlapping_filter_was_added(
         fake_environment_fixture.mock_mw.col, config, fake_environment_fixture
     )
+    recalc()
 
     with _spy_on_the_morphemizer() as spy:
         recalc()
-        assert _extracted_expressions(spy)
+        assert not _extracted_expressions(spy)
         recalc()
-        assert _extracted_expressions(spy)
+        assert not _extracted_expressions(spy)
+
+
+@pytest.mark.parametrize("fake_environment_fixture", [_COLLECTION], indirect=True)
+def test_unchanged_sources_do_not_strip_html_again(
+    fake_environment_fixture: FakeEnvironment,
+) -> None:
+    _start_with_a_config_no_other_test_shares(fake_environment_fixture)
+    recalc()
+
+    with mock.patch.object(
+        anki.utils, "strip_html", wraps=anki.utils.strip_html
+    ) as strip_html_spy:
+        recalc()
+
+    strip_html_spy.assert_not_called()
+
+
+@pytest.mark.parametrize("fake_environment_fixture", [_COLLECTION], indirect=True)
+def test_overlapping_filters_query_shared_note_population_once(
+    fake_environment_fixture: FakeEnvironment,
+) -> None:
+    collection, config = _start_with_a_config_no_other_test_shares(
+        fake_environment_fixture
+    )
+    _an_overlapping_filter_was_added(collection, config, fake_environment_fixture)
+
+    with mock.patch.object(
+        anki_data_utils,
+        "_get_anki_data",
+        wraps=anki_data_utils._get_anki_data,
+    ) as query_spy:
+        recalc()
+
+    assert query_spy.call_count == 1
+
+
+@pytest.mark.parametrize("fake_environment_fixture", [_COLLECTION], indirect=True)
+def test_changing_one_overlapping_source_only_reextracts_that_source(
+    fake_environment_fixture: FakeEnvironment,
+) -> None:
+    collection, config = _start_with_a_config_no_other_test_shares(
+        fake_environment_fixture
+    )
+    _an_overlapping_filter_was_added(collection, config, fake_environment_fixture)
+    recalc()
+
+    note = collection.get_note(_first_note_id(collection))
+    note["Front"] = "changed front only"
+    collection.update_note(note)
+
+    with _spy_on_the_morphemizer() as spy:
+        recalc()
+        assert _extracted_expressions(spy) == ["changed front only"]
+
+    _assert_reusing_the_cache_matches_a_full_rebuild(fake_environment_fixture)
+
+
+@pytest.mark.parametrize("fake_environment_fixture", [_COLLECTION], indirect=True)
+def test_one_recalc_extracts_each_processed_text_once_per_morphemizer(
+    fake_environment_fixture: FakeEnvironment,
+) -> None:
+    collection, config = _start_with_a_config_no_other_test_shares(
+        fake_environment_fixture
+    )
+    _an_overlapping_filter_was_added(collection, config, fake_environment_fixture)
+
+    with _spy_on_the_morphemizer() as spy:
+        recalc()
+
+    extracted = _extracted_expressions(spy)
+    assert "" not in extracted
+    assert len(extracted) == len(set(extracted))
 
 
 @pytest.mark.parametrize("fake_environment_fixture", [_COLLECTION], indirect=True)

@@ -57,7 +57,7 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         "interval",
         "stability",
         "type",
-        "expression",
+        "expression_field",
         "automatically_known_tag",
         "manually_known_tag",
         "ready_tag",
@@ -66,7 +66,6 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         "note_id",
         "note_type_id",
         "morphs",
-        "expression_hash",
     )
 
     def __init__(  # pylint:disable=too-many-arguments
@@ -78,12 +77,6 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         anki_row_data: AnkiDBRowData,
     ) -> None:
         fields_list = anki.utils.split_fields(anki_row_data.note_fields)
-        expression_field = fields_list[expression_field_index]
-        expression = anki.utils.strip_html(
-            # this prevents morphs accidentally merging
-            expression_field.replace("<br>", "\n")
-        )
-
         tags_list = tag_manager.split(anki_row_data.note_tags)
 
         automatically_known_tag = am_config.tag_known_automatically in tags_list
@@ -94,7 +87,7 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
         self.interval = anki_row_data.card_interval
         self.stability = anki_row_data.card_stability
         self.type = anki_row_data.card_type
-        self.expression = expression
+        self.expression_field = fields_list[expression_field_index]
         self.automatically_known_tag = automatically_known_tag
         self.manually_known_tag = manually_known_tag
         self.ready_tag = ready_tag
@@ -105,7 +98,6 @@ class AnkiCardData:  # pylint:disable=too-many-instance-attributes
 
         # this is set later in the caching process
         self.morphs: set[Morpheme] | None = None
-        self.expression_hash: int | None = None
 
 
 class AnkiMorphsCardData:
@@ -141,6 +133,7 @@ class AnkiMorphsCardData:
 def create_card_data_dict(
     am_config: AnkiMorphsConfig,
     config_filter: AnkiMorphsConfigFilter,
+    anki_data: dict[int, AnkiDBRowData] | None = None,
 ) -> dict[int, AnkiCardData]:
     assert mw is not None
     assert mw.col is not None
@@ -158,7 +151,10 @@ def create_card_data_dict(
     existing_field_names: list[str] = model_manager.field_names(note_type_dict)
     field_index: int = existing_field_names.index(config_filter.field)
 
-    for anki_row_data in _get_anki_data(am_config, note_type_id, tags).values():
+    if anki_data is None:
+        anki_data = _get_anki_data(am_config, note_type_id, tags)
+
+    for anki_row_data in anki_data.values():
         card_data = AnkiCardData(
             am_config=am_config,
             tag_manager=tag_manager,
