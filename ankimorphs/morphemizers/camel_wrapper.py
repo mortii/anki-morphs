@@ -12,6 +12,7 @@ from typing import Any
 from anki.utils import is_win
 from aqt import mw
 
+from . import uv_bootstrap
 from .python_binary import get_python_binary
 
 # pylint: disable=invalid-name,duplicate-code
@@ -140,15 +141,13 @@ def create_camel_venv() -> None:
     shutil.rmtree(camel_venv_path, ignore_errors=True)
 
     python_path: str | None = get_python_binary()
-    if python_path is None:
-        raise ValueError(
-            "Could not find a python interpreter to create the CAMeL Tools"
-            " environment with. Anki 26.x is distributed as a self-contained app"
-            " that does not include one, so installing CAMeL Tools currently"
-            " requires Anki 25.09.x."
-        )
 
-    subprocess.run([python_path, "-m", "venv", camel_venv_path], check=True)
+    if python_path is not None:
+        subprocess.run([python_path, "-m", "venv", camel_venv_path], check=True)
+    else:
+        # official anki 26.x builds are self-contained apps without a usable
+        # python interpreter, so we download uv and have it provision one
+        uv_bootstrap.create_managed_venv(str(camel_venv_path))
 
     # create the data dir to prevent a crash (bug in camel tools)
     _get_am_camel_venv_data_path().mkdir()

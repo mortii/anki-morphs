@@ -11,7 +11,7 @@ From the Anki `Tools` menu, navigate to `AnkiMorphs` → `CAMeL Tools Manager`.
 ## Step 1: Install CAMeL Tools
 
 > **System requirements** (per the [CAMeL Tools installation docs](https://github.com/CAMeL-Lab/camel_tools#installation)):
-> - Python 3.11–3.14, 64-bit (Anki's bundled Python must meet this requirement)
+> - Python 3.11–3.14, 64-bit (satisfied automatically: Anki 26.x installs use a downloaded CPython matching Anki's version)
 > - The [Rust compiler](https://rustup.rs) must be installed before clicking Install
 > - `cmake` and `boost` must be installed before clicking Install
 >   - macOS: `brew install cmake boost`
@@ -21,6 +21,13 @@ From the Anki `Tools` menu, navigate to `AnkiMorphs` → `CAMeL Tools Manager`.
 
 Click **Install CAMeL Tools**. This downloads and installs CAMeL Tools into a dedicated virtual environment
 inside your Anki add-ons folder. After installation completes, **restart Anki**.
+
+> **Note**: on Anki 26.04 and later (self-contained builds), AnkiMorphs needs a Python interpreter
+> to create this environment. If your system already has a Python matching Anki's version, or `uv`,
+> it is reused and nothing extra is downloaded. Otherwise AnkiMorphs downloads `uv` and a standalone
+> Python (~60 MB total) into `addons21/ankimorphs-python-bootstrap` automatically. That folder is
+> shared by spaCy and CAMeL Tools, is not removed by "Purge", and can be deleted manually after
+> purging both.
 
 ## Step 2: Install a Database
 

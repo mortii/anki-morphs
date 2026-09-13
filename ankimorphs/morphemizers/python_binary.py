@@ -14,7 +14,8 @@ def get_python_binary() -> str | None:
     briefcase packaging, and 26.08 removed that function, so we fall back to
     the interpreter anki itself is running on. The official 26.x builds are
     self-contained apps where sys.executable is the anki binary instead of a
-    python interpreter, and they have nothing we can create a venv with.
+    python interpreter. When this returns None, uv_bootstrap downloads a
+    standalone interpreter instead.
     """
     try:
         # pylint:disable=import-outside-toplevel
