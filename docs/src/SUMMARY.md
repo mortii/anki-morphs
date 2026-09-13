@@ -32,6 +32,7 @@
   - [Generators](user_guide/usage/generators.md)
   - [Progression](user_guide/usage/progression.md)
   - [Reset Tags](user_guide/usage/reset_tags.md)
+  - [Reset Database](user_guide/usage/reset_database.md)
   - [Exporting Known Morphs](user_guide/usage/known-morphs-exporter.md)
 - [Tips & Tricks](user_guide/setup/tips-and-tricks.md)
 - [Known Problems](user_guide/known-problems.md)
