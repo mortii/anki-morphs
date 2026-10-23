@@ -1,9 +1,9 @@
-anki==26.8.1
-aqt==26.8.1
-black==26.5.1
+anki==26.9.3
+aqt==26.9.3
+black==26.10.1
 csv-diff==1.2
-pre-commit==4.6.2
-pylint==4.0.8
+pre-commit==4.7.0
+pylint==4.1.3
 PyQt6==6.6.1  # used by anki, newer versions can cause crashes in prod
 PyQt6-Qt6==6.6.1  # used by anki, newer versions can cause crashes in prod
 PyQt6-WebEngine==6.6.0  # used by anki, newer versions can cause crashes in prod
@@ -11,7 +11,7 @@ PyQt6-WebEngine-Qt6==6.6.0  # used by anki, newer versions can cause crashes in 
 PyQt6_sip==13.6.0  # used by anki, newer versions can cause crashes in prod
 pytest==9.1.1
 pytest-cov==7.1.0
-pytest-env==1.7.1
+pytest-env==1.8.1
 pytest-expect==1.1.0
 pytest-qt==4.5.0
 pytest-randomly==5.0.0
