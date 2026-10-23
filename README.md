@@ -1,3 +1,7 @@
+> **⚠️ This project is archived and no longer maintained! ⚠️**
+>
+> Forks are welcome. Please give your fork a distinct name so it isn't confused with this project.
+
 # AnkiMorphs
 
 [![Test and Lint](https://github.com/mortii/anki-morphs/actions/workflows/build.yml/badge.svg)](https://github.com/mortii/anki-morphs/actions/workflows/build.yml)
@@ -12,4 +16,4 @@ ground up with a focus on simplicity, performance, and a codebase with minimal t
 
 Download: https://ankiweb.net/shared/info/472573498
 
-Guide and docs: https://mortii.github.io/anki-morphs/
+Guide and docs: https://web.archive.org/web/20260930003650/https://mortii.github.io/anki-morphs/
